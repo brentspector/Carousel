@@ -6,6 +6,9 @@ public class GameManager : MonoBehaviour
 	//Singleton Variable
 	public static GameManager instance = null;
 
+	//Scene variables
+	IntroMenu intro;		//Manages intro and menu scenes
+
 	// Use this for initialization
 	void Awake ()
 	{
@@ -22,11 +25,19 @@ public class GameManager : MonoBehaviour
 
 		//Keep GameManager from destruction OnLoad
 		DontDestroyOnLoad (instance);
+
+		//Get IntroMenu component
+		intro = GetComponent<IntroMenu> ();
 	} //end Awake
 	
 	// Update is called once per frame
 	void Update ()
 	{
+		//If intro scene
+		if(Application.loadedLevelName == "Intro")
+		{
+			intro.Intro();
+		} //end if
 	
 	} //end Update
 } //end GameManager class
