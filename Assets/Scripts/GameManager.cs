@@ -33,11 +33,15 @@ public class GameManager : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
-		//If intro scene
+		//Intro scene
 		if(Application.loadedLevelName == "Intro")
 		{
 			intro.Intro();
 		} //end if
-	
+		//Start menu scene
+		else if(Application.loadedLevelName == "StartMenu")
+		{
+			intro.Menu();
+		} //end else if	
 	} //end Update
 } //end GameManager class
