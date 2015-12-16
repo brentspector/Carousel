@@ -272,7 +272,8 @@ public class IntroMenu : MonoBehaviour
 				// Second choice selected, this is usually new game
 				else if(choiceNumber == 1)
 				{
-					GameObject.Find("ContinueGrid").transform.GetChild(0).GetComponent<Text>().color = Color.green;
+					checkpoint = 0;
+					Application.LoadLevel("NewGame");
 				} //end else if
 				// Third choice selected, this is usually options
 				else if(choiceNumber == 2)
@@ -285,4 +286,17 @@ public class IntroMenu : MonoBehaviour
 			processing = false;
 		} //end else if
 	} //end Menu
+
+	//Used for new game introduction
+	public void NewGame()
+	{
+		//Beginning scene
+		if(checkpoint == 0)
+		{
+			processing = true;
+			GameManager.instance.InitText(GameObject.Find("Speech").GetComponent<Text>());
+			processing = false;
+			checkpoint = 1;
+		} //end NewGame
+	} //end NewGame
 } //end IntroMenu class

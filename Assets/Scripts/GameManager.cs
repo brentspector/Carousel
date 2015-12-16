@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -8,6 +9,7 @@ public class GameManager : MonoBehaviour
 
 	//Scene variables
 	IntroMenu intro;		//Manages intro and menu scenes
+	SystemManager sysm;		//Manages system features
 
 	// Use this for initialization
 	void Awake ()
@@ -28,6 +30,9 @@ public class GameManager : MonoBehaviour
 
 		//Get IntroMenu component
 		intro = GetComponent<IntroMenu> ();
+
+		//Get SystemManager component
+		sysm = GetComponent<SystemManager> ();
 	} //end Awake
 	
 	// Update is called once per frame
@@ -38,10 +43,25 @@ public class GameManager : MonoBehaviour
 		{
 			intro.Intro();
 		} //end if
-		//Start menu scene
+		//Start Menu scene
 		else if(Application.loadedLevelName == "StartMenu")
 		{
 			intro.Menu();
 		} //end else if	
+		//New Game scene
+		else if(Application.loadedLevelName == "NewGame")
+		{
+			intro.NewGame();
+		} //end else if
 	} //end Update
+
+	//System Manager functions
+	#region SystemManager
+	//Initializes text
+	public void InitText(Text textArea)
+	{
+		sysm.GetText (textArea);
+	} //end InitText()
+	#endregion
+
 } //end GameManager class
