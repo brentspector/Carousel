@@ -2,9 +2,9 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\IntroMenu.cs">
     <Files>
-      <File FileName="Assets\Scripts\IntroMenu.cs" Line="43" Column="5" />
-      <File FileName="Assets\Scripts\GameManager.cs" Line="35" Column="8" />
-      <File FileName="Assets\Scripts\SystemManager.cs" Line="16" Column="17" />
+      <File FileName="Assets\Scripts\IntroMenu.cs" Line="391" Column="14" />
+      <File FileName="Assets\Scripts\GameManager.cs" Line="76" Column="22" />
+      <File FileName="Assets\Scripts\SystemManager.cs" Line="45" Column="20" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

@@ -22,6 +22,13 @@ public class IntroMenu : MonoBehaviour
 	GameObject choice;			//All the menu choices
 	int choiceNumber = 0;		//What choice is highlighted 
 
+	//New Game variables
+	GameObject nameInput;		//The panel for inputing a name
+	GameObject confirm;			//Yes/No confirmation
+	GameObject text;			//Text box for general speech
+	Text inputText;				//Input field's text
+	string playerName;			//The player's name
+
 	//Use for initialization
 	void Awake()
 	{
@@ -44,10 +51,7 @@ public class IntroMenu : MonoBehaviour
 				playing = false;
 				checkpoint = 3;
 			} //end if
-			else
-			{
-				return;
-			} //end else
+			return;
 		} //end if
 
 		//Get title screen objects
@@ -290,13 +294,216 @@ public class IntroMenu : MonoBehaviour
 	//Used for new game introduction
 	public void NewGame()
 	{
-		//Beginning scene
+		//If something is already happening, return
+		if(processing)
+		{
+			return;
+		} //end if
+
+		//Set up scene
 		if(checkpoint == 0)
 		{
 			processing = true;
-			GameManager.instance.InitText(GameObject.Find("Speech").GetComponent<Text>());
+			nameInput = GameObject.Find("InputName");
+			confirm = GameObject.Find("Confirm");
+			text = GameObject.Find("TextStruct");
+			selection = GameObject.Find("Selection");
+			nameInput.SetActive(false);
+			confirm.SetActive(false);
+			selection.SetActive(false);
 			processing = false;
 			checkpoint = 1;
-		} //end NewGame
+		} //end if
+		//Init SystemManager variable
+		else if(checkpoint == 1)
+		{
+			processing = true;
+			GameManager.instance.InitText(text.GetComponentInChildren<Text>(), GameObject.Find("Arrow"));
+			processing = false;
+			checkpoint = 2;
+		} //end else if
+		//Begin scene
+		else if(checkpoint == 2)
+		{
+			processing = true;
+			//Attempt to display text
+			if(GameManager.instance.DisplayText("Welcome to Pokemon Carousel! I am the Ringmaster " +
+			                                 "Melotta."))
+			{
+				checkpoint = 3;
+			} //end if
+			processing = false;
+		} //end else if
+		else if(checkpoint == 3)
+		{
+			processing = true;
+			//Don't continue until player requests next text
+			if(Input.GetKeyDown(KeyCode.Return))
+			{
+				//Attempt to display text
+				if(GameManager.instance.DisplayText("This circus has attracted major gym leaders from " +
+					"arround the world! In fact, that's why you're here, isn't it?"))
+				{
+					checkpoint = 4;
+				} //end if
+			} //end if
+			processing = false;
+		} //end else if
+		else if(checkpoint == 4)
+		{
+			processing = true;
+			//Don't continue until player requests next text
+			if(Input.GetKeyDown(KeyCode.Return))
+			{
+				//Attempt to display text
+				if(GameManager.instance.DisplayText("Alright, let's get you set up. First, what is " +
+					"your name?"))
+				{
+					checkpoint = 5;
+				} //end if
+			} //end if
+			processing = false;
+		} //end else if
+		else if(checkpoint == 5)
+		{
+			processing = true;
+			//Don't continue until player requests next text
+			if(Input.GetKeyDown(KeyCode.Return))
+			{
+				//Display name input
+				nameInput.SetActive(true);
+				nameInput.transform.GetChild(1).GetComponent<Text>().text = "Please enter your name.";
+				nameInput.transform.GetChild(2).GetComponent<Text>().text = "Player name:";
+				GameObject.Find("InputField").GetComponent<InputField>().text = "";
+				GameObject.Find("InputField").GetComponent<InputField>().ActivateInputField();
+				inputText = GameObject.Find("InputText").GetComponent<Text>();
+				checkpoint = 6;
+			} //end if
+			processing = false;
+		} //end else if
+		else if(checkpoint == 6)
+		{
+			processing = true;
+			//Make sure text field is always active
+			if(nameInput.activeInHierarchy)
+			{
+				GameObject.Find("InputField").GetComponent<InputField>().ActivateInputField();
+			} //end if
+			//Don't continue until player requests next text
+			if(Input.GetKeyDown(KeyCode.Return) && inputText.text.Length != 0)
+			{
+				//Convert input name to player's name
+				name = inputText.text;
+				nameInput.SetActive(false);
+				GameManager.instance.DisplayText("So your name is " + name + "?");
+				checkpoint = 7;
+			} //end if
+			processing = false;
+		} //end else if
+		else if(checkpoint == 7)
+		{
+			processing = true;
+			//Make sure text has finished displaying before activating the confirm box
+			if(!GameManager.instance.IsDisplaying())
+			{
+				//Activate confirmation box
+				confirm.SetActive(true);
+				
+				//Reposition selection rect
+				selection.SetActive(true);
+				choiceNumber = 0;	
+				selection.GetComponent<RectTransform>().sizeDelta = 
+					new Vector2(GameObject.Find("Yes").GetComponent<RectTransform>().sizeDelta.x,
+					            GameObject.Find("Yes").GetComponent<RectTransform>().sizeDelta.y);
+				selection.transform.position = new Vector3(
+					confirm.transform.GetChild(0).transform.GetChild(choiceNumber).transform.position.x,
+					confirm.transform.GetChild(0).transform.GetChild(choiceNumber).transform.position.y, 0);
+				//Continue to next section when selection rect is properly set
+				if(selection.GetComponent<RectTransform>().sizeDelta.x != 0)
+				{
+					checkpoint = 8;
+				} //end if
+			} //end if
+			processing = false;
+		} //end else if
+		else if(checkpoint == 8)
+		{
+			processing = true;
+			//If down arrow is pressed
+			if(Input.GetKeyDown(KeyCode.DownArrow))
+			{
+				//Increase choice to show next option is highlighted
+				choiceNumber++;
+				//Loop back to start if it's higher than the amount of choices
+				if(choiceNumber >= 2)
+				{
+					choiceNumber = 0;
+				} //end if
+				
+				//Reposition to choice location
+				selection.transform.position = new Vector3(
+					confirm.transform.GetChild(0).transform.GetChild(choiceNumber).transform.position.x,
+					confirm.transform.GetChild(0).transform.GetChild(choiceNumber).transform.position.y, 0);
+			} //end if
+			
+			//If up arrow is pressed
+			if(Input.GetKeyDown(KeyCode.UpArrow))
+			{
+				//Decrease choice to show previous option is highlighted
+				choiceNumber--;
+				//Loop to last choice if it's lower than zero
+				if(choiceNumber < 0)
+				{
+					choiceNumber = 1;
+				} //end if
+				
+				//Resize to choice width
+				selection.transform.position = new Vector3(
+					confirm.transform.GetChild(0).transform.GetChild(choiceNumber).transform.position.x,
+					confirm.transform.GetChild(0).transform.GetChild(choiceNumber).transform.position.y, 0);
+			} //end if
+			
+			//If an option was selected, process it
+			if(Input.GetKeyDown(KeyCode.Return))
+			{
+				// Yes selected
+				if(choiceNumber == 0)
+				{
+					checkpoint = 9;
+				} //end if
+				// No selected
+				else if(choiceNumber == 1)
+				{
+					GameManager.instance.DisplayText("Ok let's try again. What is your name?");
+					checkpoint = 5;
+				} //end else if
+				
+				//Disable choice and selection
+				selection.SetActive(false);
+				confirm.SetActive(false);
+			} //end if
+			processing = false;
+		} //end else if
+		else if(checkpoint == 9)
+		{
+			processing = true;
+			//Attempt to display text
+			if(GameManager.instance.DisplayText("Great! Now here's your things. See you again."))
+			{
+				checkpoint = 10;
+			} //end if
+			processing = false;
+		} //end else if
+		else if(checkpoint == 10)
+		{
+			processing = true;
+			//Don't continue until player requests next text
+			if(Input.GetKeyDown(KeyCode.Return))
+			{
+				checkpoint = 0;
+				Application.LoadLevel("Intro");
+			} //end if
+			processing = false;
+		} //end else if
 	} //end NewGame
 } //end IntroMenu class

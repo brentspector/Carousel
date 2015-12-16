@@ -58,10 +58,22 @@ public class GameManager : MonoBehaviour
 	//System Manager functions
 	#region SystemManager
 	//Initializes text
-	public void InitText(Text textArea)
+	public void InitText(Text textArea, GameObject endArrow)
 	{
-		sysm.GetText (textArea);
-	} //end InitText()
+		sysm.GetText (textArea, endArrow);
+	} //end InitText(Text textArea, GameObject endArrow)
+
+	//Displays a line of speech
+	public bool DisplayText(string text)
+	{
+		return sysm.PlayText (text);
+	} //end DisplayText(string text)
+
+	//Returns if text has finished displaying
+	public bool IsDisplaying()
+	{
+		return sysm.GetDisplay ();
+	} //end IsDisplaying
 	#endregion
 
 } //end GameManager class
