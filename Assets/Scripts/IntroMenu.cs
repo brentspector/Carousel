@@ -20,7 +20,11 @@ public class IntroMenu : MonoBehaviour
 	//Menu variables
 	GameObject selection;		//Red selection rectangle
 	GameObject choice;			//All the menu choices
+	GameObject pContinue;		//Player's continue area
 	int choiceNumber = 0;		//What choice is highlighted 
+	Text pName;					//Player's name on continue panel
+	Text badges;				//Amount of badges save file has
+	Text totalTime;				//Total time on save file
 
 	//New Game variables
 	GameObject nameInput;		//The panel for inputing a name
@@ -190,7 +194,7 @@ public class IntroMenu : MonoBehaviour
 		processing = false;
 	} //end IntroAnimation
 
-	//Runs menu animations and 
+	//Runs menu animations and selections
 	public void Menu()
 	{
 		//If something is already happening, return
@@ -205,8 +209,23 @@ public class IntroMenu : MonoBehaviour
 			processing = true;
 			selection = GameObject.Find ("Selection");
 			choice = GameObject.Find ("ChoiceGrid");
+			pContinue = GameObject.Find("ContinueGrid");
+			pName = pContinue.transform.GetChild(0).GetComponent<Text>();
+			badges = pContinue.transform.GetChild(1).GetComponent<Text>();
+			totalTime = pContinue.transform.GetChild(2).GetComponent<Text>();
+			//If a file isn't found, disable menu options
+			if(!GameManager.instance.GetPersist())
+			{
+				pContinue.SetActive(false);
+				choice.transform.GetChild(0).gameObject.SetActive(false);
+				choiceNumber = 1;
+				checkpoint = 3;
+			} //end if
+			else
+			{
+				checkpoint = 1;
+			} //end else
 			selection.SetActive(false);
-			checkpoint = 1;
 			processing = false;
 		} //end if
 		// Initialize selection rectangle
@@ -218,6 +237,18 @@ public class IntroMenu : MonoBehaviour
 				new Vector2(choice.transform.GetChild(choiceNumber).GetComponent<RectTransform>().sizeDelta.x, 40);
 			selection.transform.position = new Vector3(choice.transform.GetChild(choiceNumber).position.x, 
 			                                           choice.transform.GetChild(choiceNumber).position.y-8, 0);
+			pName.text = GameManager.instance.GetPlayerName();
+			badges.text = "Badges: " + GameManager.instance.GetBadges().ToString();
+			if(GameManager.instance.GetMinutes().ToString().Length < 2)
+			{
+				totalTime.text = "Playtime: " + GameManager.instance.GetHours().ToString() + ":0" + 
+					GameManager.instance.GetMinutes().ToString();
+			} //end if
+			else
+			{
+				totalTime.text = "Playtime: " + GameManager.instance.GetHours().ToString() + ":" + 
+					GameManager.instance.GetMinutes().ToString();
+			} //end else
 			processing = false;
 			checkpoint = 2;
 		} //end else if
@@ -271,7 +302,7 @@ public class IntroMenu : MonoBehaviour
 				// First choice selected, this is usually continue
 				if(choiceNumber == 0)
 				{
-					GameObject.Find("ContinueGrid").transform.GetChild(0).GetComponent<Text>().color = Color.blue;
+
 				} //end if
 				// Second choice selected, this is usually new game
 				else if(choiceNumber == 1)
@@ -286,6 +317,86 @@ public class IntroMenu : MonoBehaviour
 				} //end else if
 			} //end if
 
+			//Menu finished this check
+			processing = false;
+		} //end else if
+		// Initialize scene data
+		else if(checkpoint == 3)
+		{
+			processing = true;
+			selection.SetActive(true);
+			selection.GetComponent<RectTransform>().sizeDelta = 
+				new Vector2(choice.transform.GetChild(choiceNumber).GetComponent<RectTransform>().sizeDelta.x, 40);
+			selection.transform.position = new Vector3(choice.transform.GetChild(choiceNumber).position.x, 
+			                                           choice.transform.GetChild(choiceNumber).position.y-8, 0);
+			processing = false;
+			checkpoint = 4;
+		} //end else if
+		//Run menu w/o continue
+		else if(checkpoint == 4)
+		{
+			processing = true;
+			//If down arrow is pressed
+			if(Input.GetKeyDown(KeyCode.DownArrow))
+			{
+				//Increase choice to show next option is highlighted
+				choiceNumber++;
+				//Loop back to start if it's higher than the amount of choices
+				if(choiceNumber >= choice.transform.childCount)
+				{
+					choiceNumber = 1;
+				} //end if
+				
+				//Resize to choice width
+				selection.GetComponent<RectTransform>().sizeDelta = 
+					new Vector2(choice.transform.GetChild(choiceNumber).GetComponent<RectTransform>().sizeDelta.x, 40);
+				
+				//Reposition to choice location
+				selection.transform.position = new Vector3(choice.transform.GetChild(choiceNumber).position.x, 
+				                                           choice.transform.GetChild(choiceNumber).position.y-8, 0);
+			} //end if
+			
+			//If up arrow is pressed
+			if(Input.GetKeyDown(KeyCode.UpArrow))
+			{
+				//Decrease choice to show previous option is highlighted
+				choiceNumber--;
+				//Loop to last choice if it's lower than zero
+				if(choiceNumber < 1)
+				{
+					choiceNumber = choice.transform.childCount-1;
+				} //end if
+				
+				//Resize to choice width
+				selection.GetComponent<RectTransform>().sizeDelta = 
+					new Vector2(choice.transform.GetChild(choiceNumber).GetComponent<RectTransform>().sizeDelta.x, 40);
+				
+				//Reposition to choice location
+				selection.transform.position = new Vector3(choice.transform.GetChild(choiceNumber).position.x, 
+				                                           choice.transform.GetChild(choiceNumber).position.y-8, 0);
+			} //end if
+			
+			//If an option was selected, process it
+			if(Input.GetKeyDown(KeyCode.Return))
+			{
+				// First choice selected, this is usually continue
+				if(choiceNumber == 0)
+				{
+					Debug.Log("This is choice 0, and shouldn't be here");
+				} //end if
+				// Second choice selected, this is usually new game
+				else if(choiceNumber == 1)
+				{
+					checkpoint = 0;
+					Application.LoadLevel("NewGame");
+				} //end else if
+				// Third choice selected, this is usually options
+				else if(choiceNumber == 2)
+				{
+					GameObject.Find("ChoiceGrid").transform.GetChild(0).GetComponent<Text>().color = Color.blue;
+				} //end else if
+			} //end if
+			
 			//Menu finished this check
 			processing = false;
 		} //end else if
@@ -393,9 +504,9 @@ public class IntroMenu : MonoBehaviour
 			if(Input.GetKeyDown(KeyCode.Return) && inputText.text.Length != 0)
 			{
 				//Convert input name to player's name
-				name = inputText.text;
+				playerName = inputText.text;
 				nameInput.SetActive(false);
-				GameManager.instance.DisplayText("So your name is " + name + "?");
+				GameManager.instance.DisplayText("So your name is " + playerName + "?");
 				checkpoint = 7;
 			} //end if
 			processing = false;
@@ -487,6 +598,9 @@ public class IntroMenu : MonoBehaviour
 		else if(checkpoint == 9)
 		{
 			processing = true;
+			//Set name
+			GameManager.instance.SetName(playerName);
+
 			//Attempt to display text
 			if(GameManager.instance.DisplayText("Great! Now here's your things. See you again."))
 			{
@@ -498,9 +612,10 @@ public class IntroMenu : MonoBehaviour
 		{
 			processing = true;
 			//Don't continue until player requests next text
-			if(Input.GetKeyDown(KeyCode.Return))
+			if(Input.GetKeyDown(KeyCode.Return) && !GameManager.instance.IsDisplaying())
 			{
 				checkpoint = 0;
+				GameManager.instance.Persist();
 				Application.LoadLevel("Intro");
 			} //end if
 			processing = false;

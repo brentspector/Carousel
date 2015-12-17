@@ -74,6 +74,54 @@ public class GameManager : MonoBehaviour
 	{
 		return sysm.GetDisplay ();
 	} //end IsDisplaying
+
+	//Sets player's name
+	public void SetName(string pName)
+	{
+		sysm.SetName(pName);
+	} //end SetName(string pName)
+
+	//Gets player's name
+	public string GetPlayerName()
+	{
+		return sysm.GetPName ();
+	} //end GetPlayerName
+
+	//Sets player's badges
+	public void SetBadges(int badges)
+	{
+		sysm.SetBadges (badges);
+	} //end SetBadges(int badges)
+
+	//Gets player's badges
+	public int GetBadges()
+	{
+		return sysm.GetBadges ();
+	} //end GetBadges
+
+	//Gets player's hours
+	public int GetHours()
+	{
+		return sysm.GetHours ();
+	} //end GetHours
+
+	//Get player's minutes
+	public int GetMinutes()
+	{
+		return sysm.GetMinutes ();
+	} //end GetMinutes
+
+	//Creates persistant data
+	public void Persist()
+	{
+		sysm.Persist ();
+	} //end Persist
+
+	//Gathers persistant data
+	public bool GetPersist()
+	{
+		return sysm.GetPersist ();
+	} //end GetPersist
 	#endregion
 
 } //end GameManager class
