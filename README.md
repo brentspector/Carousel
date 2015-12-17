@@ -14,3 +14,4 @@
 
 # Scripting
 # -Code is based on Pokemon Essentials.
+# -Save system idea from Pokemon Reborn
