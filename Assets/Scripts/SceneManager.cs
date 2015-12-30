@@ -8,11 +8,13 @@ public class SceneManager : MonoBehaviour
 {
 	//Scene variables
 	Image fade;						//Fade screen
+	GameObject selection;			//Red selection rectangle
 	GameObject text;				//Text unit
 	GameObject confirm;				//Yes/No confirmation unit
 	GameObject choices;				//Choices unit
+	GameObject input;				//Allows player to input text
+	InputField inputText;			//Input field of input unit
 	int checkpoint;					//Manages function progress
-	int tempCheckpoint;				//Temporary checkpoint for transitions
 	bool processing;				//Currently performing task
 
 	//Intro variables
@@ -28,7 +30,6 @@ public class SceneManager : MonoBehaviour
 
 	//Menu variables
 	List<RectTransform> transforms;	//List of RectTransforms of choices
-	GameObject selection;			//Red selection rectangle
 	GameObject mChoices;			//All the menu choices
 	GameObject mContinue;			//Menu's continue data
 	int choiceNumber = 0;			//What choice is highlighted 
@@ -37,24 +38,32 @@ public class SceneManager : MonoBehaviour
 	Text totalTime;					//Total time on save file
 
 	//New Game variables
-	GameObject nameInput;			//The panel for inputing a name
-	Text inputText;					//Input field's text
+	Image profBase;					//Base professor stands on
+	Image professor;				//Professor image
 	string playerName;				//The player's name
 
 	//Use for initialization
 	void Awake()
 	{
+		//Reset scene tools canvas' camera
+		GameManager.tools.GetComponent<Canvas> ().worldCamera = Camera.main;
+
 		//Get scene tools
 		fade = GameManager.tools.transform.GetChild (0).gameObject.GetComponent<Image> ();
 		text = GameManager.tools.transform.GetChild (1).gameObject;
 		confirm = GameManager.tools.transform.GetChild (2).gameObject;
 		choices = GameManager.tools.transform.GetChild (3).gameObject;
+		input = GameManager.tools.transform.GetChild (4).gameObject;
+		selection = GameManager.tools.transform.GetChild (5).gameObject;
+		inputText = input.transform.GetChild (1).GetComponent<InputField>();
 
 		//Disable scene tools
 		fade.gameObject.SetActive (false);
+		selection.SetActive (false);
 		text.SetActive (false);
 		confirm.SetActive (false);
 		choices.SetActive (false);
+		input.SetActive (false);
 
 		//Begin checkpoint at zero
 		checkpoint = 0;
@@ -62,14 +71,6 @@ public class SceneManager : MonoBehaviour
 		//Begin processing as false
 		processing = false;
 	} //end Awake
-
-	//Use for soft resetting game
-	public void Reset()
-	{
-		checkpoint = 0;
-		processing = false;
-		StopAllCoroutines ();
-	} //end Reset
 
 	#region Scenes
 	//Runs intro animation
@@ -104,6 +105,7 @@ public class SceneManager : MonoBehaviour
 			image.GetComponent<Image>().color = Color.black;
 			title.transform.localScale = new Vector3(0.2f, 0.2f);
 			enter.SetActive(false);
+			fade.gameObject.SetActive (false);
 			checkpoint = 2;
 			processing = false;
 		} //end else if
@@ -121,22 +123,19 @@ public class SceneManager : MonoBehaviour
 			if(Input.GetKeyDown(KeyCode.Return))
 			{
 				playing = true;
-				StartCoroutine(FadeOutAnimation());
-				checkpoint = 4;
-				tempCheckpoint = 4;
+				checkpoint = 0;
+				StartCoroutine(FadeOutAnimation(4));
 			} //end if
-			processing = false;
+			else
+			{
+				processing = false;
+			} //end else
 		} //end else if
-		//Shift to menu scene when fade out ends
+		//Move to menu scene when finished fading out
 		else if(checkpoint == 4)
 		{
-			processing = true;
-			if(playing == false)
-			{
-				Application.LoadLevel("StartMenu");
-				checkpoint = 0;
-			}
-			processing = false;
+			checkpoint = 0;
+			Application.LoadLevel("StartMenu");
 		} //end else if
 	} //end Intro
 
@@ -152,13 +151,13 @@ public class SceneManager : MonoBehaviour
 		// Get menu objects
 		if(checkpoint == 0) 
 		{
+			//Begin processing
 			processing = true;
 
 			//Set up fade screen
 			fade.gameObject.SetActive(true);
 
 			//Set reference for menu components
-			selection = GameObject.Find ("Selection");
 			mChoices = GameObject.Find ("ChoiceGrid");
 			mContinue = GameObject.Find("ContinueGrid");
 			pName = mContinue.transform.GetChild(0).GetComponent<Text>();
@@ -172,26 +171,27 @@ public class SceneManager : MonoBehaviour
 			    transforms.Add(mChoices.transform.GetChild(i).GetComponent<RectTransform>());
 			} //end for
 
-			// If a file isn't found, disable menu options
+			// If a file isn't found, disable continue option, process alternate menu
 			if(!GameManager.instance.GetPersist())
 			{
 				mContinue.SetActive(false);
 				mChoices.transform.GetChild(0).gameObject.SetActive(false);
 				choiceNumber = 1;
-				tempCheckpoint = 3;
+				checkpoint = 3;
 			} //end if
+			//Otherwise file is found, process normally
 			else
 			{
-				tempCheckpoint = 1;
+				checkpoint = 1;
 			} //end else
-			selection.SetActive(false);
 
-			//Run fade animation
-			StartCoroutine(FadeInAnimation());
+			//End processing
+			processing = false;
 		} //end if
 		// Initialize menu data
 		else if(checkpoint == 1)
 		{
+			//Begin processing
 			processing = true;
 
 			//Disable fade screen
@@ -199,24 +199,31 @@ public class SceneManager : MonoBehaviour
 
 			//Set up selection rectangle
 			selection.SetActive(true);
+
+			//Resize to width of top choice, and to height of 1/3 of top choice's height
 			selection.GetComponent<RectTransform>().sizeDelta = 
 				new Vector2(transforms[choiceNumber].sizeDelta.x, transforms[choiceNumber].sizeDelta.y/3);
+
+			//Reposition to location of top choice, with 2 unit offset to center it
 			selection.transform.position = new Vector3(mChoices.transform.GetChild(choiceNumber).transform.position.x, 
-			                                           mChoices.transform.GetChild(choiceNumber).transform.position.y-2,
+			                                           mChoices.transform.GetChild(choiceNumber).transform.position.y-1,
 			                                           100);
 		
 			//Fill in continue area
 			pName.text = GameManager.instance.GetPlayerName();
 			badges.text = "Badges: " + GameManager.instance.GetBadges().ToString();
 			totalTime.text = "Playtime: " + GameManager.instance.GetHours().ToString() + ":" + 
-					GameManager.instance.GetMinutes().ToString("00");
-			processing = false;
-			checkpoint = 2;
+				GameManager.instance.GetMinutes().ToString("00");
+
+			//Run fade animation
+			StartCoroutine(FadeInAnimation(2));
 		} //end else if
 		//Run menu
 		else if(checkpoint == 2)
 		{
+			//Begin processing
 			processing = true;
+
 			//If down arrow is pressed
 			if(Input.GetKeyDown(KeyCode.DownArrow))
 			{
@@ -235,12 +242,15 @@ public class SceneManager : MonoBehaviour
 				//Reposition to choice location
 				selection.transform.position = 
 					new Vector3(mChoices.transform.GetChild(choiceNumber).transform.position.x, 
-				                mChoices.transform.GetChild(choiceNumber).transform.position.y-2,
+				                mChoices.transform.GetChild(choiceNumber).transform.position.y-1,
 				                100);
+
+				//Menu finished this check
+				processing = false;
 			} //end if
 
 			//If up arrow is pressed
-			if(Input.GetKeyDown(KeyCode.UpArrow))
+			else if(Input.GetKeyDown(KeyCode.UpArrow))
 			{
 				//Decrease choice to show previous option is highlighted
 				choiceNumber--;
@@ -257,56 +267,64 @@ public class SceneManager : MonoBehaviour
 				//Reposition to choice location
 				selection.transform.position = 
 					new Vector3(mChoices.transform.GetChild(choiceNumber).transform.position.x, 
-					            mChoices.transform.GetChild(choiceNumber).transform.position.y-2,
+					            mChoices.transform.GetChild(choiceNumber).transform.position.y-1,
 					            100);
-			} //end if
+
+				//Menu finished this check
+				processing = false;
+			} //end else if
 
 			//If an option was selected, process it
-			if(Input.GetKeyDown(KeyCode.Return))
+			else if(Input.GetKeyDown(KeyCode.Return))
 			{
-				// First choice selected, this is usually continue
-				if(choiceNumber == 0)
-				{
-
-				} //end if
-				// Second choice selected, this is usually new game
-				else if(choiceNumber == 1)
-				{
-					checkpoint = 0;
-					Application.LoadLevel("NewGame");
-				} //end else if
-				// Third choice selected, this is usually options
-				else if(choiceNumber == 2)
-				{
-					GameObject.Find("ContinueGrid").transform.GetChild(0).GetComponent<Text>().color = Color.yellow;
-				} //end else if
-			} //end if
-
-			//Menu finished this check
-			processing = false;
+				StartCoroutine(FadeOutAnimation(5));
+			} //end else if
+			else
+			{
+				//Menu finished this check
+				processing = false;
+			} //end else
 		} //end else if
-		// Initialize scene data
+		// Initialize scene data without continue
 		else if(checkpoint == 3)
 		{
+			//Begin processing
 			processing = true;
+
 			//Disable fade screen
 			fade.gameObject.SetActive(false);
 
 			//Set up selection rectangle
 			selection.SetActive(true);
+
+			//Resize to width of top option, and to height 1/3 of top option's height
 			selection.GetComponent<RectTransform>().sizeDelta = 
 				new Vector2(transforms[choiceNumber].sizeDelta.x, transforms[choiceNumber].sizeDelta.y/3);
+
+			//Reposition to top choice's location, with 2 unit offset to center it
 			selection.transform.position = 
 				new Vector3(mChoices.transform.GetChild(choiceNumber).transform.position.x, 
 				            mChoices.transform.GetChild(choiceNumber).transform.position.y-2,
 				            100);
-			processing = false;
-			checkpoint = 4;
+
+			//Disable it again
+			selection.SetActive(false);
+
+			//Run fade animation
+			StartCoroutine(FadeInAnimation(4));
 		} //end else if
-		//Run menu w/o continue
+		//Run menu without continue
 		else if(checkpoint == 4)
 		{
+			//Begin processing
 			processing = true;
+
+			//Enable selection tool
+			if(!selection.activeInHierarchy)
+			{
+				selection.SetActive(true);
+			} //end if
+
 			//If down arrow is pressed
 			if(Input.GetKeyDown(KeyCode.DownArrow))
 			{
@@ -327,10 +345,13 @@ public class SceneManager : MonoBehaviour
 					new Vector3(mChoices.transform.GetChild(choiceNumber).transform.position.x, 
 					            mChoices.transform.GetChild(choiceNumber).transform.position.y-2,
 					            100);
+
+				//Menu finished this check
+				processing = false;
 			} //end if
 			
 			//If up arrow is pressed
-			if(Input.GetKeyDown(KeyCode.UpArrow))
+			else if(Input.GetKeyDown(KeyCode.UpArrow))
 			{
 				//Decrease choice to show previous option is highlighted
 				choiceNumber--;
@@ -349,31 +370,42 @@ public class SceneManager : MonoBehaviour
 					new Vector3(mChoices.transform.GetChild(choiceNumber).transform.position.x, 
 					            mChoices.transform.GetChild(choiceNumber).transform.position.y-2,
 					            100);
-			} //end if
+
+				//Menu finished this check
+				processing = false;
+			} //end else if
 			
 			//If an option was selected, process it
-			if(Input.GetKeyDown(KeyCode.Return))
+			else if(Input.GetKeyDown(KeyCode.Return))
 			{
-				// First choice selected, this is usually continue
-				if(choiceNumber == 0)
-				{
-					Debug.Log(Environment.StackTrace);
-				} //end if
-				// Second choice selected, this is usually new game
-				else if(choiceNumber == 1)
-				{
-					checkpoint = 0;
-					Application.LoadLevel("NewGame");
-				} //end else if
-				// Third choice selected, this is usually options
-				else if(choiceNumber == 2)
-				{
-					GameObject.Find("ChoiceGrid").transform.GetChild(0).GetComponent<Text>().color = Color.blue;
-				} //end else if
+				selection.SetActive(false);
+				StartCoroutine(FadeOutAnimation(5));
+			} //end else if
+			//Nothing was pressed
+			else
+			{
+				//Menu finished this check
+				processing = false;
+			} //end else
+		} //end else if
+		//Move to relevant scene
+		else if(checkpoint == 5)
+		{
+			// First choice selected, this is usually continue
+			if(choiceNumber == 0)
+			{
+				GameManager.instance.Continue();
 			} //end if
-			
-			//Menu finished this check
-			processing = false;
+			// Second choice selected, this is usually new game
+			else if(choiceNumber == 1)
+			{
+				GameManager.instance.NewGame();
+			} //end else if
+			// Third choice selected, this is usually options
+			else if(choiceNumber == 2)
+			{
+				GameManager.instance.Options();
+			} //end else if
 		} //end else if
 	} //end Menu
 
@@ -390,29 +422,25 @@ public class SceneManager : MonoBehaviour
 		if(checkpoint == 0)
 		{
 			processing = true;
-			nameInput = GameObject.Find("InputName");
-			confirm = GameObject.Find("Confirm");
-			text = GameObject.Find("TextStruct");
-			selection = GameObject.Find("Selection");
-			nameInput.SetActive(false);
-			confirm.SetActive(false);
-			selection.SetActive(false);
-			processing = false;
-			checkpoint = 1;
+			profBase = GameObject.Find("Base").GetComponent<Image>();
+			professor = GameObject.Find("Professor").GetComponent<Image>();
+			profBase.color = new Color(1, 1, 1, 0);
+			professor.color = new Color(1, 1, 1, 0);
+			StartCoroutine(FadeInAnimation(1));
 		} //end if
 		//Init SystemManager variable
 		else if(checkpoint == 1)
 		{
 			processing = true;
-			GameManager.instance.InitText(text.GetComponentInChildren<Text>(), GameObject.Find("Arrow"));
-			processing = false;
-			checkpoint = 2;
+			StartCoroutine(FadeObjectIn(new Image[]{profBase, professor}, 2)); 
 		} //end else if
 		//Begin scene
 		else if(checkpoint == 2)
 		{
 			processing = true;
 			//Attempt to display text
+			text.SetActive(true);
+			GameManager.instance.InitText(text.transform.GetChild(0), text.transform.GetChild(1));
 			if(GameManager.instance.DisplayText("Welcome to Pokemon Carousel! I am the Ringmaster " +
 			                                 "Melotta."))
 			{
@@ -428,7 +456,7 @@ public class SceneManager : MonoBehaviour
 			{
 				//Attempt to display text
 				if(GameManager.instance.DisplayText("This circus has attracted major gym leaders from " +
-					"arround the world! In fact, that's why you're here, isn't it?"))
+					"around the world! In fact, that's why you're here, isn't it?"))
 				{
 					checkpoint = 4;
 				} //end if
@@ -457,12 +485,11 @@ public class SceneManager : MonoBehaviour
 			if(Input.GetKeyDown(KeyCode.Return))
 			{
 				//Display name input
-				nameInput.SetActive(true);
-				nameInput.transform.GetChild(1).GetComponent<Text>().text = "Please enter your name.";
-				nameInput.transform.GetChild(2).GetComponent<Text>().text = "Player name:";
-				GameObject.Find("InputField").GetComponent<InputField>().text = "";
-				GameObject.Find("InputField").GetComponent<InputField>().ActivateInputField();
-				inputText = GameObject.Find("InputText").GetComponent<Text>();
+				input.SetActive(true);
+				input.transform.GetChild(2).GetComponent<Text>().text = "Please enter your name.";
+				input.transform.GetChild(0).GetComponent<Text>().text = "Player name:";
+				inputText.text = "";
+				inputText.ActivateInputField();
 				checkpoint = 6;
 			} //end if
 			processing = false;
@@ -471,16 +498,16 @@ public class SceneManager : MonoBehaviour
 		{
 			processing = true;
 			//Make sure text field is always active
-			if(nameInput.activeInHierarchy)
+			if(input.activeInHierarchy)
 			{
-				GameObject.Find("InputField").GetComponent<InputField>().ActivateInputField();
+				inputText.ActivateInputField();
 			} //end if
 			//Don't continue until player requests next text
 			if(Input.GetKeyDown(KeyCode.Return) && inputText.text.Length != 0)
 			{
 				//Convert input name to player's name
 				playerName = inputText.text;
-				nameInput.SetActive(false);
+				input.SetActive(false);
 				GameManager.instance.DisplayText("So your name is " + playerName + "?");
 				checkpoint = 7;
 			} //end if
@@ -494,16 +521,23 @@ public class SceneManager : MonoBehaviour
 			{
 				//Activate confirmation box
 				confirm.SetActive(true);
-				
+
+				//Get confirm's dimensions
+				Vector3[] test = new Vector3[4];
+				confirm.transform.GetChild(0).GetComponent<RectTransform>().GetWorldCorners(test);
+				float width = test[2].x - test[0].x;
+				float height = test[2].y - test[0].y;
+
 				//Reposition selection rect
 				selection.SetActive(true);
-				choiceNumber = 0;	
-				selection.GetComponent<RectTransform>().sizeDelta = 
-					new Vector2(GameObject.Find("Yes").GetComponent<RectTransform>().sizeDelta.x,
-					            GameObject.Find("Yes").GetComponent<RectTransform>().sizeDelta.y);
-				selection.transform.position = new Vector3(
-					confirm.transform.GetChild(0).transform.GetChild(choiceNumber).transform.position.x,
-					confirm.transform.GetChild(0).transform.GetChild(choiceNumber).transform.position.y, 0);
+				choiceNumber = 0;
+
+				//Resize to same as top choice
+				selection.GetComponent<RectTransform>().sizeDelta = new Vector2(width, height);
+				//Reposition to location of top choice, with 2 unit offset to center it
+				selection.transform.position = new Vector3(confirm.transform.GetChild(0).position.x,
+				                                           confirm.transform.GetChild(0).position.y,
+				                                           100);
 				//Continue to next section when selection rect is properly set
 				if(selection.GetComponent<RectTransform>().sizeDelta.x != 0)
 				{
@@ -521,15 +555,15 @@ public class SceneManager : MonoBehaviour
 				//Increase choice to show next option is highlighted
 				choiceNumber++;
 				//Loop back to start if it's higher than the amount of choices
-				if(choiceNumber >= 2)
+				if(choiceNumber > 1)
 				{
 					choiceNumber = 0;
 				} //end if
 				
 				//Reposition to choice location
 				selection.transform.position = new Vector3(
-					confirm.transform.GetChild(0).transform.GetChild(choiceNumber).transform.position.x,
-					confirm.transform.GetChild(0).transform.GetChild(choiceNumber).transform.position.y, 0);
+					confirm.transform.GetChild(choiceNumber).position.x,
+					confirm.transform.GetChild(choiceNumber).position.y, 100);
 			} //end if
 			
 			//If up arrow is pressed
@@ -545,8 +579,8 @@ public class SceneManager : MonoBehaviour
 				
 				//Resize to choice width
 				selection.transform.position = new Vector3(
-					confirm.transform.GetChild(0).transform.GetChild(choiceNumber).transform.position.x,
-					confirm.transform.GetChild(0).transform.GetChild(choiceNumber).transform.position.y, 0);
+					confirm.transform.GetChild(choiceNumber).position.x,
+					confirm.transform.GetChild(choiceNumber).position.y, 100);
 			} //end if
 			
 			//If an option was selected, process it
@@ -589,6 +623,7 @@ public class SceneManager : MonoBehaviour
 			//Don't continue until player requests next text
 			if(Input.GetKeyDown(KeyCode.Return) && !GameManager.instance.IsDisplaying())
 			{
+				text.SetActive(false);
 				checkpoint = 0;
 				GameManager.instance.Persist();
 				Application.LoadLevel("Intro");
@@ -694,7 +729,7 @@ public class SceneManager : MonoBehaviour
 	} //end IntroAnimation
 
 	//Fade-in animation
-	IEnumerator FadeInAnimation()
+	IEnumerator FadeInAnimation(int targetCheckpoint)
 	{
 		//Initialize color values
 		Color startColor = new Color (0, 0, 0, 1);
@@ -715,16 +750,16 @@ public class SceneManager : MonoBehaviour
 			yield return null;
 		} //end while
 
-		//Change to next checkpoint
-		checkpoint = tempCheckpoint;
+		//Move to next checkpoint
+		checkpoint = targetCheckpoint;
 
 		//End fade animation
-		processing = false;
 		playing = false;
-	} //end FadeInAnimation
+		processing = false;
+	} //end FadeInAnimation(int targetCheckpoint)
 
 	//Fade-out animation
-	IEnumerator FadeOutAnimation()
+	IEnumerator FadeOutAnimation(int targetCheckpoint)
 	{
 		//Initialize color values
 		Color startColor = new Color (0, 0, 0, 0);
@@ -737,6 +772,9 @@ public class SceneManager : MonoBehaviour
 		fade.gameObject.SetActive (true);
 		fade.color = startColor;
 
+		//Deactivate selection
+		selection.SetActive(false);
+
 		//Lerp color for specified time
 		while(fade.color.a != 1)
 		{
@@ -745,12 +783,95 @@ public class SceneManager : MonoBehaviour
 			yield return null;
 		} //end while
 
-		//Change to next checkpoint
-		checkpoint = tempCheckpoint;
+		//Move to next checkpoint
+		checkpoint = targetCheckpoint;
 
 		//End fade animation
-		processing = false;
 		playing = false;
-	} //end FadeOutAnimation
+		processing = false;
+	} //end FadeOutAnimation(int targetCheckpoint)
+
+	//Fades one or more objects into view. Assumes object is already active
+	IEnumerator FadeObjectIn(Image[] targetObject, int targetCheckpoint)
+	{
+		//Initialize color value containers
+		Color[] startColor = new Color[targetObject.Length];
+		Color[] endColor = new Color[targetObject.Length];
+
+		//Fill containers
+		for(int i = 0; i < targetObject.Length; i++)
+		{
+			startColor[i] = targetObject[i].color;
+			endColor[i] = new Color(startColor[i].r, startColor[i].g, startColor[i].b, 1);
+		} //end foreach
+
+		//Internal elapsed time
+		float elapsedTime = 0f;
+		
+		//Lerp color for specified time
+		while(targetObject[targetObject.Length-1].color.a != 1)
+		{
+			for(int i = 0; i < targetObject.Length; i++)
+			{
+				targetObject[i].color = Color.Lerp(startColor[i], endColor[i], 2* elapsedTime);
+			} //end for
+			elapsedTime+= Time.deltaTime;
+			yield return null;
+		} //end while
+		
+		//Move to next checkpoint
+		checkpoint = targetCheckpoint;
+		
+		//End fade animation
+		playing = false;
+		processing = false;
+	} //end FadeObjectIn(Image[] targetObject, int targetCheckpoint)
+
+	//Fades one or more objects out of view. Assumes object is already active
+	IEnumerator FadeObjectOut(Image[] targetObject, int targetCheckpoint)
+	{
+		//Initialize color value containers
+		Color[] startColor = new Color[targetObject.Length];
+		Color[] endColor = new Color[targetObject.Length];
+		
+		//Fill containers
+		for(int i = 0; i < targetObject.Length; i++)
+		{
+			startColor[i] = targetObject[i].color;
+			endColor[i] = new Color(startColor[i].r, startColor[i].g, startColor[i].b, 0);
+		} //end foreach
+		
+		//Internal elapsed time
+		float elapsedTime = 0f;
+		
+		//Lerp color for specified time
+		while(targetObject[targetObject.Length-1].color.a != 0)
+		{
+			for(int i = 0; i < targetObject.Length; i++)
+			{
+				targetObject[i].color = Color.Lerp(startColor[i], endColor[i], 2* elapsedTime);
+			} //end for
+			elapsedTime+= Time.deltaTime;
+			yield return null;
+		} //end while
+		
+		//Move to next checkpoint
+		checkpoint = targetCheckpoint;
+		
+		//End fade animation
+		playing = false;
+		processing = false;
+	} //end FadeObjectOut(Image[] targetObject, int targetCheckpoint)
+	#endregion
+
+	//Miscellaneous functions
+	#region Misc
+	//Use for soft resetting game
+	public void Reset()
+	{
+		checkpoint = 0;
+		processing = false;
+		StopAllCoroutines ();
+	} //end Reset
 	#endregion
 } //end SceneManager class

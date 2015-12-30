@@ -5,8 +5,8 @@ using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
-public class SystemManager : MonoBehaviour {
-
+public class SystemManager : MonoBehaviour 
+{
 	//Error logging
 	string errorLog;		//Location of error log
 	string errorData;		//The details of the error
@@ -36,8 +36,24 @@ public class SystemManager : MonoBehaviour {
 		errorLog = Environment.GetEnvironmentVariable ("USERPROFILE") + "/Saved Games/Pokemon Carousel/error.log";
 
 		//Append data if a file already exists
-		output = new StreamWriter (errorLog, true);
+		try
+		{
+			output = new StreamWriter (errorLog, true);
+		} //end try
+		//Manage exception
+		catch(System.Exception ex)
+		{
+			//If directory doesn't exist
+			if(ex.GetType() == typeof(DirectoryNotFoundException))
+			{
+				//Create directory
+				System.IO.Directory.CreateDirectory(Environment.GetEnvironmentVariable("USERPROFILE") + 
+				                                    "/Saved Games/Pokemon Carousel");
 
+				//Create error log
+				output = new StreamWriter (errorLog, true);
+			} //end if
+		} //end catch
 		//Send a starting line
 		LogErrorMessage (DateTime.Now.ToString () + " - Game was started.");
 
@@ -78,16 +94,16 @@ public class SystemManager : MonoBehaviour {
 
 	#region Text
 	//Used for text initialization
-	public void GetText(Text textArea, GameObject endArrow)
+	public void GetText(GameObject textArea, GameObject endArrow)
 	{
 		//Initialize text reference and gate
-		textComp = textArea;
+		textComp = textArea.GetComponent<Text>();
 		displaying = false;
 
 		//Disable arrow until text is finished
 		arrow = endArrow;
 		arrow.SetActive (false);
-	} //end Start
+	} //end GetText(GameObject textArea, GameObject endArrow)
 
 	//Display text
 	public bool PlayText(string textMessage)
@@ -104,7 +120,7 @@ public class SystemManager : MonoBehaviour {
 		message = textMessage;
 		StartCoroutine(TypeText ());
 		return true;
-	} //end PlayText
+	} //end PlayText(string textMessage)
 
 	//Whether the text has finished displaying
 	public bool GetDisplay()
@@ -184,14 +200,9 @@ public class SystemManager : MonoBehaviour {
 		//If not
 		else
 		{
-			if(!System.IO.Directory.Exists(Environment.GetEnvironmentVariable("USERPROFILE") + 
-			                                    "/Saved Games/Pokemon Carousel"))
-			{
-				System.IO.Directory.CreateDirectory(Environment.GetEnvironmentVariable("USERPROFILE") + 
-				                                    "/Saved Games/Pokemon Carousel");
-			} //end if
 			FileStream pf = File.Create (dataLocation + "game.dat");
 			PersistentSystem pfd = new PersistentSystem ();
+			pfd.version = GameManager.instance.VersionNumber;
 			pfd.pName = pName;
 			pfd.bups = 0;
 			pfd.pBadges = pBadges;
@@ -283,7 +294,7 @@ public class SystemManager : MonoBehaviour {
 		float minutes = Mathf.Floor (seconds / 60f) + pMinutes;
 
 		//Calculate total hours
-		float hours = Mathf.Floor(minutes/60f) + pHours;
+		float hours = Mathf.Floor(minutes / 60f) + pHours;
 
 		//Set hours
 		pHours = (int)hours;
@@ -302,10 +313,12 @@ public class SystemManager : MonoBehaviour {
 [Serializable]
 class PersistentSystem
 {
+	public float version;
 	public int bups;
 	public string pName;
 	public int pBadges;
 	public int pHours;
 	public int pMinutes;
 	public int pSeconds;
+    public Pokemon aPokemon;
 } //end PersistentSystem class

@@ -4,6 +4,11 @@ using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
+	//SETTING VARIABLES
+	public float VersionNumber = 0.1f;
+	public int NumberOfMarkings = 4;
+	public int NumberOfRibbons = 80;
+
 	//Singleton handle
 	public static GameManager instance = null;
 
@@ -62,7 +67,6 @@ public class GameManager : MonoBehaviour
 			{
 				scenes.Reset();
 				Application.LoadLevel("Intro");
-				Debug.Log("Intro was loaded");
 				return;
 			} //end if
 
@@ -89,13 +93,37 @@ public class GameManager : MonoBehaviour
 		} //end catch(System.Exception ex)
 	} //end Update
 
+	//Menu functions
+	#region Menu
+	//Loads main game with current save file
+	public void Continue()
+	{
+		scenes.Reset ();
+		Application.LoadLevel ("Intro");
+	} //end Continue
+
+	//Starts a new game
+	public void NewGame()
+	{
+		scenes.Reset ();
+		Application.LoadLevel ("NewGame");
+	} //end NewGame
+
+	//Display game options
+	public void Options()
+	{
+		scenes.Reset ();
+		Application.LoadLevel ("Intro");
+	} //end Options
+	#endregion
+
 	//System Manager functions
 	#region SystemManager
 	//Initializes text
-	public void InitText(Text textArea, GameObject endArrow)
+	public void InitText(Transform textArea, Transform endArrow)
 	{
-		sysm.GetText (textArea, endArrow);
-	} //end InitText(Text textArea, GameObject endArrow)
+		sysm.GetText (textArea.gameObject, endArrow.gameObject);
+	} //end InitText(GameObject textArea, GameObject endArrow)
 
 	//Displays a line of speech
 	public bool DisplayText(string text)
