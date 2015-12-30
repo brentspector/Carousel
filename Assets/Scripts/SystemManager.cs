@@ -1,13 +1,19 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.UI;
 using System;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
-public class SystemManager : MonoBehaviour {
+public class SystemManager : MonoBehaviour 
+{
+	//Error logging
+	string errorLog;		//Location of error log
+	string errorData;		//The details of the error
+	StreamWriter output;	//The error writer
 
 	//Persistent variables
+	string dataLocation;	//Location of persistent data
 	int bups;				//Number of bups
 	string pName;			//The player's name
 	int pBadges;			//Amount of badges player has
@@ -22,18 +28,82 @@ public class SystemManager : MonoBehaviour {
 	GameObject arrow;		//Arrow to signal end of text
 	bool displaying;		//If text is currently being output
 
+	#region ErrorLog
+	//Initialize the error log
+	public bool InitErrorLog()
+	{
+		//Init errorLog location
+		errorLog = Environment.GetEnvironmentVariable ("USERPROFILE") + "/Saved Games/Pokemon Carousel/error.log";
+
+		//Append data if a file already exists
+		try
+		{
+			output = new StreamWriter (errorLog, true);
+		} //end try
+		//Manage exception
+		catch(System.Exception ex)
+		{
+			//If directory doesn't exist
+			if(ex.GetType() == typeof(DirectoryNotFoundException))
+			{
+				//Create directory
+				System.IO.Directory.CreateDirectory(Environment.GetEnvironmentVariable("USERPROFILE") + 
+				                                    "/Saved Games/Pokemon Carousel");
+
+				//Create error log
+				output = new StreamWriter (errorLog, true);
+			} //end if
+		} //end catch
+		//Send a starting line
+		LogErrorMessage (DateTime.Now.ToString () + " - Game was started.");
+
+		//Report whether successful
+		if(output != null)
+		{
+			return true;
+		} //end if
+		else
+		{
+			return false;
+		} //end if
+	} //end InitErrorLog
+
+	//Sends a message to error log
+	public void LogErrorMessage(string message)
+	{
+		//Make sure error log exists
+		if(output != null)
+		{
+			output.WriteLine(message);
+			output.Flush();
+			
+		} //end if
+	} //end LogErrorMessage(string message)
+
+	//Closes error log
+	void CloseErrorLog()
+	{
+		//Make sure an error log exists
+		if(output != null)
+		{
+			output.Close();
+			output = null;
+		} //end if
+	} //end CloseErrorLog
+	#endregion
+
 	#region Text
 	//Used for text initialization
-	public void GetText(Text textArea, GameObject endArrow)
+	public void GetText(GameObject textArea, GameObject endArrow)
 	{
 		//Initialize text reference and gate
-		textComp = textArea;
+		textComp = textArea.GetComponent<Text>();
 		displaying = false;
 
 		//Disable arrow until text is finished
 		arrow = endArrow;
 		arrow.SetActive (false);
-	} //end Start
+	} //end GetText(GameObject textArea, GameObject endArrow)
 
 	//Display text
 	public bool PlayText(string textMessage)
@@ -45,11 +115,12 @@ public class SystemManager : MonoBehaviour {
 		} //end if
 
 		//Setup message and begin typewriting
-		message = textMessage;
 		displaying = true;
+		arrow.SetActive (false);
+		message = textMessage;
 		StartCoroutine(TypeText ());
 		return true;
-	} //end PlayText
+	} //end PlayText(string textMessage)
 
 	//Whether the text has finished displaying
 	public bool GetDisplay()
@@ -107,16 +178,14 @@ public class SystemManager : MonoBehaviour {
 		BinaryFormatter bf = new BinaryFormatter ();
 		CalcTime ();
 		//If a file is regional
-		if(File.Exists(Environment.GetEnvironmentVariable("USERPROFILE") + "/Saved Games/Pokemon Carousel/game.dat"))
+		if(File.Exists(dataLocation + "game.dat"))
 		{
 			bups++;
 			if(bups > 10)
 			{
-				File.Delete(Environment.GetEnvironmentVariable("USERPROFILE") + "/Saved Games/Pokemon Carousel/" + 
-				            pName + (bups-10) + ".dat");
+				File.Delete(dataLocation + pName + (bups-10) + ".dat");
 			} //end if
-			FileStream npf = File.Create (Environment.GetEnvironmentVariable("USERPROFILE") + 
-			                              "/Saved Games/Pokemon Carousel/gameT.dat");
+			FileStream npf = File.Create (dataLocation + "gameT.dat");
 			PersistentSystem npfd = new PersistentSystem ();
 			npfd.pName = pName;
 			npfd.bups = bups;
@@ -126,24 +195,14 @@ public class SystemManager : MonoBehaviour {
 			npfd.pSeconds = pSeconds;
 			bf.Serialize (npf, npfd);
 			npf.Close ();
-			File.Replace(Environment.GetEnvironmentVariable("USERPROFILE") + "/Saved Games/Pokemon Carousel/gameT.dat", 
-			             Environment.GetEnvironmentVariable("USERPROFILE") + "/Saved Games/Pokemon Carousel/game.dat",
-			             Environment.GetEnvironmentVariable("USERPROFILE") + "/Saved Games/Pokemon Carousel/" 
-			             + pName + bups + ".dat");
-
+			File.Replace(dataLocation + "gameT.dat", dataLocation+ "game.dat", dataLocation + pName + bups + ".dat");
 		} //end if
 		//If not
 		else
 		{
-			if(!System.IO.Directory.Exists(Environment.GetEnvironmentVariable("USERPROFILE") + 
-			                                    "/Saved Games/Pokemon Carousel"))
-			{
-				System.IO.Directory.CreateDirectory(Environment.GetEnvironmentVariable("USERPROFILE") + 
-				                                    "/Saved Games/Pokemon Carousel");
-			} //end if
-			FileStream pf = File.Create (Environment.GetEnvironmentVariable("USERPROFILE") + 
-			                             "/Saved Games/Pokemon Carousel/game.dat");
+			FileStream pf = File.Create (dataLocation + "game.dat");
 			PersistentSystem pfd = new PersistentSystem ();
+			pfd.version = GameManager.instance.VersionNumber;
 			pfd.pName = pName;
 			pfd.bups = 0;
 			pfd.pBadges = pBadges;
@@ -158,12 +217,14 @@ public class SystemManager : MonoBehaviour {
 	//Loads data from binary file
 	public bool GetPersist()
 	{
+		//Initalize data location
+		dataLocation = Environment.GetEnvironmentVariable ("USERPROFILE") + "/Saved Games/Pokemon Carousel/";
+
 		//Make sure file is regional
-		if(File.Exists(Environment.GetEnvironmentVariable("USERPROFILE") + "/Saved Games/Pokemon Carousel/game.dat"))
+		if(File.Exists(dataLocation + "game.dat"))
 		{
 			BinaryFormatter bf = new BinaryFormatter ();
-			FileStream pf = File.Open (Environment.GetEnvironmentVariable("USERPROFILE") + 
-			                           "/Saved Games/Pokemon Carousel/game.dat", FileMode.Open);
+			FileStream pf = File.Open (dataLocation + "game.dat", FileMode.Open);
 			PersistentSystem pfd = (PersistentSystem)bf.Deserialize(pf);
 			pf.Close();
 			pName = pfd.pName;
@@ -233,7 +294,7 @@ public class SystemManager : MonoBehaviour {
 		float minutes = Mathf.Floor (seconds / 60f) + pMinutes;
 
 		//Calculate total hours
-		float hours = Mathf.Floor(minutes/60f) + pHours;
+		float hours = Mathf.Floor(minutes / 60f) + pHours;
 
 		//Set hours
 		pHours = (int)hours;
@@ -252,10 +313,12 @@ public class SystemManager : MonoBehaviour {
 [Serializable]
 class PersistentSystem
 {
+	public float version;
 	public int bups;
 	public string pName;
 	public int pBadges;
 	public int pHours;
 	public int pMinutes;
 	public int pSeconds;
+    public Pokemon aPokemon;
 } //end PersistentSystem class
