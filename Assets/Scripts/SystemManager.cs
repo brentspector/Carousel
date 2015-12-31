@@ -233,6 +233,7 @@ public class SystemManager : MonoBehaviour
 			pHours = pfd.pHours;
 			pMinutes = pfd.pMinutes;
 			pSeconds = pfd.pSeconds;
+            Debug.Log(pfd.aPokemon.GetValues());
 			sTime = Time.time;
 			return true;
 		} //end if

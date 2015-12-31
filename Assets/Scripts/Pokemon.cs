@@ -15,6 +15,7 @@ public class Pokemon
 	int specialA;			//Standard special attack
 	int specialD;			//Standard special defense
 	int speed;				//Standard speed
+    int totalEV;            //Total amount of EVs the pokemon currently has
 	int[] IV;				//Individual values array
 	int[] EV;				//Effort values array
 
@@ -57,6 +58,14 @@ public class Pokemon
 		{
 			natSpecies = species;
 		} //end else
+        currentHP = 0;
+        totalHP = 0;
+        attack = 0;
+        defense = 0;
+        specialA = 0;
+        specialD = 0;
+        speed = 0;
+        totalEV = 0;
 		trainerID = tID;
 		currentEXP = CalculateEXP (level);
 		Item = item;
@@ -121,7 +130,7 @@ public class Pokemon
             if(values[0] < 0 || values[0] > 31)
             {
                 //Fill specified IV with random IV
-                if(index > -1 && index < 5)
+                if(index > -1 && index < 6)
                 {
                     IV[index] = Random.Range(0, 31);
                 } //end if
@@ -137,7 +146,7 @@ public class Pokemon
             else
             {
                 //Fill specified index with specified value
-                if(index > -1 && index < 5)
+                if(index > -1 && index < 6)
                 {
                     IV[index] = values[0];
                 } //end if
@@ -176,6 +185,265 @@ public class Pokemon
             } //end for
         } //end else
 	} //end ChangeIVs(int[] values, int index = -1)
+
+    //Change EVs of pokemon
+    /* NOTE: Total EVs allowed is 510. Any given value must 
+     * adhere to that requirement or the change will be
+     * denied. If only 1 value is provided, all EVs will be
+     * set to that value, up to the maximum, starting with HP.
+     * If a value is less than 0, a random EV will be given for
+     * that EV, or all EVs will be given a random amount should
+     * only 1 value be provided. If the value is greater than
+     * 255, a standard amount of 85 will be applied. If an 
+     * invalid index is provided the EV will default to standard 
+     * non-index method.
+     */
+    public void ChangeEVs(int[] values, int index = -1)
+    {
+        //1 value provided
+        if (values.Length == 1)
+        {
+            //If the value is invalid
+            if(values[0] < 0)
+            {
+                //If an index is provided
+                if(index > -1 && index < 6)
+                {
+                    //Make sure value is within maximum value
+                    int tempCount = totalEV - EV[index];
+                    int tempRand = Random.Range(0, 255);
+                    if((tempCount + tempRand) <= 510)
+                    {
+                        totalEV += tempRand - EV[index];
+                        EV[index] = tempRand;
+                    } //end if
+                    else
+                    {
+                        tempRand = 510 - tempCount;
+                        totalEV = 510;
+                        EV[index] = tempRand;
+                    } //end else
+                } //end if
+                //Valid index was not provided
+                else
+                {
+                    //Set all EVs to a random amount
+                    totalEV = 0;
+                    for(int i = 0; i < 6; i++)
+                    {
+                        //Make a new random amount
+                        int tempRand = Random.Range(0, 255);
+
+                        //Make sure value is withing maximum value
+                        if((totalEV + tempRand) <= 510)
+                        {
+                            EV[i] = tempRand;
+                            totalEV += tempRand;
+                        } //end if
+                        //If not, cap the value set rest to 0
+                        else
+                        {
+                            tempRand = 510 - totalEV;
+                            totalEV = 510;
+                            EV[i] = tempRand;
+
+                            //Loop through rest and set to 0
+                            for(int r = i+1; r < 6; r++)
+                            {
+                                EV[r] = 0;
+                            } //end for
+
+                            break;
+                        } //end else
+                    } //end for
+                } //end else
+            } //end if
+            //Standard amount of 85 to be given
+            else if(values[0] > 255)
+            {
+                //If a valid index is given
+                if(index > -1 && index < 6)
+                {
+                    //Make sure value is within maximum value
+                    int tempCount = totalEV - EV[index];
+                    if((tempCount + 85) <= 510)
+                    {
+                        totalEV += 85 - EV[index];
+                        EV[index] = 85;
+                    } //end if
+                    else
+                    {
+                        int tempNum = 510 - tempCount;
+                        totalEV = 510;
+                        EV[index] = tempNum;
+                    } //end else
+                } //end if
+                //No valid index given
+                else
+                {
+                    //Give all EVs a value of 85
+                    totalEV = 510;
+                    for(int i = 0; i < 6; i++)
+                    {
+                        EV[i] = 85;
+                    } //end for
+                } //end else
+            } //end else if
+            //Set EVs to the amount given, up to 510 total
+            else
+            {
+                //If a valid index was given
+                if(index > -1 && index < 6)
+                {
+                    int tempCount = totalEV - EV[index];
+                    //Make sure value doesn't exceed 510
+                    if((tempCount + values[0]) <= 510)
+                    {
+                        totalEV += values[0] - EV[index];
+                        EV[index] = values[0];
+                    } //end if
+                    else
+                    {
+                        int tempNum = 510 - totalEV; 
+                        totalEV = 510;
+                        EV[index] = tempNum;
+                    } //end else
+                } //end if
+                //No vald index given
+                else
+                {
+                    //Set all EVs to value given
+                    totalEV = 0;
+                    for(int i = 0; i < 6; i++)
+                    {
+                        //Make sure values added doesn't exceed total
+                        if((totalEV + values[0]) <= 510)
+                        {
+                            totalEV += values[0];
+                            EV[i] = values[0];
+                        } //end if
+                        else
+                        {
+                            int tempNum = 510 - totalEV;
+                            totalEV = 510;
+                            EV[i] = tempNum;
+
+                            //Loop through and set all remaining to 0
+                            for(int r = i+1; r < 6; r++)
+                            {
+                                EV[r] = 0;
+                            } //end for
+                            
+                            break;
+                        } //end else
+                    } //end for
+                } //end else
+            } //end else
+        } //end if
+        //Mulitple values provided
+        else
+        {
+            //Initialize totalEV count
+            totalEV = 0;
+
+            //Fill in missing values
+            if(values.Length < 6)
+            {
+                for(int i = values.Length - 1; i < 6; i++)
+                {
+                    values[i] = 0;
+                } //end for
+            } //end if
+
+            //Fill in given values
+            for (int i = 0; i < 6; i++)
+            {
+                //Make sure value doesn't exceed maximum
+                if((totalEV + values[i]) <= 510)
+                {
+                    totalEV += values[i];
+                    EV[i] = values[i];
+                } //end if
+                else
+                {
+                    int tempNum = 510 - totalEV;
+                    totalEV = 510;
+                    EV[i] = tempNum;
+
+                    //Loop through and set all remaining to 0
+                    for(int r = i+1; r < 6; r++)
+                    {
+                        EV[r] = 0;
+                    } //end for
+                    
+                    break;
+                } //end else
+            } //end if
+        } //end else
+    } //end ChangeEVs(int[] values, int index = -1)
+
+    //Change moves of pokemon
+    /* NOTE: Moves are replaced from front to back. Thus providing
+     * only 1 value will only replace the first moveslot. Provide
+     * a valid index number to change that specific moveslot
+     * 
+     */
+    public void ChangeMoves(int[] values, int index = -1)
+    {
+        //If a valid index is provided
+        if (index > -1 && index < 4)
+        {
+            moves[index] = values[0];
+        } //end if
+        //No valid index given
+        else
+        {
+            for(int i = 0; i < values.Length; i++)
+            {
+                moves[i] = values[i];
+            } //end for
+        } //end else
+    } //end ChangeMoves(int[] values, int index = -1)
+
+    //Given initial moves, including any special moves to be saved under first moves
+    public void GiveInitialMoves(int[] values)
+    {
+        //Fill in missing values
+        if (values.Length < 4)
+        {
+            for(int i = values.Length - 1; i < 4; i++)
+            {
+                values[i] = 0; 
+            } //end for
+        } //end if
+
+        //Loop through and set moves
+        for(int i = 0; i < 4; i++)
+        {
+            moves[i] = values[i];
+            firstMoves[i] = values[i];
+        } //end for
+    } //end GiveInitialMoves(int[] moves)
+
+    //Change markings
+    public void ChangeMarkings(bool value, int index)
+    {
+        //Make sure index is valid
+        if (index > -1 && index < markings.Length)
+        {
+            markings[index] = value;
+        } //end if
+    } //end ChangeMarkings(bool value, int index)
+
+    //Changes ribbons
+    public void ChangeRibbons(bool value, int index)
+    {
+        //Make sure index is valid
+        if (index > -1 && index < ribbons.Length)
+        {
+            ribbons[index] = value;
+        } //end if
+    } //end ChangeRibbons(bool value, int index)
 
     //Test funtion to varify values are saved
 	public string GetValues()
@@ -291,6 +559,18 @@ public class Pokemon
 			speed = value;
 		} //end set
 	} //end Speed
+
+    public int TotalEVs
+    {
+        get
+        {
+            return totalEV;
+        } //end get
+        set
+        {
+            totalEV = value;
+        } //end set
+    } //end TotalEVs
 
 	public int GetIV(int index)
 	{
