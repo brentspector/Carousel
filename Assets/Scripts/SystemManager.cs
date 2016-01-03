@@ -1,15 +1,18 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using System;
+using System.Collections;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
 public class SystemManager : MonoBehaviour 
 {
+    //INI reading
+    string[] contents;      //Contents of the ini
+    bool processing = false;//Whether INI is currently being read
+
 	//Error logging
 	string errorLog;		//Location of error log
-	string errorData;		//The details of the error
 	StreamWriter output;	//The error writer
 
 	//Persistent variables
@@ -27,6 +30,67 @@ public class SystemManager : MonoBehaviour
 	Text textComp;			//Text currently output
 	GameObject arrow;		//Arrow to signal end of text
 	bool displaying;		//If text is currently being output
+
+    #region INIReading
+    public void StartINI(string iniLocation)
+    {
+        if (!processing)
+        {
+            processing = true;
+            contents = File.ReadAllLines(iniLocation);
+            processing = false;
+        } //end if
+    } //end StartINI(string iniLocation)
+
+    public T ReadINI<T>(string section, string key)
+    {
+        //System.Diagnostics.Stopwatch myStopwatch = new System.Diagnostics.Stopwatch ();
+        //myStopwatch.Start ();
+        object value = null;
+        string sectionName = "[" + section + "]";
+        for (int i = 0; i < contents.Length; i++)
+        {
+            //Check for section
+            if (contents[i] == sectionName)
+            {
+                //Search through section
+                while(true)
+                {
+                    //Increment and break if line starts with bracket
+                    i++;
+                    if(i >= contents.Length || contents[i].StartsWith("["))
+                    {
+                        break;
+                    } //end if
+
+                    //Check for key
+                    if (contents[i].StartsWith((key)))
+                    {
+                        //Break line at delimiter, return 2nd part, break loop
+                        string[] result = contents[i].Split ('=');
+                        value = result [1];
+                        break;
+                    } //end if
+                } //end while
+
+                if(value == null)
+                {
+                    value = default(T);
+                } //end if
+                
+                //Section finished search
+                break;
+            } //end if
+        } //end for
+       // myStopwatch.Stop ();
+       
+       // Debug.Log (myStopwatch.ElapsedMilliseconds + " elapsed");
+
+        //Return the information in the type requested
+        return (T)Convert.ChangeType (value, typeof(T));
+    } //end ReadINI(string section, string key)
+
+    #endregion
 
 	#region ErrorLog
 	//Initialize the error log
@@ -80,16 +144,15 @@ public class SystemManager : MonoBehaviour
 		} //end if
 	} //end LogErrorMessage(string message)
 
-	//Closes error log
-	void CloseErrorLog()
-	{
-		//Make sure an error log exists
-		if(output != null)
-		{
-			output.Close();
-			output = null;
-		} //end if
-	} //end CloseErrorLog
+    //Closes error log file
+    void OnApplicationQuit()
+    {
+        if (output != null)
+        {
+            output.Close();
+            output = null;
+        } //end if
+    } //end OnApplicationQuit
 	#endregion
 
 	#region Text

@@ -358,25 +358,39 @@ public class Pokemon
             //Fill in given values
             for (int i = 0; i < 6; i++)
             {
-                //Make sure value doesn't exceed maximum
-                if((totalEV + values[i]) <= 510)
+                //If the value is invalid
+                if(values[i] < 0)
                 {
-                    totalEV += values[i];
-                    EV[i] = values[i];
+
                 } //end if
+                //If the value is invalid
+                else if(values[i] > 255)
+                {
+
+                } //end else if
+                //The value is valid
                 else
                 {
-                    int tempNum = 510 - totalEV;
-                    totalEV = 510;
-                    EV[i] = tempNum;
-
-                    //Loop through and set all remaining to 0
-                    for(int r = i+1; r < 6; r++)
+                    //Make sure value doesn't exceed maximum
+                    if((totalEV + values[i]) <= 510)
                     {
-                        EV[r] = 0;
-                    } //end for
-                    
-                    break;
+                        totalEV += values[i];
+                        EV[i] = values[i];
+                    } //end if
+                    else
+                    {
+                        int tempNum = 510 - totalEV;
+                        totalEV = 510;
+                        EV[i] = tempNum;
+
+                        //Loop through and set all remaining to 0
+                        for(int r = i+1; r < 6; r++)
+                        {
+                            EV[r] = 0;
+                        } //end for
+                        
+                        break;
+                    } //end else
                 } //end else
             } //end if
         } //end else

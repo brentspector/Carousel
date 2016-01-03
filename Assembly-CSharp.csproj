@@ -47,7 +47,7 @@
   <ItemGroup>
      <Compile Include="Assets\Scripts\AI.cs" />
      <Compile Include="Assets\Scripts\ButtonFunctions.cs" />
-     <Compile Include="Assets\Scripts\DataEnums.cs" />
+     <Compile Include="Assets\Scripts\DataContents.cs" />
      <Compile Include="Assets\Scripts\Field.cs" />
      <Compile Include="Assets\Scripts\GameManager.cs" />
      <Compile Include="Assets\Scripts\Loader.cs" />
