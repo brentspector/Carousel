@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System;
 using System.Collections;
 using System.IO;
+using System.IO.IsolatedStorage;
 using System.Runtime.Serialization.Formatters.Binary;
 
 public class SystemManager : MonoBehaviour 
@@ -32,7 +33,7 @@ public class SystemManager : MonoBehaviour
 	bool displaying;		//If text is currently being output
 
     #region INIReading
-    public void StartINI(string iniLocation)
+    public void GetContents(string iniLocation)
     {
         if (!processing)
         {
@@ -40,7 +41,7 @@ public class SystemManager : MonoBehaviour
             contents = File.ReadAllLines(iniLocation);
             processing = false;
         } //end if
-    } //end StartINI(string iniLocation)
+    } //end GetContents(string iniLocation)
 
     public T ReadINI<T>(string section, string key)
     {
@@ -90,6 +91,11 @@ public class SystemManager : MonoBehaviour
         return (T)Convert.ChangeType (value, typeof(T));
     } //end ReadINI(string section, string key)
 
+    //Returns all parts in a CSV line
+    public string[] ReadCSV(int section)
+    {
+        return contents [section].Split(',');
+    } //end ReadCSV(int section)
     #endregion
 
 	#region ErrorLog
@@ -99,28 +105,31 @@ public class SystemManager : MonoBehaviour
 		//Init errorLog location
 		errorLog = Environment.GetEnvironmentVariable ("USERPROFILE") + "/Saved Games/Pokemon Carousel/error.log";
 
-		//Append data if a file already exists
-		try
-		{
-			output = new StreamWriter (errorLog, true);
-		} //end try
-		//Manage exception
-		catch(System.Exception ex)
-		{
-			//If directory doesn't exist
-			if(ex.GetType() == typeof(DirectoryNotFoundException))
-			{
-				//Create directory
-				System.IO.Directory.CreateDirectory(Environment.GetEnvironmentVariable("USERPROFILE") + 
-				                                    "/Saved Games/Pokemon Carousel");
+        if (Directory.Exists (Environment.GetEnvironmentVariable ("USERPROFILE") + "/Saved Games/Pokemon Carousel"))
+        {
+            //Create or get errorLog
+            output = new StreamWriter (errorLog, true);
+        } //end if
+        else
+        {
+            try
+            {
+                //Create directory
+                Directory.CreateDirectory(Environment.GetEnvironmentVariable ("USERPROFILE") + 
+                                          "/Saved Games/Pokemon Carousel");
 
-				//Create error log
-				output = new StreamWriter (errorLog, true);
-			} //end if
-		} //end catch
+                //Create or get errorLog
+                output = new StreamWriter (errorLog, true);
+            } //end try
+            catch(SystemException ex)
+            {
+                Debug.LogError("Could not create directory because " + ex.ToString());
+            } //end catch
+        } //end else
+
 		//Send a starting line
 		LogErrorMessage (DateTime.Now.ToString () + " - Game was started.");
-
+       
 		//Report whether successful
 		if(output != null)
 		{
@@ -296,7 +305,6 @@ public class SystemManager : MonoBehaviour
 			pHours = pfd.pHours;
 			pMinutes = pfd.pMinutes;
 			pSeconds = pfd.pSeconds;
-            Debug.Log(pfd.aPokemon.GetValues());
 			sTime = Time.time;
 			return true;
 		} //end if
@@ -383,6 +391,5 @@ class PersistentSystem
 	public int pBadges;
 	public int pHours;
 	public int pMinutes;
-	public int pSeconds;
-    public Pokemon aPokemon;
+    public int pSeconds;
 } //end PersistentSystem class

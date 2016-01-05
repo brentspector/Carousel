@@ -7,14 +7,17 @@ using Random = UnityEngine.Random;
 [Serializable]
 public class Pokemon
 {
+    //Contains database of pokemon data
+    DataContents dataContents;
+
 	//Stats
 	int currentHP;			//Current HP
 	int totalHP;			//Max HP
 	int attack;				//Standard attack
 	int defense;			//Standard defense
+    int speed;              //Standard speed
 	int specialA;			//Standard special attack
 	int specialD;			//Standard special defense
-	int speed;				//Standard speed
     int totalEV;            //Total amount of EVs the pokemon currently has
 	int[] IV;				//Individual values array
 	int[] EV;				//Effort values array
@@ -24,6 +27,7 @@ public class Pokemon
 	int personalID;			//Defines a specific pokemon
 	int trainerID;			//ID of trainer who obtained it first
 	int currentEXP;			//Current EXP of pokemon
+    int currentLevel;       //Relative level of pokemon
 	int item;				//What item is being held
 	int status;				//What status the pokemon is under
 	int statusCount;		//Turns until awaken/turns of toxic
@@ -58,16 +62,10 @@ public class Pokemon
 		{
 			natSpecies = species;
 		} //end else
-        currentHP = 0;
-        totalHP = 0;
-        attack = 0;
-        defense = 0;
-        specialA = 0;
-        specialD = 0;
-        speed = 0;
         totalEV = 0;
 		trainerID = tID;
 		currentEXP = CalculateEXP (level);
+        currentLevel = level;
 		Item = item;
 		ballUsed = ball;
 		obtainType = oType;
@@ -89,14 +87,14 @@ public class Pokemon
 
 		for(int i = 0; i < 6; i++)
 		{
-			IV[i] = 0;
+            IV[i] = 0;
 			EV[i] = 0;
 		} //end for
 
 		for(int i = 0; i < 4; i++)
 		{
-			moves[i] = 0;
-			firstMoves[i] = 0;
+			moves[i] = -1;
+			firstMoves[i] = -1;
 		} //end for
 
 		for(int i = 0; i < markings.Length; i++)
@@ -108,6 +106,13 @@ public class Pokemon
 		{
 			ribbons[i] = false;
 		} //end for
+
+        //Initialize any values that can be given from data
+        dataContents = GameManager.instance.GetDataContents ();
+        ChangeIVs (new int[] {-1});
+        CalculateStats ();
+        currentHP = totalHP;
+        GiveInitialMoves (new int[] {-1, -1, -1, -1});
 	} //end Pokemon constructor
 
 	//Change IVs of pokemon
@@ -164,10 +169,22 @@ public class Pokemon
             //Fill in  missing values
             if(values.Length < 6)
             {
-                for(int i = values.Length-1; i < 6; i++)
+                //Create new 6 int long array
+                int[] fixedValues = new int[6]; 
+
+                //Fill in fixedValues with given values
+                for(int i = 0; i < values.Length; i++)
                 {
-                    values[i] = Random.Range(0, 31);
+                    fixedValues[i] = values[i];
                 } //end for
+
+                //Fill in rest with a random number
+                for(int i = values.Length; i < 6; i++)
+                {
+                    fixedValues[i] = Random.Range(0, 31);
+                } //end for
+
+                values = fixedValues;
             } //end if
 
             //Fill in values
@@ -187,23 +204,26 @@ public class Pokemon
 	} //end ChangeIVs(int[] values, int index = -1)
 
     //Change EVs of pokemon
-    /* NOTE: Total EVs allowed is 510. Any given value must 
-     * adhere to that requirement or the change will be
-     * denied. If only 1 value is provided, all EVs will be
-     * set to that value, up to the maximum, starting with HP.
-     * If a value is less than 0, a random EV will be given for
-     * that EV, or all EVs will be given a random amount should
-     * only 1 value be provided. If the value is greater than
-     * 255, a standard amount of 85 will be applied. If an 
-     * invalid index is provided the EV will default to standard 
-     * non-index method.
+    /* NOTE: 
+     * TotalEVs maxes at 510.
+     * Individual EVs max at 255.
+     * When providing 1 value
+     * Negative value with index sets that index to a random EV
+     * Negative value without index sets all EVs to random EV
+     * Excessive value with index sets that index to standard 85
+     * Excessive value without index sets all EVs to 85
+     * Acceptable value with index sets that index to that value
+     * Acceptable value without index sets all EVs to that value
+     * When providing more than 1 value
+     * If less than 6 values given, a 0 will be placed in empty slots
+     * Otherwise it follows single EV methods, except ignores index param
      */
     public void ChangeEVs(int[] values, int index = -1)
     {
         //1 value provided
         if (values.Length == 1)
         {
-            //If the value is invalid
+            //If the value is invalid, so give random value
             if(values[0] < 0)
             {
                 //If an index is provided
@@ -349,24 +369,79 @@ public class Pokemon
             //Fill in missing values
             if(values.Length < 6)
             {
-                for(int i = values.Length - 1; i < 6; i++)
+                //Create new 6 int long array
+                int[] fixedValues = new int[6]; 
+                
+                //Fill in fixedValues with given values
+                for(int i = 0; i < values.Length; i++)
                 {
-                    values[i] = 0;
+                    fixedValues[i] = values[i];
                 } //end for
+                
+                //Fill in rest with a random number
+                for(int i = values.Length; i < 6; i++)
+                {
+                    fixedValues[i] = Random.Range(0, 255);
+                } //end for
+                
+                values = fixedValues;
             } //end if
 
             //Fill in given values
             for (int i = 0; i < 6; i++)
             {
+                totalEV = 0;
+
                 //If the value is invalid
                 if(values[i] < 0)
                 {
+                    //Make sure value is within maximum value
+                    int tempCount = totalEV;
+                    int tempRand = Random.Range(0, 255);
+                    if((tempCount + tempRand) <= 510)
+                    {
+                        totalEV += tempRand;
+                        EV[i] = tempRand;
+                    } //end if
+                    else
+                    {
+                        tempRand = 510 - tempCount;
+                        totalEV = 510;
+                        EV[i] = tempRand;
 
+                        //Loop through and set all remaining to 0
+                        for(int r = i+1; r < 6; r++)
+                        {
+                            EV[r] = 0;
+                        } //end for
+                        
+                        break;
+                    } //end else
                 } //end if
                 //If the value is invalid
                 else if(values[i] > 255)
                 {
+                    //Make sure value is within maximum value
+                    int tempCount = totalEV;
+                    if((tempCount + 85) <= 510)
+                    {
+                        totalEV += 85;
+                        EV[i] = 85;
+                    } //end if
+                    else
+                    {
+                        int tempNum = 510 - tempCount;
+                        totalEV = 510;
+                        EV[index] = tempNum;
 
+                        //Loop through and set all remaining to 0
+                        for(int r = i+1; r < 6; r++)
+                        {
+                            EV[r] = 0;
+                        } //end for
+                        
+                        break;
+                    } //end else
                 } //end else if
                 //The value is valid
                 else
@@ -420,22 +495,84 @@ public class Pokemon
     } //end ChangeMoves(int[] values, int index = -1)
 
     //Given initial moves, including any special moves to be saved under first moves
+    //NOTE: A value of -1 will give the last non-duplicate level-up move available.
+    //If no level up move is available, it will be left blank
     public void GiveInitialMoves(int[] values)
     {
         //Fill in missing values
         if (values.Length < 4)
         {
-            for(int i = values.Length - 1; i < 4; i++)
+            //Create new 6 int long array
+            int[] fixedValues = new int[4]; 
+            
+            //Fill in fixedValues with given values
+            for(int i = 0; i < values.Length; i++)
             {
-                values[i] = 0; 
+                fixedValues[i] = values[i];
             } //end for
+            
+            //Fill in rest with a random number
+            for(int i = values.Length; i < 4; i++)
+            {
+                fixedValues[i] = -1;
+            } //end for
+            
+            values = fixedValues;
         } //end if
 
-        //Loop through and set moves
-        for(int i = 0; i < 4; i++)
+        //Loop through values
+        for (int i = 0; i < 4; i++)
         {
-            moves[i] = values[i];
-            firstMoves[i] = values[i];
+            //Make sure value isn't -1
+            if(values[i] != -1)
+            {
+                moves[i] = values[i];
+                firstMoves[i] = values[i];
+            } //end if
+            //If it equals -1, give level up move
+            else
+            {
+                //Keep a record of important keys
+                int[] keyLocations = new int[4-i];
+
+                //Initialize the record
+                for(int j = 0; j < keyLocations.Length; j++)
+                {
+                    keyLocations[j] = -1;
+                } //end for
+
+                //Get move nearest to current level
+                foreach(KeyValuePair<int, List<string>> entry in dataContents.speciesData[natSpecies].moves)
+                {
+                    //End function when key exceeds current level
+                    if(entry.Key > currentLevel)
+                    {
+                        break;
+                    } //end if
+
+                    //Set the key locations
+                    for(int k = 0; k < keyLocations.Length-1; k++)
+                    {
+                        keyLocations[k] = keyLocations[k+1];
+                    } //end for
+
+                    keyLocations[keyLocations.Length-1] = entry.Key;              
+                } //end foreach
+
+                //Set the moves
+                for(int m = i, n = 0; m < 4; m++, n++)
+                {
+                    for(int p = 0; p < dataContents.speciesData[natSpecies].moves[keyLocations[n]].Count; p++)
+                    {
+                        moves[m+p] = dataContents.GetMoveID(dataContents.speciesData[natSpecies].moves[keyLocations[n]][p]);
+                        firstMoves[m+p] = moves[m+p];
+                        m += p;
+                    } //end for
+                } //end for
+
+                //End function
+                break;
+            } //end else
         } //end for
     } //end GiveInitialMoves(int[] moves)
 
@@ -483,11 +620,47 @@ public class Pokemon
 		return result;
 	} //end GetValues
 
+    //Calculates the exp for the level given
 	int CalculateEXP(int level)
 	{
         return 0;
 	} //end CalculateEXP(int level)
 
+    //Calcuate the HP
+    void CalculateHP()
+    {
+        totalHP = (int)((Mathf.Floor(2 * dataContents.speciesData[natSpecies-1].baseStats[0] + IV[0] + 
+                                     Mathf.Floor(EV[0]/4)) * currentLevel)/100) + currentLevel + 10;
+    } //end CalculateHP
+    //Calculates all stats besides HP
+    public void CalculateStats()
+    {
+        //Calculate nature impact
+        int[] pvalues = {100,100,100,100,100};
+        int[] results = new int[5];
+        int nd5 = (int)Mathf.Floor (nature / 5);
+        int nm5 = (int)Mathf.Floor (nature % 5);
+        if (nd5 != nm5)
+        {
+            pvalues [nd5] = 110;
+            pvalues [nm5] = 90;
+        } //end if
+
+        //Loop through and set all stats
+        for (int i = 1; i < 6; i++)
+        {
+            int baseStat = dataContents.speciesData[natSpecies-1].baseStats[i];
+            results[i-1] = (int)Mathf.Floor((Mathf.Floor((baseStat * 2 + IV[i] + Mathf.Floor(EV[i]/4)) 
+                                                         * currentLevel/100) + 5) * pvalues[i-1]/100);
+        } //end for
+
+        //Set the values
+        attack = results[0];
+        defense = results[1];
+        speed = results[2];
+        specialA = results[3];
+        specialD = results[4];
+    } //end CalculateStat
 	#region Accessors
 	//Stats
 	public int CurrentHP
@@ -654,6 +827,18 @@ public class Pokemon
 			currentEXP = value;
 		} //end set
 	}//end CurrentEXP 
+
+    public int CurrentLevel
+    {
+        get
+        {
+            return currentLevel;
+        } //end get
+        set
+        {
+            currentLevel = value;
+        } //end set
+    } //end CurrentLevel
 
 	public int Item
 	{

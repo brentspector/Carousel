@@ -23,7 +23,7 @@ public class GameManager : MonoBehaviour
 	//Scene variables
 	SceneManager scenes;					//Manages game scenes
 	SystemManager sysm;						//Manages system features
-    DataContents dataContents;
+    DataContents dataContents;              //Holds pokemon data
 
 	// Use this for initialization
 	void Awake ()
@@ -57,6 +57,7 @@ public class GameManager : MonoBehaviour
 		//Get SystemManager component
 		sysm = GetComponent<SystemManager> ();
 
+        //Get DataContents component
         dataContents = GetComponent<DataContents> ();
 
 		//Create error log
@@ -84,9 +85,32 @@ public class GameManager : MonoBehaviour
                 if(!running)
                 {
                     running = true;
-                    System.Diagnostics.Stopwatch myStopwatch = new System.Diagnostics.Stopwatch();
+                    /*System.Diagnostics.Stopwatch myStopwatch = new System.Diagnostics.Stopwatch();
                     myStopwatch.Start();
-                    sysm.StartINI(Environment.GetEnvironmentVariable ("USERPROFILE") + "/Saved Games/Pokemon Carousel/pokemon.txt");
+                    sysm.GetContents(Environment.GetEnvironmentVariable ("USERPROFILE") + "/Saved Games/Pokemon Carousel/moves.txt");
+                    for(int i = 0; i < 633; i++)
+                    {
+                        Move testMove = new Move();
+                        string[] moveInfo = sysm.ReadCSV(i);
+                        testMove.internalName = moveInfo[1];
+                        testMove.gameName = moveInfo[2];
+                        testMove.functionCode = int.Parse(moveInfo[3], System.Globalization.NumberStyles.HexNumber);
+                        testMove.baseDamage = int.Parse(moveInfo[4]);
+                        testMove.type = moveInfo[5];
+                        testMove.category = moveInfo[6];
+                        testMove.accuracy = int.Parse(moveInfo[7]);
+                        testMove.totalPP = int.Parse(moveInfo[8]);
+                        testMove.chanceEffect = int.Parse(moveInfo[9]);
+                        testMove.target = int.Parse(moveInfo[10]);
+                        testMove.priority = int.Parse(moveInfo[11]);
+                        testMove.flags = moveInfo[12];
+                        testMove.description = moveInfo[13];
+                        for(int j = 14; j < moveInfo.Length; j++)
+                            testMove.description += "," + moveInfo[j];
+                        testMove.description = testMove.description.Replace("\"", "");
+                        dataContents.moveData.Add(testMove);
+                    } //end for
+                    dataContents.PersistMoves();
                     /*for(int i = 0; i < 721; i++)
                     {
                         PokemonSpecies testSpecies = new PokemonSpecies();
@@ -192,18 +216,24 @@ public class GameManager : MonoBehaviour
                         testSpecies.battlerAltitude = sysm.ReadINI<int>(section, "BattlerAltitude");
                         dataContents.speciesData.Add(testSpecies);
                     } //end for
-                    dataContents.Persist();
-                    Debug.Log("Done saving data");*/
-                    dataContents.GetPersist();
+                    dataContents.PersistPokemon();
+                    Debug.Log("Done saving data");
                     for(int i = 0; i < 5; i++)
                     {
                         int randomNum = Random.Range(0, 720);
                         Debug.Log("Name: " + dataContents.speciesData[randomNum].name);
                         Debug.Log("Height: " + dataContents.speciesData[randomNum].height);
                         Debug.Log("Pokedex: " + dataContents.speciesData[randomNum].pokedex);
-                    }
+                    }*/
+
+                    dataContents.GetPersist();
+#if UNITY_EDITOR
+ 
+#else
+                    sysm.LogErrorMessage(dataContents.speciesData[562].name);
+#endif
                 } //end if running
-				//scenes.Intro();
+				scenes.Intro();
 			} //end if
 			//Start Menu scene
 			else if(Application.loadedLevelName == "StartMenu")
@@ -219,7 +249,16 @@ public class GameManager : MonoBehaviour
 		//Log error otherwise
 		catch(System.Exception ex)
 		{
-			sysm.LogErrorMessage(ex.ToString());
+            try
+            {
+			    sysm.LogErrorMessage(ex.ToString());
+            } //end try
+            catch(System.Exception exc)
+            {
+                Debug.LogError("\nThe following error was encountered: " +
+                               ex.ToString() + ", additionally the following " +
+                                "occurred:\n" + exc.ToString());
+            } //end catch
 		} //end catch(System.Exception ex)
 	} //end Update
 
@@ -249,6 +288,12 @@ public class GameManager : MonoBehaviour
 
 	//System Manager functions
 	#region SystemManager
+    //Log error message
+    public void LogErrorMessage(string message)
+    {
+        sysm.LogErrorMessage (message);
+    } //end LogErrorMessage(string message)
+
 	//Initializes text
 	public void InitText(Transform textArea, Transform endArrow)
 	{
@@ -314,6 +359,13 @@ public class GameManager : MonoBehaviour
 	{
 		return sysm.GetPersist ();
 	} //end GetPersist
+
+    //Sends dataContents
+    public DataContents GetDataContents()
+    {
+        return dataContents;
+    } //end GetDataContents
 	#endregion
+
 
 } //end GameManager class
