@@ -1,7 +1,7 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{FA0F2708-C71B-C200-8612-3755A2B406A9}"
+# Visual Studio 2008
+
+Project("{225BF3D9-290B-5F53-6B2E-442259E78652}") = "Carousel", "Assembly-CSharp.csproj", "{FA0F2708-C71B-C200-8612-3755A2B406A9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,7 +14,10 @@ Global
 		{FA0F2708-C71B-C200-8612-3755A2B406A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA0F2708-C71B-C200-8612-3755A2B406A9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+																																																							GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Assembly-CSharp.csproj
 		Policies = $0
 		$0.TextStylePolicy = $1
@@ -32,11 +35,11 @@ Global
 		$2.EventRemoveBraceStyle = NextLine
 		$2.StatementBraceStyle = NextLine
 		$2.ArrayInitializerBraceStyle = NextLine
-		$2.BeforeMethodDeclarationParentheses = False
-		$2.BeforeMethodCallParentheses = False
-		$2.BeforeConstructorDeclarationParentheses = False
-		$2.BeforeDelegateDeclarationParentheses = False
-		$2.NewParentheses = False
+		$2.BeforeMethodDeclarationParentheses = True
+		$2.BeforeMethodCallParentheses = True
+		$2.BeforeConstructorDeclarationParentheses = True
+		$2.BeforeDelegateDeclarationParentheses = True
+		$2.NewParentheses = True
 		$2.inheritsSet = Mono
 		$2.inheritsScope = text/x-csharp
 		$2.scope = text/x-csharp
@@ -48,7 +51,5 @@ Global
 		$3.inheritsScope = text/plain
 		$3.scope = text/plain
 	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
+
 EndGlobal

@@ -7,14 +7,18 @@ using Random = UnityEngine.Random;
 [Serializable]
 public class Pokemon
 {
+    //Contains database of pokemon data
+    DataContents dataContents;
+
 	//Stats
 	int currentHP;			//Current HP
 	int totalHP;			//Max HP
 	int attack;				//Standard attack
 	int defense;			//Standard defense
+    int speed;              //Standard speed
 	int specialA;			//Standard special attack
 	int specialD;			//Standard special defense
-	int speed;				//Standard speed
+    int totalEV;            //Total amount of EVs the pokemon currently has
 	int[] IV;				//Individual values array
 	int[] EV;				//Effort values array
 
@@ -23,6 +27,7 @@ public class Pokemon
 	int personalID;			//Defines a specific pokemon
 	int trainerID;			//ID of trainer who obtained it first
 	int currentEXP;			//Current EXP of pokemon
+    int currentLevel;       //Relative level of pokemon
 	int item;				//What item is being held
 	int status;				//What status the pokemon is under
 	int statusCount;		//Turns until awaken/turns of toxic
@@ -57,8 +62,10 @@ public class Pokemon
 		{
 			natSpecies = species;
 		} //end else
+        totalEV = 0;
 		trainerID = tID;
 		currentEXP = CalculateEXP (level);
+        currentLevel = level;
 		Item = item;
 		ballUsed = ball;
 		obtainType = oType;
@@ -80,14 +87,14 @@ public class Pokemon
 
 		for(int i = 0; i < 6; i++)
 		{
-			IV[i] = 0;
+            IV[i] = 0;
 			EV[i] = 0;
 		} //end for
 
 		for(int i = 0; i < 4; i++)
 		{
-			moves[i] = 0;
-			firstMoves[i] = 0;
+			moves[i] = -1;
+			firstMoves[i] = -1;
 		} //end for
 
 		for(int i = 0; i < markings.Length; i++)
@@ -99,6 +106,13 @@ public class Pokemon
 		{
 			ribbons[i] = false;
 		} //end for
+
+        //Initialize any values that can be given from data
+        dataContents = GameManager.instance.GetDataContents ();
+        ChangeIVs (new int[] {-1});
+        CalculateStats ();
+        currentHP = totalHP;
+        GiveInitialMoves (new int[] {-1, -1, -1, -1});
 	} //end Pokemon constructor
 
 	//Change IVs of pokemon
@@ -121,7 +135,7 @@ public class Pokemon
             if(values[0] < 0 || values[0] > 31)
             {
                 //Fill specified IV with random IV
-                if(index > -1 && index < 5)
+                if(index > -1 && index < 6)
                 {
                     IV[index] = Random.Range(0, 31);
                 } //end if
@@ -137,7 +151,7 @@ public class Pokemon
             else
             {
                 //Fill specified index with specified value
-                if(index > -1 && index < 5)
+                if(index > -1 && index < 6)
                 {
                     IV[index] = values[0];
                 } //end if
@@ -155,10 +169,22 @@ public class Pokemon
             //Fill in  missing values
             if(values.Length < 6)
             {
-                for(int i = values.Length-1; i < 6; i++)
+                //Create new 6 int long array
+                int[] fixedValues = new int[6]; 
+
+                //Fill in fixedValues with given values
+                for(int i = 0; i < values.Length; i++)
                 {
-                    values[i] = Random.Range(0, 31);
+                    fixedValues[i] = values[i];
                 } //end for
+
+                //Fill in rest with a random number
+                for(int i = values.Length; i < 6; i++)
+                {
+                    fixedValues[i] = Random.Range(0, 31);
+                } //end for
+
+                values = fixedValues;
             } //end if
 
             //Fill in values
@@ -176,6 +202,399 @@ public class Pokemon
             } //end for
         } //end else
 	} //end ChangeIVs(int[] values, int index = -1)
+
+    //Change EVs of pokemon
+    /* NOTE: 
+     * TotalEVs maxes at 510.
+     * Individual EVs max at 255.
+     * When providing 1 value
+     * Negative value with index sets that index to a random EV
+     * Negative value without index sets all EVs to random EV
+     * Excessive value with index sets that index to standard 85
+     * Excessive value without index sets all EVs to 85
+     * Acceptable value with index sets that index to that value
+     * Acceptable value without index sets all EVs to that value
+     * When providing more than 1 value
+     * If less than 6 values given, a 0 will be placed in empty slots
+     * Otherwise it follows single EV methods, except ignores index param
+     */
+    public void ChangeEVs(int[] values, int index = -1)
+    {
+        //1 value provided
+        if (values.Length == 1)
+        {
+            //If the value is invalid, so give random value
+            if(values[0] < 0)
+            {
+                //If an index is provided
+                if(index > -1 && index < 6)
+                {
+                    //Make sure value is within maximum value
+                    int tempCount = totalEV - EV[index];
+                    int tempRand = Random.Range(0, 255);
+                    if((tempCount + tempRand) <= 510)
+                    {
+                        totalEV += tempRand - EV[index];
+                        EV[index] = tempRand;
+                    } //end if
+                    else
+                    {
+                        tempRand = 510 - tempCount;
+                        totalEV = 510;
+                        EV[index] = tempRand;
+                    } //end else
+                } //end if
+                //Valid index was not provided
+                else
+                {
+                    //Set all EVs to a random amount
+                    totalEV = 0;
+                    for(int i = 0; i < 6; i++)
+                    {
+                        //Make a new random amount
+                        int tempRand = Random.Range(0, 255);
+
+                        //Make sure value is withing maximum value
+                        if((totalEV + tempRand) <= 510)
+                        {
+                            EV[i] = tempRand;
+                            totalEV += tempRand;
+                        } //end if
+                        //If not, cap the value set rest to 0
+                        else
+                        {
+                            tempRand = 510 - totalEV;
+                            totalEV = 510;
+                            EV[i] = tempRand;
+
+                            //Loop through rest and set to 0
+                            for(int r = i+1; r < 6; r++)
+                            {
+                                EV[r] = 0;
+                            } //end for
+
+                            break;
+                        } //end else
+                    } //end for
+                } //end else
+            } //end if
+            //Standard amount of 85 to be given
+            else if(values[0] > 255)
+            {
+                //If a valid index is given
+                if(index > -1 && index < 6)
+                {
+                    //Make sure value is within maximum value
+                    int tempCount = totalEV - EV[index];
+                    if((tempCount + 85) <= 510)
+                    {
+                        totalEV += 85 - EV[index];
+                        EV[index] = 85;
+                    } //end if
+                    else
+                    {
+                        int tempNum = 510 - tempCount;
+                        totalEV = 510;
+                        EV[index] = tempNum;
+                    } //end else
+                } //end if
+                //No valid index given
+                else
+                {
+                    //Give all EVs a value of 85
+                    totalEV = 510;
+                    for(int i = 0; i < 6; i++)
+                    {
+                        EV[i] = 85;
+                    } //end for
+                } //end else
+            } //end else if
+            //Set EVs to the amount given, up to 510 total
+            else
+            {
+                //If a valid index was given
+                if(index > -1 && index < 6)
+                {
+                    int tempCount = totalEV - EV[index];
+                    //Make sure value doesn't exceed 510
+                    if((tempCount + values[0]) <= 510)
+                    {
+                        totalEV += values[0] - EV[index];
+                        EV[index] = values[0];
+                    } //end if
+                    else
+                    {
+                        int tempNum = 510 - totalEV; 
+                        totalEV = 510;
+                        EV[index] = tempNum;
+                    } //end else
+                } //end if
+                //No vald index given
+                else
+                {
+                    //Set all EVs to value given
+                    totalEV = 0;
+                    for(int i = 0; i < 6; i++)
+                    {
+                        //Make sure values added doesn't exceed total
+                        if((totalEV + values[0]) <= 510)
+                        {
+                            totalEV += values[0];
+                            EV[i] = values[0];
+                        } //end if
+                        else
+                        {
+                            int tempNum = 510 - totalEV;
+                            totalEV = 510;
+                            EV[i] = tempNum;
+
+                            //Loop through and set all remaining to 0
+                            for(int r = i+1; r < 6; r++)
+                            {
+                                EV[r] = 0;
+                            } //end for
+                            
+                            break;
+                        } //end else
+                    } //end for
+                } //end else
+            } //end else
+        } //end if
+        //Mulitple values provided
+        else
+        {
+            //Initialize totalEV count
+            totalEV = 0;
+
+            //Fill in missing values
+            if(values.Length < 6)
+            {
+                //Create new 6 int long array
+                int[] fixedValues = new int[6]; 
+                
+                //Fill in fixedValues with given values
+                for(int i = 0; i < values.Length; i++)
+                {
+                    fixedValues[i] = values[i];
+                } //end for
+                
+                //Fill in rest with a random number
+                for(int i = values.Length; i < 6; i++)
+                {
+                    fixedValues[i] = Random.Range(0, 255);
+                } //end for
+                
+                values = fixedValues;
+            } //end if
+
+            //Fill in given values
+            for (int i = 0; i < 6; i++)
+            {
+                totalEV = 0;
+
+                //If the value is invalid
+                if(values[i] < 0)
+                {
+                    //Make sure value is within maximum value
+                    int tempCount = totalEV;
+                    int tempRand = Random.Range(0, 255);
+                    if((tempCount + tempRand) <= 510)
+                    {
+                        totalEV += tempRand;
+                        EV[i] = tempRand;
+                    } //end if
+                    else
+                    {
+                        tempRand = 510 - tempCount;
+                        totalEV = 510;
+                        EV[i] = tempRand;
+
+                        //Loop through and set all remaining to 0
+                        for(int r = i+1; r < 6; r++)
+                        {
+                            EV[r] = 0;
+                        } //end for
+                        
+                        break;
+                    } //end else
+                } //end if
+                //If the value is invalid
+                else if(values[i] > 255)
+                {
+                    //Make sure value is within maximum value
+                    int tempCount = totalEV;
+                    if((tempCount + 85) <= 510)
+                    {
+                        totalEV += 85;
+                        EV[i] = 85;
+                    } //end if
+                    else
+                    {
+                        int tempNum = 510 - tempCount;
+                        totalEV = 510;
+                        EV[index] = tempNum;
+
+                        //Loop through and set all remaining to 0
+                        for(int r = i+1; r < 6; r++)
+                        {
+                            EV[r] = 0;
+                        } //end for
+                        
+                        break;
+                    } //end else
+                } //end else if
+                //The value is valid
+                else
+                {
+                    //Make sure value doesn't exceed maximum
+                    if((totalEV + values[i]) <= 510)
+                    {
+                        totalEV += values[i];
+                        EV[i] = values[i];
+                    } //end if
+                    else
+                    {
+                        int tempNum = 510 - totalEV;
+                        totalEV = 510;
+                        EV[i] = tempNum;
+
+                        //Loop through and set all remaining to 0
+                        for(int r = i+1; r < 6; r++)
+                        {
+                            EV[r] = 0;
+                        } //end for
+                        
+                        break;
+                    } //end else
+                } //end else
+            } //end if
+        } //end else
+    } //end ChangeEVs(int[] values, int index = -1)
+
+    //Change moves of pokemon
+    /* NOTE: Moves are replaced from front to back. Thus providing
+     * only 1 value will only replace the first moveslot. Provide
+     * a valid index number to change that specific moveslot
+     * 
+     */
+    public void ChangeMoves(int[] values, int index = -1)
+    {
+        //If a valid index is provided
+        if (index > -1 && index < 4)
+        {
+            moves[index] = values[0];
+        } //end if
+        //No valid index given
+        else
+        {
+            for(int i = 0; i < values.Length; i++)
+            {
+                moves[i] = values[i];
+            } //end for
+        } //end else
+    } //end ChangeMoves(int[] values, int index = -1)
+
+    //Given initial moves, including any special moves to be saved under first moves
+    //NOTE: A value of -1 will give the last non-duplicate level-up move available.
+    //If no level up move is available, it will be left blank
+    public void GiveInitialMoves(int[] values)
+    {
+        //Fill in missing values
+        if (values.Length < 4)
+        {
+            //Create new 6 int long array
+            int[] fixedValues = new int[4]; 
+            
+            //Fill in fixedValues with given values
+            for(int i = 0; i < values.Length; i++)
+            {
+                fixedValues[i] = values[i];
+            } //end for
+            
+            //Fill in rest with a random number
+            for(int i = values.Length; i < 4; i++)
+            {
+                fixedValues[i] = -1;
+            } //end for
+            
+            values = fixedValues;
+        } //end if
+
+        //Loop through values
+        for (int i = 0; i < 4; i++)
+        {
+            //Make sure value isn't -1
+            if(values[i] != -1)
+            {
+                moves[i] = values[i];
+                firstMoves[i] = values[i];
+            } //end if
+            //If it equals -1, give level up move
+            else
+            {
+                //Keep a record of important keys
+                int[] keyLocations = new int[4-i];
+
+                //Initialize the record
+                for(int j = 0; j < keyLocations.Length; j++)
+                {
+                    keyLocations[j] = -1;
+                } //end for
+
+                //Get move nearest to current level
+                foreach(KeyValuePair<int, List<string>> entry in dataContents.speciesData[natSpecies].moves)
+                {
+                    //End function when key exceeds current level
+                    if(entry.Key > currentLevel)
+                    {
+                        break;
+                    } //end if
+
+                    //Set the key locations
+                    for(int k = 0; k < keyLocations.Length-1; k++)
+                    {
+                        keyLocations[k] = keyLocations[k+1];
+                    } //end for
+
+                    keyLocations[keyLocations.Length-1] = entry.Key;              
+                } //end foreach
+
+                //Set the moves
+                for(int m = i, n = 0; m < 4; m++, n++)
+                {
+                    for(int p = 0; p < dataContents.speciesData[natSpecies].moves[keyLocations[n]].Count; p++)
+                    {
+                        moves[m+p] = dataContents.GetMoveID(dataContents.speciesData[natSpecies].moves[keyLocations[n]][p]);
+                        firstMoves[m+p] = moves[m+p];
+                        m += p;
+                    } //end for
+                } //end for
+
+                //End function
+                break;
+            } //end else
+        } //end for
+    } //end GiveInitialMoves(int[] moves)
+
+    //Change markings
+    public void ChangeMarkings(bool value, int index)
+    {
+        //Make sure index is valid
+        if (index > -1 && index < markings.Length)
+        {
+            markings[index] = value;
+        } //end if
+    } //end ChangeMarkings(bool value, int index)
+
+    //Changes ribbons
+    public void ChangeRibbons(bool value, int index)
+    {
+        //Make sure index is valid
+        if (index > -1 && index < ribbons.Length)
+        {
+            ribbons[index] = value;
+        } //end if
+    } //end ChangeRibbons(bool value, int index)
 
     //Test funtion to varify values are saved
 	public string GetValues()
@@ -201,11 +620,47 @@ public class Pokemon
 		return result;
 	} //end GetValues
 
+    //Calculates the exp for the level given
 	int CalculateEXP(int level)
 	{
         return 0;
 	} //end CalculateEXP(int level)
 
+    //Calcuate the HP
+    void CalculateHP()
+    {
+        totalHP = (int)((Mathf.Floor(2 * dataContents.speciesData[natSpecies-1].baseStats[0] + IV[0] + 
+                                     Mathf.Floor(EV[0]/4)) * currentLevel)/100) + currentLevel + 10;
+    } //end CalculateHP
+    //Calculates all stats besides HP
+    public void CalculateStats()
+    {
+        //Calculate nature impact
+        int[] pvalues = {100,100,100,100,100};
+        int[] results = new int[5];
+        int nd5 = (int)Mathf.Floor (nature / 5);
+        int nm5 = (int)Mathf.Floor (nature % 5);
+        if (nd5 != nm5)
+        {
+            pvalues [nd5] = 110;
+            pvalues [nm5] = 90;
+        } //end if
+
+        //Loop through and set all stats
+        for (int i = 1; i < 6; i++)
+        {
+            int baseStat = dataContents.speciesData[natSpecies-1].baseStats[i];
+            results[i-1] = (int)Mathf.Floor((Mathf.Floor((baseStat * 2 + IV[i] + Mathf.Floor(EV[i]/4)) 
+                                                         * currentLevel/100) + 5) * pvalues[i-1]/100);
+        } //end for
+
+        //Set the values
+        attack = results[0];
+        defense = results[1];
+        speed = results[2];
+        specialA = results[3];
+        specialD = results[4];
+    } //end CalculateStat
 	#region Accessors
 	//Stats
 	public int CurrentHP
@@ -292,6 +747,18 @@ public class Pokemon
 		} //end set
 	} //end Speed
 
+    public int TotalEVs
+    {
+        get
+        {
+            return totalEV;
+        } //end get
+        set
+        {
+            totalEV = value;
+        } //end set
+    } //end TotalEVs
+
 	public int GetIV(int index)
 	{
 		return IV [index];
@@ -360,6 +827,18 @@ public class Pokemon
 			currentEXP = value;
 		} //end set
 	}//end CurrentEXP 
+
+    public int CurrentLevel
+    {
+        get
+        {
+            return currentLevel;
+        } //end get
+        set
+        {
+            currentLevel = value;
+        } //end set
+    } //end CurrentLevel
 
 	public int Item
 	{
