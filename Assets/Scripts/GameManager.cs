@@ -110,8 +110,11 @@ public class GameManager : MonoBehaviour
                         testMove.description = testMove.description.Replace("\"", "");
                         dataContents.moveData.Add(testMove);
                     } //end for
-                    dataContents.PersistMoves();
-                    /*for(int i = 0; i < 721; i++)
+                    dataContents.PersistMoves();*/
+                    /*System.Diagnostics.Stopwatch myStopwatch = new System.Diagnostics.Stopwatch();
+                    myStopwatch.Start();
+                    sysm.GetContents(Environment.GetEnvironmentVariable ("USERPROFILE") + "/Saved Games/Pokemon Carousel/pokemon.txt");
+                    for(int i = 0; i < 721; i++)
                     {
                         PokemonSpecies testSpecies = new PokemonSpecies();
                         string section = (i+1).ToString();
@@ -202,7 +205,7 @@ public class GameManager : MonoBehaviour
                         testSpecies.habitat = sysm.ReadINI<string>(section, "Habitat");
                         testSpecies.kind = sysm.ReadINI<string>(section, "Kind");
                         testSpecies.pokedex = sysm.ReadINI<string>(section, "Pokedex");
-                        holder = sysm.ReadINI<string>(section, "Forms");
+                        holder = sysm.ReadINI<string>(section, "FormNames");
                         if(holder != null && holder.Contains(","))
                         {
                             testSpecies.forms = holder.Split(',');
@@ -214,23 +217,84 @@ public class GameManager : MonoBehaviour
                         testSpecies.battlerPlayerY = sysm.ReadINI<int>(section, "BattlerPlayerY");
                         testSpecies.battlerEnemyY = sysm.ReadINI<int>(section, "BattlerEnemyY");
                         testSpecies.battlerAltitude = sysm.ReadINI<int>(section, "BattlerAltitude");
+                        holder = sysm.ReadINI<string>(section, "Evolutions");
+                        testSpecies.evolutions = new List<Evolutions>();
+                        if(holder != null && holder.Contains(","))
+                        {
+                            String[] breaks = holder.Split(',');
+                            for(int j = 0; j < breaks.Length; j+=3)
+                            {
+                                Evolutions myEvo = new Evolutions();
+                                myEvo.species = breaks[j];
+                                myEvo.method = breaks[j+1];
+                                try
+                                {
+                                    myEvo.trigger = breaks[j+2];
+                                } //end try
+                                catch(Exception)
+                                {
+                                    sysm.LogErrorMessage("Species " + i + " failed finding trigger for " + j);
+                                } //end catch
+                                testSpecies.evolutions.Add(myEvo);
+                            } //end for
+                        } //end if
                         dataContents.speciesData.Add(testSpecies);
                     } //end for
+                    myStopwatch.Stop();
                     dataContents.PersistPokemon();
-                    Debug.Log("Done saving data");
-                    for(int i = 0; i < 5; i++)
+                    Debug.Log("Done saving data in " + myStopwatch.ElapsedMilliseconds);*/
+                    /*sysm.GetContents(Environment.GetEnvironmentVariable ("USERPROFILE") + "/Saved Games/Pokemon Carousel/items.txt");
+                    for(int i = 0; i < 525; i++)
                     {
-                        int randomNum = Random.Range(0, 720);
-                        Debug.Log("Name: " + dataContents.speciesData[randomNum].name);
-                        Debug.Log("Height: " + dataContents.speciesData[randomNum].height);
-                        Debug.Log("Pokedex: " + dataContents.speciesData[randomNum].pokedex);
-                    }*/
+                        Item testItem = new Item();
+                        string[] itemInfo = sysm.ReadCSV(i);
+                        testItem.internalName = itemInfo[1];
+                        testItem.gameName = itemInfo[2];
+                        testItem.bagNumber = int.Parse(itemInfo[3]);
+                        testItem.cost = int.Parse(itemInfo[4]);
+                        testItem.description = itemInfo[5];
+                        int j = 5;
+                        if(itemInfo[j].Contains("\""))
+                        {
+                            while(!itemInfo[j].EndsWith("\""))
+                            {
+                                j++;
+                                Debug.Log("J is " + j + " and I is " + i);
+                                testItem.description += "," + itemInfo[j];
+                            } 
+                            testItem.description = testItem.description.Replace("\"", "");
+                        }
+                        j+=2;
+                        try
+                        {                        
+                            testItem.battleUse = int.Parse(itemInfo[j]);
+                        }
+                        catch(SystemException e)
+                        {
+                            sysm.LogErrorMessage("Game Name: " + itemInfo[2] + " gives " + itemInfo[j] + " at J of " + j);
+                        }
+                        dataContents.itemData.Add(testItem);
+                    }
+                    dataContents.PersistItems();
+                    Debug.Log("Done saving");
 
+                    dataContents.itemData[69].description = "A long, thin, bright-red string to be held by a Pokémon. If the holder becomes infatuated, the foe does too.";
+                    dataContents.PersistItems();
+                    int randomNumber = 69;
+                    Debug.Log(dataContents.itemData[randomNumber].internalName + 
+                              "\n" + dataContents.itemData[randomNumber].gameName + "\n" +
+                              dataContents.itemData[randomNumber].bagNumber + "\n" +
+                              dataContents.itemData[randomNumber].cost + "\n" +
+                              dataContents.itemData[randomNumber].description + "\n" +
+                              dataContents.itemData[randomNumber].battleUse);*/
                     dataContents.GetPersist();
 #if UNITY_EDITOR
- 
+
+
 #else
-                    sysm.LogErrorMessage(dataContents.speciesData[562].name);
+
+
+
 #endif
                 } //end if running
 				scenes.Intro();
@@ -245,6 +309,10 @@ public class GameManager : MonoBehaviour
 			{
 				scenes.NewGame();
 			} //end else if
+            else if(Application.loadedLevelName == "MainGame")
+            {
+                scenes.ContinueGame();
+            } //end else if
 		} //end try
 		//Log error otherwise
 		catch(System.Exception ex)
@@ -268,7 +336,7 @@ public class GameManager : MonoBehaviour
 	public void Continue()
 	{
 		scenes.Reset ();
-		Application.LoadLevel ("Intro");
+		Application.LoadLevel ("MainGame");
 	} //end Continue
 
 	//Starts a new game
@@ -284,6 +352,11 @@ public class GameManager : MonoBehaviour
 		scenes.Reset ();
 		Application.LoadLevel ("Intro");
 	} //end Options
+
+    public void Jump()
+    {
+        scenes.JumpTo ();
+    } //end Jump
 	#endregion
 
 	//System Manager functions
@@ -366,6 +439,4 @@ public class GameManager : MonoBehaviour
         return dataContents;
     } //end GetDataContents
 	#endregion
-
-
 } //end GameManager class

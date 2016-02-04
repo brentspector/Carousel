@@ -20,4 +20,10 @@ public class ButtonFunctions : MonoBehaviour
 	{
 		GameManager.instance.Options ();
 	} //end Options
+
+    //Jump to pokedex number from game screen
+    public void Jump()
+    {
+        GameManager.instance.Jump ();
+    }
 } //end ButtonFunctions class
