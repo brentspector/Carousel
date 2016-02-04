@@ -497,6 +497,7 @@ public class Pokemon
     //Given initial moves, including any special moves to be saved under first moves
     //NOTE: A value of -1 will give the last non-duplicate level-up move available.
     //If no level up move is available, it will be left blank
+    //All -1 values must be at the end of the values array passed for the parameter
     public void GiveInitialMoves(int[] values)
     {
         //Fill in missing values
@@ -511,12 +512,13 @@ public class Pokemon
                 fixedValues[i] = values[i];
             } //end for
             
-            //Fill in rest with a random number
+            //Fill in rest with a signal number
             for(int i = values.Length; i < 4; i++)
             {
                 fixedValues[i] = -1;
             } //end for
-            
+
+            //Reassign values
             values = fixedValues;
         } //end if
 
@@ -526,6 +528,7 @@ public class Pokemon
             //Make sure value isn't -1
             if(values[i] != -1)
             {
+                //Set the move to the given value
                 moves[i] = values[i];
                 firstMoves[i] = values[i];
             } //end if
@@ -541,7 +544,7 @@ public class Pokemon
                     keyLocations[j] = -1;
                 } //end for
 
-                //Get move nearest to current level
+                //Get key levels nearest to current level
                 foreach(KeyValuePair<int, List<string>> entry in dataContents.speciesData[natSpecies].moves)
                 {
                     //End function when key exceeds current level
@@ -560,14 +563,40 @@ public class Pokemon
                 } //end foreach
 
                 //Set the moves
-                for(int m = i, n = 0; m < 4; m++, n++)
+                for(int m = i, n = 3; m < 4; m++, n--)
                 {
-                    for(int p = 0; p < dataContents.speciesData[natSpecies].moves[keyLocations[n]].Count; p++)
+                    //Make sure the key location actually exists
+                    if(keyLocations[n] > 0)
                     {
-                        moves[m+p] = dataContents.GetMoveID(dataContents.speciesData[natSpecies].moves[keyLocations[n]][p]);
-                        firstMoves[m+p] = moves[m+p];
-                        m += p;
-                    } //end for
+                        //Keep track of successful placements
+                        int q = 0;
+
+                        //Loop through all moves available to learn at the level denoted by the key location
+                        for(int p = 0; p < dataContents.speciesData[natSpecies].moves[keyLocations[n]].Count; p++)
+                        {
+                            Debug.Log(dataContents.speciesData[natSpecies].moves[keyLocations[n]][p]);
+
+                            //Break if all moves are full
+                            if(m+q >= 4)
+                            {
+                                break;
+                            } //end if
+
+                            //Set the move to the next one in the move list
+                            //First make sure the move isn't already known
+                            int collectedMove = dataContents.GetMoveID(dataContents.speciesData[natSpecies].moves[keyLocations[n]][p]);
+                            if(!Array.Exists(moves, element => element == collectedMove))
+                            {
+                                moves[m+q] = collectedMove;
+                                firstMoves[m+q] = moves[m+q];
+                                q++;
+                            } //end if
+                            Debug.Log("M: " + m + " P: " + p + " Q: " + q);
+                        } //end for
+
+                        //Set the move pointer to the new position
+                        m += dataContents.speciesData[natSpecies].moves[keyLocations[n]].Count - 1;
+                    } //end if
                 } //end for
 
                 //End function
@@ -601,22 +630,30 @@ public class Pokemon
 	{
 		string result;
 
-		result = "CurrentHP: " + currentHP;
+        result = "Name: " + dataContents.speciesData [natSpecies].name;
+        result += "\nNumber: " + natSpecies;
+		result += "\nCurrentHP: " + currentHP;
 		result += "\nMaxHP: " + totalHP;
 		result += "\nAttack: " + attack;
 		result += "\nDefense: " + defense;
 		result += "\nSpA: " + specialA;
 		result += "\nSpD: " + specialD;
 		result += "\nSpeed: " + speed;
-		result += "IVs: ";
-		foreach (int number in IV) {
+		result += "\nIVs: ";
+		foreach (int number in IV) 
+        {
 			result += number + ", ";
 		}
 		result += "\nEVs: ";
-		foreach (int number in EV) {
+		foreach (int number in EV) 
+        {
 			result += number + ", ";
 		}
-
+        result += "\nMoves: ";
+        foreach (int number in moves)
+        {
+            result += dataContents.GetMoveName(number) + ", ";
+        }
 		return result;
 	} //end GetValues
 
@@ -629,8 +666,10 @@ public class Pokemon
     //Calcuate the HP
     void CalculateHP()
     {
-        totalHP = (int)((Mathf.Floor(2 * dataContents.speciesData[natSpecies-1].baseStats[0] + IV[0] + 
-                                     Mathf.Floor(EV[0]/4)) * currentLevel)/100) + currentLevel + 10;
+        int evCalc = EV [0] / 4;
+        int baseHP = dataContents.speciesData [natSpecies].baseStats [0];
+        totalHP = ((IV[0] + 2 * baseHP + evCalc + 100) * currentLevel) / 100 + 10;     
+        currentHP = totalHP;
     } //end CalculateHP
     //Calculates all stats besides HP
     public void CalculateStats()
@@ -646,12 +685,15 @@ public class Pokemon
             pvalues [nm5] = 90;
         } //end if
 
-        //Loop through and set all stats
+        //Calculate HP
+        CalculateHP ();
+
+        //Loop through and set all non-HP stats
         for (int i = 1; i < 6; i++)
         {
-            int baseStat = dataContents.speciesData[natSpecies-1].baseStats[i];
-            results[i-1] = (int)Mathf.Floor((Mathf.Floor((baseStat * 2 + IV[i] + Mathf.Floor(EV[i]/4)) 
-                                                         * currentLevel/100) + 5) * pvalues[i-1]/100);
+            int baseStat = dataContents.speciesData[natSpecies].baseStats[i];
+            int evCalc = EV[i]/4;
+            results[i-1] = (((IV[i] + 2 * baseStat + evCalc) * currentLevel/100) + 5) * pvalues[i - 1] / 100;
         } //end for
 
         //Set the values

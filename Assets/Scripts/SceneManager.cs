@@ -16,6 +16,7 @@ public class SceneManager : MonoBehaviour
 	InputField inputText;			//Input field of input unit
 	int checkpoint;					//Manages function progress
 	bool processing;				//Currently performing task
+    DataContents dataContents;      //Holds dataContents reference
 
 	//Intro variables
 	GameObject title;				//Title on Intro scene
@@ -41,6 +42,23 @@ public class SceneManager : MonoBehaviour
 	Image profBase;					//Base professor stands on
 	Image professor;				//Professor image
 	string playerName;				//The player's name
+
+    //Continue Game variables
+    Image pokeFront;                //Front of the pokemon
+    Image pokeBack;                 //Back of the pokemon
+    Text  pokeName;                 //Name of the pokemon
+    Text  pokeType;                 //Types of pokemon
+    Text  pokeBaseStats;            //Base stats of pokemon
+    Text  pokeAbilities;            //Abilities of pokemon
+    Text  pokeHeightWeight;         //Height and weight of the pokemon
+    Text  pokeForms;                //Forms of the pokemon
+    Text  pokeEvolutions;           //Evolutions of the pokemon
+    Text  pokePokedex;              //Pokedex entry of the pokemon
+    Text  pokeMoves;                //Full list of moves of the pokemon
+    int chosenPoke;                 //Pokemon currently viewed
+    Toggle shinyFlag;               //Flag if shiny is checked
+    Toggle femaleFlag;              //Flag if female is checked
+    int formNum;                    //What form version is currently displayed
 
 	//Use for initialization
 	void Awake()
@@ -631,6 +649,242 @@ public class SceneManager : MonoBehaviour
 			processing = false;
 		} //end else if
 	} //end NewGame
+
+    //Used for continuing a game
+    public void ContinueGame()
+    {
+        //If something is already happening, return
+        if(processing)
+        {
+            return;
+        } //end if
+        
+        //Set up scene
+        if (checkpoint == 0)
+        {
+            //Begin processing
+            processing = true;
+
+            //Get references for variables
+            pokeFront = GameObject.Find ("PokemonFront").GetComponent<Image> ();
+            pokeBack = GameObject.Find ("PokemonBack").GetComponent<Image> ();
+            pokeName = GameObject.Find ("Name").GetComponent<Text> ();
+            pokeType = GameObject.Find ("Type").GetComponent<Text> ();
+            pokeBaseStats = GameObject.Find ("BaseStats").GetComponent<Text> ();
+            pokeAbilities = GameObject.Find ("Abilities").GetComponent<Text> ();
+            pokeHeightWeight = GameObject.Find ("HeightWeight").GetComponent<Text> ();
+            pokeForms = GameObject.Find ("Forms").GetComponent<Text> ();
+            pokeEvolutions = GameObject.Find ("Evolutions").GetComponent<Text> ();
+            pokePokedex = GameObject.Find ("Pokedex").GetComponent<Text> ();
+            pokeMoves = GameObject.Find ("Moves").GetComponent<Text> ();
+            shinyFlag = GameObject.Find("Shiny").GetComponent<Toggle>();
+            femaleFlag = GameObject.Find("Female").GetComponent<Toggle>();
+
+            //Fade in
+            StartCoroutine (FadeInAnimation (1));
+        } //end if
+        else if (checkpoint == 1)
+        {
+            //Begin processing
+            processing = true;
+            
+            //Disable fade screen
+            fade.gameObject.SetActive (false);
+
+            //Get dataContents
+            dataContents = GameManager.instance.GetDataContents ();
+
+            //Initialize first data
+            pokeFront.sprite = Resources.Load<Sprite> ("Sprites/Pokemon/001");
+            pokeBack.sprite = Resources.Load<Sprite> ("Sprites/Pokemon/001b");
+            pokeName.text = dataContents.speciesData [0].name;
+            pokeType.text = dataContents.speciesData [0].type1 + ", " + dataContents.speciesData [0].type2;
+            pokeHeightWeight.text = dataContents.speciesData [0].height + " height, " + dataContents.speciesData [0].weight + " weight.";
+            pokePokedex.text = dataContents.speciesData [0].pokedex;
+            pokeBaseStats.text = dataContents.speciesData [0].baseStats [0].ToString ();
+            for (int bStats = 1; bStats < 6; bStats++)
+            {
+                pokeBaseStats.text += ", " + dataContents.speciesData [0].baseStats [bStats].ToString ();
+            } //end for
+            pokeAbilities.text = dataContents.speciesData [0].abilities [0];
+            for (int pAbil = 1; pAbil < dataContents.speciesData[0].abilities.Length; pAbil++)
+            {
+                pokeAbilities.text += ", " + dataContents.speciesData [0].abilities [pAbil];
+            } //end for
+            pokeEvolutions.text = "Evos: " + dataContents.speciesData[0].evolutions[0].species + " "
+                + dataContents.speciesData[0].evolutions[0].method + " " + 
+                    dataContents.speciesData[0].evolutions[0].trigger;
+            pokeForms.text = "Forms: " + dataContents.speciesData [0].forms [0];
+            for (int pForm = 1; pForm < dataContents.speciesData[0].forms.Length; pForm++)
+            {
+                pokeForms.text += ", " + dataContents.speciesData [0].forms [pForm];
+            } //end for
+       
+            pokeMoves.text = "Moves:";
+            //Get key levels nearest to current level
+            foreach (KeyValuePair<int, List<string>> entry in dataContents.speciesData[0].moves)
+            {
+                for (int pMove = 0; pMove < dataContents.speciesData[0].moves[entry.Key].Count; pMove++)
+                {
+                    pokeMoves.text += ", " + entry.Key + " " + dataContents.speciesData [0].moves [entry.Key] [pMove];
+                } //end for
+            } //end foreach
+
+            //Set chosenPoke to 0
+            chosenPoke = 0;
+
+            //Move to next section 
+            checkpoint = 2;
+  
+            //End processing
+            processing = false;
+        } //end else if
+        else if (checkpoint == 2)
+        {
+            //Begin processing
+            processing = true;
+
+            //If right arrow is pressed, increment
+            if(Input.GetKey(KeyCode.RightArrow))
+            {
+                formNum = 0;
+                if(chosenPoke + 1 >= 721)
+                {
+                    chosenPoke = 0;
+                }
+                else
+                {
+                    chosenPoke++;
+                }
+            } //end if
+            //If left arrow is pressed, decrement
+            else if(Input.GetKey(KeyCode.LeftArrow))
+            {
+                formNum = 0;
+                if(chosenPoke - 1 < 0)
+                {
+                    chosenPoke = 720;
+                }
+                else
+                {
+                    chosenPoke--;
+                }
+            } //end else if
+            //If up arrow is pressed, increase form
+            else if(Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                Debug.Log(dataContents.speciesData[chosenPoke].forms.Length);
+                if((formNum + 1) > dataContents.speciesData[chosenPoke].forms.Length)
+                {
+                    formNum = 0;
+                } //end if
+                else
+                {
+                    if(dataContents.speciesData[chosenPoke].forms[formNum] == null)
+                    {
+                        formNum = 0;
+                    } //end if
+                    else
+                    {
+                        formNum++;
+                    } //end else
+                } //end else
+            } //end else if
+            //If down arrow is pressed, decrease form
+            else if(Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                if((formNum - 1) < 0)
+                {
+                    if(dataContents.speciesData[chosenPoke].forms[0] == null)
+                    {
+                        formNum = 0;
+                    } //end if
+                    else
+                    {
+                        formNum = dataContents.speciesData[chosenPoke].forms.Length;
+                    } //end else
+                } //end if
+                else
+                {
+                    formNum--;
+                } //end else
+            } //end else if
+
+            //Load appropriate data
+            string chosenString = (chosenPoke + 1).ToString("000");
+            chosenString += femaleFlag.isOn ? "f" : "";
+            chosenString += shinyFlag.isOn ? "s" : "";
+            chosenString += formNum > 0 ? "_" + formNum.ToString() : "";
+            pokeFront.sprite = Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString);
+            if(pokeFront.sprite == null)
+            {
+                chosenString = chosenString.Replace("f", "");
+                pokeFront.sprite = Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString);
+                if(pokeFront.sprite == null)
+                {
+                    pokeFront.sprite = Resources.Load<Sprite>("Sprites/Pokemon/0");
+                } //end if
+            } //end if
+            pokeBack.sprite = Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString + "b");
+            if(pokeBack.sprite == null)
+            {
+                chosenString = chosenString.Replace("f", "");
+                pokeBack.sprite = Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString + "b");
+                if(pokeBack.sprite == null)
+                {
+                    pokeBack.sprite = Resources.Load<Sprite>("Sprites/Pokemon/0b");
+                } //end if
+            } //end if
+            pokeName.text = dataContents.speciesData [chosenPoke].name;
+            pokeType.text = dataContents.speciesData [chosenPoke].type1 + ", " + dataContents.speciesData [chosenPoke].type2;
+            pokeHeightWeight.text = dataContents.speciesData [chosenPoke].height + " height, " + dataContents.speciesData [chosenPoke].weight + " weight.";
+            pokePokedex.text = dataContents.speciesData [chosenPoke].pokedex;
+            pokeBaseStats.text = dataContents.speciesData [chosenPoke].baseStats [0].ToString ();
+            for (int bStats = 1; bStats < 6; bStats++)
+            {
+                pokeBaseStats.text += ", " + dataContents.speciesData [chosenPoke].baseStats [bStats].ToString ();
+            } //end for
+            pokeAbilities.text = dataContents.speciesData [chosenPoke].abilities [0];
+            for (int pAbil = 1; pAbil < dataContents.speciesData[chosenPoke].abilities.Length; pAbil++)
+            {
+                pokeAbilities.text += ", " + dataContents.speciesData [chosenPoke].abilities [pAbil];
+            } //end for
+            if(dataContents.speciesData[chosenPoke].evolutions.Count > 0)
+            {
+                pokeEvolutions.text = "Evos: " + dataContents.speciesData[chosenPoke].evolutions[0].species + " "
+                    + dataContents.speciesData[chosenPoke].evolutions[0].method + " " + 
+                        dataContents.speciesData[chosenPoke].evolutions[0].trigger;
+                for(int pEvo = 1; pEvo < dataContents.speciesData[chosenPoke].evolutions.Count; pEvo++)
+                {
+                    pokeEvolutions.text += ", " + dataContents.speciesData[chosenPoke].evolutions[pEvo].species + " "
+                        + dataContents.speciesData[chosenPoke].evolutions[pEvo].method + " " + 
+                            dataContents.speciesData[chosenPoke].evolutions[pEvo].trigger;
+                } //end for
+            } //end if
+            else
+            {
+                pokeEvolutions.text = "None";
+            } //end else
+            pokeForms.text = "Forms: " + dataContents.speciesData [chosenPoke].forms [0];
+            for (int pForm = 1; pForm < dataContents.speciesData[chosenPoke].forms.Length; pForm++)
+            {
+                pokeForms.text += ", " + dataContents.speciesData [chosenPoke].forms [pForm];
+            } //end for
+            
+            pokeMoves.text = "Moves:";
+            //Get key levels nearest to current level
+            foreach (KeyValuePair<int, List<string>> entry in dataContents.speciesData[chosenPoke].moves)
+            {
+                for (int pMove = 0; pMove < dataContents.speciesData[chosenPoke].moves[entry.Key].Count; pMove++)
+                {
+                    pokeMoves.text += ", " + entry.Key + " " + dataContents.speciesData [chosenPoke].moves [entry.Key] [pMove];
+                } //end for
+            } //end foreach
+
+            //End processing
+            processing = false;
+        } //end else if
+    } //end ContinueGame
 	#endregion
 
 	#region Animations
@@ -871,7 +1125,23 @@ public class SceneManager : MonoBehaviour
 	{
 		checkpoint = 0;
 		processing = false;
+        selection.SetActive (false);
+        text.SetActive (false);
+        confirm.SetActive (false);
+        choices.SetActive (false);
+        input.SetActive (false);
 		StopAllCoroutines ();
 	} //end Reset
+
+    //Jumps to section in pokedex
+    public void JumpTo()
+    {
+        chosenPoke = int.Parse(GameObject.Find ("LocToJump").GetComponent<InputField> ().text);
+        chosenPoke = Math.Abs (chosenPoke);
+        if (chosenPoke > 721)
+        {
+            chosenPoke = 720;
+        } //end if
+    } //end JumpTo
 	#endregion
 } //end SceneManager class

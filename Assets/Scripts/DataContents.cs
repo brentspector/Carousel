@@ -11,6 +11,7 @@ public class DataContents : MonoBehaviour
     //Pokemon species
     [SerializeField]public List<PokemonSpecies> speciesData;
     [SerializeField]public List<Move> moveData;
+    [SerializeField]public List<Item> itemData;
     public ExperienceTable experienceTable;
     string dataLocation = Environment.GetEnvironmentVariable ("USERPROFILE") + "/Saved Games/Pokemon Carousel/";
 
@@ -43,6 +44,15 @@ public class DataContents : MonoBehaviour
         bf.Serialize (npf, moveData);
         npf.Close ();
     } //end PersistMoves
+
+    //Compiles data to binary file
+    public void PersistItems()
+    {
+        BinaryFormatter bf = new BinaryFormatter ();
+        FileStream npf = File.Create (dataLocation + "itemData.dat");
+        bf.Serialize (npf, itemData);
+        npf.Close ();
+    } //end PersistItems
 
     //Loads data from binary file
     public bool GetPersist()
@@ -77,6 +87,21 @@ public class DataContents : MonoBehaviour
             List<Move> mfd = (List<Move>)bf.Deserialize(pf);
             pf.Close();
             moveData = mfd;
+        } //end if
+        else
+        {
+            Debug.LogError("Could not find movesData.dat at " + dataLocation);
+            return false;
+        } //end else
+
+        //Make sure file is regional
+        if(File.Exists(dataLocation + "itemData.dat"))
+        {
+            BinaryFormatter bf = new BinaryFormatter ();
+            FileStream pf = File.Open (dataLocation + "itemData.dat", FileMode.Open);
+            List<Item> ifd = (List<Item>)bf.Deserialize(pf);
+            pf.Close();
+            itemData = ifd;
             return true;
         } //end if
         else
@@ -105,6 +130,19 @@ public class DataContents : MonoBehaviour
         } //end for
         return moveID;
     } //end GetMoveID(string moveName)
+
+    //Get the move's name
+    public string GetMoveName(int moveNumber)
+    {
+        if (moveNumber < 0 || moveNumber > moveData.Count)
+        {
+            return "NULL";
+        } //end if
+        else
+        {
+            return moveData [moveNumber].internalName;
+        } //end else
+    } //end GetMoveName(int moveNumber)
 } //end DataContents class
 
 //Pokemon Species
@@ -472,6 +510,17 @@ public class Move
     public string flags;
     public string description;
 } //end Move class
+
+[Serializable]
+public class Item
+{
+    public string internalName;
+    public string gameName;
+    public int bagNumber;
+    public int cost;
+    public string description;
+    public int battleUse;
+} //end Item class
 
 [Serializable]
 public enum Natures
