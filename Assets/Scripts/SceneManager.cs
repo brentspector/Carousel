@@ -1,11 +1,18 @@
-﻿using UnityEngine;
+﻿/***************************************************************************************** 
+ * File:    SceneManager.cs
+ * Summary: Controls behavior for each scene in the game
+ *****************************************************************************************/ 
+#region Using
+using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+#endregion
 
 public class SceneManager : MonoBehaviour 
 {
+    #region Variables
 	//Scene variables
 	Image fade;						//Fade screen
 	GameObject selection;			//Red selection rectangle
@@ -16,7 +23,6 @@ public class SceneManager : MonoBehaviour
 	InputField inputText;			//Input field of input unit
 	int checkpoint;					//Manages function progress
 	bool processing;				//Currently performing task
-    DataContents dataContents;      //Holds dataContents reference
 
 	//Intro variables
 	GameObject title;				//Title on Intro scene
@@ -59,8 +65,13 @@ public class SceneManager : MonoBehaviour
     Toggle shinyFlag;               //Flag if shiny is checked
     Toggle femaleFlag;              //Flag if female is checked
     int formNum;                    //What form version is currently displayed
+    #endregion
 
-	//Use for initialization
+    #region Methods
+    /***************************************
+     * Name: Awake
+     * Initializes scene object references and control variables
+     ***************************************/
 	void Awake()
 	{
 		//Reset scene tools canvas' camera
@@ -91,7 +102,10 @@ public class SceneManager : MonoBehaviour
 	} //end Awake
 
 	#region Scenes
-	//Runs intro animation
+    /***************************************
+     * Name: Intro
+     * Runs intro scene animation
+     ***************************************/
 	public void Intro()
 	{
 		//If something is already happening, end it or return
@@ -157,7 +171,10 @@ public class SceneManager : MonoBehaviour
 		} //end else if
 	} //end Intro
 
-	//Runs menu animations and selections
+    /***************************************
+     * Name: Menu
+     * Controls menu display and commands
+     ***************************************/
 	public void Menu()
 	{
 		//If something is already happening, return
@@ -427,7 +444,10 @@ public class SceneManager : MonoBehaviour
 		} //end else if
 	} //end Menu
 
-	//Used for new game introduction
+    /***************************************
+     * Name: NewGame
+     * Loads and plays the New Game scene 
+     ***************************************/
 	public void NewGame()
 	{
 		//If something is already happening, return
@@ -650,7 +670,10 @@ public class SceneManager : MonoBehaviour
 		} //end else if
 	} //end NewGame
 
-    //Used for continuing a game
+    /***************************************
+     * Name: ContinueGame
+     * Loads and plays the main game
+     ***************************************/
     public void ContinueGame()
     {
         //If something is already happening, return
@@ -691,42 +714,39 @@ public class SceneManager : MonoBehaviour
             //Disable fade screen
             fade.gameObject.SetActive (false);
 
-            //Get dataContents
-            dataContents = GameManager.instance.GetDataContents ();
-
             //Initialize first data
             pokeFront.sprite = Resources.Load<Sprite> ("Sprites/Pokemon/001");
             pokeBack.sprite = Resources.Load<Sprite> ("Sprites/Pokemon/001b");
-            pokeName.text = dataContents.speciesData [0].name;
-            pokeType.text = dataContents.speciesData [0].type1 + ", " + dataContents.speciesData [0].type2;
-            pokeHeightWeight.text = dataContents.speciesData [0].height + " height, " + dataContents.speciesData [0].weight + " weight.";
-            pokePokedex.text = dataContents.speciesData [0].pokedex;
-            pokeBaseStats.text = dataContents.speciesData [0].baseStats [0].ToString ();
+            pokeName.text = DataContents.speciesData[0].name;
+            pokeType.text = DataContents.speciesData [0].type1 + ", " + DataContents.speciesData [0].type2;
+            pokeHeightWeight.text = DataContents.speciesData [0].height + " height, " + DataContents.speciesData [0].weight + " weight.";
+            pokePokedex.text = DataContents.speciesData [0].pokedex;
+            pokeBaseStats.text = DataContents.speciesData [0].baseStats [0].ToString ();
             for (int bStats = 1; bStats < 6; bStats++)
             {
-                pokeBaseStats.text += ", " + dataContents.speciesData [0].baseStats [bStats].ToString ();
+                pokeBaseStats.text += ", " + DataContents.speciesData [0].baseStats [bStats].ToString ();
             } //end for
-            pokeAbilities.text = dataContents.speciesData [0].abilities [0];
-            for (int pAbil = 1; pAbil < dataContents.speciesData[0].abilities.Length; pAbil++)
+            pokeAbilities.text = DataContents.speciesData [0].abilities [0];
+            for (int pAbil = 1; pAbil < DataContents.speciesData[0].abilities.Length; pAbil++)
             {
-                pokeAbilities.text += ", " + dataContents.speciesData [0].abilities [pAbil];
+                pokeAbilities.text += ", " + DataContents.speciesData [0].abilities [pAbil];
             } //end for
-            pokeEvolutions.text = "Evos: " + dataContents.speciesData[0].evolutions[0].species + " "
-                + dataContents.speciesData[0].evolutions[0].method + " " + 
-                    dataContents.speciesData[0].evolutions[0].trigger;
-            pokeForms.text = "Forms: " + dataContents.speciesData [0].forms [0];
-            for (int pForm = 1; pForm < dataContents.speciesData[0].forms.Length; pForm++)
+            pokeEvolutions.text = "Evos: " + DataContents.speciesData[0].evolutions[0].species + " "
+                + DataContents.speciesData[0].evolutions[0].method + " " + 
+                    DataContents.speciesData[0].evolutions[0].trigger;
+            pokeForms.text = "Forms: " + DataContents.speciesData [0].forms [0];
+            for (int pForm = 1; pForm < DataContents.speciesData[0].forms.Length; pForm++)
             {
-                pokeForms.text += ", " + dataContents.speciesData [0].forms [pForm];
+                pokeForms.text += ", " + DataContents.speciesData [0].forms [pForm];
             } //end for
        
             pokeMoves.text = "Moves:";
             //Get key levels nearest to current level
-            foreach (KeyValuePair<int, List<string>> entry in dataContents.speciesData[0].moves)
+            foreach (KeyValuePair<int, List<string>> entry in DataContents.speciesData[0].moves)
             {
-                for (int pMove = 0; pMove < dataContents.speciesData[0].moves[entry.Key].Count; pMove++)
+                for (int pMove = 0; pMove < DataContents.speciesData[0].moves[entry.Key].Count; pMove++)
                 {
-                    pokeMoves.text += ", " + entry.Key + " " + dataContents.speciesData [0].moves [entry.Key] [pMove];
+                    pokeMoves.text += ", " + entry.Key + " " + DataContents.speciesData [0].moves [entry.Key] [pMove];
                 } //end for
             } //end foreach
 
@@ -773,14 +793,14 @@ public class SceneManager : MonoBehaviour
             //If up arrow is pressed, increase form
             else if(Input.GetKeyDown(KeyCode.UpArrow))
             {
-                Debug.Log(dataContents.speciesData[chosenPoke].forms.Length);
-                if((formNum + 1) > dataContents.speciesData[chosenPoke].forms.Length)
+                Debug.Log(DataContents.speciesData[chosenPoke].forms.Length);
+                if((formNum + 1) > DataContents.speciesData[chosenPoke].forms.Length)
                 {
                     formNum = 0;
                 } //end if
                 else
                 {
-                    if(dataContents.speciesData[chosenPoke].forms[formNum] == null)
+                    if(DataContents.speciesData[chosenPoke].forms[formNum] == null)
                     {
                         formNum = 0;
                     } //end if
@@ -795,13 +815,13 @@ public class SceneManager : MonoBehaviour
             {
                 if((formNum - 1) < 0)
                 {
-                    if(dataContents.speciesData[chosenPoke].forms[0] == null)
+                    if(DataContents.speciesData[chosenPoke].forms[0] == null)
                     {
                         formNum = 0;
                     } //end if
                     else
                     {
-                        formNum = dataContents.speciesData[chosenPoke].forms.Length;
+                        formNum = DataContents.speciesData[chosenPoke].forms.Length;
                     } //end else
                 } //end if
                 else
@@ -835,49 +855,49 @@ public class SceneManager : MonoBehaviour
                     pokeBack.sprite = Resources.Load<Sprite>("Sprites/Pokemon/0b");
                 } //end if
             } //end if
-            pokeName.text = dataContents.speciesData [chosenPoke].name;
-            pokeType.text = dataContents.speciesData [chosenPoke].type1 + ", " + dataContents.speciesData [chosenPoke].type2;
-            pokeHeightWeight.text = dataContents.speciesData [chosenPoke].height + " height, " + dataContents.speciesData [chosenPoke].weight + " weight.";
-            pokePokedex.text = dataContents.speciesData [chosenPoke].pokedex;
-            pokeBaseStats.text = dataContents.speciesData [chosenPoke].baseStats [0].ToString ();
+            pokeName.text = DataContents.speciesData [chosenPoke].name;
+            pokeType.text = DataContents.speciesData [chosenPoke].type1 + ", " + DataContents.speciesData [chosenPoke].type2;
+            pokeHeightWeight.text = DataContents.speciesData [chosenPoke].height + " height, " + DataContents.speciesData [chosenPoke].weight + " weight.";
+            pokePokedex.text = DataContents.speciesData [chosenPoke].pokedex;
+            pokeBaseStats.text = DataContents.speciesData [chosenPoke].baseStats [0].ToString ();
             for (int bStats = 1; bStats < 6; bStats++)
             {
-                pokeBaseStats.text += ", " + dataContents.speciesData [chosenPoke].baseStats [bStats].ToString ();
+                pokeBaseStats.text += ", " + DataContents.speciesData [chosenPoke].baseStats [bStats].ToString ();
             } //end for
-            pokeAbilities.text = dataContents.speciesData [chosenPoke].abilities [0];
-            for (int pAbil = 1; pAbil < dataContents.speciesData[chosenPoke].abilities.Length; pAbil++)
+            pokeAbilities.text = DataContents.speciesData [chosenPoke].abilities [0];
+            for (int pAbil = 1; pAbil < DataContents.speciesData[chosenPoke].abilities.Length; pAbil++)
             {
-                pokeAbilities.text += ", " + dataContents.speciesData [chosenPoke].abilities [pAbil];
+                pokeAbilities.text += ", " + DataContents.speciesData [chosenPoke].abilities [pAbil];
             } //end for
-            if(dataContents.speciesData[chosenPoke].evolutions.Count > 0)
+            if(DataContents.speciesData[chosenPoke].evolutions.Count > 0)
             {
-                pokeEvolutions.text = "Evos: " + dataContents.speciesData[chosenPoke].evolutions[0].species + " "
-                    + dataContents.speciesData[chosenPoke].evolutions[0].method + " " + 
-                        dataContents.speciesData[chosenPoke].evolutions[0].trigger;
-                for(int pEvo = 1; pEvo < dataContents.speciesData[chosenPoke].evolutions.Count; pEvo++)
+                pokeEvolutions.text = "Evos: " + DataContents.speciesData[chosenPoke].evolutions[0].species + " "
+                    + DataContents.speciesData[chosenPoke].evolutions[0].method + " " + 
+                        DataContents.speciesData[chosenPoke].evolutions[0].trigger;
+                for(int pEvo = 1; pEvo < DataContents.speciesData[chosenPoke].evolutions.Count; pEvo++)
                 {
-                    pokeEvolutions.text += ", " + dataContents.speciesData[chosenPoke].evolutions[pEvo].species + " "
-                        + dataContents.speciesData[chosenPoke].evolutions[pEvo].method + " " + 
-                            dataContents.speciesData[chosenPoke].evolutions[pEvo].trigger;
+                    pokeEvolutions.text += ", " + DataContents.speciesData[chosenPoke].evolutions[pEvo].species + " "
+                        + DataContents.speciesData[chosenPoke].evolutions[pEvo].method + " " + 
+                            DataContents.speciesData[chosenPoke].evolutions[pEvo].trigger;
                 } //end for
             } //end if
             else
             {
                 pokeEvolutions.text = "None";
             } //end else
-            pokeForms.text = "Forms: " + dataContents.speciesData [chosenPoke].forms [0];
-            for (int pForm = 1; pForm < dataContents.speciesData[chosenPoke].forms.Length; pForm++)
+            pokeForms.text = "Forms: " + DataContents.speciesData [chosenPoke].forms [0];
+            for (int pForm = 1; pForm < DataContents.speciesData[chosenPoke].forms.Length; pForm++)
             {
-                pokeForms.text += ", " + dataContents.speciesData [chosenPoke].forms [pForm];
+                pokeForms.text += ", " + DataContents.speciesData [chosenPoke].forms [pForm];
             } //end for
             
             pokeMoves.text = "Moves:";
             //Get key levels nearest to current level
-            foreach (KeyValuePair<int, List<string>> entry in dataContents.speciesData[chosenPoke].moves)
+            foreach (KeyValuePair<int, List<string>> entry in DataContents.speciesData[chosenPoke].moves)
             {
-                for (int pMove = 0; pMove < dataContents.speciesData[chosenPoke].moves[entry.Key].Count; pMove++)
+                for (int pMove = 0; pMove < DataContents.speciesData[chosenPoke].moves[entry.Key].Count; pMove++)
                 {
-                    pokeMoves.text += ", " + entry.Key + " " + dataContents.speciesData [chosenPoke].moves [entry.Key] [pMove];
+                    pokeMoves.text += ", " + entry.Key + " " + DataContents.speciesData [chosenPoke].moves [entry.Key] [pMove];
                 } //end for
             } //end foreach
 
@@ -888,7 +908,10 @@ public class SceneManager : MonoBehaviour
 	#endregion
 
 	#region Animations
-	//Animates intro screen
+    /***************************************
+     * Name: IntroAnimation
+     * This is what the intro animation is
+     ***************************************/
 	IEnumerator IntroAnimation()
 	{
 		//Keep internal count of bounces
@@ -982,7 +1005,10 @@ public class SceneManager : MonoBehaviour
 		processing = false;
 	} //end IntroAnimation
 
-	//Fade-in animation
+    /***************************************
+     * Name: FadeInAnimation
+     * Fades the blackout screen to show a "fade in" effect of scene
+     ***************************************/
 	IEnumerator FadeInAnimation(int targetCheckpoint)
 	{
 		//Initialize color values
@@ -1012,7 +1038,10 @@ public class SceneManager : MonoBehaviour
 		processing = false;
 	} //end FadeInAnimation(int targetCheckpoint)
 
-	//Fade-out animation
+    /***************************************
+     * Name: FadeOutAnimation
+     * Fades blackout screen to create "fade out" effect of scene
+     ***************************************/
 	IEnumerator FadeOutAnimation(int targetCheckpoint)
 	{
 		//Initialize color values
@@ -1045,7 +1074,10 @@ public class SceneManager : MonoBehaviour
 		processing = false;
 	} //end FadeOutAnimation(int targetCheckpoint)
 
-	//Fades one or more objects into view. Assumes object is already active
+    /***************************************
+     * Name: FadeObjectIn
+     * Fades one or more objects in, then moves to the given checkpoint. Assumes objects already exist
+     ***************************************/
 	IEnumerator FadeObjectIn(Image[] targetObject, int targetCheckpoint)
 	{
 		//Initialize color value containers
@@ -1081,7 +1113,10 @@ public class SceneManager : MonoBehaviour
 		processing = false;
 	} //end FadeObjectIn(Image[] targetObject, int targetCheckpoint)
 
-	//Fades one or more objects out of view. Assumes object is already active
+    /***************************************
+     * Name: FadeObjectOut
+     * Fades one or more objects out, then moves to the given checkpoint. Assumes objects already exist
+     ***************************************/
 	IEnumerator FadeObjectOut(Image[] targetObject, int targetCheckpoint)
 	{
 		//Initialize color value containers
@@ -1120,7 +1155,10 @@ public class SceneManager : MonoBehaviour
 
 	//Miscellaneous functions
 	#region Misc
-	//Use for soft resetting game
+    /***************************************
+     * Name: Reset
+     * Soft resets the game to intro screen
+     ***************************************/
 	public void Reset()
 	{
 		checkpoint = 0;
@@ -1133,7 +1171,10 @@ public class SceneManager : MonoBehaviour
 		StopAllCoroutines ();
 	} //end Reset
 
-    //Jumps to section in pokedex
+    /***************************************
+     * Name: JumpTo
+     * Changes active pokemon to the one entered in the input field
+     ***************************************/
     public void JumpTo()
     {
         chosenPoke = int.Parse(GameObject.Find ("LocToJump").GetComponent<InputField> ().text);
@@ -1144,4 +1185,5 @@ public class SceneManager : MonoBehaviour
         } //end if
     } //end JumpTo
 	#endregion
+    #endregion
 } //end SceneManager class

@@ -1,13 +1,20 @@
-﻿using UnityEngine;
+﻿/***************************************************************************************** 
+ * File:    SystemManager.cs
+ * Summary: Controls error logging and player data
+ *****************************************************************************************/ 
+#region Using
+using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Collections;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Runtime.Serialization.Formatters.Binary;
+#endregion
 
 public class SystemManager : MonoBehaviour 
 {
+    #region Variables
     //INI reading
     string[] contents;      //Contents of the ini
     bool processing = false;//Whether INI is currently being read
@@ -31,8 +38,13 @@ public class SystemManager : MonoBehaviour
 	Text textComp;			//Text currently output
 	GameObject arrow;		//Arrow to signal end of text
 	bool displaying;		//If text is currently being output
-
-    #region INIReading
+    #endregion
+    #region Methods
+    #region FileReading
+    /***************************************
+     * Name: GetContents
+     * Gathers all contents of a text files and stores them in an array of strings
+     ***************************************/
     public void GetContents(string iniLocation)
     {
         if (!processing)
@@ -43,6 +55,11 @@ public class SystemManager : MonoBehaviour
         } //end if
     } //end GetContents(string iniLocation)
 
+    /***************************************
+     * Name: ReadINI
+     * Collects a line from the contents array and returns it as the generic type given
+     * for an INI file
+     ***************************************/
     public T ReadINI<T>(string section, string key)
     {
         //System.Diagnostics.Stopwatch myStopwatch = new System.Diagnostics.Stopwatch ();
@@ -83,15 +100,15 @@ public class SystemManager : MonoBehaviour
                 break;
             } //end if
         } //end for
-       // myStopwatch.Stop ();
-       
-       // Debug.Log (myStopwatch.ElapsedMilliseconds + " elapsed");
 
         //Return the information in the type requested
         return (T)Convert.ChangeType (value, typeof(T));
     } //end ReadINI(string section, string key)
 
-    //Returns all parts in a CSV line
+    /***************************************
+     * Name: ReadCSV
+     * Returns entire line of a section in contents array for a CSV file
+     ***************************************/
     public string[] ReadCSV(int section)
     {
         return contents [section].Split(',');
@@ -99,7 +116,10 @@ public class SystemManager : MonoBehaviour
     #endregion
 
 	#region ErrorLog
-	//Initialize the error log
+    /***************************************
+     * Name: InitErrorLog
+     * Initialize the error log for the play session, or create one from scratch
+     ***************************************/
 	public bool InitErrorLog()
 	{
 		//Init errorLog location
@@ -141,7 +161,10 @@ public class SystemManager : MonoBehaviour
 		} //end if
 	} //end InitErrorLog
 
-	//Sends a message to error log
+    /***************************************
+     * Name: LogErrorMessage
+     * Sends a message to the error log
+     ***************************************/
 	public void LogErrorMessage(string message)
 	{
 		//Make sure error log exists
@@ -153,7 +176,10 @@ public class SystemManager : MonoBehaviour
 		} //end if
 	} //end LogErrorMessage(string message)
 
-    //Closes error log file
+    /***************************************
+     * Name: OnApplicationQuit
+     * Closes the error log
+     ***************************************/
     void OnApplicationQuit()
     {
         if (output != null)
@@ -165,7 +191,10 @@ public class SystemManager : MonoBehaviour
 	#endregion
 
 	#region Text
-	//Used for text initialization
+    /***************************************
+     * Name: GetText
+     * Prepares text for display
+     ***************************************/
 	public void GetText(GameObject textArea, GameObject endArrow)
 	{
 		//Initialize text reference and gate
@@ -177,7 +206,10 @@ public class SystemManager : MonoBehaviour
 		arrow.SetActive (false);
 	} //end GetText(GameObject textArea, GameObject endArrow)
 
-	//Display text
+    /***************************************
+     * Name: DisplayText
+     * Plays the text using the animation
+     ***************************************/
 	public bool PlayText(string textMessage)
 	{
 		//If already displaying text, end function
@@ -194,13 +226,19 @@ public class SystemManager : MonoBehaviour
 		return true;
 	} //end PlayText(string textMessage)
 
-	//Whether the text has finished displaying
+    /***************************************
+     * Name: GetDisplay
+     * Whether the text finished displaying
+     ***************************************/
 	public bool GetDisplay()
 	{
 		return displaying;
 	} //end GetDisplay
 
-	//Types text a letter or more at a time
+    /***************************************
+     * Name: TypeText
+     * Displays text letter by letter
+     ***************************************/
 	IEnumerator TypeText () 
 	{
 		//Clear output and convert message to characters
@@ -244,7 +282,10 @@ public class SystemManager : MonoBehaviour
 	#endregion
 
 	#region Persistent
-	//Persists to binary file
+    /***************************************
+     * Name: Persist
+     * Persists data to a binary file
+     ***************************************/
 	public void Persist()
 	{
 		BinaryFormatter bf = new BinaryFormatter ();
@@ -286,7 +327,10 @@ public class SystemManager : MonoBehaviour
 		} //end else
 	} //end Persist
 
-	//Loads data from binary file
+    /***************************************
+     * Name: GetPersist
+     * Loads data from binary file
+     ***************************************/
 	public bool GetPersist()
 	{
 		//Initalize data location
@@ -320,43 +364,64 @@ public class SystemManager : MonoBehaviour
 		} //end else
 	} //end GetPersist
 
-	//Set persistent name
+    /***************************************
+     * Name: SetName
+     * Change the player's name
+     ***************************************/
 	public void SetName(string newName)
 	{
 		pName = newName;
 	} //end SetName(string newName)
 
-	//Get persistent name
+    /***************************************
+     * Name: GetPName
+     * Retrieves player's name
+     ***************************************/
 	public string GetPName()
 	{
 		return pName;
 	} //end GetPName
 
-	//Set persistent badges
+    /***************************************
+     * Name: SetBadges
+     * Sets the amount of badges
+     ***************************************/
 	public void SetBadges(int badges)
 	{
 		pBadges = badges;
 	} //end SetBadges(int badges)
 
-	//Get persistent badges
+    /***************************************
+     * Name: GetBadges
+     * Retrieves badge count
+     ***************************************/
 	public int GetBadges()
 	{
 		return pBadges;
 	} //end GetBadges
 
-	//Get persistent hours
+    /***************************************
+     * Name: GetHours
+     * Returns how many play hours are on file
+     ***************************************/
 	public int GetHours()
 	{
 		return pHours;
 	} //end GetHours
 
-	//Get persistent minutes
+    /***************************************
+     * Name: GetMinutes
+     * Returns how many leftover minutes there are
+     ***************************************/
 	public int GetMinutes()
 	{
 		return pMinutes;
 	} //end GetMinutes
 
-	//Calculate time
+    /***************************************
+     * Name: CalcTime
+     * Determines total play time from this session
+     ***************************************/
 	private void CalcTime()
 	{
 		//Calculate total seconds, rounded up
@@ -379,6 +444,7 @@ public class SystemManager : MonoBehaviour
 
 	} //end if
 	#endregion
+    #endregion
 } //end SystemManager class
 
 //Class of persistent data

@@ -1,34 +1,35 @@
-﻿using UnityEngine;
+﻿/***************************************************************************************** 
+ * File:    DataContents.cs
+ * Summary: Holds all databases for reference in-game. 
+ *****************************************************************************************/ 
+#region Using
+using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Collections;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections.Generic;
+#endregion
 
-public class DataContents : MonoBehaviour 
+public static class DataContents : System.Object 
 {
-    //Pokemon species
-    [SerializeField]public List<PokemonSpecies> speciesData;
-    [SerializeField]public List<Move> moveData;
-    [SerializeField]public List<Item> itemData;
-    public ExperienceTable experienceTable;
-    string dataLocation = Environment.GetEnvironmentVariable ("USERPROFILE") + "/Saved Games/Pokemon Carousel/";
+    #region Variables
+    [SerializeField]public static List<PokemonSpecies> speciesData; //Pokemon species
+    [SerializeField]public static List<Move> moveData;              //Pokemon attacks
+    [SerializeField]public static List<Item> itemData;              //Use, Permanent, and Hold items
+    public static ExperienceTable experienceTable;                  //Holds experience values for growth rates
 
-	// Use this for initialization
-	void Start () 
-    {
-	
-	} //end Start
-	
-	// Update is called once per frame
-	void Update () 
-    {
-	
-	} //end Update
+    //Shorthand for main data path
+    static string dataLocation;
+    #endregion
 
-    //Compiles data to binary file
-    public void PersistPokemon()
+    #region Methods
+    /***************************************
+     * Name: PersistPokemon
+     * Compiles speciesData into a binary file
+     ***************************************/
+    public static void PersistPokemon()
     {
         BinaryFormatter bf = new BinaryFormatter ();
         FileStream npf = File.Create (dataLocation + "pokemonData.dat");
@@ -36,8 +37,11 @@ public class DataContents : MonoBehaviour
         npf.Close ();
     } //end PersistPokemon
 
-    //Compiles data to binary file
-    public void PersistMoves()
+    /***************************************
+     * Name: PersistMoves
+     * Compiles moveData into a binary file.
+     ***************************************/
+    public static void PersistMoves()
     {
         BinaryFormatter bf = new BinaryFormatter ();
         FileStream npf = File.Create (dataLocation + "movesData.dat");
@@ -45,8 +49,11 @@ public class DataContents : MonoBehaviour
         npf.Close ();
     } //end PersistMoves
 
-    //Compiles data to binary file
-    public void PersistItems()
+    /***************************************
+     * Name: PersistItems
+     * Compiles itemData into a binary file.
+     ***************************************/
+    public static void PersistItems()
     {
         BinaryFormatter bf = new BinaryFormatter ();
         FileStream npf = File.Create (dataLocation + "itemData.dat");
@@ -54,19 +61,26 @@ public class DataContents : MonoBehaviour
         npf.Close ();
     } //end PersistItems
 
-    //Loads data from binary file
-    public bool GetPersist()
+    /***************************************
+     * Name: GetPersist
+     * Loads all binary files into appropriate locations.
+     ***************************************/
+    public static bool GetPersist()
     {
         //Initalize data location
-        //TODO: http://wiki.unity3d.com/index.php/Folder_Paths_Win_Mac
-#if UNITY_EDITOR
+        //PossibleToDo: http://wiki.unity3d.com/index.php/Folder_Paths_Win_Mac
+        //Find best place to save to for Windows and Mac
+        #if UNITY_EDITOR
         dataLocation = Environment.GetEnvironmentVariable ("USERPROFILE") + "/Saved Games/Pokemon Carousel/";
-#else
+        #else
+        //Gets the current folder location and sets path to where the binary files are
         dataLocation = Environment.CurrentDirectory + "/PokemonCarousel_Data/";
-#endif      
-        //Make sure file is regional
+        #endif  
+
+        //Make sure pokemon file is regional
         if(File.Exists(dataLocation + "pokemonData.dat"))
         {
+            //Decrypt and load data
             BinaryFormatter bf = new BinaryFormatter ();
             FileStream pf = File.Open (dataLocation + "pokemonData.dat", FileMode.Open);
             List<PokemonSpecies> pfd = (List<PokemonSpecies>)bf.Deserialize(pf);
@@ -75,13 +89,15 @@ public class DataContents : MonoBehaviour
         } //end if
         else
         {
+            //Not found, log error and end function
             Debug.LogError("Could not find pokemonData.dat at " + dataLocation);
             return false;
         } //end else
 
-        //Make sure file is regional
+        //Make sure moves file is regional
         if(File.Exists(dataLocation + "movesData.dat"))
         {
+            //Decrypt and load data
             BinaryFormatter bf = new BinaryFormatter ();
             FileStream pf = File.Open (dataLocation + "movesData.dat", FileMode.Open);
             List<Move> mfd = (List<Move>)bf.Deserialize(pf);
@@ -90,37 +106,54 @@ public class DataContents : MonoBehaviour
         } //end if
         else
         {
+            //Not found, log error and end function
             Debug.LogError("Could not find movesData.dat at " + dataLocation);
             return false;
         } //end else
 
-        //Make sure file is regional
+        //Make sure item file is regional
         if(File.Exists(dataLocation + "itemData.dat"))
         {
+            //Decrypt and load data
             BinaryFormatter bf = new BinaryFormatter ();
             FileStream pf = File.Open (dataLocation + "itemData.dat", FileMode.Open);
             List<Item> ifd = (List<Item>)bf.Deserialize(pf);
             pf.Close();
             itemData = ifd;
+
+            //Create an experience table
+            experienceTable = new ExperienceTable();
+
+            //All files were loaded successfully, end function
             return true;
         } //end if
         else
         {
+            //Not found, log error and end function
             Debug.LogError("Could not find movesData.dat at " + dataLocation);
             return false;
         } //end else
     } //end GetPersist
 
-    //Get the pokemon's level
-    public int GetLevel(int exp, string growth)
+    /***************************************
+     * Name: GetLevel
+     * Returns level according to current xp and growth rate
+     ***************************************/
+    public static int GetLevel(int exp, string growth)
     {
         return experienceTable.GetLevel (growth, exp);
     } //end GetLevel(int exp, string growth)
 
-    //Gets the move id
-    public int GetMoveID(string moveName)
+    /***************************************
+     * Name: GetMoveID
+     * Returns numeric location of pokemon attack
+     ***************************************/
+    public static int GetMoveID(string moveName)
     {
+        //No move found yet
         int moveID = -1;
+
+        //Loop through and look for the name
         for(int i = 0; i < moveData.Count; i++)
         {
             if(moveData[i].internalName == moveName)
@@ -128,69 +161,91 @@ public class DataContents : MonoBehaviour
                 moveID = i;
             } //end if
         } //end for
+
+        //Return location of attack, or -1 if not found
         return moveID;
     } //end GetMoveID(string moveName)
 
-    //Get the move's name
-    public string GetMoveName(int moveNumber)
+    /***************************************
+     * Name: GetMoveName
+     * Returns string name of given numeric location
+     ***************************************/
+    public static string GetMoveName(int moveNumber)
     {
+        //Return NULL if a number goes beyond list boundaries
         if (moveNumber < 0 || moveNumber > moveData.Count)
         {
             return "NULL";
         } //end if
+        //Return name of attack at numeric location
         else
         {
             return moveData [moveNumber].internalName;
         } //end else
     } //end GetMoveName(int moveNumber)
+    #endregion
 } //end DataContents class
 
-//Pokemon Species
+/***************************************************************************************** 
+ * Class: PokemonSpecies
+ * Summary: Database for all base pokemon data.
+ *****************************************************************************************/ 
 [Serializable]
 public class PokemonSpecies
 {
-    public string name;
-    public string type1;
-    public string type2;
-    public int[] baseStats;
-    public string genderRate;
-    public string growthRate;
-    public int baseExp;
-    public int[] effortPoints;
-    public int catchRate;
-    public int happiness;
-    public string[] abilities;
-    public string hiddenAbility;
-    public Dictionary<int, List<string>> moves;
-    public string[] eggMoves;
-    public string[] compatibility;
-    public int steps;
-    public float height;
-    public float weight;
-    public string color;
-    public string habitat;
-    public string kind;
-    public string pokedex;
-    public string[] forms;
-    public int battlerPlayerY;
-    public int battlerEnemyY;
-    public int battlerAltitude;
-    public List<Evolutions> evolutions;
+    public string name;                         //Regular name of pokemon
+    public string type1;                        //Primary type
+    public string type2;                        //Secondary type
+    public int[] baseStats;                     //The base stats for each of the six stats
+    public string genderRate;                   //Female likelihood 
+    public string growthRate;                   //Experience group of pokemon
+    public int baseExp;                         //How much experience is given to opponent for beating this pokemon
+    public int[] effortPoints;                  //How many effort points are given to opponent for beating this pokemon
+    public int catchRate;                       //The probability of capturing this pokemon
+    public int happiness;                       //How much happiness the pokemon starts with
+    public string[] abilities;                  //The abilities a pokemon naturally knows
+    public string hiddenAbility;                //The ability the pokemon obtains through special conditions
+    public Dictionary<int, List<string>> moves; //All level-up moves a pokemon has
+    public string[] eggMoves;                   //All moves learnable through breeding
+    public string[] compatibility;              //What egg-groups the pokemon is compatible with
+    public int steps;                           //How many steps it takes for an egg of this pokemon to hatch
+    public float height;                        //Height
+    public float weight;                        //Weight
+    public string color;                        //What color group the pokemon belongs in
+    public string habitat;                      //What habitat this pokemon is usually found in
+    public string kind;                         //The real-life compliment to this pokemon
+    public string pokedex;                      //Pokedex text
+    public string[] forms;                      //Any alternate forms this pokemon has
+    public int battlerPlayerY;                  //How low the pokemon sprite is on player's side
+    public int battlerEnemyY;                   //How low the pokemon sprite is on enemy's side
+    public int battlerAltitude;                 //How high the pokemon sprite is on the enemy's side
+    public List<Evolutions> evolutions;         //What evolutions and methods this pokemon has
 } //end PokemonSpecies class
 
-//Evolution class
+/***************************************************************************************** 
+ * Class: Evolutions
+ * Summary: Holds evolution data for each evolutuion of a pokemon
+ *****************************************************************************************/ 
 [Serializable]
 public class Evolutions
 {
-   public string species;
-   public string method;
-   public string trigger;
+   public string species;   //The species the pokemon evolves into
+   public string method;    //How the evolution occurs
+   public string trigger;   //What triggers the method
 } //end Evolutions class
 
-//Experience table
+/***************************************************************************************** 
+ * Class: ExperienceTable
+ * Summary: Lists the xp for each level that a pokemon needs
+ *****************************************************************************************/ 
 [Serializable]
 public class ExperienceTable
 {
+    /***************************************
+     * Name: Medium
+     * Contains array of experience at each level of
+     * a pokemon with the Medium experience rate
+     ***************************************/
     int[] Medium = 
     {
         -1,0,8,27,64,125,216,343,512,729,
@@ -205,6 +260,12 @@ public class ExperienceTable
         729000,753571,778688,804357,830584,857375,884736,912673,941192,970299,
         1000000
     };
+
+    /***************************************
+     * Name: Erratic
+     * Contains array of experience at each level of
+     * a pokemon with the Erractic experience rate
+     ***************************************/
     int[] Erratic =
     {
         -1,0,15,52,122,237,406,637,942,1326,
@@ -220,6 +281,11 @@ public class ExperienceTable
         600000
     };
 
+    /***************************************
+     * Name: Fluctuating
+     * Contains array of experience at each level of
+     * a pokemon with the Fluctuating experience rate
+     ***************************************/
     int[] Fluctuating =
     {        
         -1,0,4,13,32,65,112,178,276,393,
@@ -235,6 +301,11 @@ public class ExperienceTable
         1640000
     };
 
+    /***************************************
+     * Name: Parabolic
+     * Contains array of experience at each level of
+     * a pokemon with the Parabolic experience rate
+     ***************************************/
     int[] Parabolic =
     {
         -1,0,9,57,96,135,179,236,314,419,
@@ -250,6 +321,11 @@ public class ExperienceTable
         1059860
     };
 
+    /***************************************
+     * Name: Fast
+     * Contains array of experience at each level of
+     * a pokemon with the Fast experience rate
+     ***************************************/
     int[] Fast =
     {
         -1,0,6,21,51,100,172,274,409,583,
@@ -265,6 +341,11 @@ public class ExperienceTable
         800000
     };
 
+    /***************************************
+     * Name: Slow
+     * Contains array of experience at each level of
+     * a pokemon with the Slow experience rate
+     ***************************************/
     int[] Slow =
     {
         -1,0,10,33,80,156,270,428,640,911,
@@ -280,7 +361,11 @@ public class ExperienceTable
         1250000
     };
 
-    //Gets experience for current level. Used for new pokemon
+    /***************************************
+     * Name: GetCurrentValue
+     * Returns how much experience the pokemon should have
+     * at the given level
+     ***************************************/
     public int GetCurrentValue(string experienceRate, int level)
     {
         if (experienceRate == "Medium")
@@ -315,7 +400,11 @@ public class ExperienceTable
         } //end else
     } //end GetCurrentValue(string experienceRate, int level)
 
-    //Gets experience for next level. Used for leveling up.
+    /***************************************
+     * Name: GetNextValue
+     * Returns how much experience is required for 
+     * the next level
+     ***************************************/
     public int GetNextValue(string experienceRate, int level)
     {
         if (experienceRate == "Medium")
@@ -350,7 +439,11 @@ public class ExperienceTable
         } //end else
     } //end GetNextValue(string experienceRate, int level)
 
-    //Get level for current experience. Error resolving function
+    /***************************************
+     * Name: GetLevel
+     * Returns the level for the given experience
+     * THIS IS A FALLBACK FUNCTION
+     ***************************************/
     public int GetLevel(string experienceRate, int experience)
     {
         //Level for reference
@@ -490,39 +583,54 @@ public class ExperienceTable
         } //end else
         return level;
     } //end GetLevel(string experienceRate, int experience)
-
 } //end ExperienceTable class
 
+/***************************************************************************************** 
+ * Class: Move
+ * Summary: Contains the data for pokemon attacks
+ *****************************************************************************************/ 
 [Serializable]
 public class Move
 {
-    public string internalName;
-    public string gameName;
-    public int functionCode;
-    public int baseDamage;
-    public string type;
-    public string category;
-    public int accuracy;
-    public int totalPP;
-    public int chanceEffect;
-    public int target;
-    public int priority;
-    public string flags;
-    public string description;
+    public string internalName; //The name of the attack
+    public string gameName;     //The name shown in-game
+    public int functionCode;    //What effect this move has
+    public int baseDamage;      //How much power this attack has
+    public string type;         //Pokemon type 
+    public string category;     //Physical, Special, or Status
+    public int accuracy;        //Liklihood of landing the attack
+    public int totalPP;         //Total amount of allowable uses
+    public int chanceEffect;    //How likely a bonus effect has to happen
+    public int target;          //Who this move affects in double and triple battles
+    public int priority;        //How fast a move occurs, ignoring speed
+    public string flags;        //Special properties of the move
+    public string description;  //In-game text description
 } //end Move class
 
+/***************************************************************************************** 
+ * Class: Item
+ * Summary: Contains data on in-game items
+ *****************************************************************************************/ 
 [Serializable]
 public class Item
 {
-    public string internalName;
-    public string gameName;
-    public int bagNumber;
-    public int cost;
-    public string description;
-    public int battleUse;
+    public string internalName; //The name of the item
+    public string gameName;     //The in-game name of the item
+    public int bagNumber;       //What slot the item goes in
+    public int cost;            //How much it sells for in the shop
+    public string description;  //In-game text description
+    public int battleUse;       //How can it be used in battle
 } //end Item class
 
+/***************************************************************************************** 
+ * File:    Natures
+ * Summary: Lists and organizes natures according to buffs and debuffs
+ *****************************************************************************************/ 
 [Serializable]
+/***************************************
+     * Name: Natures
+     * List of natures, numbered for easy boost/nerf calculation
+     ***************************************/
 public enum Natures
 {
     HARDY   = 0,

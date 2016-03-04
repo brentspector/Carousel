@@ -1,15 +1,19 @@
-﻿using UnityEngine;
+﻿/***************************************************************************************** 
+ * File:    Pokemon.cs
+ * Summary: General template for each pokemon's object's unique base data
+ *****************************************************************************************/ 
+#region Using
+using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using Random = UnityEngine.Random;
+#endregion
 
 [Serializable]
 public class Pokemon
 {
-    //Contains database of pokemon data
-    DataContents dataContents;
-
+    #region Variables
 	//Stats
 	int currentHP;			//Current HP
 	int totalHP;			//Max HP
@@ -47,8 +51,13 @@ public class Pokemon
 	string nickname;		//Nickname of pokemon
 	string obtainFrom;		//Where this pokemon was obtained from
 	string OtName;			//Name of the original trainer
+    #endregion
 
-	//Create a random pokemon
+    #region Methods
+    /***************************************
+     * Name: Pokemon
+     * Contructor for pokemon encounters
+     ***************************************/
 	public Pokemon(int species = 0, int tID = 0, int level = 5, int item = 0, int ball = 0, 
 	               int oType = 0, int oLevel = 5, int ability = 0, int gender = 0,
 	               int nature = 0, int happy = 0, bool pokerus = false, bool shiny = false)
@@ -108,14 +117,17 @@ public class Pokemon
 		} //end for
 
         //Initialize any values that can be given from data
-        dataContents = GameManager.instance.GetDataContents ();
         ChangeIVs (new int[] {-1});
         CalculateStats ();
         currentHP = totalHP;
         GiveInitialMoves (new int[] {-1, -1, -1, -1});
 	} //end Pokemon constructor
 
-	//Change IVs of pokemon
+    /***************************************
+     * Name: ChangeIVs
+     * Sets the pokemon's IVs depending on
+     * the given parameters
+     ***************************************/
     /* NOTE: You can provide a number that does not fall between
      * 0 and 31, and it will give a random result for that IV. 
      * If only one number that doesn't fall between 0 and 31
@@ -169,7 +181,7 @@ public class Pokemon
             //Fill in  missing values
             if(values.Length < 6)
             {
-                //Create new 6 int long array
+                //Create new 6 int array
                 int[] fixedValues = new int[6]; 
 
                 //Fill in fixedValues with given values
@@ -203,18 +215,22 @@ public class Pokemon
         } //end else
 	} //end ChangeIVs(int[] values, int index = -1)
 
-    //Change EVs of pokemon
+    /***************************************
+     * Name: ChangeEVs
+     * Sets the pokemon's EVs depending on
+     * the given parameters
+     ***************************************/
     /* NOTE: 
-     * TotalEVs maxes at 510.
-     * Individual EVs max at 255.
-     * When providing 1 value
+     * TotalEVs maximum is 510.
+     * Individual EVs maximum is 255.
+     * ---When providing 1 value---
      * Negative value with index sets that index to a random EV
-     * Negative value without index sets all EVs to random EV
+     * Negative value without index sets all EVs to different random EVs
      * Excessive value with index sets that index to standard 85
      * Excessive value without index sets all EVs to 85
      * Acceptable value with index sets that index to that value
      * Acceptable value without index sets all EVs to that value
-     * When providing more than 1 value
+     * ---When providing more than 1 value---
      * If less than 6 values given, a 0 will be placed in empty slots
      * Otherwise it follows single EV methods, except ignores index param
      */
@@ -471,11 +487,17 @@ public class Pokemon
         } //end else
     } //end ChangeEVs(int[] values, int index = -1)
 
-    //Change moves of pokemon
+    /***************************************
+     * Name: ChangeMoves
+     * Sets the pokemon's moves depending on
+     * given parameters
+     ***************************************/
     /* NOTE: Moves are replaced from front to back. Thus providing
      * only 1 value will only replace the first moveslot. Provide
-     * a valid index number to change that specific moveslot
-     * 
+     * a valid index number to change that specific moveslot. If
+     * multiple moves are provided, and an index is provided, only
+     * the move at that index will be replaced with the first move
+     * in the list of moves given.
      */
     public void ChangeMoves(int[] values, int index = -1)
     {
@@ -494,10 +516,13 @@ public class Pokemon
         } //end else
     } //end ChangeMoves(int[] values, int index = -1)
 
+    /***************************************
+     * Name: GiveInitialMoves
+     * Sets the pokemon's starting moveset
+     ***************************************/
     //Given initial moves, including any special moves to be saved under first moves
     //NOTE: A value of -1 will give the last non-duplicate level-up move available.
     //If no level up move is available, it will be left blank
-    //All -1 values must be at the end of the values array passed for the parameter
     public void GiveInitialMoves(int[] values)
     {
         //Fill in missing values
@@ -522,6 +547,9 @@ public class Pokemon
             values = fixedValues;
         } //end if
 
+        //Sort the values to avoid misplaced -1 values
+        Array.Sort (values);
+
         //Loop through values
         for (int i = 0; i < 4; i++)
         {
@@ -545,7 +573,7 @@ public class Pokemon
                 } //end for
 
                 //Get key levels nearest to current level
-                foreach(KeyValuePair<int, List<string>> entry in dataContents.speciesData[natSpecies].moves)
+                foreach(KeyValuePair<int, List<string>> entry in DataContents.speciesData[natSpecies].moves)
                 {
                     //End function when key exceeds current level
                     if(entry.Key > currentLevel)
@@ -572,10 +600,8 @@ public class Pokemon
                         int q = 0;
 
                         //Loop through all moves available to learn at the level denoted by the key location
-                        for(int p = 0; p < dataContents.speciesData[natSpecies].moves[keyLocations[n]].Count; p++)
+                        for(int p = 0; p < DataContents.speciesData[natSpecies].moves[keyLocations[n]].Count; p++)
                         {
-                            Debug.Log(dataContents.speciesData[natSpecies].moves[keyLocations[n]][p]);
-
                             //Break if all moves are full
                             if(m+q >= 4)
                             {
@@ -584,18 +610,17 @@ public class Pokemon
 
                             //Set the move to the next one in the move list
                             //First make sure the move isn't already known
-                            int collectedMove = dataContents.GetMoveID(dataContents.speciesData[natSpecies].moves[keyLocations[n]][p]);
+                            int collectedMove = DataContents.GetMoveID(DataContents.speciesData[natSpecies].moves[keyLocations[n]][p]);
                             if(!Array.Exists(moves, element => element == collectedMove))
                             {
                                 moves[m+q] = collectedMove;
                                 firstMoves[m+q] = moves[m+q];
                                 q++;
                             } //end if
-                            Debug.Log("M: " + m + " P: " + p + " Q: " + q);
                         } //end for
 
                         //Set the move pointer to the new position
-                        m += dataContents.speciesData[natSpecies].moves[keyLocations[n]].Count - 1;
+                        m += DataContents.speciesData[natSpecies].moves[keyLocations[n]].Count - 1;
                     } //end if
                 } //end for
 
@@ -605,7 +630,10 @@ public class Pokemon
         } //end for
     } //end GiveInitialMoves(int[] moves)
 
-    //Change markings
+    /***************************************
+     * Name: ChangeMarkings
+     * Adjusts the pokemon's marking tags
+     ***************************************/
     public void ChangeMarkings(bool value, int index)
     {
         //Make sure index is valid
@@ -615,7 +643,10 @@ public class Pokemon
         } //end if
     } //end ChangeMarkings(bool value, int index)
 
-    //Changes ribbons
+    /***************************************
+     * Name: ChangeRibbons
+     * Awards or removes a ribbon from the pokemon
+     ***************************************/
     public void ChangeRibbons(bool value, int index)
     {
         //Make sure index is valid
@@ -625,53 +656,36 @@ public class Pokemon
         } //end if
     } //end ChangeRibbons(bool value, int index)
 
-    //Test funtion to varify values are saved
-	public string GetValues()
-	{
-		string result;
-
-        result = "Name: " + dataContents.speciesData [natSpecies].name;
-        result += "\nNumber: " + natSpecies;
-		result += "\nCurrentHP: " + currentHP;
-		result += "\nMaxHP: " + totalHP;
-		result += "\nAttack: " + attack;
-		result += "\nDefense: " + defense;
-		result += "\nSpA: " + specialA;
-		result += "\nSpD: " + specialD;
-		result += "\nSpeed: " + speed;
-		result += "\nIVs: ";
-		foreach (int number in IV) 
-        {
-			result += number + ", ";
-		}
-		result += "\nEVs: ";
-		foreach (int number in EV) 
-        {
-			result += number + ", ";
-		}
-        result += "\nMoves: ";
-        foreach (int number in moves)
-        {
-            result += dataContents.GetMoveName(number) + ", ";
-        }
-		return result;
-	} //end GetValues
-
-    //Calculates the exp for the level given
+    /***************************************
+     * Name: CalculateEXP
+     * Determines the initial EXP for the 
+     * pokemon's level
+     ***************************************/
 	int CalculateEXP(int level)
 	{
-        return 0;
+        return DataContents.experienceTable.GetCurrentValue (
+            DataContents.speciesData [natSpecies].growthRate,
+            level);
 	} //end CalculateEXP(int level)
 
-    //Calcuate the HP
+    /***************************************
+     * Name: CalculateHP
+     * Determines the HP stat of the pokemon
+     ***************************************/
     void CalculateHP()
     {
         int evCalc = EV [0] / 4;
-        int baseHP = dataContents.speciesData [natSpecies].baseStats [0];
+        int baseHP = DataContents.speciesData [natSpecies].baseStats [0];
         totalHP = ((IV[0] + 2 * baseHP + evCalc + 100) * currentLevel) / 100 + 10;     
         currentHP = totalHP;
     } //end CalculateHP
-    //Calculates all stats besides HP
+
+    /***************************************
+     * Name: CalculateStats
+     * Determines the values for all stats,
+     * although HP is calculated in another
+     * function, but is called here
+     ***************************************/
     public void CalculateStats()
     {
         //Calculate nature impact
@@ -691,7 +705,7 @@ public class Pokemon
         //Loop through and set all non-HP stats
         for (int i = 1; i < 6; i++)
         {
-            int baseStat = dataContents.speciesData[natSpecies].baseStats[i];
+            int baseStat = DataContents.speciesData[natSpecies].baseStats[i];
             int evCalc = EV[i]/4;
             results[i-1] = (((IV[i] + 2 * baseStat + evCalc) * currentLevel/100) + 5) * pvalues[i - 1] / 100;
         } //end for
@@ -703,6 +717,7 @@ public class Pokemon
         specialA = results[3];
         specialD = results[4];
     } //end CalculateStat
+
 	#region Accessors
 	//Stats
 	public int CurrentHP
@@ -1102,4 +1117,5 @@ public class Pokemon
 		} //end set
 	} //end OTName
 	#endregion
+    #endregion
 } //end Pokemon class
