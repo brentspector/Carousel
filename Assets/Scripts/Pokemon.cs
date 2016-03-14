@@ -549,6 +549,7 @@ public class Pokemon
 
         //Sort the values to avoid misplaced -1 values
         Array.Sort (values);
+        Array.Reverse (values);
 
         //Loop through values
         for (int i = 0; i < 4; i++)
@@ -591,7 +592,7 @@ public class Pokemon
                 } //end foreach
 
                 //Set the moves
-                for(int m = i, n = 3; m < 4; m++, n--)
+                for(int m = i, n = keyLocations.Length-1; m < 4; m++, n--)
                 {
                     //Make sure the key location actually exists
                     if(keyLocations[n] > 0)

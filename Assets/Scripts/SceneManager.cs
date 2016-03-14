@@ -717,41 +717,27 @@ public class SceneManager : MonoBehaviour
             //Initialize first data
             pokeFront.sprite = Resources.Load<Sprite> ("Sprites/Pokemon/001");
             pokeBack.sprite = Resources.Load<Sprite> ("Sprites/Pokemon/001b");
-            pokeName.text = DataContents.speciesData[0].name;
-            pokeType.text = DataContents.speciesData [0].type1 + ", " + DataContents.speciesData [0].type2;
-            pokeHeightWeight.text = DataContents.speciesData [0].height + " height, " + DataContents.speciesData [0].weight + " weight.";
-            pokePokedex.text = DataContents.speciesData [0].pokedex;
-            pokeBaseStats.text = DataContents.speciesData [0].baseStats [0].ToString ();
-            for (int bStats = 1; bStats < 6; bStats++)
-            {
-                pokeBaseStats.text += ", " + DataContents.speciesData [0].baseStats [bStats].ToString ();
-            } //end for
-            pokeAbilities.text = DataContents.speciesData [0].abilities [0];
-            for (int pAbil = 1; pAbil < DataContents.speciesData[0].abilities.Length; pAbil++)
-            {
-                pokeAbilities.text += ", " + DataContents.speciesData [0].abilities [pAbil];
-            } //end for
-            pokeEvolutions.text = "Evos: " + DataContents.speciesData[0].evolutions[0].species + " "
-                + DataContents.speciesData[0].evolutions[0].method + " " + 
-                    DataContents.speciesData[0].evolutions[0].trigger;
-            pokeForms.text = "Forms: " + DataContents.speciesData [0].forms [0];
-            for (int pForm = 1; pForm < DataContents.speciesData[0].forms.Length; pForm++)
-            {
-                pokeForms.text += ", " + DataContents.speciesData [0].forms [pForm];
-            } //end for
-       
-            pokeMoves.text = "Moves:";
-            //Get key levels nearest to current level
-            foreach (KeyValuePair<int, List<string>> entry in DataContents.speciesData[0].moves)
-            {
-                for (int pMove = 0; pMove < DataContents.speciesData[0].moves[entry.Key].Count; pMove++)
-                {
-                    pokeMoves.text += ", " + entry.Key + " " + DataContents.speciesData [0].moves [entry.Key] [pMove];
-                } //end for
-            } //end foreach
+            pokeName.text = DataContents.ExecuteSQL<string>("SELECT name FROM Pokemon WHERE rowid=1");
+            pokeType.text = DataContents.ExecuteSQL<string>("SELECT type1 FROM Pokemon WHERE rowid=1") + ", " 
+                + DataContents.ExecuteSQL<string>("SELECT type2 FROM Pokemon WHERE rowid=1");
+            pokeHeightWeight.text = DataContents.ExecuteSQL<string>("SELECT height FROM Pokemon WHERE rowid=1") 
+                + " height, " + DataContents.ExecuteSQL<string>("SELECT weight FROM Pokemon WHERE rowid=1") + " weight.";
+            pokePokedex.text = DataContents.ExecuteSQL<string>("SELECT pokedex FROM Pokemon WHERE rowid=1");
+            pokeBaseStats.text = DataContents.ExecuteSQL<string>("SELECT health FROM Pokemon WHERE rowid=1");
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT attack FROM Pokemon WHERE rowid=1");
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT defence FROM Pokemon WHERE rowid=0");
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT speed FROM Pokemon WHERE rowid=0");
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT specialAttack FROM Pokemon WHERE rowid=0");
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT specialDefence FROM Pokemon WHERE rowid=0");
+            pokeAbilities.text = DataContents.ExecuteSQL<string>("SELECT ability1 FROM Pokemon WHERE rowid=0")
+            + ", " + DataContents.ExecuteSQL<string>("SELECT ability2 FROM Pokemon WHERE rowid=0") + ", " +
+                    DataContents.ExecuteSQL<string>("SELECT hiddenAbility FROM Pokemon WHERE rowid=0");      
+            pokeEvolutions.text = "Evos: " + DataContents.ExecuteSQL<string>("SELECT evolutions FROM Pokemon WHERE rowid=0");
+            pokeForms.text = "Forms: " + DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=0");       
+            pokeMoves.text = "Moves: " + DataContents.ExecuteSQL<string>("SELECT moves FROM Pokemon WHERE rowid=0");
 
-            //Set chosenPoke to 0
-            chosenPoke = 0;
+            //Set chosenPoke to 1
+            chosenPoke = 1;
 
             //Move to next section 
             checkpoint = 2;
@@ -768,9 +754,9 @@ public class SceneManager : MonoBehaviour
             if(Input.GetKey(KeyCode.RightArrow))
             {
                 formNum = 0;
-                if(chosenPoke + 1 >= 721)
+                if(chosenPoke + 1 > 721)
                 {
-                    chosenPoke = 0;
+                    chosenPoke = 1;
                 }
                 else
                 {
@@ -781,9 +767,9 @@ public class SceneManager : MonoBehaviour
             else if(Input.GetKey(KeyCode.LeftArrow))
             {
                 formNum = 0;
-                if(chosenPoke - 1 < 0)
+                if(chosenPoke - 1 < 1)
                 {
-                    chosenPoke = 720;
+                    chosenPoke = 721;
                 }
                 else
                 {
@@ -793,7 +779,6 @@ public class SceneManager : MonoBehaviour
             //If up arrow is pressed, increase form
             else if(Input.GetKeyDown(KeyCode.UpArrow))
             {
-                Debug.Log(DataContents.speciesData[chosenPoke].forms.Length);
                 if((formNum + 1) > DataContents.speciesData[chosenPoke].forms.Length)
                 {
                     formNum = 0;

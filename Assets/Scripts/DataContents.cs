@@ -10,6 +10,10 @@ using System.Collections;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections.Generic;
+using System.Data;
+using System.Runtime.Serialization;
+using Mono.Data.SqliteClient;
+using System.Linq;
 #endregion
 
 public static class DataContents : System.Object 
@@ -22,6 +26,12 @@ public static class DataContents : System.Object
 
     //Shorthand for main data path
     static string dataLocation;
+
+    //SQL Variables
+    static string dbPath; 
+    static IDbConnection dbConnection;
+    static IDbCommand dbCommand;
+    static IDataReader dbReader;
     #endregion
 
     #region Methods
@@ -124,16 +134,62 @@ public static class DataContents : System.Object
             //Create an experience table
             experienceTable = new ExperienceTable();
 
+            //Manage SQL Database
+            dbPath = "URI=file:" + dataLocation + "/Supplimental.db";
+            dbConnection=new SqliteConnection(dbPath);
+            dbConnection.Open();
+            dbCommand=dbConnection.CreateCommand();
+            dbCommand.CommandText = "SELECT moves FROM Pokemon WHERE name='Bulbasaur'";
+            dbReader = dbCommand.ExecuteReader();
+            string moveList = "";
+            while(dbReader.Read())
+            {
+                moveList = (string)dbReader.GetValue(0);
+            }
+            string[] arrayList = moveList.Split(',');
+            List<string> pos = arrayList.Select((b,i) => object.Equals(b,"13") ? arrayList[i+1] : "null").Where(i => i != "null").ToList();
+            for(int i = 0; i < pos.Count;i++)
+            {
+                Debug.Log(pos[i]);
+            }
+
             //All files were loaded successfully, end function
             return true;
         } //end if
         else
         {
             //Not found, log error and end function
-            Debug.LogError("Could not find movesData.dat at " + dataLocation);
+            Debug.LogError("Could not find itemData.dat at " + dataLocation);
             return false;
         } //end else
     } //end GetPersist
+
+    /***************************************
+     * Name: ExecuteSQL
+     * Runs SQL query 
+     ***************************************/
+    public static T ExecuteSQL<T> (string query)
+    {
+        //Run the query
+        dbCommand.CommandText = query;
+        dbReader = dbCommand.ExecuteReader ();
+
+        //Store the result of the query
+        object value = null;
+        while (dbReader.Read())
+        {
+            value = dbReader.GetValue (0);
+        } //end while
+
+        //Verify non-null, or set to default
+        if(value == null)
+        {
+            value = default(T);
+        } //end if
+
+        //Return the information in the type requested
+        return (T)Convert.ChangeType (value, typeof(T));
+    } //end ExecuteSQL<T> (string query)
 
     /***************************************
      * Name: GetLevel
@@ -205,6 +261,7 @@ public class PokemonSpecies
     public int happiness;                       //How much happiness the pokemon starts with
     public string[] abilities;                  //The abilities a pokemon naturally knows
     public string hiddenAbility;                //The ability the pokemon obtains through special conditions
+    [SerializeField]
     public Dictionary<int, List<string>> moves; //All level-up moves a pokemon has
     public string[] eggMoves;                   //All moves learnable through breeding
     public string[] compatibility;              //What egg-groups the pokemon is compatible with

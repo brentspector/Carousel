@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Random = UnityEngine.Random;
+using LitJson;
 #endregion
 
 public class GameManager : MonoBehaviour
@@ -18,7 +19,7 @@ public class GameManager : MonoBehaviour
 	public float VersionNumber = 0.1f;      //Version number for save file management
 	public int NumberOfMarkings = 4;        //How many markings are available to be used
 	public int NumberOfRibbons = 80;        //How many ribbons are available
- 
+
 	//Singleton handle
 	public static GameManager instance = null;
 
@@ -108,13 +109,7 @@ public class GameManager : MonoBehaviour
 
 #if UNITY_EDITOR
                     //Debug mode (development in the editor) commands go here
-                    Pokemon newPokemon = new Pokemon();
-                    newPokemon.GiveInitialMoves(new int[] {202, 163, -1, -1});
-                    Debug.Log(newPokemon.NatSpecies);
-                    for(int i = 0; i < 4; i++)
-                    {
-                        Debug.Log(DataContents.GetMoveName(newPokemon.GetMove(i)));
-                    }
+
 #else
                     //Stand-alone mode (user version) diagnostic commands go here
 
