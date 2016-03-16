@@ -7,6 +7,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Random = UnityEngine.Random;
 #endregion
 
@@ -85,6 +86,9 @@ public class Pokemon
 		happiness = happy;
 		hasPokerus = pokerus;
 		isShiny = shiny;
+        nickname = DataContents.ExecuteSQL<string> ("SELECT name FROM Pokemon WHERE rowid=" + natSpecies);
+        obtainFrom = "Shop";
+        OtName = GameManager.instance.GetPlayerName ();
 
 		//Initialize arrays
 		IV = new int[6];
@@ -549,6 +553,7 @@ public class Pokemon
 
         //Sort the values to avoid misplaced -1 values
         Array.Sort (values);
+        Array.Reverse (values);
 
         //Loop through values
         for (int i = 0; i < 4; i++)
@@ -563,65 +568,25 @@ public class Pokemon
             //If it equals -1, give level up move
             else
             {
-                //Keep a record of important keys
-                int[] keyLocations = new int[4-i];
+                //Get levels closest to current level
+                string moveList = DataContents.ExecuteSQL<string>("SELECT moves FROM Pokemon WHERE rowid=" + natSpecies);
+                string[] arrayList = moveList.Split(',');
+                int tempHolder = 0;
+                List<string> pos = arrayList.Select((moveLevel,listIndex) => int.TryParse(moveLevel,out tempHolder) ? int.Parse(moveLevel) <= currentLevel ? arrayList[listIndex+1] : "null" : "null").Where(listIndex => listIndex != "null").ToList();
 
-                //Initialize the record
-                for(int j = 0; j < keyLocations.Length; j++)
+                //Fill remaining moves with values
+                for(int j = i, k = pos.Count-1; j < 4 && k > -1; j++, k--)
                 {
-                    keyLocations[j] = -1;
-                } //end for
-
-                //Get key levels nearest to current level
-                foreach(KeyValuePair<int, List<string>> entry in DataContents.speciesData[natSpecies].moves)
-                {
-                    //End function when key exceeds current level
-                    if(entry.Key > currentLevel)
+                    int moveID = DataContents.GetMoveID(pos[k]);
+                    if(!moves.Contains(moveID))
                     {
-                        break;
+                        moves[j] = moveID;
+                        firstMoves[j] = moveID;
                     } //end if
-
-                    //Set the key locations
-                    for(int k = 0; k < keyLocations.Length-1; k++)
+                    else
                     {
-                        keyLocations[k] = keyLocations[k+1];
-                    } //end for
-
-                    keyLocations[keyLocations.Length-1] = entry.Key;              
-                } //end foreach
-
-                //Set the moves
-                for(int m = i, n = 3; m < 4; m++, n--)
-                {
-                    //Make sure the key location actually exists
-                    if(keyLocations[n] > 0)
-                    {
-                        //Keep track of successful placements
-                        int q = 0;
-
-                        //Loop through all moves available to learn at the level denoted by the key location
-                        for(int p = 0; p < DataContents.speciesData[natSpecies].moves[keyLocations[n]].Count; p++)
-                        {
-                            //Break if all moves are full
-                            if(m+q >= 4)
-                            {
-                                break;
-                            } //end if
-
-                            //Set the move to the next one in the move list
-                            //First make sure the move isn't already known
-                            int collectedMove = DataContents.GetMoveID(DataContents.speciesData[natSpecies].moves[keyLocations[n]][p]);
-                            if(!Array.Exists(moves, element => element == collectedMove))
-                            {
-                                moves[m+q] = collectedMove;
-                                firstMoves[m+q] = moves[m+q];
-                                q++;
-                            } //end if
-                        } //end for
-
-                        //Set the move pointer to the new position
-                        m += DataContents.speciesData[natSpecies].moves[keyLocations[n]].Count - 1;
-                    } //end if
+                        j--;
+                    } //end else
                 } //end for
 
                 //End function
@@ -664,7 +629,7 @@ public class Pokemon
 	int CalculateEXP(int level)
 	{
         return DataContents.experienceTable.GetCurrentValue (
-            DataContents.speciesData [natSpecies].growthRate,
+            DataContents.ExecuteSQL<string>("SELECT growthRate FROM Pokemon WHERE rowid=" + natSpecies),
             level);
 	} //end CalculateEXP(int level)
 
@@ -675,7 +640,7 @@ public class Pokemon
     void CalculateHP()
     {
         int evCalc = EV [0] / 4;
-        int baseHP = DataContents.speciesData [natSpecies].baseStats [0];
+        int baseHP = DataContents.ExecuteSQL<int> ("SELECT health FROM Pokemon WHERE rowid=" + natSpecies);
         totalHP = ((IV[0] + 2 * baseHP + evCalc + 100) * currentLevel) / 100 + 10;     
         currentHP = totalHP;
     } //end CalculateHP
@@ -705,7 +670,27 @@ public class Pokemon
         //Loop through and set all non-HP stats
         for (int i = 1; i < 6; i++)
         {
-            int baseStat = DataContents.speciesData[natSpecies].baseStats[i];
+            int baseStat = 0;
+            if(i == 1)
+            {
+                baseStat = DataContents.ExecuteSQL<int>("SELECT attack FROM Pokemon WHERE rowid=" + natSpecies);
+            } //end if
+            else if(i == 2)
+            {
+                baseStat = DataContents.ExecuteSQL<int>("SELECT defence FROM Pokemon WHERE rowid=" + natSpecies);
+            } //end else if
+            else if(i == 3)
+            {
+                baseStat = DataContents.ExecuteSQL<int>("SELECT speed FROM Pokemon WHERE rowid=" + natSpecies);
+            } //end else if
+            else if(i == 4)
+            {
+                baseStat = DataContents.ExecuteSQL<int>("SELECT specialAttack FROM Pokemon WHERE rowid=" + natSpecies);
+            } //end else if
+            else
+            {
+                baseStat = DataContents.ExecuteSQL<int>("SELECT specialDefence FROM Pokemon WHERE rowid=" + natSpecies);
+            } //end else if
             int evCalc = EV[i]/4;
             results[i-1] = (((IV[i] + 2 * baseStat + evCalc) * currentLevel/100) + 5) * pvalues[i - 1] / 100;
         } //end for
