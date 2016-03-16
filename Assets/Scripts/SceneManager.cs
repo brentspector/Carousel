@@ -61,10 +61,11 @@ public class SceneManager : MonoBehaviour
     Text  pokeEvolutions;           //Evolutions of the pokemon
     Text  pokePokedex;              //Pokedex entry of the pokemon
     Text  pokeMoves;                //Full list of moves of the pokemon
+    string[] forms;                 //The list of forms of the pokemon
     int chosenPoke;                 //Pokemon currently viewed
+    int formNum;                    //What form version is currently displayed
     Toggle shinyFlag;               //Flag if shiny is checked
     Toggle femaleFlag;              //Flag if female is checked
-    int formNum;                    //What form version is currently displayed
     #endregion
 
     #region Methods
@@ -757,11 +758,14 @@ public class SceneManager : MonoBehaviour
                 if(chosenPoke + 1 > 721)
                 {
                     chosenPoke = 1;
-                }
+                } //end if
                 else
                 {
                     chosenPoke++;
-                }
+                } //end else
+                Debug.Log(chosenPoke);
+                string temp = DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=" + chosenPoke);
+                forms = temp.Split(',');
             } //end if
             //If left arrow is pressed, decrement
             else if(Input.GetKey(KeyCode.LeftArrow))
@@ -770,29 +774,25 @@ public class SceneManager : MonoBehaviour
                 if(chosenPoke - 1 < 1)
                 {
                     chosenPoke = 721;
-                }
+                } //end if
                 else
                 {
                     chosenPoke--;
-                }
+                } //end else
+                Debug.Log(chosenPoke);
+                string temp = DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=" + chosenPoke);
+                forms = temp.Split(',');
             } //end else if
             //If up arrow is pressed, increase form
             else if(Input.GetKeyDown(KeyCode.UpArrow))
             {
-                if((formNum + 1) > DataContents.speciesData[chosenPoke].forms.Length)
+                if((formNum + 1) > forms.Length)
                 {
                     formNum = 0;
                 } //end if
                 else
                 {
-                    if(DataContents.speciesData[chosenPoke].forms[formNum] == null)
-                    {
-                        formNum = 0;
-                    } //end if
-                    else
-                    {
-                        formNum++;
-                    } //end else
+                    formNum++;
                 } //end else
             } //end else if
             //If down arrow is pressed, decrease form
@@ -800,13 +800,13 @@ public class SceneManager : MonoBehaviour
             {
                 if((formNum - 1) < 0)
                 {
-                    if(DataContents.speciesData[chosenPoke].forms[0] == null)
+                    if(forms[forms.Length]==null)
                     {
                         formNum = 0;
                     } //end if
                     else
                     {
-                        formNum = DataContents.speciesData[chosenPoke].forms.Length;
+                        formNum = forms.Length;
                     } //end else
                 } //end if
                 else
@@ -816,7 +816,7 @@ public class SceneManager : MonoBehaviour
             } //end else if
 
             //Load appropriate data
-            string chosenString = (chosenPoke + 1).ToString("000");
+            string chosenString = chosenPoke.ToString("000");
             chosenString += femaleFlag.isOn ? "f" : "";
             chosenString += shinyFlag.isOn ? "s" : "";
             chosenString += formNum > 0 ? "_" + formNum.ToString() : "";
@@ -840,51 +840,24 @@ public class SceneManager : MonoBehaviour
                     pokeBack.sprite = Resources.Load<Sprite>("Sprites/Pokemon/0b");
                 } //end if
             } //end if
-            pokeName.text = DataContents.speciesData [chosenPoke].name;
-            pokeType.text = DataContents.speciesData [chosenPoke].type1 + ", " + DataContents.speciesData [chosenPoke].type2;
-            pokeHeightWeight.text = DataContents.speciesData [chosenPoke].height + " height, " + DataContents.speciesData [chosenPoke].weight + " weight.";
-            pokePokedex.text = DataContents.speciesData [chosenPoke].pokedex;
-            pokeBaseStats.text = DataContents.speciesData [chosenPoke].baseStats [0].ToString ();
-            for (int bStats = 1; bStats < 6; bStats++)
-            {
-                pokeBaseStats.text += ", " + DataContents.speciesData [chosenPoke].baseStats [bStats].ToString ();
-            } //end for
-            pokeAbilities.text = DataContents.speciesData [chosenPoke].abilities [0];
-            for (int pAbil = 1; pAbil < DataContents.speciesData[chosenPoke].abilities.Length; pAbil++)
-            {
-                pokeAbilities.text += ", " + DataContents.speciesData [chosenPoke].abilities [pAbil];
-            } //end for
-            if(DataContents.speciesData[chosenPoke].evolutions.Count > 0)
-            {
-                pokeEvolutions.text = "Evos: " + DataContents.speciesData[chosenPoke].evolutions[0].species + " "
-                    + DataContents.speciesData[chosenPoke].evolutions[0].method + " " + 
-                        DataContents.speciesData[chosenPoke].evolutions[0].trigger;
-                for(int pEvo = 1; pEvo < DataContents.speciesData[chosenPoke].evolutions.Count; pEvo++)
-                {
-                    pokeEvolutions.text += ", " + DataContents.speciesData[chosenPoke].evolutions[pEvo].species + " "
-                        + DataContents.speciesData[chosenPoke].evolutions[pEvo].method + " " + 
-                            DataContents.speciesData[chosenPoke].evolutions[pEvo].trigger;
-                } //end for
-            } //end if
-            else
-            {
-                pokeEvolutions.text = "None";
-            } //end else
-            pokeForms.text = "Forms: " + DataContents.speciesData [chosenPoke].forms [0];
-            for (int pForm = 1; pForm < DataContents.speciesData[chosenPoke].forms.Length; pForm++)
-            {
-                pokeForms.text += ", " + DataContents.speciesData [chosenPoke].forms [pForm];
-            } //end for
-            
-            pokeMoves.text = "Moves:";
-            //Get key levels nearest to current level
-            foreach (KeyValuePair<int, List<string>> entry in DataContents.speciesData[chosenPoke].moves)
-            {
-                for (int pMove = 0; pMove < DataContents.speciesData[chosenPoke].moves[entry.Key].Count; pMove++)
-                {
-                    pokeMoves.text += ", " + entry.Key + " " + DataContents.speciesData [chosenPoke].moves [entry.Key] [pMove];
-                } //end for
-            } //end foreach
+            pokeName.text = DataContents.ExecuteSQL<string>("SELECT name FROM Pokemon WHERE rowid=" +  chosenPoke);
+            pokeType.text = DataContents.ExecuteSQL<string>("SELECT type1 FROM Pokemon WHERE rowid=" +  chosenPoke) 
+                + ", " + DataContents.ExecuteSQL<string>("SELECT type2 FROM Pokemon WHERE rowid=" +  chosenPoke);
+            pokeHeightWeight.text = DataContents.ExecuteSQL<string>("SELECT height FROM Pokemon WHERE rowid=" + chosenPoke) 
+                + " height, " + DataContents.ExecuteSQL<string>("SELECT weight FROM Pokemon WHERE rowid=" +  chosenPoke) + " weight.";
+            pokePokedex.text = DataContents.ExecuteSQL<string>("SELECT pokedex FROM Pokemon WHERE rowid=" +  chosenPoke);
+            pokeBaseStats.text = DataContents.ExecuteSQL<string>("SELECT health FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT attack FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT defence FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT speed FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT specialAttack FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT specialDefence FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeAbilities.text = DataContents.ExecuteSQL<string>("SELECT ability1 FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeAbilities.text += ", " + DataContents.ExecuteSQL<string>("SELECT ability2 FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeAbilities.text += ", " + DataContents.ExecuteSQL<string>("SELECT hiddenAbility FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeEvolutions.text = "Evolutions: " + DataContents.ExecuteSQL<string>("SELECT evolutions FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeForms.text = "Forms: " + DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeMoves.text = "Moves: " + DataContents.ExecuteSQL<string>("SELECT moves FROM Pokemon WHERE rowid=" + chosenPoke);
 
             //End processing
             processing = false;

@@ -73,7 +73,7 @@ public class GameManager : MonoBehaviour
 		sysm.InitErrorLog ();
 
         //Initialize DataContents class 
-        if(!DataContents.GetPersist())
+        if(!DataContents.InitDataContents())
         {
             sysm.LogErrorMessage("Could not load data contents");
             Application.Quit();
@@ -109,6 +109,7 @@ public class GameManager : MonoBehaviour
 
 #if UNITY_EDITOR
                     //Debug mode (development in the editor) commands go here
+                    Pokemon myPokemon = new Pokemon();
 
 #else
                     //Stand-alone mode (user version) diagnostic commands go here

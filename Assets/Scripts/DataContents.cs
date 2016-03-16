@@ -13,16 +13,15 @@ using System.Collections.Generic;
 using System.Data;
 using System.Runtime.Serialization;
 using Mono.Data.SqliteClient;
-using System.Linq;
 #endregion
 
 public static class DataContents : System.Object 
 {
     #region Variables
-    [SerializeField]public static List<PokemonSpecies> speciesData; //Pokemon species
-    [SerializeField]public static List<Move> moveData;              //Pokemon attacks
-    [SerializeField]public static List<Item> itemData;              //Use, Permanent, and Hold items
-    public static ExperienceTable experienceTable;                  //Holds experience values for growth rates
+    public static ExperienceTable experienceTable;  //Holds experience values for growth rates
+    static int speciesCount;                        //Number of entries in Pokemon table
+    static int moveCount;                           //Number of entries in Move table
+    static int itemCount;                           //Number of entries in Items table
 
     //Shorthand for main data path
     static string dataLocation;
@@ -36,46 +35,10 @@ public static class DataContents : System.Object
 
     #region Methods
     /***************************************
-     * Name: PersistPokemon
-     * Compiles speciesData into a binary file
+     * Name: InitDataContents
+     * Establishes SQL connection and loads experience table
      ***************************************/
-    public static void PersistPokemon()
-    {
-        BinaryFormatter bf = new BinaryFormatter ();
-        FileStream npf = File.Create (dataLocation + "pokemonData.dat");
-        bf.Serialize (npf, speciesData);
-        npf.Close ();
-    } //end PersistPokemon
-
-    /***************************************
-     * Name: PersistMoves
-     * Compiles moveData into a binary file.
-     ***************************************/
-    public static void PersistMoves()
-    {
-        BinaryFormatter bf = new BinaryFormatter ();
-        FileStream npf = File.Create (dataLocation + "movesData.dat");
-        bf.Serialize (npf, moveData);
-        npf.Close ();
-    } //end PersistMoves
-
-    /***************************************
-     * Name: PersistItems
-     * Compiles itemData into a binary file.
-     ***************************************/
-    public static void PersistItems()
-    {
-        BinaryFormatter bf = new BinaryFormatter ();
-        FileStream npf = File.Create (dataLocation + "itemData.dat");
-        bf.Serialize (npf, itemData);
-        npf.Close ();
-    } //end PersistItems
-
-    /***************************************
-     * Name: GetPersist
-     * Loads all binary files into appropriate locations.
-     ***************************************/
-    public static bool GetPersist()
+    public static bool InitDataContents()
     {
         //Initalize data location
         //PossibleToDo: http://wiki.unity3d.com/index.php/Folder_Paths_Win_Mac
@@ -87,82 +50,34 @@ public static class DataContents : System.Object
         dataLocation = Environment.CurrentDirectory + "/PokemonCarousel_Data/";
         #endif  
 
-        //Make sure pokemon file is regional
-        if(File.Exists(dataLocation + "pokemonData.dat"))
+        //Manage SQL Database
+        dbPath = "URI=file:" + dataLocation + "/Supplimental.db";
+        dbConnection=new SqliteConnection(dbPath);
+        Debug.Log (dbConnection.Database);
+        dbConnection.Open();
+        dbCommand=dbConnection.CreateCommand();
+        dbCommand.CommandText = "SELECT Count(*) FROM sqlite_master WHERE type='table'";
+        dbReader = dbCommand.ExecuteReader ();
+        int returnValue = 0;
+        while (dbReader.Read())
         {
-            //Decrypt and load data
-            BinaryFormatter bf = new BinaryFormatter ();
-            FileStream pf = File.Open (dataLocation + "pokemonData.dat", FileMode.Open);
-            List<PokemonSpecies> pfd = (List<PokemonSpecies>)bf.Deserialize(pf);
-            pf.Close();
-            speciesData = pfd;
-        } //end if
-        else
+            returnValue = dbReader.GetInt32(0);
+        } //end while
+        if (returnValue == 0)
         {
-            //Not found, log error and end function
-            Debug.LogError("Could not find pokemonData.dat at " + dataLocation);
             return false;
-        } //end else
-
-        //Make sure moves file is regional
-        if(File.Exists(dataLocation + "movesData.dat"))
-        {
-            //Decrypt and load data
-            BinaryFormatter bf = new BinaryFormatter ();
-            FileStream pf = File.Open (dataLocation + "movesData.dat", FileMode.Open);
-            List<Move> mfd = (List<Move>)bf.Deserialize(pf);
-            pf.Close();
-            moveData = mfd;
         } //end if
-        else
-        {
-            //Not found, log error and end function
-            Debug.LogError("Could not find movesData.dat at " + dataLocation);
-            return false;
-        } //end else
 
-        //Make sure item file is regional
-        if(File.Exists(dataLocation + "itemData.dat"))
-        {
-            //Decrypt and load data
-            BinaryFormatter bf = new BinaryFormatter ();
-            FileStream pf = File.Open (dataLocation + "itemData.dat", FileMode.Open);
-            List<Item> ifd = (List<Item>)bf.Deserialize(pf);
-            pf.Close();
-            itemData = ifd;
+        //Initialize max count for each table
+        speciesCount = ExecuteSQL<int>("SELECT Count(*) FROM Pokemon");
+        moveCount = ExecuteSQL<int>("SELECT Count(*) FROM Moves");
+        itemCount = ExecuteSQL<int>("SELECT Count(*) FROM Items");
 
-            //Create an experience table
-            experienceTable = new ExperienceTable();
+        //Create an experience table
+        experienceTable = new ExperienceTable();
 
-            //Manage SQL Database
-            dbPath = "URI=file:" + dataLocation + "/Supplimental.db";
-            dbConnection=new SqliteConnection(dbPath);
-            dbConnection.Open();
-            dbCommand=dbConnection.CreateCommand();
-            dbCommand.CommandText = "SELECT moves FROM Pokemon WHERE name='Bulbasaur'";
-            dbReader = dbCommand.ExecuteReader();
-            string moveList = "";
-            while(dbReader.Read())
-            {
-                moveList = (string)dbReader.GetValue(0);
-            }
-            string[] arrayList = moveList.Split(',');
-            List<string> pos = arrayList.Select((b,i) => object.Equals(b,"13") ? arrayList[i+1] : "null").Where(i => i != "null").ToList();
-            for(int i = 0; i < pos.Count;i++)
-            {
-                Debug.Log(pos[i]);
-            }
-
-            //All files were loaded successfully, end function
-            return true;
-        } //end if
-        else
-        {
-            //Not found, log error and end function
-            Debug.LogError("Could not find itemData.dat at " + dataLocation);
-            return false;
-        } //end else
-    } //end GetPersist
+        return true;
+    } //end InitDataContents()
 
     /***************************************
      * Name: ExecuteSQL
@@ -207,16 +122,11 @@ public static class DataContents : System.Object
     public static int GetMoveID(string moveName)
     {
         //No move found yet
-        int moveID = -1;
-
-        //Loop through and look for the name
-        for(int i = 0; i < moveData.Count; i++)
-        {
-            if(moveData[i].internalName == moveName)
-            {
-                moveID = i;
-            } //end if
-        } //end for
+        dbCommand.CommandText = "SELECT rowid FROM Moves WHERE internalName=@nm";
+        dbCommand.Parameters.Add(new SqliteParameter("@nm", moveName));
+        dbCommand.Prepare ();
+        int moveID = ExecuteSQL<int> (dbCommand.CommandText);
+        dbCommand.Parameters.Clear ();
 
         //Return location of attack, or -1 if not found
         return moveID;
@@ -229,14 +139,15 @@ public static class DataContents : System.Object
     public static string GetMoveName(int moveNumber)
     {
         //Return NULL if a number goes beyond list boundaries
-        if (moveNumber < 0 || moveNumber > moveData.Count)
+        if (moveNumber < 1 || moveNumber > moveCount)
         {
             return "NULL";
         } //end if
         //Return name of attack at numeric location
         else
         {
-            return moveData [moveNumber].internalName;
+            string moveName = ExecuteSQL<string>("SELECT internalName FROM Moves WHERE rowid=" + moveNumber);
+            return moveName;
         } //end else
     } //end GetMoveName(int moveNumber)
     #endregion
