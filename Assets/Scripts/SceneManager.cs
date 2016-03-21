@@ -113,7 +113,7 @@ public class SceneManager : MonoBehaviour
 		if(processing)
 		{
 			//If player cancels animation
-			if(Input.GetKeyDown(KeyCode.Return) && playing)
+			if((Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0)) && playing)
 			{
 				playing = false;
 				checkpoint = 3;
@@ -153,7 +153,7 @@ public class SceneManager : MonoBehaviour
 		else if(checkpoint == 3)
 		{
 			processing = true;
-			if(Input.GetKeyDown(KeyCode.Return))
+            if(Input.GetKeyDown(KeyCode.Return)|| Input.GetMouseButtonDown(0))
 			{
 				playing = true;
 				checkpoint = 0;
@@ -310,6 +310,55 @@ public class SceneManager : MonoBehaviour
 				processing = false;
 			} //end else if
 
+            //If the mouse is lower than the selection box, and it moved, reposition to next choice
+            else if(Input.GetAxis("Mouse Y") < 0 && Input.mousePosition.y < 
+                    Camera.main.WorldToScreenPoint(selection.transform.position).y-25)
+            {
+                //Make sure it's not on last choice
+                if(choiceNumber < mChoices.transform.childCount-1)
+                {
+                    //Update choiceNumber
+                    choiceNumber++;
+                    //Resize to choice width
+
+                    selection.GetComponent<RectTransform>().sizeDelta = 
+                        new Vector2(transforms[choiceNumber].sizeDelta.x, transforms[choiceNumber].sizeDelta.y/3);
+
+                    //Reposition to choice location
+                    selection.transform.position = 
+                        new Vector3(mChoices.transform.GetChild(choiceNumber).transform.position.x, 
+                                    mChoices.transform.GetChild(choiceNumber).transform.position.y-1,
+                                    100);
+                } //end if
+                
+                //Menu finished this check
+                processing = false;
+            } //end else if
+            
+            //If the mouse is higher than the selection box, and it moved, reposition to next choice
+            else if(Input.GetAxis("Mouse Y") > 0 && Input.mousePosition.y >
+                    Camera.main.WorldToScreenPoint(selection.transform.position).y+25)
+            {
+                //Make sure it's not on last choice
+                if(choiceNumber > 0)
+                {
+                    //Update choiceNumber
+                    choiceNumber--;
+
+                    //Resize to choice width
+                    selection.GetComponent<RectTransform>().sizeDelta = 
+                        new Vector2(transforms[choiceNumber].sizeDelta.x, transforms[choiceNumber].sizeDelta.y/3);
+
+                    //Reposition to choice location
+                    selection.transform.position = 
+                        new Vector3(mChoices.transform.GetChild(choiceNumber).transform.position.x, 
+                                    mChoices.transform.GetChild(choiceNumber).transform.position.y-1,
+                                    100);
+                } //end if
+                
+                //Menu finished this check
+                processing = false;
+            } //end else if
 			//If an option was selected, process it
 			else if(Input.GetKeyDown(KeyCode.Return))
 			{
@@ -411,6 +460,56 @@ public class SceneManager : MonoBehaviour
 				processing = false;
 			} //end else if
 			
+            //If the mouse is lower than the selection box, and it moved, reposition to next choice
+            else if(Input.GetAxis("Mouse Y") < 0 && Input.mousePosition.y <
+                    Camera.main.WorldToScreenPoint(selection.transform.position).y-25)
+            {
+                //Make sure it's not on last choice
+                if(choiceNumber < mChoices.transform.childCount-1)
+                {
+                    //Update choiceNumber
+                    choiceNumber++;
+
+                    //Resize to choice width
+                    selection.GetComponent<RectTransform>().sizeDelta = 
+                        new Vector2(transforms[choiceNumber].sizeDelta.x, transforms[choiceNumber].sizeDelta.y/3);
+
+                    //Reposition to choice location
+                    selection.transform.position = 
+                        new Vector3(mChoices.transform.GetChild(choiceNumber).transform.position.x, 
+                                    mChoices.transform.GetChild(choiceNumber).transform.position.y-2,
+                                    100);
+                } //end if
+
+                //Menu finished this check
+                processing = false;
+            } //end else if
+
+            //If the mouse is higher than the selection box, and it moved, reposition to next choice
+            else if(Input.GetAxis("Mouse Y") > 0 && Input.mousePosition.y >
+                    Camera.main.WorldToScreenPoint(selection.transform.position).y+25)
+            {
+                //Make sure it's not on last choice
+                if(choiceNumber > 1)
+                {
+                    //Update choiceNumber
+                    choiceNumber--;
+
+                    //Resize to choice width
+                    selection.GetComponent<RectTransform>().sizeDelta = 
+                        new Vector2(transforms[choiceNumber].sizeDelta.x, transforms[choiceNumber].sizeDelta.y/3);
+
+                    //Reposition to choice location
+                    selection.transform.position = 
+                        new Vector3(mChoices.transform.GetChild(choiceNumber).transform.position.x, 
+                                    mChoices.transform.GetChild(choiceNumber).transform.position.y-2,
+                                    100);
+                } //end if
+                
+                //Menu finished this check
+                processing = false;
+            } //end else if
+
 			//If an option was selected, process it
 			else if(Input.GetKeyDown(KeyCode.Return))
 			{
@@ -491,7 +590,7 @@ public class SceneManager : MonoBehaviour
 		{
 			processing = true;
 			//Don't continue until player requests next text
-			if(Input.GetKeyDown(KeyCode.Return))
+			if(Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0))
 			{
 				//Attempt to display text
 				if(GameManager.instance.DisplayText("This circus has attracted major gym leaders from " +
@@ -506,7 +605,7 @@ public class SceneManager : MonoBehaviour
 		{
 			processing = true;
 			//Don't continue until player requests next text
-			if(Input.GetKeyDown(KeyCode.Return))
+			if(Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0))
 			{
 				//Attempt to display text
 				if(GameManager.instance.DisplayText("Alright, let's get you set up. First, what is " +
@@ -521,7 +620,7 @@ public class SceneManager : MonoBehaviour
 		{
 			processing = true;
 			//Don't continue until player requests next text
-			if(Input.GetKeyDown(KeyCode.Return))
+			if(Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0))
 			{
 				//Display name input
 				input.SetActive(true);
@@ -542,7 +641,7 @@ public class SceneManager : MonoBehaviour
 				inputText.ActivateInputField();
 			} //end if
 			//Don't continue until player requests next text
-			if(Input.GetKeyDown(KeyCode.Return) && inputText.text.Length != 0)
+			if((Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0)) && inputText.text.Length != 0)
 			{
 				//Convert input name to player's name
 				playerName = inputText.text;
@@ -622,8 +721,46 @@ public class SceneManager : MonoBehaviour
 					confirm.transform.GetChild(choiceNumber).position.y, 100);
 			} //end if
 			
+            //If the mouse is lower than the selection box, and it moved, reposition to next choice
+            else if(Input.GetAxis("Mouse Y") < 0 && Input.mousePosition.y < selection.transform.position.y-1)
+            {
+                //Make sure it's not on last choice
+                if(choiceNumber == 0)
+                {
+                    //Update choiceNumber
+                    choiceNumber++;
+                    
+                    //Reposition to choice location
+                    selection.transform.position = new Vector3(
+                        confirm.transform.GetChild(choiceNumber).position.x,
+                        confirm.transform.GetChild(choiceNumber).position.y, 100);
+                } //end if
+                
+                //Menu finished this check
+                processing = false;
+            } //end else if
+            
+            //If the mouse is higher than the selection box, and it moved, reposition to next choice
+            else if(Input.GetAxis("Mouse Y") > 0 && Input.mousePosition.y > selection.transform.position.y+1)
+            {
+                //Make sure it's not on last choice
+                if(choiceNumber == 1)
+                {
+                    //Update choiceNumber
+                    choiceNumber--;
+    
+                    //Reposition to choice location
+                    selection.transform.position = new Vector3(
+                        confirm.transform.GetChild(choiceNumber).position.x,
+                        confirm.transform.GetChild(choiceNumber).position.y, 100);
+                } //end if
+                
+                //Menu finished this check
+                processing = false;
+            } //end else if
+
 			//If an option was selected, process it
-			if(Input.GetKeyDown(KeyCode.Return))
+			if(Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0))
 			{
 				// Yes selected
 				if(choiceNumber == 0)
@@ -660,7 +797,7 @@ public class SceneManager : MonoBehaviour
 		{
 			processing = true;
 			//Don't continue until player requests next text
-			if(Input.GetKeyDown(KeyCode.Return) && !GameManager.instance.IsDisplaying())
+			if((Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0)) && !GameManager.instance.IsDisplaying())
 			{
 				text.SetActive(false);
 				checkpoint = 0;
@@ -703,6 +840,7 @@ public class SceneManager : MonoBehaviour
             pokeMoves = GameObject.Find ("Moves").GetComponent<Text> ();
             shinyFlag = GameObject.Find("Shiny").GetComponent<Toggle>();
             femaleFlag = GameObject.Find("Female").GetComponent<Toggle>();
+            GameManager.instance.StartTime();
 
             //Fade in
             StartCoroutine (FadeInAnimation (1));
@@ -736,6 +874,8 @@ public class SceneManager : MonoBehaviour
             pokeEvolutions.text = "Evos: " + DataContents.ExecuteSQL<string>("SELECT evolutions FROM Pokemon WHERE rowid=0");
             pokeForms.text = "Forms: " + DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=0");       
             pokeMoves.text = "Moves: " + DataContents.ExecuteSQL<string>("SELECT moves FROM Pokemon WHERE rowid=0");
+            string temp = DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=1");
+            forms = temp.Split(',');
 
             //Set chosenPoke to 1
             chosenPoke = 1;
@@ -763,7 +903,6 @@ public class SceneManager : MonoBehaviour
                 {
                     chosenPoke++;
                 } //end else
-                Debug.Log(chosenPoke);
                 string temp = DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=" + chosenPoke);
                 forms = temp.Split(',');
             } //end if
@@ -779,17 +918,23 @@ public class SceneManager : MonoBehaviour
                 {
                     chosenPoke--;
                 } //end else
-                Debug.Log(chosenPoke);
                 string temp = DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=" + chosenPoke);
                 forms = temp.Split(',');
             } //end else if
             //If up arrow is pressed, increase form
             else if(Input.GetKeyDown(KeyCode.UpArrow))
             {
-                if((formNum + 1) > forms.Length)
+                if((formNum + 1) == forms.Length)
+                {
+                    if(forms[0] != string.Empty)
+                    {
+                        formNum++;
+                    } //end if
+                } //end if
+                else if((formNum + 1) > forms.Length)
                 {
                     formNum = 0;
-                } //end if
+                } //end else if
                 else
                 {
                     formNum++;
@@ -800,13 +945,13 @@ public class SceneManager : MonoBehaviour
             {
                 if((formNum - 1) < 0)
                 {
-                    if(forms[forms.Length]==null)
+                    if(forms[0] != string.Empty)
                     {
-                        formNum = 0;
+                        formNum = forms.Length;
                     } //end if
                     else
                     {
-                        formNum = forms.Length;
+                        formNum = 0;
                     } //end else
                 } //end if
                 else
@@ -843,8 +988,8 @@ public class SceneManager : MonoBehaviour
             pokeName.text = DataContents.ExecuteSQL<string>("SELECT name FROM Pokemon WHERE rowid=" +  chosenPoke);
             pokeType.text = DataContents.ExecuteSQL<string>("SELECT type1 FROM Pokemon WHERE rowid=" +  chosenPoke) 
                 + ", " + DataContents.ExecuteSQL<string>("SELECT type2 FROM Pokemon WHERE rowid=" +  chosenPoke);
-            pokeHeightWeight.text = DataContents.ExecuteSQL<string>("SELECT height FROM Pokemon WHERE rowid=" + chosenPoke) 
-                + " height, " + DataContents.ExecuteSQL<string>("SELECT weight FROM Pokemon WHERE rowid=" +  chosenPoke) + " weight.";
+            pokeHeightWeight.text = Math.Round(DataContents.ExecuteSQL<float>("SELECT height FROM Pokemon WHERE rowid=" + chosenPoke), 1) 
+                + " height, " + Math.Round(DataContents.ExecuteSQL<float>("SELECT weight FROM Pokemon WHERE rowid=" +  chosenPoke), 1) + " weight.";
             pokePokedex.text = DataContents.ExecuteSQL<string>("SELECT pokedex FROM Pokemon WHERE rowid=" +  chosenPoke);
             pokeBaseStats.text = DataContents.ExecuteSQL<string>("SELECT health FROM Pokemon WHERE rowid=" + chosenPoke);
             pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT attack FROM Pokemon WHERE rowid=" + chosenPoke);
@@ -1130,8 +1275,18 @@ public class SceneManager : MonoBehaviour
 	} //end Reset
 
     /***************************************
+     * Name: SetCheckpoint
+     * Sets checkpoint to parameter
+     ***************************************/
+    public void SetCheckpoint(int newCheckpoint)
+    {
+        checkpoint = newCheckpoint; 
+    } //end SetCheckpoint(int newCheckpoint)
+
+    /***************************************
      * Name: JumpTo
-     * Changes active pokemon to the one entered in the input field
+     * Changes active pokemon to the one entered
+     * in the input field
      ***************************************/
     public void JumpTo()
     {

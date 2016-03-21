@@ -64,14 +64,11 @@
  <Reference Include="UnityEngine.Networking">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
  </Reference>
- <Reference Include="LitJson">
- <HintPath>C:/Users/Brent/Desktop/Programming/Unity/Pokemon Carousel/Carousel/Assets/Plugins/LitJson.dll</HintPath>
- </Reference>
  <Reference Include="Mono.Data.SqliteClient">
- <HintPath>C:/Users/Brent/Desktop/Programming/Unity/Pokemon Carousel/Carousel/Assets/Plugins/Mono.Data.SqliteClient.dll</HintPath>
+ <HintPath>C:/Users/Brent/Desktop/Programming/Unity/Pokemon Carousel/Carousel/Assets/Plugins/x86_64/Mono.Data.SqliteClient.dll</HintPath>
  </Reference>
  <Reference Include="System.Data">
- <HintPath>C:/Users/Brent/Desktop/Programming/Unity/Pokemon Carousel/Carousel/Assets/Plugins/System.Data.dll</HintPath>
+ <HintPath>C:/Users/Brent/Desktop/Programming/Unity/Pokemon Carousel/Carousel/Assets/Plugins/x86_64/System.Data.dll</HintPath>
  </Reference>
  <Reference Include="Mono.Cecil">
  <HintPath>C:/Program Files/Unity/Editor/Data/Managed/Mono.Cecil.dll</HintPath>

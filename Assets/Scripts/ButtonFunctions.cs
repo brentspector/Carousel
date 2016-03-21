@@ -15,39 +15,18 @@ public class ButtonFunctions : MonoBehaviour
 
     #region Methods
     /***************************************
-     * Name: Continue
-     * Continue option from main screen
+     * Name: ProcessSelection
+     * When selection rectangle is pressed,
+     * run the appropriate function
      ***************************************/ 
-	public void Continue()
-	{
-		GameManager.instance.Continue ();
-	} //end Continue
+    public void ProcessSelection()
+    {
+        GameManager.instance.ProcessSelection ();
+    } //end ProcessSelection
 
-    /***************************************
-     * Name: NewGame
-     * New Game option from main screen
-     ***************************************/ 
-	public void NewGame()
-	{
-		GameManager.instance.NewGame ();
-	} //end NewGame
-
-    /***************************************
-     * Name: Options
-     * Options option from main screen
-     ***************************************/ 
-	public void Options()
-	{
-		GameManager.instance.Options ();
-	} //end Options
-
-    /***************************************
-     * Name: Jump
-     * Jump to pokedex number from game screen
-     ***************************************/ 
     public void Jump()
     {
         GameManager.instance.Jump ();
-    } //end Jump
+    }
     #endregion
 } //end ButtonFunctions class

@@ -349,7 +349,6 @@ public class SystemManager : MonoBehaviour
 			pHours = pfd.pHours;
 			pMinutes = pfd.pMinutes;
 			pSeconds = pfd.pSeconds;
-			sTime = Time.time;
 			return true;
 		} //end if
 		else
@@ -359,10 +358,18 @@ public class SystemManager : MonoBehaviour
 			pHours = 0;
 			pMinutes = 0;
 			pSeconds = 0;
-			sTime = Time.time;
 			return false;
 		} //end else
 	} //end GetPersist
+
+    /***************************************
+     * Name: StartTime
+     * Begins the player's play session time
+     ***************************************/
+    public void StartTime()
+    {
+        sTime = Time.time;
+    } //end StartTime
 
     /***************************************
      * Name: SetName

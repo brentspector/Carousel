@@ -5,6 +5,7 @@
 #region Using
 using UnityEngine;
 using UnityEngine.UI;
+using Mono.Data.SqliteClient;
 using System;
 using System.Collections;
 using System.IO;
@@ -12,7 +13,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections.Generic;
 using System.Data;
 using System.Runtime.Serialization;
-using Mono.Data.SqliteClient;
 #endregion
 
 public static class DataContents : System.Object 
@@ -53,7 +53,6 @@ public static class DataContents : System.Object
         //Manage SQL Database
         dbPath = "URI=file:" + dataLocation + "/Supplimental.db";
         dbConnection=new SqliteConnection(dbPath);
-        Debug.Log (dbConnection.Database);
         dbConnection.Open();
         dbCommand=dbConnection.CreateCommand();
         dbCommand.CommandText = "SELECT Count(*) FROM sqlite_master WHERE type='table'";

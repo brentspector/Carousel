@@ -10,6 +10,208 @@ using System.Collections;
 
 public class CodeWarehouse : MonoBehaviour 
 {
+    #region Pokedex SQLite Checker
+    /***************************************
+     * Name: ContinueGame
+     * Loads and plays the main game
+     ***************************************
+    public void ContinueGame()
+    {
+        //If something is already happening, return
+        if(processing)
+        {
+            return;
+        } //end if
+        
+        //Set up scene
+        if (checkpoint == 0)
+        {
+            //Begin processing
+            processing = true;
+            
+            //Get references for variables
+            pokeFront = GameObject.Find ("PokemonFront").GetComponent<Image> ();
+            pokeBack = GameObject.Find ("PokemonBack").GetComponent<Image> ();
+            pokeName = GameObject.Find ("Name").GetComponent<Text> ();
+            pokeType = GameObject.Find ("Type").GetComponent<Text> ();
+            pokeBaseStats = GameObject.Find ("BaseStats").GetComponent<Text> ();
+            pokeAbilities = GameObject.Find ("Abilities").GetComponent<Text> ();
+            pokeHeightWeight = GameObject.Find ("HeightWeight").GetComponent<Text> ();
+            pokeForms = GameObject.Find ("Forms").GetComponent<Text> ();
+            pokeEvolutions = GameObject.Find ("Evolutions").GetComponent<Text> ();
+            pokePokedex = GameObject.Find ("Pokedex").GetComponent<Text> ();
+            pokeMoves = GameObject.Find ("Moves").GetComponent<Text> ();
+            shinyFlag = GameObject.Find("Shiny").GetComponent<Toggle>();
+            femaleFlag = GameObject.Find("Female").GetComponent<Toggle>();
+            GameManager.instance.StartTime();
+            
+            //Fade in
+            StartCoroutine (FadeInAnimation (1));
+        } //end if
+        else if (checkpoint == 1)
+        {
+            //Begin processing
+            processing = true;
+            
+            //Disable fade screen
+            fade.gameObject.SetActive (false);
+            
+            //Initialize first data
+            pokeFront.sprite = Resources.Load<Sprite> ("Sprites/Pokemon/001");
+            pokeBack.sprite = Resources.Load<Sprite> ("Sprites/Pokemon/001b");
+            pokeName.text = DataContents.ExecuteSQL<string>("SELECT name FROM Pokemon WHERE rowid=1");
+            pokeType.text = DataContents.ExecuteSQL<string>("SELECT type1 FROM Pokemon WHERE rowid=1") + ", " 
+                + DataContents.ExecuteSQL<string>("SELECT type2 FROM Pokemon WHERE rowid=1");
+            pokeHeightWeight.text = DataContents.ExecuteSQL<string>("SELECT height FROM Pokemon WHERE rowid=1") 
+                + " height, " + DataContents.ExecuteSQL<string>("SELECT weight FROM Pokemon WHERE rowid=1") + " weight.";
+            pokePokedex.text = DataContents.ExecuteSQL<string>("SELECT pokedex FROM Pokemon WHERE rowid=1");
+            pokeBaseStats.text = DataContents.ExecuteSQL<string>("SELECT health FROM Pokemon WHERE rowid=1");
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT attack FROM Pokemon WHERE rowid=1");
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT defence FROM Pokemon WHERE rowid=0");
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT speed FROM Pokemon WHERE rowid=0");
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT specialAttack FROM Pokemon WHERE rowid=0");
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT specialDefence FROM Pokemon WHERE rowid=0");
+            pokeAbilities.text = DataContents.ExecuteSQL<string>("SELECT ability1 FROM Pokemon WHERE rowid=0")
+                + ", " + DataContents.ExecuteSQL<string>("SELECT ability2 FROM Pokemon WHERE rowid=0") + ", " +
+                    DataContents.ExecuteSQL<string>("SELECT hiddenAbility FROM Pokemon WHERE rowid=0");      
+            pokeEvolutions.text = "Evos: " + DataContents.ExecuteSQL<string>("SELECT evolutions FROM Pokemon WHERE rowid=0");
+            pokeForms.text = "Forms: " + DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=0");       
+            pokeMoves.text = "Moves: " + DataContents.ExecuteSQL<string>("SELECT moves FROM Pokemon WHERE rowid=0");
+            string temp = DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=1");
+            forms = temp.Split(',');
+            
+            //Set chosenPoke to 1
+            chosenPoke = 1;
+            
+            //Move to next section 
+            checkpoint = 2;
+            
+            //End processing
+            processing = false;
+        } //end else if
+        else if (checkpoint == 2)
+        {
+            //Begin processing
+            processing = true;
+            
+            //If right arrow is pressed, increment
+            if(Input.GetKey(KeyCode.RightArrow))
+            {
+                formNum = 0;
+                if(chosenPoke + 1 > 721)
+                {
+                    chosenPoke = 1;
+                } //end if
+                else
+                {
+                    chosenPoke++;
+                } //end else
+                string temp = DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=" + chosenPoke);
+                forms = temp.Split(',');
+            } //end if
+            //If left arrow is pressed, decrement
+            else if(Input.GetKey(KeyCode.LeftArrow))
+            {
+                formNum = 0;
+                if(chosenPoke - 1 < 1)
+                {
+                    chosenPoke = 721;
+                } //end if
+                else
+                {
+                    chosenPoke--;
+                } //end else
+                string temp = DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=" + chosenPoke);
+                forms = temp.Split(',');
+            } //end else if
+            //If up arrow is pressed, increase form
+            else if(Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                if((formNum + 1) == forms.Length)
+                {
+                    if(forms[0] != string.Empty)
+                    {
+                        formNum++;
+                    } //end if
+                } //end if
+                else if((formNum + 1) > forms.Length)
+                {
+                    formNum = 0;
+                } //end else if
+                else
+                {
+                    formNum++;
+                } //end else
+            } //end else if
+            //If down arrow is pressed, decrease form
+            else if(Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                if((formNum - 1) < 0)
+                {
+                    if(forms[0] != string.Empty)
+                    {
+                        formNum = forms.Length;
+                    } //end if
+                    else
+                    {
+                        formNum = 0;
+                    } //end else
+                } //end if
+                else
+                {
+                    formNum--;
+                } //end else
+            } //end else if
+            
+            //Load appropriate data
+            string chosenString = chosenPoke.ToString("000");
+            chosenString += femaleFlag.isOn ? "f" : "";
+            chosenString += shinyFlag.isOn ? "s" : "";
+            chosenString += formNum > 0 ? "_" + formNum.ToString() : "";
+            pokeFront.sprite = Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString);
+            if(pokeFront.sprite == null)
+            {
+                chosenString = chosenString.Replace("f", "");
+                pokeFront.sprite = Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString);
+                if(pokeFront.sprite == null)
+                {
+                    pokeFront.sprite = Resources.Load<Sprite>("Sprites/Pokemon/0");
+                } //end if
+            } //end if
+            pokeBack.sprite = Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString + "b");
+            if(pokeBack.sprite == null)
+            {
+                chosenString = chosenString.Replace("f", "");
+                pokeBack.sprite = Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString + "b");
+                if(pokeBack.sprite == null)
+                {
+                    pokeBack.sprite = Resources.Load<Sprite>("Sprites/Pokemon/0b");
+                } //end if
+            } //end if
+            pokeName.text = DataContents.ExecuteSQL<string>("SELECT name FROM Pokemon WHERE rowid=" +  chosenPoke);
+            pokeType.text = DataContents.ExecuteSQL<string>("SELECT type1 FROM Pokemon WHERE rowid=" +  chosenPoke) 
+                + ", " + DataContents.ExecuteSQL<string>("SELECT type2 FROM Pokemon WHERE rowid=" +  chosenPoke);
+            pokeHeightWeight.text = Math.Round(DataContents.ExecuteSQL<float>("SELECT height FROM Pokemon WHERE rowid=" + chosenPoke), 1) 
+                + " height, " + Math.Round(DataContents.ExecuteSQL<float>("SELECT weight FROM Pokemon WHERE rowid=" +  chosenPoke), 1) + " weight.";
+            pokePokedex.text = DataContents.ExecuteSQL<string>("SELECT pokedex FROM Pokemon WHERE rowid=" +  chosenPoke);
+            pokeBaseStats.text = DataContents.ExecuteSQL<string>("SELECT health FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT attack FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT defence FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT speed FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT specialAttack FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT specialDefence FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeAbilities.text = DataContents.ExecuteSQL<string>("SELECT ability1 FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeAbilities.text += ", " + DataContents.ExecuteSQL<string>("SELECT ability2 FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeAbilities.text += ", " + DataContents.ExecuteSQL<string>("SELECT hiddenAbility FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeEvolutions.text = "Evolutions: " + DataContents.ExecuteSQL<string>("SELECT evolutions FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeForms.text = "Forms: " + DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=" + chosenPoke);
+            pokeMoves.text = "Moves: " + DataContents.ExecuteSQL<string>("SELECT moves FROM Pokemon WHERE rowid=" + chosenPoke);
+            
+            //End processing
+            processing = false;
+        } //end else if
+    } //end ContinueGame*/
+    #endregion
     #region SQLite
     /*dbCommand.CommandText = "CREATE TABLE Pokemon(name text,type1 text,type2 text,health int,attack int," +
                 "defence int,speed int,specialAttack int,specialDefence int,genderRate text,growthRate text," +

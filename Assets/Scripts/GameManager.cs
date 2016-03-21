@@ -9,7 +9,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Random = UnityEngine.Random;
-using LitJson;
 #endregion
 
 public class GameManager : MonoBehaviour
@@ -190,6 +189,19 @@ public class GameManager : MonoBehaviour
 		Application.LoadLevel ("Intro");
 	} //end Options
 
+    /***************************************
+     * Name: ProcessSelection
+     * Sets the appropriate checkpoint
+     * depending on scene
+     ***************************************/
+    public void ProcessSelection()
+    {
+        if (Application.loadedLevelName == "StartMenu")
+        {
+            scenes.SetCheckpoint(5);
+        }  //end if
+    } //end ProcessSelection
+
     public void Jump()
     {
         scenes.JumpTo ();
@@ -272,6 +284,15 @@ public class GameManager : MonoBehaviour
 	{
 		return sysm.GetBadges ();
 	} //end GetBadges
+
+    /***************************************
+     * Name: StartTime
+     * Begins the player's play session time
+     ***************************************/
+    public void StartTime()
+    {
+        sysm.StartTime();
+    } //end StartTime
 
     /***************************************
      * Name: GetHours
