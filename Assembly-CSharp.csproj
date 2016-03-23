@@ -58,11 +58,17 @@
      <Compile Include="Assets\Scripts\SystemManager.cs" />
      <Compile Include="Assets\Scripts\Test.cs" />
      <Compile Include="Assets\Scripts\Trainer.cs" />
+ <Reference Include="UnityEngine.Advertisements">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Advertisements/UnityEngine.Advertisements.dll</HintPath>
+ </Reference>
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.Networking">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.Analytics">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnityAnalytics/UnityEngine.Analytics.dll</HintPath>
  </Reference>
  <Reference Include="Mono.Data.SqliteClient">
  <HintPath>C:/Users/Brent/Desktop/Programming/Unity/Pokemon Carousel/Carousel/Assets/Plugins/x86_64/Mono.Data.SqliteClient.dll</HintPath>

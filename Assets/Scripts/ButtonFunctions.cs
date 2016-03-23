@@ -23,10 +23,5 @@ public class ButtonFunctions : MonoBehaviour
     {
         GameManager.instance.ProcessSelection ();
     } //end ProcessSelection
-
-    public void Jump()
-    {
-        GameManager.instance.Jump ();
-    }
     #endregion
 } //end ButtonFunctions class

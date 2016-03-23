@@ -201,11 +201,6 @@ public class GameManager : MonoBehaviour
             scenes.SetCheckpoint(5);
         }  //end if
     } //end ProcessSelection
-
-    public void Jump()
-    {
-        scenes.JumpTo ();
-    } //end Jump
 	#endregion
 
 	//System Manager functions

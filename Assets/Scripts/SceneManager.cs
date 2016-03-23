@@ -50,22 +50,7 @@ public class SceneManager : MonoBehaviour
 	string playerName;				//The player's name
 
     //Continue Game variables
-    Image pokeFront;                //Front of the pokemon
-    Image pokeBack;                 //Back of the pokemon
-    Text  pokeName;                 //Name of the pokemon
-    Text  pokeType;                 //Types of pokemon
-    Text  pokeBaseStats;            //Base stats of pokemon
-    Text  pokeAbilities;            //Abilities of pokemon
-    Text  pokeHeightWeight;         //Height and weight of the pokemon
-    Text  pokeForms;                //Forms of the pokemon
-    Text  pokeEvolutions;           //Evolutions of the pokemon
-    Text  pokePokedex;              //Pokedex entry of the pokemon
-    Text  pokeMoves;                //Full list of moves of the pokemon
-    string[] forms;                 //The list of forms of the pokemon
-    int chosenPoke;                 //Pokemon currently viewed
-    int formNum;                    //What form version is currently displayed
-    Toggle shinyFlag;               //Flag if shiny is checked
-    Toggle femaleFlag;              //Flag if female is checked
+
     #endregion
 
     #region Methods
@@ -826,21 +811,7 @@ public class SceneManager : MonoBehaviour
             //Begin processing
             processing = true;
 
-            //Get references for variables
-            pokeFront = GameObject.Find ("PokemonFront").GetComponent<Image> ();
-            pokeBack = GameObject.Find ("PokemonBack").GetComponent<Image> ();
-            pokeName = GameObject.Find ("Name").GetComponent<Text> ();
-            pokeType = GameObject.Find ("Type").GetComponent<Text> ();
-            pokeBaseStats = GameObject.Find ("BaseStats").GetComponent<Text> ();
-            pokeAbilities = GameObject.Find ("Abilities").GetComponent<Text> ();
-            pokeHeightWeight = GameObject.Find ("HeightWeight").GetComponent<Text> ();
-            pokeForms = GameObject.Find ("Forms").GetComponent<Text> ();
-            pokeEvolutions = GameObject.Find ("Evolutions").GetComponent<Text> ();
-            pokePokedex = GameObject.Find ("Pokedex").GetComponent<Text> ();
-            pokeMoves = GameObject.Find ("Moves").GetComponent<Text> ();
-            shinyFlag = GameObject.Find("Shiny").GetComponent<Toggle>();
-            femaleFlag = GameObject.Find("Female").GetComponent<Toggle>();
-            GameManager.instance.StartTime();
+
 
             //Fade in
             StartCoroutine (FadeInAnimation (1));
@@ -853,33 +824,7 @@ public class SceneManager : MonoBehaviour
             //Disable fade screen
             fade.gameObject.SetActive (false);
 
-            //Initialize first data
-            pokeFront.sprite = Resources.Load<Sprite> ("Sprites/Pokemon/001");
-            pokeBack.sprite = Resources.Load<Sprite> ("Sprites/Pokemon/001b");
-            pokeName.text = DataContents.ExecuteSQL<string>("SELECT name FROM Pokemon WHERE rowid=1");
-            pokeType.text = DataContents.ExecuteSQL<string>("SELECT type1 FROM Pokemon WHERE rowid=1") + ", " 
-                + DataContents.ExecuteSQL<string>("SELECT type2 FROM Pokemon WHERE rowid=1");
-            pokeHeightWeight.text = DataContents.ExecuteSQL<string>("SELECT height FROM Pokemon WHERE rowid=1") 
-                + " height, " + DataContents.ExecuteSQL<string>("SELECT weight FROM Pokemon WHERE rowid=1") + " weight.";
-            pokePokedex.text = DataContents.ExecuteSQL<string>("SELECT pokedex FROM Pokemon WHERE rowid=1");
-            pokeBaseStats.text = DataContents.ExecuteSQL<string>("SELECT health FROM Pokemon WHERE rowid=1");
-            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT attack FROM Pokemon WHERE rowid=1");
-            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT defence FROM Pokemon WHERE rowid=0");
-            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT speed FROM Pokemon WHERE rowid=0");
-            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT specialAttack FROM Pokemon WHERE rowid=0");
-            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT specialDefence FROM Pokemon WHERE rowid=0");
-            pokeAbilities.text = DataContents.ExecuteSQL<string>("SELECT ability1 FROM Pokemon WHERE rowid=0")
-            + ", " + DataContents.ExecuteSQL<string>("SELECT ability2 FROM Pokemon WHERE rowid=0") + ", " +
-                    DataContents.ExecuteSQL<string>("SELECT hiddenAbility FROM Pokemon WHERE rowid=0");      
-            pokeEvolutions.text = "Evos: " + DataContents.ExecuteSQL<string>("SELECT evolutions FROM Pokemon WHERE rowid=0");
-            pokeForms.text = "Forms: " + DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=0");       
-            pokeMoves.text = "Moves: " + DataContents.ExecuteSQL<string>("SELECT moves FROM Pokemon WHERE rowid=0");
-            string temp = DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=1");
-            forms = temp.Split(',');
-
-            //Set chosenPoke to 1
-            chosenPoke = 1;
-
+           
             //Move to next section 
             checkpoint = 2;
   
@@ -891,118 +836,6 @@ public class SceneManager : MonoBehaviour
             //Begin processing
             processing = true;
 
-            //If right arrow is pressed, increment
-            if(Input.GetKey(KeyCode.RightArrow))
-            {
-                formNum = 0;
-                if(chosenPoke + 1 > 721)
-                {
-                    chosenPoke = 1;
-                } //end if
-                else
-                {
-                    chosenPoke++;
-                } //end else
-                string temp = DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=" + chosenPoke);
-                forms = temp.Split(',');
-            } //end if
-            //If left arrow is pressed, decrement
-            else if(Input.GetKey(KeyCode.LeftArrow))
-            {
-                formNum = 0;
-                if(chosenPoke - 1 < 1)
-                {
-                    chosenPoke = 721;
-                } //end if
-                else
-                {
-                    chosenPoke--;
-                } //end else
-                string temp = DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=" + chosenPoke);
-                forms = temp.Split(',');
-            } //end else if
-            //If up arrow is pressed, increase form
-            else if(Input.GetKeyDown(KeyCode.UpArrow))
-            {
-                if((formNum + 1) == forms.Length)
-                {
-                    if(forms[0] != string.Empty)
-                    {
-                        formNum++;
-                    } //end if
-                } //end if
-                else if((formNum + 1) > forms.Length)
-                {
-                    formNum = 0;
-                } //end else if
-                else
-                {
-                    formNum++;
-                } //end else
-            } //end else if
-            //If down arrow is pressed, decrease form
-            else if(Input.GetKeyDown(KeyCode.DownArrow))
-            {
-                if((formNum - 1) < 0)
-                {
-                    if(forms[0] != string.Empty)
-                    {
-                        formNum = forms.Length;
-                    } //end if
-                    else
-                    {
-                        formNum = 0;
-                    } //end else
-                } //end if
-                else
-                {
-                    formNum--;
-                } //end else
-            } //end else if
-
-            //Load appropriate data
-            string chosenString = chosenPoke.ToString("000");
-            chosenString += femaleFlag.isOn ? "f" : "";
-            chosenString += shinyFlag.isOn ? "s" : "";
-            chosenString += formNum > 0 ? "_" + formNum.ToString() : "";
-            pokeFront.sprite = Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString);
-            if(pokeFront.sprite == null)
-            {
-                chosenString = chosenString.Replace("f", "");
-                pokeFront.sprite = Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString);
-                if(pokeFront.sprite == null)
-                {
-                    pokeFront.sprite = Resources.Load<Sprite>("Sprites/Pokemon/0");
-                } //end if
-            } //end if
-            pokeBack.sprite = Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString + "b");
-            if(pokeBack.sprite == null)
-            {
-                chosenString = chosenString.Replace("f", "");
-                pokeBack.sprite = Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString + "b");
-                if(pokeBack.sprite == null)
-                {
-                    pokeBack.sprite = Resources.Load<Sprite>("Sprites/Pokemon/0b");
-                } //end if
-            } //end if
-            pokeName.text = DataContents.ExecuteSQL<string>("SELECT name FROM Pokemon WHERE rowid=" +  chosenPoke);
-            pokeType.text = DataContents.ExecuteSQL<string>("SELECT type1 FROM Pokemon WHERE rowid=" +  chosenPoke) 
-                + ", " + DataContents.ExecuteSQL<string>("SELECT type2 FROM Pokemon WHERE rowid=" +  chosenPoke);
-            pokeHeightWeight.text = Math.Round(DataContents.ExecuteSQL<float>("SELECT height FROM Pokemon WHERE rowid=" + chosenPoke), 1) 
-                + " height, " + Math.Round(DataContents.ExecuteSQL<float>("SELECT weight FROM Pokemon WHERE rowid=" +  chosenPoke), 1) + " weight.";
-            pokePokedex.text = DataContents.ExecuteSQL<string>("SELECT pokedex FROM Pokemon WHERE rowid=" +  chosenPoke);
-            pokeBaseStats.text = DataContents.ExecuteSQL<string>("SELECT health FROM Pokemon WHERE rowid=" + chosenPoke);
-            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT attack FROM Pokemon WHERE rowid=" + chosenPoke);
-            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT defence FROM Pokemon WHERE rowid=" + chosenPoke);
-            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT speed FROM Pokemon WHERE rowid=" + chosenPoke);
-            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT specialAttack FROM Pokemon WHERE rowid=" + chosenPoke);
-            pokeBaseStats.text += " " + DataContents.ExecuteSQL<string>("SELECT specialDefence FROM Pokemon WHERE rowid=" + chosenPoke);
-            pokeAbilities.text = DataContents.ExecuteSQL<string>("SELECT ability1 FROM Pokemon WHERE rowid=" + chosenPoke);
-            pokeAbilities.text += ", " + DataContents.ExecuteSQL<string>("SELECT ability2 FROM Pokemon WHERE rowid=" + chosenPoke);
-            pokeAbilities.text += ", " + DataContents.ExecuteSQL<string>("SELECT hiddenAbility FROM Pokemon WHERE rowid=" + chosenPoke);
-            pokeEvolutions.text = "Evolutions: " + DataContents.ExecuteSQL<string>("SELECT evolutions FROM Pokemon WHERE rowid=" + chosenPoke);
-            pokeForms.text = "Forms: " + DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=" + chosenPoke);
-            pokeMoves.text = "Moves: " + DataContents.ExecuteSQL<string>("SELECT moves FROM Pokemon WHERE rowid=" + chosenPoke);
 
             //End processing
             processing = false;
@@ -1282,21 +1115,6 @@ public class SceneManager : MonoBehaviour
     {
         checkpoint = newCheckpoint; 
     } //end SetCheckpoint(int newCheckpoint)
-
-    /***************************************
-     * Name: JumpTo
-     * Changes active pokemon to the one entered
-     * in the input field
-     ***************************************/
-    public void JumpTo()
-    {
-        chosenPoke = int.Parse(GameObject.Find ("LocToJump").GetComponent<InputField> ().text);
-        chosenPoke = Math.Abs (chosenPoke);
-        if (chosenPoke > 721)
-        {
-            chosenPoke = 720;
-        } //end if
-    } //end JumpTo
 	#endregion
     #endregion
 } //end SceneManager class
