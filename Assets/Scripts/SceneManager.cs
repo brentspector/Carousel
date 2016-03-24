@@ -13,6 +13,18 @@ using System.Collections.Generic;
 public class SceneManager : MonoBehaviour 
 {
     #region Variables
+    //Main game states
+    public enum MainGame
+    {
+        HOME, 
+        GYMBATTLE,
+        TEAM,
+        PC,
+        SHOP,
+        POKEDEX,
+        TRAINERCARD
+    } //end MainGame
+
 	//Scene variables
 	Image fade;						//Fade screen
 	GameObject selection;			//Red selection rectangle
@@ -50,7 +62,11 @@ public class SceneManager : MonoBehaviour
 	string playerName;				//The player's name
 
     //Continue Game variables
-
+    MainGame gameState;             //Current state of the main game
+    GameObject buttonMenu;          //Menu of buttons in main game
+    GameObject gymBattle;           //Screen of region leader battles
+    GameObject playerTeam;          //Screen of the player's team
+    GameObject trainerCard;         //Screen of the trainer card
     #endregion
 
     #region Methods
@@ -811,7 +827,17 @@ public class SceneManager : MonoBehaviour
             //Begin processing
             processing = true;
 
+            //Initialize references and states
+            gameState = MainGame.HOME;
+            buttonMenu = GameObject.Find("ButtonMenu");
+            gymBattle = GameObject.Find("GymBattles");
+            playerTeam = GameObject.Find("MyTeam");
+            trainerCard = GameObject.Find("PlayerCard");
 
+            //Disable screens
+            gymBattle.SetActive(false);
+            playerTeam.SetActive(false);
+            trainerCard.SetActive(false);
 
             //Fade in
             StartCoroutine (FadeInAnimation (1));
@@ -820,10 +846,9 @@ public class SceneManager : MonoBehaviour
         {
             //Begin processing
             processing = true;
-            
+
             //Disable fade screen
             fade.gameObject.SetActive (false);
-
            
             //Move to next section 
             checkpoint = 2;
@@ -836,7 +861,33 @@ public class SceneManager : MonoBehaviour
             //Begin processing
             processing = true;
 
-
+            //Process according to game state
+            if(gameState == MainGame.HOME)
+            {
+                buttonMenu.SetActive(true);
+                gymBattle.SetActive(false);
+                playerTeam.SetActive(false);
+                trainerCard.SetActive(false);
+            } //end if
+            else if(gameState == MainGame.GYMBATTLE)
+            {
+                buttonMenu.SetActive(false);
+                gymBattle.SetActive(true);
+            } //end else if
+            else if(gameState == MainGame.TEAM)
+            {
+                buttonMenu.SetActive(false);
+                playerTeam.SetActive(true);
+            } //end else if
+            else if(gameState == MainGame.TRAINERCARD)
+            {
+                if(Input.GetKeyDown(KeyCode.X) || Input.GetMouseButtonDown(1))
+                {
+                    gameState = MainGame.HOME;
+                } //end if
+                buttonMenu.SetActive(false);
+                trainerCard.SetActive(true);
+            } //end eise if
             //End processing
             processing = false;
         } //end else if
@@ -1115,6 +1166,15 @@ public class SceneManager : MonoBehaviour
     {
         checkpoint = newCheckpoint; 
     } //end SetCheckpoint(int newCheckpoint)
+
+    /***************************************
+     * Name: SetGameState
+     * Sets gameState to parameter
+     ***************************************/
+    public void SetGameState(MainGame newGameState)
+    {
+        gameState = newGameState; 
+    } //end SetCheckpoint(MainGame newGameState)
 	#endregion
     #endregion
 } //end SceneManager class

@@ -156,8 +156,8 @@ public class GameManager : MonoBehaviour
 		} //end catch(System.Exception ex)
 	} //end Update
 
-	//Menu functions
-	#region Menu
+	//Scene functions
+	#region Scenes
     /***************************************
      * Name: Continue
      * Loads main game and player data
@@ -201,6 +201,51 @@ public class GameManager : MonoBehaviour
             scenes.SetCheckpoint(5);
         }  //end if
     } //end ProcessSelection
+
+    /***************************************
+     * Name: GymBattle
+     * Brings up the gym battle screen
+     ***************************************/ 
+    public void GymBattle()
+    {
+        scenes.SetGameState (SceneManager.MainGame.GYMBATTLE);
+    } //end GymBattle
+
+    /***************************************
+     * Name: TeamMenu
+     * Brings up the party screen
+     ***************************************/ 
+    public void TeamMenu()
+    {
+        scenes.SetGameState (SceneManager.MainGame.TEAM);
+    } //end TeamMenu
+    
+    /***************************************
+     * Name: Shop
+     * Switches to Shop scene
+     ***************************************/ 
+    public void Shop()
+    {
+        scenes.SetGameState (SceneManager.MainGame.SHOP);
+    } //end Shop
+    
+    /***************************************
+     * Name: Pokedex
+     * Switches to pokedex scene
+     ***************************************/ 
+    public void Pokedex()
+    {
+        scenes.SetGameState (SceneManager.MainGame.POKEDEX);
+    } //end Pokedex
+    
+    /***************************************
+     * Name: TrainerCard
+     * Brings up the trainer card screen
+     ***************************************/ 
+    public void TrainerCard()
+    {
+        scenes.SetGameState (SceneManager.MainGame.TRAINERCARD);
+    } //end TrainerCard
 	#endregion
 
 	//System Manager functions

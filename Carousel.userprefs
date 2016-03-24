@@ -1,11 +1,9 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\SceneManager.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\GameManager.cs">
     <Files>
-      <File FileName="Assets\Scripts\SceneManager.cs" Line="1117" Column="45" />
-      <File FileName="Assets\Scripts\CodeWarehouse.cs" Line="17" Column="45" />
-      <File FileName="Assets\Scripts\GameManager.cs" Line="203" Column="29" />
-      <File FileName="Assets\Scripts\ButtonFunctions.cs" Line="25" Column="29" />
+      <File FileName="Assets\Scripts\GameManager.cs" Line="256" Column="41" />
+      <File FileName="Assets\Scripts\SceneManager.cs" Line="884" Column="77" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
