@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -24,13 +25,8 @@ public class SystemManager : MonoBehaviour
 	StreamWriter output;	//The error writer
 
 	//Persistent variables
-	string dataLocation;	//Location of persistent data
-	int bups;				//Number of bups
-	string pName;			//The player's name
-	int pBadges;			//Amount of badges player has
-	int pHours;				//Total hours player has spent
-	int pMinutes;			//Remaining minutes player has that aren't hours
-	int pSeconds;			//Remaining seconds player has that aren't minutes
+    string dataLocation;    //Path to the save file
+    Trainer pPlayer;        //The player's profile
 	float sTime;			//Where the game is when persistent was called
 
 	//Text variables
@@ -293,35 +289,25 @@ public class SystemManager : MonoBehaviour
 		//If a file is regional
 		if(File.Exists(dataLocation + "game.dat"))
 		{
-			bups++;
-			if(bups > 10)
+            pPlayer.BackUps++;
+			if(pPlayer.BackUps > 10)
 			{
-				File.Delete(dataLocation + pName + (bups-10) + ".dat");
+				File.Delete(dataLocation + pPlayer.PlayerName + (pPlayer.BackUps-10) + ".dat");
 			} //end if
 			FileStream npf = File.Create (dataLocation + "gameT.dat");
 			PersistentSystem npfd = new PersistentSystem ();
-			npfd.pName = pName;
-			npfd.bups = bups;
-			npfd.pBadges = pBadges;
-			npfd.pHours = pHours;
-			npfd.pMinutes = pMinutes;
-			npfd.pSeconds = pSeconds;
+            npfd.player = pPlayer;
 			bf.Serialize (npf, npfd);
 			npf.Close ();
-			File.Replace(dataLocation + "gameT.dat", dataLocation+ "game.dat", dataLocation + pName + bups + ".dat");
-		} //end if
+			File.Replace(dataLocation + "gameT.dat", dataLocation+ "game.dat", dataLocation + 
+                         pPlayer.PlayerName + pPlayer.BackUps + ".dat");
+        } //end if
 		//If not
 		else
 		{
 			FileStream pf = File.Create (dataLocation + "game.dat");
 			PersistentSystem pfd = new PersistentSystem ();
-			pfd.version = GameManager.instance.VersionNumber;
-			pfd.pName = pName;
-			pfd.bups = 0;
-			pfd.pBadges = pBadges;
-			pfd.pHours = pHours;
-			pfd.pMinutes = pMinutes;
-			pfd.pSeconds = pSeconds;
+            pfd.player = pPlayer;
 			bf.Serialize (pf, pfd);
 			pf.Close ();
 		} //end else
@@ -343,21 +329,21 @@ public class SystemManager : MonoBehaviour
 			FileStream pf = File.Open (dataLocation + "game.dat", FileMode.Open);
 			PersistentSystem pfd = (PersistentSystem)bf.Deserialize(pf);
 			pf.Close();
-			pName = pfd.pName;
-			bups = pfd.bups;
-			pBadges = pfd.pBadges;
-			pHours = pfd.pHours;
-			pMinutes = pfd.pMinutes;
-			pSeconds = pfd.pSeconds;
+            pPlayer = pfd.player;
 			return true;
 		} //end if
 		else
 		{
-			pName = "-";
-			pBadges = 0;
-			pHours = 0;
-			pMinutes = 0;
-			pSeconds = 0;
+            pPlayer = new Trainer();
+            pPlayer.InitPC();
+            pPlayer.Version = GameManager.instance.VersionNumber;
+            pPlayer.BackUps = 0;
+            pPlayer.Team = new List<Pokemon>();
+			pPlayer.PlayerName = "-";
+			pPlayer.PlayerBadges = 0;
+			pPlayer.HoursPlayed = 0;
+			pPlayer.MinutesPlayed = 0;
+			pPlayer.SecondsPlayed = 0;
 			return false;
 		} //end else
 	} //end GetPersist
@@ -372,58 +358,20 @@ public class SystemManager : MonoBehaviour
     } //end StartTime
 
     /***************************************
-     * Name: SetName
-     * Change the player's name
+     * Name: PlayerTrainer
+     * Get/Set the player trainer
      ***************************************/
-	public void SetName(string newName)
-	{
-		pName = newName;
-	} //end SetName(string newName)
-
-    /***************************************
-     * Name: GetPName
-     * Retrieves player's name
-     ***************************************/
-	public string GetPName()
-	{
-		return pName;
-	} //end GetPName
-
-    /***************************************
-     * Name: SetBadges
-     * Sets the amount of badges
-     ***************************************/
-	public void SetBadges(int badges)
-	{
-		pBadges = badges;
-	} //end SetBadges(int badges)
-
-    /***************************************
-     * Name: GetBadges
-     * Retrieves badge count
-     ***************************************/
-	public int GetBadges()
-	{
-		return pBadges;
-	} //end GetBadges
-
-    /***************************************
-     * Name: GetHours
-     * Returns how many play hours are on file
-     ***************************************/
-	public int GetHours()
-	{
-		return pHours;
-	} //end GetHours
-
-    /***************************************
-     * Name: GetMinutes
-     * Returns how many leftover minutes there are
-     ***************************************/
-	public int GetMinutes()
-	{
-		return pMinutes;
-	} //end GetMinutes
+    public Trainer PlayerTrainer
+    {
+        get
+        {
+            return pPlayer;
+        } //end get
+        set
+        {
+            pPlayer = value;
+        } //end set
+    } //end PlayerTrainer
 
     /***************************************
      * Name: CalcTime
@@ -432,23 +380,22 @@ public class SystemManager : MonoBehaviour
 	private void CalcTime()
 	{
 		//Calculate total seconds, rounded up
-		float seconds = Mathf.Ceil((Time.time-sTime) + pSeconds);
+		float seconds = Mathf.Ceil((Time.time-sTime) + pPlayer.SecondsPlayed);
 
 		//Calculate total minutes
-		float minutes = Mathf.Floor (seconds / 60f) + pMinutes;
+		float minutes = Mathf.Floor (seconds / 60f) + pPlayer.MinutesPlayed;
 
 		//Calculate total hours
-		float hours = Mathf.Floor(minutes / 60f) + pHours;
+		float hours = Mathf.Floor(minutes / 60f) + pPlayer.HoursPlayed;
 
 		//Set hours
-		pHours = (int)hours;
+		pPlayer.HoursPlayed = (int)hours;
 
 		//Set leftover minutes
-		pMinutes = (int)minutes % 60;
+		pPlayer.MinutesPlayed = (int)minutes % 60;
 
 		//Set leftover seconds
-		pSeconds = (int)seconds % 60;
-
+		pPlayer.SecondsPlayed = (int)seconds % 60;
 	} //end if
 	#endregion
     #endregion
@@ -458,11 +405,5 @@ public class SystemManager : MonoBehaviour
 [Serializable]
 class PersistentSystem
 {
-	public float version;
-	public int bups;
-	public string pName;
-	public int pBadges;
-	public int pHours;
-	public int pMinutes;
-    public int pSeconds;
+    public Trainer player;
 } //end PersistentSystem class

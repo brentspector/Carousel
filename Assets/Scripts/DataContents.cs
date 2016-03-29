@@ -153,55 +153,6 @@ public static class DataContents : System.Object
 } //end DataContents class
 
 /***************************************************************************************** 
- * Class: PokemonSpecies
- * Summary: Database for all base pokemon data.
- *****************************************************************************************/ 
-[Serializable]
-public class PokemonSpecies
-{
-    public string name;                         //Regular name of pokemon
-    public string type1;                        //Primary type
-    public string type2;                        //Secondary type
-    public int[] baseStats;                     //The base stats for each of the six stats
-    public string genderRate;                   //Female likelihood 
-    public string growthRate;                   //Experience group of pokemon
-    public int baseExp;                         //How much experience is given to opponent for beating this pokemon
-    public int[] effortPoints;                  //How many effort points are given to opponent for beating this pokemon
-    public int catchRate;                       //The probability of capturing this pokemon
-    public int happiness;                       //How much happiness the pokemon starts with
-    public string[] abilities;                  //The abilities a pokemon naturally knows
-    public string hiddenAbility;                //The ability the pokemon obtains through special conditions
-    [SerializeField]
-    public Dictionary<int, List<string>> moves; //All level-up moves a pokemon has
-    public string[] eggMoves;                   //All moves learnable through breeding
-    public string[] compatibility;              //What egg-groups the pokemon is compatible with
-    public int steps;                           //How many steps it takes for an egg of this pokemon to hatch
-    public float height;                        //Height
-    public float weight;                        //Weight
-    public string color;                        //What color group the pokemon belongs in
-    public string habitat;                      //What habitat this pokemon is usually found in
-    public string kind;                         //The real-life compliment to this pokemon
-    public string pokedex;                      //Pokedex text
-    public string[] forms;                      //Any alternate forms this pokemon has
-    public int battlerPlayerY;                  //How low the pokemon sprite is on player's side
-    public int battlerEnemyY;                   //How low the pokemon sprite is on enemy's side
-    public int battlerAltitude;                 //How high the pokemon sprite is on the enemy's side
-    public List<Evolutions> evolutions;         //What evolutions and methods this pokemon has
-} //end PokemonSpecies class
-
-/***************************************************************************************** 
- * Class: Evolutions
- * Summary: Holds evolution data for each evolutuion of a pokemon
- *****************************************************************************************/ 
-[Serializable]
-public class Evolutions
-{
-   public string species;   //The species the pokemon evolves into
-   public string method;    //How the evolution occurs
-   public string trigger;   //What triggers the method
-} //end Evolutions class
-
-/***************************************************************************************** 
  * Class: ExperienceTable
  * Summary: Lists the xp for each level that a pokemon needs
  *****************************************************************************************/ 
@@ -551,43 +502,6 @@ public class ExperienceTable
         return level;
     } //end GetLevel(string experienceRate, int experience)
 } //end ExperienceTable class
-
-/***************************************************************************************** 
- * Class: Move
- * Summary: Contains the data for pokemon attacks
- *****************************************************************************************/ 
-[Serializable]
-public class Move
-{
-    public string internalName; //The name of the attack
-    public string gameName;     //The name shown in-game
-    public int functionCode;    //What effect this move has
-    public int baseDamage;      //How much power this attack has
-    public string type;         //Pokemon type 
-    public string category;     //Physical, Special, or Status
-    public int accuracy;        //Liklihood of landing the attack
-    public int totalPP;         //Total amount of allowable uses
-    public int chanceEffect;    //How likely a bonus effect has to happen
-    public int target;          //Who this move affects in double and triple battles
-    public int priority;        //How fast a move occurs, ignoring speed
-    public string flags;        //Special properties of the move
-    public string description;  //In-game text description
-} //end Move class
-
-/***************************************************************************************** 
- * Class: Item
- * Summary: Contains data on in-game items
- *****************************************************************************************/ 
-[Serializable]
-public class Item
-{
-    public string internalName; //The name of the item
-    public string gameName;     //The in-game name of the item
-    public int bagNumber;       //What slot the item goes in
-    public int cost;            //How much it sells for in the shop
-    public string description;  //In-game text description
-    public int battleUse;       //How can it be used in battle
-} //end Item class
 
 /***************************************************************************************** 
  * File:    Natures

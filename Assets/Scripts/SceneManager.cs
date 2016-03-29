@@ -247,10 +247,10 @@ public class SceneManager : MonoBehaviour
 			                                           100);
 		
 			//Fill in continue area
-			pName.text = GameManager.instance.GetPlayerName();
-			badges.text = "Badges: " + GameManager.instance.GetBadges().ToString();
-			totalTime.text = "Playtime: " + GameManager.instance.GetHours().ToString() + ":" + 
-				GameManager.instance.GetMinutes().ToString("00");
+			pName.text = GameManager.instance.GetTrainer().PlayerName;
+			badges.text = "Badges: " + GameManager.instance.GetTrainer().PlayerBadges.ToString();
+			totalTime.text = "Playtime: " + GameManager.instance.GetTrainer().HoursPlayed.ToString() + ":" + 
+				GameManager.instance.GetTrainer().MinutesPlayed.ToString("00");
 
 			//Run fade animation
 			StartCoroutine(FadeInAnimation(2));
@@ -785,7 +785,7 @@ public class SceneManager : MonoBehaviour
 		{
 			processing = true;
 			//Set name
-			GameManager.instance.SetName(playerName);
+			GameManager.instance.GetTrainer().PlayerName = playerName;
 
 			//Attempt to display text
 			if(GameManager.instance.DisplayText("Great! Now here's your things. See you again."))

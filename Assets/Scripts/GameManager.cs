@@ -108,8 +108,9 @@ public class GameManager : MonoBehaviour
 
 #if UNITY_EDITOR
                     //Debug mode (development in the editor) commands go here
-                    Pokemon myPokemon = new Pokemon();
-
+                    sysm.GetPersist();
+                    sysm.PlayerTrainer.DisplayPC(0);
+                    sysm.Persist();
 #else
                     //Stand-alone mode (user version) diagnostic commands go here
 
@@ -288,71 +289,13 @@ public class GameManager : MonoBehaviour
 	} //end IsDisplaying
 
     /***************************************
-     * Name: SetName
-     * Sets the player's name in SystemManager
+     * Name: GetTrainer
+     * Retrieves the player's trainer profile
      ***************************************/
-	public void SetName(string pName)
-	{
-		sysm.SetName(pName);
-	} //end SetName(string pName)
-
-    /***************************************
-     * Name: GetPlayerName
-     * Retrieves player's name from SystemManager
-     ***************************************/
-	public string GetPlayerName()
-	{
-		return sysm.GetPName ();
-	} //end GetPlayerName
-
-    /***************************************
-     * Name: SetBadges
-     * Gives player a number of badges in
-     * SystemManager
-     ***************************************/
-	public void SetBadges(int badges)
-	{
-		sysm.SetBadges (badges);
-	} //end SetBadges(int badges)
-
-    /***************************************
-     * Name: GetBadges
-     * Retrieves number of badges from System
-     * Manager
-     ***************************************/
-	public int GetBadges()
-	{
-		return sysm.GetBadges ();
-	} //end GetBadges
-
-    /***************************************
-     * Name: StartTime
-     * Begins the player's play session time
-     ***************************************/
-    public void StartTime()
+    public Trainer GetTrainer()
     {
-        sysm.StartTime();
-    } //end StartTime
-
-    /***************************************
-     * Name: GetHours
-     * Get the number of player hours from
-     * SystemManager
-     ***************************************/
-	public int GetHours()
-	{
-		return sysm.GetHours ();
-	} //end GetHours
-
-    /***************************************
-     * Name: GetMinutes
-     * Get the number of player minutes from
-     * SystemManager
-     ***************************************/
-	public int GetMinutes()
-	{
-		return sysm.GetMinutes ();
-	} //end GetMinutes
+        return sysm.PlayerTrainer;
+    } //end GetTrainer
 
     /***************************************
      * Name: Persist
