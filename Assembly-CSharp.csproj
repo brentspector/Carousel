@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\AI.cs" />
+     <Compile Include="Assets\Scripts\BatchSlice.cs" />
      <Compile Include="Assets\Scripts\ButtonFunctions.cs" />
      <Compile Include="Assets\Scripts\CodeWarehouse.cs" />
      <Compile Include="Assets\Scripts\DataContents.cs" />

@@ -25,6 +25,15 @@ public class ButtonFunctions : MonoBehaviour
     } //end ProcessSelection
 
     /***************************************
+     * Name: ReturnHome
+     * Brings up the main game button menu
+     ***************************************/ 
+    public void ReturnHome()
+    {
+        GameManager.instance.ReturnHome ();
+    } //end ReturnHome
+
+    /***************************************
      * Name: GymBattle
      * Brings up the gym battle menu
      ***************************************/ 
@@ -41,6 +50,15 @@ public class ButtonFunctions : MonoBehaviour
     {
         GameManager.instance.TeamMenu ();
     } //end TeamMenu
+
+    /***************************************
+     * Name: PlayerPC
+     * Brings up the pokemon storage screen
+     ***************************************/ 
+    public void PlayerPC()
+    {
+        GameManager.instance.PlayerPC ();
+    } //end PlayerPC
 
     /***************************************
      * Name: Shop

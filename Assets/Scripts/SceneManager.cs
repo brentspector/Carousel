@@ -63,10 +63,13 @@ public class SceneManager : MonoBehaviour
 
     //Continue Game variables
     MainGame gameState;             //Current state of the main game
+    bool initialize;                //Initialize each state only once per access
     GameObject buttonMenu;          //Menu of buttons in main game
     GameObject gymBattle;           //Screen of region leader battles
     GameObject playerTeam;          //Screen of the player's team
     GameObject trainerCard;         //Screen of the trainer card
+    int previousTeamSlot;           //The slot last highlighted
+    Sprite[] statusSprites;         //Sprites for each status ailment
     #endregion
 
     #region Methods
@@ -662,10 +665,10 @@ public class SceneManager : MonoBehaviour
 				confirm.SetActive(true);
 
 				//Get confirm's dimensions
-				Vector3[] test = new Vector3[4];
-				confirm.transform.GetChild(0).GetComponent<RectTransform>().GetWorldCorners(test);
-				float width = test[2].x - test[0].x;
-				float height = test[2].y - test[0].y;
+				Vector3[] boxDimensions = new Vector3[4];
+				confirm.transform.GetChild(0).GetComponent<RectTransform>().GetWorldCorners(boxDimensions);
+				float width = boxDimensions[2].x - boxDimensions[0].x;
+				float height = boxDimensions[2].y - boxDimensions[0].y;
 
 				//Reposition selection rect
 				selection.SetActive(true);
@@ -829,6 +832,7 @@ public class SceneManager : MonoBehaviour
 
             //Initialize references and states
             gameState = MainGame.HOME;
+            initialize = false;
             buttonMenu = GameObject.Find("ButtonMenu");
             gymBattle = GameObject.Find("GymBattles");
             playerTeam = GameObject.Find("MyTeam");
@@ -838,6 +842,9 @@ public class SceneManager : MonoBehaviour
             gymBattle.SetActive(false);
             playerTeam.SetActive(false);
             trainerCard.SetActive(false);
+
+            //Load sprites
+            statusSprites = Resources.LoadAll<Sprite>("Sprites/Icons/Statuses");
 
             //Fade in
             StartCoroutine (FadeInAnimation (1));
@@ -868,25 +875,336 @@ public class SceneManager : MonoBehaviour
                 gymBattle.SetActive(false);
                 playerTeam.SetActive(false);
                 trainerCard.SetActive(false);
+                initialize = false;
             } //end if
             else if(gameState == MainGame.GYMBATTLE)
             {
-                buttonMenu.SetActive(false);
-                gymBattle.SetActive(true);
-            } //end else if
-            else if(gameState == MainGame.TEAM)
-            {
-                buttonMenu.SetActive(false);
-                playerTeam.SetActive(true);
-            } //end else if
-            else if(gameState == MainGame.TRAINERCARD)
-            {
+                //Return to home when X or Right mouse clicked
                 if(Input.GetKeyDown(KeyCode.X) || Input.GetMouseButtonDown(1))
                 {
                     gameState = MainGame.HOME;
                 } //end if
-                buttonMenu.SetActive(false);
-                trainerCard.SetActive(true);
+
+                //Initialize each scene only once
+                if(!initialize)
+                {
+                    initialize = true;
+                    buttonMenu.SetActive(false);
+                    gymBattle.SetActive(true);
+                } //end if
+            } //end else if
+            else if(gameState == MainGame.TEAM)
+            {
+                //Return to home when X or Right mouse clicked
+                if(Input.GetKeyDown(KeyCode.X) || Input.GetMouseButtonDown(1))
+                {
+                    gameState = MainGame.HOME;
+                } //end if
+
+                //Initalize each scene only once
+                if(!initialize)
+                {
+                    initialize = true;
+                    buttonMenu.SetActive(false);
+                    playerTeam.SetActive(true);
+
+                    //Fill in all team data
+                    for(int i = 1; i < GameManager.instance.GetTrainer().Team.Count+1; i++)
+                    {
+                        if(i == 1)
+                        {
+                            if(GameManager.instance.GetTrainer().Team[i-1].Status==1)
+                            {
+                                playerTeam.transform.FindChild("Background").GetChild(i-1).
+                                    GetComponentInChildren<Image>().sprite = 
+                                        Resources.Load<Sprite>("Sprites/Menus/partyPanelRoundSelFnt");
+                            } //end if
+                            else
+                            {
+                                playerTeam.transform.FindChild("Background").GetChild(i-1).
+                                    GetComponentInChildren<Image>().sprite = 
+                                        Resources.Load<Sprite>("Sprites/Menus/partyPanelRoundSel");
+                            }
+                        } //end if
+                        else
+                        {
+                            if(GameManager.instance.GetTrainer().Team[i-1].Status==1)
+                            {
+                                playerTeam.transform.FindChild("Background").GetChild(i-1).
+                                    GetComponentInChildren<Image>().sprite = 
+                                        Resources.Load<Sprite>("Sprites/Menus/partyPanelRectFnt");
+                            } //end if
+                            else
+                            {
+                                playerTeam.transform.FindChild("Background").GetChild(i-1).
+                                    GetComponentInChildren<Image>().sprite = 
+                                        Resources.Load<Sprite>("Sprites/Menus/partyPanelRect");
+                            }
+                        } //end else
+                        switch(GameManager.instance.GetTrainer().Team[i-1].Status)
+                        {
+                            //Healthy
+                            case 0:
+                            {
+                                playerTeam.transform.FindChild("Pokemon" + i).FindChild("Status").
+                                GetComponentInChildren<Image>().color = Color.clear;
+                                break;
+                            } //end case 0
+                            //Faint
+                            case 1:
+                            {
+                                playerTeam.transform.FindChild("Pokemon" + i).FindChild("Status").
+                                    GetComponentInChildren<Image>().sprite = statusSprites[5];
+                                break;
+                            } //end case 1
+                            //Sleep
+                            case 2:
+                            {
+                                playerTeam.transform.FindChild("Pokemon" + i).FindChild("Status").
+                                    GetComponentInChildren<Image>().sprite = statusSprites[0];
+                                break;
+                            } //end case 2
+                            //Poison
+                            case 3:
+                            {
+                                playerTeam.transform.FindChild("Pokemon" + i).FindChild("Status").
+                                    GetComponentInChildren<Image>().sprite = statusSprites[1];
+                                break;
+                            } //end case 3
+                            //Burn
+                            case 4:
+                            {
+                                playerTeam.transform.FindChild("Pokemon" + i).FindChild("Status").
+                                    GetComponentInChildren<Image>().sprite = statusSprites[2];
+                                break;
+                            } //end case 4
+                            //Paralyze
+                            case 5:
+                            {
+                                playerTeam.transform.FindChild("Pokemon" + i).FindChild("Status").
+                                    GetComponentInChildren<Image>().sprite = statusSprites[3];
+                                break;
+                            } //end case 5
+                            //Freeze
+                            case 6:
+                            {
+                                playerTeam.transform.FindChild("Pokemon" + i).FindChild("Status").
+                                    GetComponentInChildren<Image>().sprite = statusSprites[4];
+                                break;
+                            } //end case 6
+                            
+                        } //end switch
+
+                        playerTeam.transform.FindChild("Pokemon" + i).FindChild("Sprite").
+                            GetComponentInChildren<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/icon" 
+                            + GameManager.instance.GetTrainer().Team[i-1].NatSpecies.ToString("000"));
+                        playerTeam.transform.FindChild("Pokemon" + i).FindChild("Nickname").
+                            GetComponentInChildren<Text>().text = GameManager.instance.GetTrainer().Team[i-1].Nickname;
+                        if(GameManager.instance.GetTrainer().Team[i-1].Item != 0)
+                        {
+                            playerTeam.transform.FindChild("Pokemon" + i).FindChild("Item").
+                            GetComponentInChildren<Image>().sprite =  Resources.Load<Sprite>("Sprites/Menus/item");
+                        } //end if
+                        else
+                        {
+                            playerTeam.transform.FindChild("Pokemon" + i).FindChild("Item").
+                                GetComponentInChildren<Image>().color = Color.clear;
+                        } //end else
+                        playerTeam.transform.FindChild("Pokemon" + i).FindChild("RemainingHP").
+                            GetComponentInChildren<RectTransform>().localScale = new Vector3((float)GameManager.instance.
+                            GetTrainer().Team[i-1].CurrentHP/(float)GameManager.instance.GetTrainer().Team[i-1].TotalHP, 1f, 1f);
+                        playerTeam.transform.FindChild("Pokemon" + i).FindChild("Level").
+                            GetComponentInChildren<Text>().text = "Lv." + GameManager.instance.GetTrainer().Team[i-1].CurrentLevel.ToString();
+                        playerTeam.transform.FindChild("Pokemon" + i).FindChild("CurrentHP").
+                            GetComponentInChildren<Text>().text = GameManager.instance.GetTrainer().Team[i-1].CurrentHP
+                                + "/" + GameManager.instance.GetTrainer().Team[i-1].TotalHP;
+                    } //end for
+
+                    //Deactivate any empty party spots
+                    for(int i = 5; i > GameManager.instance.GetTrainer().Team.Count-1; i--)
+                    {
+                        playerTeam.transform.FindChild("Background").GetChild(i).gameObject.SetActive(false);
+                        playerTeam.transform.FindChild("Pokemon" + (i+1)).gameObject.SetActive(false);
+                    } //end if Count < 6
+
+                    //Set choice number to 1 for first slot
+                    choiceNumber  = 1;
+                    previousTeamSlot = 1;
+                } //end if !initialize
+
+                //Collect player input
+                if(Input.GetKeyDown(KeyCode.LeftArrow))
+                {
+                    choiceNumber--;
+                    if(choiceNumber < -1)
+                    {
+                        choiceNumber = GameManager.instance.GetTrainer().Team.Count;
+                    } //end if
+                } //end if
+                else if(Input.GetKeyDown(KeyCode.RightArrow))
+                {
+                    choiceNumber++;
+                    if(choiceNumber > GameManager.instance.GetTrainer().Team.Count)
+                    {
+                        choiceNumber = -1;
+                    } //end if
+                } //end else if
+                else if(Input.GetKeyDown(KeyCode.UpArrow))
+                {
+                    if(choiceNumber == 1 || choiceNumber == 2)
+                    {
+                        choiceNumber = 0;
+                    } //end if
+                    else if(choiceNumber == -1)
+                    {
+                        choiceNumber = GameManager.instance.GetTrainer().Team.Count;
+                    } //end else if
+                    else if(choiceNumber == 0)
+                    {
+                        choiceNumber = -1;
+                    } //end else if
+                    else
+                    {
+                        choiceNumber -= 2;
+                    } //end else
+                }//end else if
+                else if(Input.GetKeyDown(KeyCode.DownArrow))
+                {
+                    if((choiceNumber == GameManager.instance.GetTrainer().Team.Count - 1
+                        && choiceNumber > 0)
+                       || choiceNumber == GameManager.instance.GetTrainer().Team.Count)
+                    {
+                        choiceNumber = -1;
+                    } //end if
+                    else if(choiceNumber == 0)
+                    {
+                        choiceNumber = 1;
+                    } //end else if
+                    else if(choiceNumber == -1)
+                    {
+                        choiceNumber = 0;
+                    } //end else if
+                    else
+                    {
+                        choiceNumber += 2;
+                    } //end else
+                }//end else if
+
+                //Change sprites based on player input
+                if(previousTeamSlot != choiceNumber)
+                {
+                    //Deactivate panel
+                    if(previousTeamSlot == 1)
+                    {
+                        if(GameManager.instance.GetTrainer().Team[previousTeamSlot-1].Status!=1)
+                        {
+                            playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot-1).
+                                GetComponentInChildren<Image>().sprite = 
+                                    Resources.Load<Sprite>("Sprites/Menus/partyPanelRound");
+                        } //end if
+                        else
+                        {
+                            playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot-1).
+                                GetComponentInChildren<Image>().sprite = 
+                                    Resources.Load<Sprite>("Sprites/Menus/partyPanelRoundFnt");
+                        } //end else
+                    } //end if
+                    else if(previousTeamSlot == 0 || previousTeamSlot == -1)
+                    {
+                        selection.SetActive(false);
+                    } //end else if
+                    else if(previousTeamSlot > 0)
+                    {
+                        if(GameManager.instance.GetTrainer().Team[previousTeamSlot-1].Status!=1)
+                        {
+                            playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot-1).
+                                GetComponentInChildren<Image>().sprite = 
+                                    Resources.Load<Sprite>("Sprites/Menus/partyPanelRect");
+                        } //end if
+                        else
+                        {
+                            playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot-1).
+                                GetComponentInChildren<Image>().sprite = 
+                                    Resources.Load<Sprite>("Sprites/Menus/partyPanelRectFnt");
+                        } //end else
+                    } //end else if
+
+                    //Activate panel
+                    playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Image>().color = Color.gray;
+                    playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Image>().color = Color.gray;
+                    if(choiceNumber == 1)
+                    {
+                        if(GameManager.instance.GetTrainer().Team[choiceNumber-1].Status!=1)
+                        {
+                            playerTeam.transform.FindChild("Background").GetChild(choiceNumber-1).
+                                GetComponentInChildren<Image>().sprite = 
+                                    Resources.Load<Sprite>("Sprites/Menus/partyPanelRoundSel");
+                        } //end if
+                        else
+                        {
+                            playerTeam.transform.FindChild("Background").GetChild(choiceNumber-1).
+                                GetComponentInChildren<Image>().sprite = 
+                                    Resources.Load<Sprite>("Sprites/Menus/partyPanelRoundSelFnt");
+                        } //end else
+                        if(previousTeamSlot > 0)
+                        {
+                            playerTeam.transform.FindChild("Pokemon" + previousTeamSlot).FindChild("PartyBall").
+                                GetComponentInChildren<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBall");
+                        } //end if
+                        playerTeam.transform.FindChild("Pokemon" + choiceNumber).FindChild("PartyBall").
+                            GetComponentInChildren<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBallSel");
+                    } //end if
+                    else if(choiceNumber == -1)
+                    {
+                        playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Image>().color = Color.gray*2;
+                    } //end else if
+                    else if(choiceNumber == 0)
+                    {
+                        playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Image>().color = Color.gray*2;
+                    } //end else if
+                    else
+                    {
+                        if(GameManager.instance.GetTrainer().Team[choiceNumber-1].Status!=1)
+                        {
+                            playerTeam.transform.FindChild("Background").GetChild(choiceNumber-1).
+                                GetComponentInChildren<Image>().sprite = 
+                                    Resources.Load<Sprite>("Sprites/Menus/partyPanelRectSel");
+                        } //end if
+                        else
+                        {
+                            playerTeam.transform.FindChild("Background").GetChild(choiceNumber-1).
+                                GetComponentInChildren<Image>().sprite = 
+                                    Resources.Load<Sprite>("Sprites/Menus/partyPanelRectSelFnt");
+                        } //end else
+                        if(previousTeamSlot > 0)
+                        {
+                            playerTeam.transform.FindChild("Pokemon" + previousTeamSlot).FindChild("PartyBall").
+                                GetComponentInChildren<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBall");
+                        } //end if
+                        playerTeam.transform.FindChild("Pokemon" + choiceNumber).FindChild("PartyBall").
+                            GetComponentInChildren<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBallSel");
+                    } //end else
+
+                    //Previous slot is now deactivated, set equal to current
+                    previousTeamSlot = choiceNumber;
+                } //end if
+
+            } //end else if
+            else if(gameState == MainGame.TRAINERCARD)
+            {
+                //Return to home when X or Right mouse clicked
+                if(Input.GetKeyDown(KeyCode.X) || Input.GetMouseButtonDown(1))
+                {
+                    gameState = MainGame.HOME;
+                } //end if
+
+                //Initalize each scene only once
+                if(!initialize)
+                {
+                    initialize = true;
+                    buttonMenu.SetActive(false);
+                    trainerCard.SetActive(true);
+                } //end if
             } //end eise if
             //End processing
             processing = false;

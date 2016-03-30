@@ -109,7 +109,7 @@ public class GameManager : MonoBehaviour
 #if UNITY_EDITOR
                     //Debug mode (development in the editor) commands go here
                     sysm.GetPersist();
-                    sysm.PlayerTrainer.DisplayPC(0);
+                    sysm.PlayerTrainer.Team[4].FaintPokemon();
                     sysm.Persist();
 #else
                     //Stand-alone mode (user version) diagnostic commands go here
@@ -204,6 +204,15 @@ public class GameManager : MonoBehaviour
     } //end ProcessSelection
 
     /***************************************
+     * Name: ReturnHome
+     * Brings up the main game button menu
+     ***************************************/ 
+    public void ReturnHome()
+    {
+        scenes.SetGameState (SceneManager.MainGame.HOME);
+    } //end ReturnHome
+
+    /***************************************
      * Name: GymBattle
      * Brings up the gym battle screen
      ***************************************/ 
@@ -220,6 +229,15 @@ public class GameManager : MonoBehaviour
     {
         scenes.SetGameState (SceneManager.MainGame.TEAM);
     } //end TeamMenu
+
+    /***************************************
+     * Name: PlayerPC
+     * Brings up the pokemon storage screen
+     ***************************************/ 
+    public void PlayerPC()
+    {
+        scenes.SetGameState (SceneManager.MainGame.PC);
+    } //end PlayerPC
     
     /***************************************
      * Name: Shop

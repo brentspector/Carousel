@@ -703,6 +703,15 @@ public class Pokemon
         specialD = results[4];
     } //end CalculateStat
 
+    /***************************************
+     * Name: FaintPokemon
+     * Sets HP to 0 and status to Faint
+     ***************************************/
+    public void FaintPokemon()
+    {
+        currentHP = 0;
+        status = 1;
+    } //end FaintPokemon
 	#region Accessors
 	//Stats
     /***************************************

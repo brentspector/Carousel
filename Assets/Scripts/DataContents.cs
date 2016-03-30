@@ -504,14 +504,14 @@ public class ExperienceTable
 } //end ExperienceTable class
 
 /***************************************************************************************** 
- * File:    Natures
+ * Enum:    Natures
  * Summary: Lists and organizes natures according to buffs and debuffs
  *****************************************************************************************/ 
 [Serializable]
 /***************************************
-     * Name: Natures
-     * List of natures, numbered for easy boost/nerf calculation
-     ***************************************/
+ * Name: Natures
+ * List of natures, numbered for easy boost/nerf calculation
+ ***************************************/
 public enum Natures
 {
     HARDY   = 0,
@@ -540,4 +540,25 @@ public enum Natures
     CAREFUL = 23,
     QUIRKY  = 24,
     COUNT   = 25
+} //end Natures enum
+
+/***************************************************************************************** 
+ * Enum:    Status
+ * Summary: Lists and organizes status for integer reference
+ *****************************************************************************************/ 
+[Serializable]
+/***************************************
+ * Name: Status
+ * List of status pokemon can be in
+ ***************************************/
+public enum Status
+{
+    HEALTHY = 0,
+    FAINT   = 1,
+    SLEEP   = 2,
+    POISON  = 3,
+    BURN    = 4,
+    PARALYZE= 5,
+    FREEZE  = 6,
+    COUNT   = 7
 } //end Natures enum
