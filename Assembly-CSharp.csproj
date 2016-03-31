@@ -46,9 +46,7 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\AI.cs" />
-     <Compile Include="Assets\Scripts\BatchSlice.cs" />
      <Compile Include="Assets\Scripts\ButtonFunctions.cs" />
-     <Compile Include="Assets\Scripts\CodeWarehouse.cs" />
      <Compile Include="Assets\Scripts\DataContents.cs" />
      <Compile Include="Assets\Scripts\Field.cs" />
      <Compile Include="Assets\Scripts\GameManager.cs" />
@@ -57,8 +55,10 @@
      <Compile Include="Assets\Scripts\SceneManager.cs" />
      <Compile Include="Assets\Scripts\Shop.cs" />
      <Compile Include="Assets\Scripts\SystemManager.cs" />
-     <Compile Include="Assets\Scripts\Test.cs" />
      <Compile Include="Assets\Scripts\Trainer.cs" />
+     <Compile Include="Assets\Scripts\Utility\BatchSlice.cs" />
+     <Compile Include="Assets\Scripts\Utility\CodeWarehouse.cs" />
+     <Compile Include="Assets\Scripts\Utility\Test.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>

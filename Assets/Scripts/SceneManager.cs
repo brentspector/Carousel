@@ -68,6 +68,7 @@ public class SceneManager : MonoBehaviour
     GameObject gymBattle;           //Screen of region leader battles
     GameObject playerTeam;          //Screen of the player's team
     GameObject trainerCard;         //Screen of the trainer card
+    GameObject currentTeamSlot;     //The object that is currently highlighted on the team
     int previousTeamSlot;           //The slot last highlighted
     Sprite[] statusSprites;         //Sprites for each status ailment
     #endregion
@@ -909,6 +910,8 @@ public class SceneManager : MonoBehaviour
                     playerTeam.SetActive(true);
 
                     //Fill in all team data
+                    playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Image>().color = Color.gray;
+                    playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Image>().color = Color.gray;
                     for(int i = 1; i < GameManager.instance.GetTrainer().Team.Count+1; i++)
                     {
                         if(i == 1)
@@ -991,8 +994,7 @@ public class SceneManager : MonoBehaviour
                                 playerTeam.transform.FindChild("Pokemon" + i).FindChild("Status").
                                     GetComponentInChildren<Image>().sprite = statusSprites[4];
                                 break;
-                            } //end case 6
-                            
+                            } //end case 6                            
                         } //end switch
 
                         playerTeam.transform.FindChild("Pokemon" + i).FindChild("Sprite").
@@ -1030,6 +1032,7 @@ public class SceneManager : MonoBehaviour
                     //Set choice number to 1 for first slot
                     choiceNumber  = 1;
                     previousTeamSlot = 1;
+                    currentTeamSlot = playerTeam.transform.FindChild("Pokemon1").gameObject;
                 } //end if !initialize
 
                 //Collect player input
@@ -1089,6 +1092,77 @@ public class SceneManager : MonoBehaviour
                         choiceNumber += 2;
                     } //end else
                 }//end else if
+                else if(Input.GetAxis("Mouse Y") < 0 && Input.mousePosition.y < Camera.main.
+                        WorldToScreenPoint(currentTeamSlot.transform.position).y - currentTeamSlot.
+                        GetComponent<RectTransform>().rect.height/2)
+                {
+                    if((choiceNumber == GameManager.instance.GetTrainer().Team.Count - 1
+                        && choiceNumber > 0)
+                       || choiceNumber == GameManager.instance.GetTrainer().Team.Count)
+                    {
+                        choiceNumber = -1;
+                        currentTeamSlot = playerTeam.transform.FindChild("Buttons").GetChild(0).gameObject;
+                    } //end if
+                    else if(choiceNumber == 0)
+                    {
+                        choiceNumber = 0;
+                    } //end else if
+                    else if(choiceNumber == -1)
+                    {
+                        choiceNumber = 0;
+                        currentTeamSlot = playerTeam.transform.FindChild("Buttons").GetChild(1).gameObject;
+                    } //end else if
+                    else
+                    {
+                        choiceNumber += 2;
+                        currentTeamSlot = playerTeam.transform.FindChild("Pokemon"+choiceNumber).gameObject;
+                    } //end else
+                } //end else if
+                else if(Input.GetAxis("Mouse Y") > 0 && Input.mousePosition.y > Camera.main.
+                        WorldToScreenPoint(currentTeamSlot.transform.position).y + currentTeamSlot.
+                        GetComponent<RectTransform>().rect.height/2)
+                {
+                    if(choiceNumber == 1 || choiceNumber == 2)
+                    {
+                        choiceNumber = choiceNumber;
+                    } //end if
+                    else if(choiceNumber == -1)
+                    {
+                        choiceNumber = GameManager.instance.GetTrainer().Team.Count;
+                        currentTeamSlot = playerTeam.transform.FindChild("Pokemon"+choiceNumber).gameObject;
+                    } //end else if
+                    else if(choiceNumber == 0)
+                    {
+                        choiceNumber = -1;
+                        currentTeamSlot = playerTeam.transform.FindChild("Buttons").GetChild(0).gameObject;
+                    } //end else if
+                    else
+                    {
+                        choiceNumber -= 2;
+                        currentTeamSlot = playerTeam.transform.FindChild("Pokemon"+choiceNumber).gameObject;
+                    } //end else
+                } //end else if
+                else if(Input.GetAxis("Mouse X") < 0 && Input.mousePosition.x < Camera.main.
+                        WorldToScreenPoint(currentTeamSlot.transform.position).x - currentTeamSlot.
+                        GetComponent<RectTransform>().rect.width/2)
+                {
+                    if((choiceNumber&1) != 1 && choiceNumber > 0)
+                    {
+                        choiceNumber--;
+                        currentTeamSlot = playerTeam.transform.FindChild("Pokemon"+choiceNumber).gameObject;
+                    } //end if                    
+                } //end else if
+                else if(Input.GetAxis("Mouse X") > 0 && Input.mousePosition.x > Camera.main.
+                        WorldToScreenPoint(currentTeamSlot.transform.position).x + currentTeamSlot.
+                        GetComponent<RectTransform>().rect.width/2)
+                {
+                    if((choiceNumber&1) == 1 && choiceNumber != GameManager.instance.GetTrainer().Team.Count
+                       && choiceNumber > 0)
+                    {
+                        choiceNumber++;
+                        currentTeamSlot = playerTeam.transform.FindChild("Pokemon"+choiceNumber).gameObject;
+                    } //end if   
+                } //end else if
 
                 //Change sprites based on player input
                 if(previousTeamSlot != choiceNumber)
@@ -1157,6 +1231,11 @@ public class SceneManager : MonoBehaviour
                     else if(choiceNumber == -1)
                     {
                         playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Image>().color = Color.gray*2;
+                        if(previousTeamSlot > 0)
+                        {
+                            playerTeam.transform.FindChild("Pokemon" + previousTeamSlot).FindChild("PartyBall").
+                                GetComponentInChildren<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBall");
+                        } //end if
                     } //end else if
                     else if(choiceNumber == 0)
                     {
