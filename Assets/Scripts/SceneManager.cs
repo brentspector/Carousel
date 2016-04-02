@@ -67,6 +67,7 @@ public class SceneManager : MonoBehaviour
     GameObject buttonMenu;          //Menu of buttons in main game
     GameObject gymBattle;           //Screen of region leader battles
     GameObject playerTeam;          //Screen of the player's team
+    GameObject summaryScreen;       //Screen showing summary of data for pokemon
     GameObject trainerCard;         //Screen of the trainer card
     GameObject currentTeamSlot;     //The object that is currently highlighted on the team
     int previousTeamSlot;           //The slot last highlighted
@@ -838,11 +839,13 @@ public class SceneManager : MonoBehaviour
             buttonMenu = GameObject.Find("ButtonMenu");
             gymBattle = GameObject.Find("GymBattles");
             playerTeam = GameObject.Find("MyTeam");
+            summaryScreen = playerTeam.transform.FindChild("Summary").gameObject;
             trainerCard = GameObject.Find("PlayerCard");
 
             //Disable screens
             gymBattle.SetActive(false);
             playerTeam.SetActive(false);
+            summaryScreen.SetActive(false);
             trainerCard.SetActive(false);
 
             //Load sprites
@@ -898,7 +901,8 @@ public class SceneManager : MonoBehaviour
             else if(gameState == MainGame.TEAM)
             {
                 //Return to home when X or Right mouse clicked
-                if(Input.GetKeyDown(KeyCode.X) || Input.GetMouseButtonDown(1))
+                if((Input.GetKeyDown(KeyCode.X) || Input.GetMouseButtonDown(1))
+                   && !choices.activeSelf)
                 {
                     gameState = MainGame.HOME;
                 } //end if
@@ -1257,7 +1261,7 @@ public class SceneManager : MonoBehaviour
                         } //end else
                     } //end else
                 } //end else if
-                else if(Input.GetAxis("Mouse X") < 0 && Input.mousePosition.x < Camera.main.
+                if(Input.GetAxis("Mouse X") < 0 && Input.mousePosition.x < Camera.main.
                         WorldToScreenPoint(currentTeamSlot.transform.position).x - currentTeamSlot.
                         GetComponent<RectTransform>().rect.width/2)
                 {
@@ -1271,7 +1275,7 @@ public class SceneManager : MonoBehaviour
                             currentTeamSlot = playerTeam.transform.FindChild("Pokemon"+choiceNumber).gameObject;
                         } //end if   
                     } //end if
-                } //end else if
+                } //end if
                 else if(Input.GetAxis("Mouse X") > 0 && Input.mousePosition.x > Camera.main.
                         WorldToScreenPoint(currentTeamSlot.transform.position).x + currentTeamSlot.
                         GetComponent<RectTransform>().rect.width/2)
@@ -1288,21 +1292,82 @@ public class SceneManager : MonoBehaviour
                         } //end if   
                     } //end if
                 } //end else if
-                else if(Input.GetKeyDown(KeyCode.Return))
+                else if(Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0))
                 {
-                    choices.SetActive(!choices.activeSelf);
-                    selection.SetActive(!selection.activeSelf);
-                    if(selection.activeSelf)
+                    //Process selection if menu is open
+                    if(choices.activeSelf)
                     {
-                        //Set up selection box
+                        switch(subMenuChoice)
+                        {
+                            //Summary
+                            case 0:
+                            {
+                                summaryScreen.SetActive(true);
+                                choices.SetActive(false);
+                                break;
+                            } //end case 0
+                            //Switch
+                            case 1:
+                            {
+                                Debug.Log("Switch");
+                                break;
+                            } //end case 1
+                            //Item
+                            case 2:
+                            {
+                                Debug.Log("Item");
+                                break;
+                            } //end case 2
+                            //Cancel
+                            case 3:
+                            {
+                                choices.SetActive(false);
+                                selection.SetActive(false);
+                                playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Button>().
+                                    interactable = true;
+                                playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Button>().
+                                    interactable = true;
+                                break;
+                            } //end case 3
+                        } //end switch
+                    } //end if
+
+                    //Open menu otherwise, as long as player isn't selecting a button
+                    else if(choiceNumber > 0)
+                    {
+                        //Set submenu active
+                        choices.SetActive(true);
+                        selection.SetActive(true);
+
+                        //Disable PC and Cancel buttons
+                        playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Button>().
+                            interactable = false;
+                        playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Button>().
+                            interactable = false;
+
+                        //Set up selection box at end of frame if it doesn't fit
                         if(selection.GetComponent<RectTransform>().sizeDelta != 
                            choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
                         {
+                            selection.SetActive(false);
                             StartCoroutine("WaitForResize");
                         } //end if
-                        selection.transform.position = choices.transform.GetChild(0).
-                            GetComponent<RectTransform>().position;
-                    } //end if
+
+                        //Reset position to top of menu
+                        subMenuChoice = 0;
+                    } //end else if
+                } //end else if
+                else if(Input.GetKeyDown(KeyCode.X) || Input.GetMouseButtonDown(1))
+                {
+                    //Deactivate submenu 
+                    choices.SetActive(false);
+                    selection.SetActive(false);
+
+                    //Enable buttons again
+                    playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Button>().
+                        interactable = true;
+                    playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Button>().
+                        interactable = true;
                 } //end else if
 
                 //Change background sprites based on player input
@@ -1408,7 +1473,6 @@ public class SceneManager : MonoBehaviour
                 //Change submenu highlight based on player choice
                 if(choices.activeSelf && choices.transform.childCount > 1)
                 {
-                    Debug.Log(subMenuChoice + " " + choices.transform.childCount);
                     selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
                 } //end if
 
@@ -1731,6 +1795,7 @@ public class SceneManager : MonoBehaviour
         selection.GetComponent<RectTransform>().sizeDelta = scale;
         selection.transform.position = choices.transform.GetChild(0).
             GetComponent<RectTransform>().position;
+        selection.SetActive(true);
     } //end WaitForResize
 	#endregion
     #endregion
