@@ -75,7 +75,6 @@ public class SceneManager : MonoBehaviour
     int previousTeamSlot;           //The slot last highlighted
     int subMenuChoice;              //What choice is highlighted in the pokemon submenu
     int summaryChoice;              //What page is open on the summary screen
-    Sprite[] statusSprites;         //Sprites for each status ailment
     #endregion
 
     #region Methods
@@ -851,9 +850,6 @@ public class SceneManager : MonoBehaviour
             summaryScreen.SetActive(false);
             trainerCard.SetActive(false);
 
-            //Load sprites
-            statusSprites = Resources.LoadAll<Sprite>("Sprites/Icons/Statuses");
-
             //Fade in
             StartCoroutine (FadeInAnimation (1));
         } //end if
@@ -978,42 +974,42 @@ public class SceneManager : MonoBehaviour
                             case 1:
                             {
                                 playerTeam.transform.FindChild("Pokemon" + i).FindChild("Status").
-                                    GetComponentInChildren<Image>().sprite = statusSprites[5];
+                                    GetComponentInChildren<Image>().sprite = DataContents.statusSprites[5];
                                 break;
                             } //end case 1
                             //Sleep
                             case 2:
                             {
                                 playerTeam.transform.FindChild("Pokemon" + i).FindChild("Status").
-                                    GetComponentInChildren<Image>().sprite = statusSprites[0];
+                                    GetComponentInChildren<Image>().sprite = DataContents.statusSprites[0];
                                 break;
                             } //end case 2
                             //Poison
                             case 3:
                             {
                                 playerTeam.transform.FindChild("Pokemon" + i).FindChild("Status").
-                                    GetComponentInChildren<Image>().sprite = statusSprites[1];
+                                    GetComponentInChildren<Image>().sprite = DataContents.statusSprites[1];
                                 break;
                             } //end case 3
                             //Burn
                             case 4:
                             {
                                 playerTeam.transform.FindChild("Pokemon" + i).FindChild("Status").
-                                    GetComponentInChildren<Image>().sprite = statusSprites[2];
+                                    GetComponentInChildren<Image>().sprite = DataContents.statusSprites[2];
                                 break;
                             } //end case 4
                             //Paralyze
                             case 5:
                             {
                                 playerTeam.transform.FindChild("Pokemon" + i).FindChild("Status").
-                                    GetComponentInChildren<Image>().sprite = statusSprites[3];
+                                    GetComponentInChildren<Image>().sprite = DataContents.statusSprites[3];
                                 break;
                             } //end case 5
                             //Freeze
                             case 6:
                             {
                                 playerTeam.transform.FindChild("Pokemon" + i).FindChild("Status").
-                                    GetComponentInChildren<Image>().sprite = statusSprites[4];
+                                    GetComponentInChildren<Image>().sprite = DataContents.statusSprites[4];
                                 break;
                             } //end case 6                            
                         } //end switch
@@ -1184,17 +1180,12 @@ public class SceneManager : MonoBehaviour
                                 Resources.Load<Sprite>("Sprites/Pokemon/"+GameManager.instance.GetTrainer().
                                                        Team[choiceNumber-1].NatSpecies.ToString("000"));
                             summaryScreen.transform.GetChild(0).FindChild("Item").GetComponent<Text>().text=
-                                "None";
-                            //GameManager.instance.GetTrainer().Team[choiceNumber-1].Item;
+                                DataContents.GetItemGameName(GameManager.instance.GetTrainer().Team[choiceNumber-1].Item);
                             summaryScreen.transform.GetChild(0).FindChild("DexNumber").GetComponent<Text>().text=
                                 GameManager.instance.GetTrainer().Team[choiceNumber-1].NatSpecies.ToString();
                             summaryScreen.transform.GetChild(0).FindChild("Species").GetComponent<Text>().text=
                                 DataContents.ExecuteSQL<String>("SELECT name FROM Pokemon WHERE rowid=" +
-                                GameManager.instance.GetTrainer().Team[choiceNumber-1].NatSpecies);
-                            /*summaryScreen.transform.GetChild(0).FindChild("Type1").GetComponent<Image>().sprite=
-                                GameManager.instance.GetTrainer().Team[choiceNumber-1].Nickname;
-                            summaryScreen.transform.GetChild(0).FindChild("Type2").GetComponent<Text>().text=
-                                GameManager.instance.GetTrainer().Team[choiceNumber-1].Nickname;*/
+                                GameManager.instance.GetTrainer().Team[choiceNumber-1].NatSpecies); 
                             summaryScreen.transform.GetChild(0).FindChild("OT").GetComponent<Text>().text=
                                 GameManager.instance.GetTrainer().Team[choiceNumber-1].OTName;
                             summaryScreen.transform.GetChild(0).FindChild("IDNumber").GetComponent<Text>().text=
@@ -1202,10 +1193,55 @@ public class SceneManager : MonoBehaviour
                             summaryScreen.transform.GetChild(0).FindChild("CurrentXP").GetComponent<Text>().text=
                                 GameManager.instance.GetTrainer().Team[choiceNumber-1].CurrentEXP.ToString();
                             summaryScreen.transform.GetChild(0).FindChild("RemainingXP").GetComponent<Text>().text=
-                                (1250000-GameManager.instance.GetTrainer().Team[choiceNumber-1].CurrentEXP).ToString();
+                                GameManager.instance.GetTrainer().Team[choiceNumber-1].RemainingEXP.ToString();
+                            SetTypeSprites(summaryScreen.transform.GetChild(0).FindChild("Types").GetChild(0).GetComponent<Image>(),
+                                           summaryScreen.transform.GetChild(0).FindChild("Types").GetChild(1).GetComponent<Image>());
                         } //end if
                         break;
                     } //end case 0 (Info)
+                    //Memo screen
+                    case 1:
+                    {
+                        summaryScreen.transform.GetChild(1).gameObject.SetActive(true);
+                        summaryScreen.transform.GetChild(1).FindChild("Name").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].Nickname;
+                        summaryScreen.transform.GetChild(1).FindChild("Level").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].CurrentLevel.ToString();
+                        summaryScreen.transform.GetChild(1).FindChild("Sprite").GetComponent<Image>().sprite=
+                            Resources.Load<Sprite>("Sprites/Pokemon/"+GameManager.instance.GetTrainer().
+                                                   Team[choiceNumber-1].NatSpecies.ToString("000"));
+                        summaryScreen.transform.GetChild(1).FindChild("Item").GetComponent<Text>().text=
+                            DataContents.GetItemGameName(GameManager.instance.GetTrainer().Team[choiceNumber-1].Item);
+                        summaryScreen.transform.GetChild(1).FindChild("Nature").GetComponent<Text>().text=
+                            ((Natures)GameManager.instance.GetTrainer().Team[choiceNumber-1].Nature).ToString();
+                        summaryScreen.transform.GetChild(1).FindChild("CaughtDate").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].ObtainTime.ToLongDateString() + 
+                                " at " + GameManager.instance.GetTrainer().Team[choiceNumber-1].ObtainTime.
+                                ToShortTimeString();
+                        summaryScreen.transform.GetChild(1).FindChild("CaughtType").GetComponent<Text>().text=
+                            "Acquired from " + GameManager.instance.GetTrainer().Team[choiceNumber-1].ObtainFrom;
+                        summaryScreen.transform.GetChild(1).FindChild("CaughtLevel").GetComponent<Text>().text=
+                            "Found at level " + GameManager.instance.GetTrainer().Team[choiceNumber-1].ObtainLevel;
+                        break;
+                    } //end case 1 (Memo)
+                    //Stats
+                    case 2:
+                    {
+                        summaryScreen.transform.GetChild(2).gameObject.SetActive(true);
+                        break;
+                    } //end case 2 (Stats)
+                    //EV-IV
+                    case 3:
+                    {
+                        summaryScreen.transform.GetChild(3).gameObject.SetActive(true);
+                        break;
+                    } //end case 3 (EV-IV)
+                    //Moves
+                    case 4:
+                    {
+                        summaryScreen.transform.GetChild(4).gameObject.SetActive(true);
+                        break;
+                    } //end case 4 (Moves)
                 } //end switch
             } //end else if
             else if(gameState == MainGame.TRAINERCARD)
@@ -1477,6 +1513,35 @@ public class SceneManager : MonoBehaviour
 	#endregion
 
     #region Processing
+    /***************************************
+     * Name: SetTypeSprites
+     * Sets the correct sprite, or disables
+     * if a type isn't found.
+     ***************************************/
+    void SetTypeSprites(Image type1, Image type2)
+    {
+        //Set the primary (first) type
+        type1.sprite = DataContents.typeSprites[Convert.ToInt32(Enum.Parse(typeof(Types),
+                       DataContents.ExecuteSQL<string>("SELECT type1 FROM Pokemon WHERE rowid=" +
+                       GameManager.instance.GetTrainer().Team[choiceNumber-1].NatSpecies)))];
+
+        //Get the string for the secondary type
+        string type2SQL = DataContents.ExecuteSQL<string> ("SELECT type2 FROM Pokemon WHERE rowid=" +
+                          GameManager.instance.GetTrainer ().Team [choiceNumber - 1].NatSpecies); 
+
+        //If a second type exists, load the appropriate sprite
+        if (!String.IsNullOrEmpty (type2SQL))
+        {
+            type2.gameObject.SetActive(true);
+            type2.sprite = DataContents.typeSprites [Convert.ToInt32 (Enum.Parse (typeof(Types), type2SQL))];
+        } //end if
+        //Otherwise disable the image
+        else
+        {
+            type2.gameObject.SetActive(false);
+        } //end else
+    } //end SetTypeSprites(Image type1, Image type2)
+
     /***************************************
      * Name: WaitForResize
      * Waits for choice menu to resize before 

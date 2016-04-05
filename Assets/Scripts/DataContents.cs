@@ -23,12 +23,16 @@ public static class DataContents : System.Object
     static int moveCount;                           //Number of entries in Move table
     static int itemCount;                           //Number of entries in Items table
 
+    //Sprite Arrays
+    public static Sprite[] statusSprites;           //Sprites for each status ailment
+    public static Sprite[] typeSprites;             //Sprites for each type
+
     //Shorthand for main data path
-    static string dataLocation;
+    static string dataLocation;                     
 
     //SQL Variables
     static string dbPath; 
-    static IDbConnection dbConnection;
+    static IDbConnection dbConnection;              
     static IDbCommand dbCommand;
     static IDataReader dbReader;
     #endregion
@@ -74,7 +78,10 @@ public static class DataContents : System.Object
 
         //Create an experience table
         experienceTable = new ExperienceTable();
-
+                
+        //Load sprites
+        statusSprites = Resources.LoadAll<Sprite> ("Sprites/Icons/statuses");
+        typeSprites   = Resources.LoadAll<Sprite> ("Sprites/Icons/pokedexTypes");
         return true;
     } //end InitDataContents()
 
@@ -132,10 +139,10 @@ public static class DataContents : System.Object
     } //end GetMoveID(string moveName)
 
     /***************************************
-     * Name: GetMoveName
+     * Name: GetMoveGameName
      * Returns string name of given numeric location
      ***************************************/
-    public static string GetMoveName(int moveNumber)
+    public static string GetMoveGameName(int moveNumber)
     {
         //Return NULL if a number goes beyond list boundaries
         if (moveNumber < 1 || moveNumber > moveCount)
@@ -145,10 +152,46 @@ public static class DataContents : System.Object
         //Return name of attack at numeric location
         else
         {
-            string moveName = ExecuteSQL<string>("SELECT internalName FROM Moves WHERE rowid=" + moveNumber);
+            string moveName = ExecuteSQL<string>("SELECT gameName FROM Moves WHERE rowid=" + moveNumber);
             return moveName;
         } //end else
-    } //end GetMoveName(int moveNumber)
+    } //end GetMoveGameName(int moveNumber)
+
+    /***************************************
+     * Name: GetItemID
+     * Returns numeric location of item
+     ***************************************/
+    public static int GetItemID(string itemName)
+    {
+        //No move found yet
+        dbCommand.CommandText = "SELECT rowid FROM Items WHERE internalName=@nm";
+        dbCommand.Parameters.Add(new SqliteParameter("@nm", itemName));
+        dbCommand.Prepare ();
+        int itemID = ExecuteSQL<int> (dbCommand.CommandText);
+        dbCommand.Parameters.Clear ();
+        
+        //Return location of item, or -1 if not found
+        return itemID;
+    } //end GetItemID(string itemName)
+    
+    /***************************************
+     * Name: GetItemGameName
+     * Returns string name of given numeric location
+     ***************************************/
+    public static string GetItemGameName(int itemNumber)
+    {
+        //Return NULL if a number goes beyond list boundaries
+        if (itemNumber < 1 || itemNumber > itemCount)
+        {
+            return "None";
+        } //end if
+        //Return name of item at numeric location
+        else
+        {
+            string itemName = ExecuteSQL<string>("SELECT gameName FROM Items WHERE rowid=" + itemNumber);
+            return itemName;
+        } //end else
+    } //end GetItemGameName(int itemNumber)
     #endregion
 } //end DataContents class
 
@@ -561,4 +604,37 @@ public enum Status
     PARALYZE= 5,
     FREEZE  = 6,
     COUNT   = 7
-} //end Natures enum
+} //end Status enum
+
+/***************************************************************************************** 
+ * Enum:    Types
+ * Summary: Lists and organizes types for integer reference
+ *****************************************************************************************/ 
+[Serializable]
+/***************************************
+ * Name: Types
+ * List of types pokemon or moves can be
+ ***************************************/
+public enum Types
+{
+    NORMAL  = 0,
+    FIGHTING= 1,
+    FLYING  = 2,
+    POISON  = 3,
+    GROUND  = 4,
+    ROCK    = 5,
+    BUG     = 6,
+    GHOST   = 7,
+    STEEL   = 8,
+    UNKNOWN = 9,
+    FIRE    = 10,
+    WATER   = 11,
+    GRASS   = 12,
+    ELECTRIC= 13,
+    PSYCHIC = 14,
+    ICE     = 15,
+    DRAGON  = 16,
+    DARK    = 17,
+    FAIRY   = 18,
+    COUNT   = 19
+} //end Types enum

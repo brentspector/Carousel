@@ -109,8 +109,8 @@ public class GameManager : MonoBehaviour
 #if UNITY_EDITOR
                     //Debug mode (development in the editor) commands go here
                     sysm.GetPersist();
-                    sysm.PlayerTrainer.Team[4].FaintPokemon();
                     sysm.Persist();
+
 #else
                     //Stand-alone mode (user version) diagnostic commands go here
 

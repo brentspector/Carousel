@@ -110,6 +110,7 @@ public class Trainer
      ***************************************/
     public void RandomTeam()
     {
+        team.Clear ();
         for (int i = 0; i < 6; i++)
         {
             Pokemon myPokemon = new Pokemon (level: UnityEngine.Random.Range (1, 100));

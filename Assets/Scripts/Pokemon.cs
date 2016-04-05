@@ -32,6 +32,7 @@ public class Pokemon
 	int personalID;			//Defines a specific pokemon
 	int trainerID;			//ID of trainer who obtained it first
 	int currentEXP;			//Current EXP of pokemon
+    int remainingEXP;       //The amount of EXP remaining to next level
     int currentLevel;       //Relative level of pokemon
 	int item;				//What item is being held
 	int status;				//What status the pokemon is under
@@ -52,6 +53,7 @@ public class Pokemon
 	string nickname;		//Nickname of pokemon
 	string obtainFrom;		//Where this pokemon was obtained from
 	string OtName;			//Name of the original trainer
+    DateTime obtainTime;    //When this pokemon was obtained at
     #endregion
 
     #region Methods
@@ -75,6 +77,7 @@ public class Pokemon
         totalEV = 0;
 		trainerID = tID;
 		currentEXP = CalculateEXP (level);
+        remainingEXP = CalculateRemainingEXP (level);
         currentLevel = level;
 		Item = item;
 		ballUsed = ball;
@@ -89,6 +92,7 @@ public class Pokemon
         nickname = DataContents.ExecuteSQL<string> ("SELECT name FROM Pokemon WHERE rowid=" + natSpecies);
         obtainFrom = "Shop";
         OtName = GameManager.instance.GetTrainer().PlayerName;
+        obtainTime = DateTime.Now;
 
 		//Initialize arrays
 		IV = new int[6];
@@ -634,6 +638,19 @@ public class Pokemon
 	} //end CalculateEXP(int level)
 
     /***************************************
+     * Name: CalculateRemainingEXP
+     * Determines the remaining EXP for the 
+     * pokemon's level
+     ***************************************/
+    int CalculateRemainingEXP(int level)
+    {
+        int nextLevelEXP = DataContents.experienceTable.GetNextValue (
+            DataContents.ExecuteSQL<string>("SELECT growthRate FROM Pokemon WHERE rowid=" + natSpecies),
+            level);
+        return nextLevelEXP - CurrentEXP;
+    } //end CalculateRemainingEXP(int level)
+
+    /***************************************
      * Name: CalculateHP
      * Determines the HP stat of the pokemon
      ***************************************/
@@ -926,6 +943,21 @@ public class Pokemon
 			currentEXP = value;
 		} //end set
 	}//end CurrentEXP 
+
+    /***************************************
+     * Name: RemainingEXP
+     ***************************************/
+    public int RemainingEXP
+    {
+        get
+        {
+            return remainingEXP;
+        } //end get
+        set
+        {
+            remainingEXP = value;
+        } //end set
+    }//end RemainingEXP 
 
     /***************************************
      * Name: CurrentLevel
@@ -1230,6 +1262,21 @@ public class Pokemon
 			OtName = value;
 		} //end set
 	} //end OTName
+
+    /***************************************
+     * Name: ObtainTime
+     ***************************************/
+    public DateTime ObtainTime
+    {
+        get
+        {
+            return obtainTime;
+        } //end get
+        set
+        {
+            obtainTime = value;
+        } //end set
+    } //end ObtainTime
 	#endregion
     #endregion
 } //end Pokemon class
