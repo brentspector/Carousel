@@ -5,6 +5,7 @@
 #region Using
 using UnityEngine;
 using UnityEngine.UI;
+using Mono.Data.SqliteClient;
 using System;
 using System.Collections;
 using System.IO;
@@ -12,7 +13,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections.Generic;
 using System.Data;
 using System.Runtime.Serialization;
-using Mono.Data.SqliteClient;
 #endregion
 
 public static class DataContents : System.Object 
@@ -23,12 +23,16 @@ public static class DataContents : System.Object
     static int moveCount;                           //Number of entries in Move table
     static int itemCount;                           //Number of entries in Items table
 
+    //Sprite Arrays
+    public static Sprite[] statusSprites;           //Sprites for each status ailment
+    public static Sprite[] typeSprites;             //Sprites for each type
+
     //Shorthand for main data path
-    static string dataLocation;
+    static string dataLocation;                     
 
     //SQL Variables
     static string dbPath; 
-    static IDbConnection dbConnection;
+    static IDbConnection dbConnection;              
     static IDbCommand dbCommand;
     static IDataReader dbReader;
     #endregion
@@ -53,7 +57,6 @@ public static class DataContents : System.Object
         //Manage SQL Database
         dbPath = "URI=file:" + dataLocation + "/Supplimental.db";
         dbConnection=new SqliteConnection(dbPath);
-        Debug.Log (dbConnection.Database);
         dbConnection.Open();
         dbCommand=dbConnection.CreateCommand();
         dbCommand.CommandText = "SELECT Count(*) FROM sqlite_master WHERE type='table'";
@@ -75,7 +78,10 @@ public static class DataContents : System.Object
 
         //Create an experience table
         experienceTable = new ExperienceTable();
-
+                
+        //Load sprites
+        statusSprites = Resources.LoadAll<Sprite> ("Sprites/Icons/statuses");
+        typeSprites   = Resources.LoadAll<Sprite> ("Sprites/Icons/pokedexTypes");
         return true;
     } //end InitDataContents()
 
@@ -133,10 +139,10 @@ public static class DataContents : System.Object
     } //end GetMoveID(string moveName)
 
     /***************************************
-     * Name: GetMoveName
+     * Name: GetMoveGameName
      * Returns string name of given numeric location
      ***************************************/
-    public static string GetMoveName(int moveNumber)
+    public static string GetMoveGameName(int moveNumber)
     {
         //Return NULL if a number goes beyond list boundaries
         if (moveNumber < 1 || moveNumber > moveCount)
@@ -146,61 +152,48 @@ public static class DataContents : System.Object
         //Return name of attack at numeric location
         else
         {
-            string moveName = ExecuteSQL<string>("SELECT internalName FROM Moves WHERE rowid=" + moveNumber);
+            string moveName = ExecuteSQL<string>("SELECT gameName FROM Moves WHERE rowid=" + moveNumber);
             return moveName;
         } //end else
-    } //end GetMoveName(int moveNumber)
+    } //end GetMoveGameName(int moveNumber)
+
+    /***************************************
+     * Name: GetItemID
+     * Returns numeric location of item
+     ***************************************/
+    public static int GetItemID(string itemName)
+    {
+        //No move found yet
+        dbCommand.CommandText = "SELECT rowid FROM Items WHERE internalName=@nm";
+        dbCommand.Parameters.Add(new SqliteParameter("@nm", itemName));
+        dbCommand.Prepare ();
+        int itemID = ExecuteSQL<int> (dbCommand.CommandText);
+        dbCommand.Parameters.Clear ();
+        
+        //Return location of item, or -1 if not found
+        return itemID;
+    } //end GetItemID(string itemName)
+    
+    /***************************************
+     * Name: GetItemGameName
+     * Returns string name of given numeric location
+     ***************************************/
+    public static string GetItemGameName(int itemNumber)
+    {
+        //Return NULL if a number goes beyond list boundaries
+        if (itemNumber < 1 || itemNumber > itemCount)
+        {
+            return "None";
+        } //end if
+        //Return name of item at numeric location
+        else
+        {
+            string itemName = ExecuteSQL<string>("SELECT gameName FROM Items WHERE rowid=" + itemNumber);
+            return itemName;
+        } //end else
+    } //end GetItemGameName(int itemNumber)
     #endregion
 } //end DataContents class
-
-/***************************************************************************************** 
- * Class: PokemonSpecies
- * Summary: Database for all base pokemon data.
- *****************************************************************************************/ 
-[Serializable]
-public class PokemonSpecies
-{
-    public string name;                         //Regular name of pokemon
-    public string type1;                        //Primary type
-    public string type2;                        //Secondary type
-    public int[] baseStats;                     //The base stats for each of the six stats
-    public string genderRate;                   //Female likelihood 
-    public string growthRate;                   //Experience group of pokemon
-    public int baseExp;                         //How much experience is given to opponent for beating this pokemon
-    public int[] effortPoints;                  //How many effort points are given to opponent for beating this pokemon
-    public int catchRate;                       //The probability of capturing this pokemon
-    public int happiness;                       //How much happiness the pokemon starts with
-    public string[] abilities;                  //The abilities a pokemon naturally knows
-    public string hiddenAbility;                //The ability the pokemon obtains through special conditions
-    [SerializeField]
-    public Dictionary<int, List<string>> moves; //All level-up moves a pokemon has
-    public string[] eggMoves;                   //All moves learnable through breeding
-    public string[] compatibility;              //What egg-groups the pokemon is compatible with
-    public int steps;                           //How many steps it takes for an egg of this pokemon to hatch
-    public float height;                        //Height
-    public float weight;                        //Weight
-    public string color;                        //What color group the pokemon belongs in
-    public string habitat;                      //What habitat this pokemon is usually found in
-    public string kind;                         //The real-life compliment to this pokemon
-    public string pokedex;                      //Pokedex text
-    public string[] forms;                      //Any alternate forms this pokemon has
-    public int battlerPlayerY;                  //How low the pokemon sprite is on player's side
-    public int battlerEnemyY;                   //How low the pokemon sprite is on enemy's side
-    public int battlerAltitude;                 //How high the pokemon sprite is on the enemy's side
-    public List<Evolutions> evolutions;         //What evolutions and methods this pokemon has
-} //end PokemonSpecies class
-
-/***************************************************************************************** 
- * Class: Evolutions
- * Summary: Holds evolution data for each evolutuion of a pokemon
- *****************************************************************************************/ 
-[Serializable]
-public class Evolutions
-{
-   public string species;   //The species the pokemon evolves into
-   public string method;    //How the evolution occurs
-   public string trigger;   //What triggers the method
-} //end Evolutions class
 
 /***************************************************************************************** 
  * Class: ExperienceTable
@@ -554,51 +547,14 @@ public class ExperienceTable
 } //end ExperienceTable class
 
 /***************************************************************************************** 
- * Class: Move
- * Summary: Contains the data for pokemon attacks
- *****************************************************************************************/ 
-[Serializable]
-public class Move
-{
-    public string internalName; //The name of the attack
-    public string gameName;     //The name shown in-game
-    public int functionCode;    //What effect this move has
-    public int baseDamage;      //How much power this attack has
-    public string type;         //Pokemon type 
-    public string category;     //Physical, Special, or Status
-    public int accuracy;        //Liklihood of landing the attack
-    public int totalPP;         //Total amount of allowable uses
-    public int chanceEffect;    //How likely a bonus effect has to happen
-    public int target;          //Who this move affects in double and triple battles
-    public int priority;        //How fast a move occurs, ignoring speed
-    public string flags;        //Special properties of the move
-    public string description;  //In-game text description
-} //end Move class
-
-/***************************************************************************************** 
- * Class: Item
- * Summary: Contains data on in-game items
- *****************************************************************************************/ 
-[Serializable]
-public class Item
-{
-    public string internalName; //The name of the item
-    public string gameName;     //The in-game name of the item
-    public int bagNumber;       //What slot the item goes in
-    public int cost;            //How much it sells for in the shop
-    public string description;  //In-game text description
-    public int battleUse;       //How can it be used in battle
-} //end Item class
-
-/***************************************************************************************** 
- * File:    Natures
+ * Enum:    Natures
  * Summary: Lists and organizes natures according to buffs and debuffs
  *****************************************************************************************/ 
 [Serializable]
 /***************************************
-     * Name: Natures
-     * List of natures, numbered for easy boost/nerf calculation
-     ***************************************/
+ * Name: Natures
+ * List of natures, numbered for easy boost/nerf calculation
+ ***************************************/
 public enum Natures
 {
     HARDY   = 0,
@@ -628,3 +584,57 @@ public enum Natures
     QUIRKY  = 24,
     COUNT   = 25
 } //end Natures enum
+
+/***************************************************************************************** 
+ * Enum:    Status
+ * Summary: Lists and organizes status for integer reference
+ *****************************************************************************************/ 
+[Serializable]
+/***************************************
+ * Name: Status
+ * List of status pokemon can be in
+ ***************************************/
+public enum Status
+{
+    HEALTHY = 0,
+    FAINT   = 1,
+    SLEEP   = 2,
+    POISON  = 3,
+    BURN    = 4,
+    PARALYZE= 5,
+    FREEZE  = 6,
+    COUNT   = 7
+} //end Status enum
+
+/***************************************************************************************** 
+ * Enum:    Types
+ * Summary: Lists and organizes types for integer reference
+ *****************************************************************************************/ 
+[Serializable]
+/***************************************
+ * Name: Types
+ * List of types pokemon or moves can be
+ ***************************************/
+public enum Types
+{
+    NORMAL  = 0,
+    FIGHTING= 1,
+    FLYING  = 2,
+    POISON  = 3,
+    GROUND  = 4,
+    ROCK    = 5,
+    BUG     = 6,
+    GHOST   = 7,
+    STEEL   = 8,
+    UNKNOWN = 9,
+    FIRE    = 10,
+    WATER   = 11,
+    GRASS   = 12,
+    ELECTRIC= 13,
+    PSYCHIC = 14,
+    ICE     = 15,
+    DRAGON  = 16,
+    DARK    = 17,
+    FAIRY   = 18,
+    COUNT   = 19
+} //end Types enum

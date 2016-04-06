@@ -9,7 +9,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Random = UnityEngine.Random;
-using LitJson;
 #endregion
 
 public class GameManager : MonoBehaviour
@@ -109,7 +108,8 @@ public class GameManager : MonoBehaviour
 
 #if UNITY_EDITOR
                     //Debug mode (development in the editor) commands go here
-                    Pokemon myPokemon = new Pokemon();
+                    sysm.GetPersist();
+                    sysm.Persist();
 
 #else
                     //Stand-alone mode (user version) diagnostic commands go here
@@ -157,8 +157,8 @@ public class GameManager : MonoBehaviour
 		} //end catch(System.Exception ex)
 	} //end Update
 
-	//Menu functions
-	#region Menu
+	//Scene functions
+	#region Scenes
     /***************************************
      * Name: Continue
      * Loads main game and player data
@@ -190,10 +190,81 @@ public class GameManager : MonoBehaviour
 		Application.LoadLevel ("Intro");
 	} //end Options
 
-    public void Jump()
+    /***************************************
+     * Name: ProcessSelection
+     * Sets the appropriate checkpoint
+     * depending on scene
+     ***************************************/
+    public void ProcessSelection()
     {
-        scenes.JumpTo ();
-    } //end Jump
+        if (Application.loadedLevelName == "StartMenu")
+        {
+            scenes.SetCheckpoint(5);
+        }  //end if
+    } //end ProcessSelection
+
+    /***************************************
+     * Name: ReturnHome
+     * Brings up the main game button menu
+     ***************************************/ 
+    public void ReturnHome()
+    {
+        scenes.SetGameState (SceneManager.MainGame.HOME);
+    } //end ReturnHome
+
+    /***************************************
+     * Name: GymBattle
+     * Brings up the gym battle screen
+     ***************************************/ 
+    public void GymBattle()
+    {
+        scenes.SetGameState (SceneManager.MainGame.GYMBATTLE);
+    } //end GymBattle
+
+    /***************************************
+     * Name: TeamMenu
+     * Brings up the party screen
+     ***************************************/ 
+    public void TeamMenu()
+    {
+        scenes.SetGameState (SceneManager.MainGame.TEAM);
+    } //end TeamMenu
+
+    /***************************************
+     * Name: PlayerPC
+     * Brings up the pokemon storage screen
+     ***************************************/ 
+    public void PlayerPC()
+    {
+        scenes.SetGameState (SceneManager.MainGame.PC);
+    } //end PlayerPC
+    
+    /***************************************
+     * Name: Shop
+     * Switches to Shop scene
+     ***************************************/ 
+    public void Shop()
+    {
+        scenes.SetGameState (SceneManager.MainGame.SHOP);
+    } //end Shop
+    
+    /***************************************
+     * Name: Pokedex
+     * Switches to pokedex scene
+     ***************************************/ 
+    public void Pokedex()
+    {
+        scenes.SetGameState (SceneManager.MainGame.POKEDEX);
+    } //end Pokedex
+    
+    /***************************************
+     * Name: TrainerCard
+     * Brings up the trainer card screen
+     ***************************************/ 
+    public void TrainerCard()
+    {
+        scenes.SetGameState (SceneManager.MainGame.TRAINERCARD);
+    } //end TrainerCard
 	#endregion
 
 	//System Manager functions
@@ -236,62 +307,13 @@ public class GameManager : MonoBehaviour
 	} //end IsDisplaying
 
     /***************************************
-     * Name: SetName
-     * Sets the player's name in SystemManager
+     * Name: GetTrainer
+     * Retrieves the player's trainer profile
      ***************************************/
-	public void SetName(string pName)
-	{
-		sysm.SetName(pName);
-	} //end SetName(string pName)
-
-    /***************************************
-     * Name: GetPlayerName
-     * Retrieves player's name from SystemManager
-     ***************************************/
-	public string GetPlayerName()
-	{
-		return sysm.GetPName ();
-	} //end GetPlayerName
-
-    /***************************************
-     * Name: SetBadges
-     * Gives player a number of badges in
-     * SystemManager
-     ***************************************/
-	public void SetBadges(int badges)
-	{
-		sysm.SetBadges (badges);
-	} //end SetBadges(int badges)
-
-    /***************************************
-     * Name: GetBadges
-     * Retrieves number of badges from System
-     * Manager
-     ***************************************/
-	public int GetBadges()
-	{
-		return sysm.GetBadges ();
-	} //end GetBadges
-
-    /***************************************
-     * Name: GetHours
-     * Get the number of player hours from
-     * SystemManager
-     ***************************************/
-	public int GetHours()
-	{
-		return sysm.GetHours ();
-	} //end GetHours
-
-    /***************************************
-     * Name: GetMinutes
-     * Get the number of player minutes from
-     * SystemManager
-     ***************************************/
-	public int GetMinutes()
-	{
-		return sysm.GetMinutes ();
-	} //end GetMinutes
+    public Trainer GetTrainer()
+    {
+        return sysm.PlayerTrainer;
+    } //end GetTrainer
 
     /***************************************
      * Name: Persist

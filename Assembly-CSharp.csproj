@@ -47,7 +47,6 @@
   <ItemGroup>
      <Compile Include="Assets\Scripts\AI.cs" />
      <Compile Include="Assets\Scripts\ButtonFunctions.cs" />
-     <Compile Include="Assets\Scripts\CodeWarehouse.cs" />
      <Compile Include="Assets\Scripts\DataContents.cs" />
      <Compile Include="Assets\Scripts\Field.cs" />
      <Compile Include="Assets\Scripts\GameManager.cs" />
@@ -56,22 +55,21 @@
      <Compile Include="Assets\Scripts\SceneManager.cs" />
      <Compile Include="Assets\Scripts\Shop.cs" />
      <Compile Include="Assets\Scripts\SystemManager.cs" />
-     <Compile Include="Assets\Scripts\Test.cs" />
      <Compile Include="Assets\Scripts\Trainer.cs" />
+     <Compile Include="Assets\Scripts\Utility\BatchSlice.cs" />
+     <Compile Include="Assets\Scripts\Utility\CodeWarehouse.cs" />
+     <Compile Include="Assets\Scripts\Utility\Test.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.Networking">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
  </Reference>
- <Reference Include="LitJson">
- <HintPath>C:/Users/Brent/Desktop/Programming/Unity/Pokemon Carousel/Carousel/Assets/Plugins/LitJson.dll</HintPath>
- </Reference>
  <Reference Include="Mono.Data.SqliteClient">
- <HintPath>C:/Users/Brent/Desktop/Programming/Unity/Pokemon Carousel/Carousel/Assets/Plugins/Mono.Data.SqliteClient.dll</HintPath>
+ <HintPath>C:/Users/Brent/Desktop/Programming/Unity/Pokemon Carousel/Carousel/Assets/Plugins/x86_64/Mono.Data.SqliteClient.dll</HintPath>
  </Reference>
  <Reference Include="System.Data">
- <HintPath>C:/Users/Brent/Desktop/Programming/Unity/Pokemon Carousel/Carousel/Assets/Plugins/System.Data.dll</HintPath>
+ <HintPath>C:/Users/Brent/Desktop/Programming/Unity/Pokemon Carousel/Carousel/Assets/Plugins/x86_64/System.Data.dll</HintPath>
  </Reference>
  <Reference Include="Mono.Cecil">
  <HintPath>C:/Program Files/Unity/Editor/Data/Managed/Mono.Cecil.dll</HintPath>

@@ -15,39 +15,85 @@ public class ButtonFunctions : MonoBehaviour
 
     #region Methods
     /***************************************
-     * Name: Continue
-     * Continue option from main screen
+     * Name: ProcessSelection
+     * When selection rectangle is pressed,
+     * run the appropriate function
      ***************************************/ 
-	public void Continue()
-	{
-		GameManager.instance.Continue ();
-	} //end Continue
-
-    /***************************************
-     * Name: NewGame
-     * New Game option from main screen
-     ***************************************/ 
-	public void NewGame()
-	{
-		GameManager.instance.NewGame ();
-	} //end NewGame
-
-    /***************************************
-     * Name: Options
-     * Options option from main screen
-     ***************************************/ 
-	public void Options()
-	{
-		GameManager.instance.Options ();
-	} //end Options
-
-    /***************************************
-     * Name: Jump
-     * Jump to pokedex number from game screen
-     ***************************************/ 
-    public void Jump()
+    public void ProcessSelection()
     {
-        GameManager.instance.Jump ();
-    } //end Jump
+        GameManager.instance.ProcessSelection ();
+    } //end ProcessSelection
+
+    /***************************************
+     * Name: ReturnHome
+     * Brings up the main game button menu
+     ***************************************/ 
+    public void ReturnHome()
+    {
+        GameManager.instance.ReturnHome ();
+    } //end ReturnHome
+
+    /***************************************
+     * Name: GymBattle
+     * Brings up the gym battle menu
+     ***************************************/ 
+    public void GymBattle()
+    {
+        GameManager.instance.GymBattle ();       
+    } //end GymBattle
+
+    /***************************************
+     * Name: TeamMenu
+     * Brings up the party screen
+     ***************************************/ 
+    public void TeamMenu()
+    {
+        GameManager.instance.TeamMenu ();
+    } //end TeamMenu
+
+    /***************************************
+     * Name: PlayerPC
+     * Brings up the pokemon storage screen
+     ***************************************/ 
+    public void PlayerPC()
+    {
+        GameManager.instance.PlayerPC ();
+    } //end PlayerPC
+
+    /***************************************
+     * Name: Shop
+     * Switches to Shop scene
+     ***************************************/ 
+    public void Shop()
+    {
+        GameManager.instance.Shop ();
+    } //end Shop
+
+    /***************************************
+     * Name: Pokedex
+     * Switches to pokedex scene
+     ***************************************/ 
+    public void Pokedex()
+    {
+        GameManager.instance.Pokedex ();
+    } //end Pokedex
+
+    /***************************************
+     * Name: TrainerCard
+     * Brings up the trainer card screen
+     ***************************************/ 
+    public void TrainerCard()
+    {
+        GameManager.instance.TrainerCard ();
+    } //end TrainerCard
+
+    /***************************************
+     * Name: Persist
+     * Persists the game
+     ***************************************/ 
+    public void Persist()
+    {
+        GameManager.instance.Persist ();
+    } //end Persist
     #endregion
 } //end ButtonFunctions class

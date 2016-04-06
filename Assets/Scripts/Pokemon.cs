@@ -32,6 +32,7 @@ public class Pokemon
 	int personalID;			//Defines a specific pokemon
 	int trainerID;			//ID of trainer who obtained it first
 	int currentEXP;			//Current EXP of pokemon
+    int remainingEXP;       //The amount of EXP remaining to next level
     int currentLevel;       //Relative level of pokemon
 	int item;				//What item is being held
 	int status;				//What status the pokemon is under
@@ -52,6 +53,7 @@ public class Pokemon
 	string nickname;		//Nickname of pokemon
 	string obtainFrom;		//Where this pokemon was obtained from
 	string OtName;			//Name of the original trainer
+    DateTime obtainTime;    //When this pokemon was obtained at
     #endregion
 
     #region Methods
@@ -75,6 +77,7 @@ public class Pokemon
         totalEV = 0;
 		trainerID = tID;
 		currentEXP = CalculateEXP (level);
+        remainingEXP = CalculateRemainingEXP (level);
         currentLevel = level;
 		Item = item;
 		ballUsed = ball;
@@ -88,7 +91,8 @@ public class Pokemon
 		isShiny = shiny;
         nickname = DataContents.ExecuteSQL<string> ("SELECT name FROM Pokemon WHERE rowid=" + natSpecies);
         obtainFrom = "Shop";
-        OtName = GameManager.instance.GetPlayerName ();
+        OtName = GameManager.instance.GetTrainer().PlayerName;
+        obtainTime = DateTime.Now;
 
 		//Initialize arrays
 		IV = new int[6];
@@ -634,6 +638,19 @@ public class Pokemon
 	} //end CalculateEXP(int level)
 
     /***************************************
+     * Name: CalculateRemainingEXP
+     * Determines the remaining EXP for the 
+     * pokemon's level
+     ***************************************/
+    int CalculateRemainingEXP(int level)
+    {
+        int nextLevelEXP = DataContents.experienceTable.GetNextValue (
+            DataContents.ExecuteSQL<string>("SELECT growthRate FROM Pokemon WHERE rowid=" + natSpecies),
+            level);
+        return nextLevelEXP - CurrentEXP;
+    } //end CalculateRemainingEXP(int level)
+
+    /***************************************
      * Name: CalculateHP
      * Determines the HP stat of the pokemon
      ***************************************/
@@ -703,8 +720,20 @@ public class Pokemon
         specialD = results[4];
     } //end CalculateStat
 
+    /***************************************
+     * Name: FaintPokemon
+     * Sets HP to 0 and status to Faint
+     ***************************************/
+    public void FaintPokemon()
+    {
+        currentHP = 0;
+        status = 1;
+    } //end FaintPokemon
 	#region Accessors
 	//Stats
+    /***************************************
+     * Name: CurrentHP
+     ***************************************/
 	public int CurrentHP
 	{
 		get
@@ -717,6 +746,9 @@ public class Pokemon
 		} //end set
 	}//end Current HP
 
+    /***************************************
+     * Name: TotalHP
+     ***************************************/
 	public int TotalHP
 	{
 		get
@@ -729,6 +761,9 @@ public class Pokemon
 		} //end set
 	} //end TotalHP
 
+    /***************************************
+     * Name: Attack
+     ***************************************/
 	public int Attack
 	{
 		get
@@ -741,6 +776,9 @@ public class Pokemon
 		} //end set
 	} //end Attack
 
+    /***************************************
+     * Name: Defense
+     ***************************************/
 	public int Defense
 	{
 		get
@@ -753,6 +791,9 @@ public class Pokemon
 		} //end set
 	} //end Defense
 
+    /***************************************
+     * Name: SpecialA
+     ***************************************/
 	public int SpecialA
 	{
 		get
@@ -765,6 +806,9 @@ public class Pokemon
 		} //end set
 	} //end SpecialA
 
+    /***************************************
+     * Name: SpecialD
+     ***************************************/
 	public int SpecialD
 	{
 		get
@@ -777,6 +821,9 @@ public class Pokemon
 		} //end set
 	} //end SpecialD
 
+    /***************************************
+     * Name: Speed
+     ***************************************/
 	public int Speed
 	{
 		get
@@ -789,6 +836,9 @@ public class Pokemon
 		} //end set
 	} //end Speed
 
+    /***************************************
+     * Name: TotalEVs
+     ***************************************/
     public int TotalEVs
     {
         get
@@ -801,27 +851,42 @@ public class Pokemon
         } //end set
     } //end TotalEVs
 
+    /***************************************
+     * Name: GetIV
+     ***************************************/
 	public int GetIV(int index)
 	{
 		return IV [index];
 	} //end GetIV(int index)
 
+    /***************************************
+     * Name: SetIV
+     ***************************************/
 	public void SetIV(int index, int value)
 	{
 		IV [index] = value;
 	} //end SetIV(int index, int value)
 
+    /***************************************
+     * Name: GetEV
+     ***************************************/
 	public int GetEV(int index)
 	{
 		return EV [index];
 	} //end GetEV(int index)
 
+    /***************************************
+     * Name: SetEV
+     ***************************************/
 	public void SetEV(int index, int value)
 	{
 		EV [index] = value;
 	} //end SetIV(int index, int value)
 
 	//Information
+    /***************************************
+     * Name: NatSpecies
+     ***************************************/
 	public int NatSpecies
 	{
 		get
@@ -834,6 +899,9 @@ public class Pokemon
 		} //end set
 	} //end NatSpecies
 
+    /***************************************
+     * Name: PersonalID
+     ***************************************/
 	public int PersonalID
 	{
 		get
@@ -846,6 +914,9 @@ public class Pokemon
 		} //end set
 	} //end PersonalID
 
+    /***************************************
+     * Name: TrainerID
+     ***************************************/
 	public int TrainerID
 	{
 		get
@@ -858,6 +929,9 @@ public class Pokemon
 		} //end set
 	} //end TrainerID
 
+    /***************************************
+     * Name: CurrentEXP
+     ***************************************/
 	public int CurrentEXP
 	{
 		get
@@ -870,6 +944,24 @@ public class Pokemon
 		} //end set
 	}//end CurrentEXP 
 
+    /***************************************
+     * Name: RemainingEXP
+     ***************************************/
+    public int RemainingEXP
+    {
+        get
+        {
+            return remainingEXP;
+        } //end get
+        set
+        {
+            remainingEXP = value;
+        } //end set
+    }//end RemainingEXP 
+
+    /***************************************
+     * Name: CurrentLevel
+     ***************************************/
     public int CurrentLevel
     {
         get
@@ -882,6 +974,9 @@ public class Pokemon
         } //end set
     } //end CurrentLevel
 
+    /***************************************
+     * Name: Item
+     ***************************************/
 	public int Item
 	{
 		get
@@ -894,6 +989,9 @@ public class Pokemon
 		} //end set
 	} //end Item
 
+    /***************************************
+     * Name: Status
+     ***************************************/
 	public int Status
 	{
 		get
@@ -906,6 +1004,9 @@ public class Pokemon
 		} //end set
 	} //end Status
 
+    /***************************************
+     * Name: StatusCount
+     ***************************************/
 	public int StatusCount
 	{
 		get
@@ -918,6 +1019,9 @@ public class Pokemon
 		} //end set
 	} //end StatusCount
 
+    /***************************************
+     * Name: BallUsed
+     ***************************************/
 	public int BallUsed
 	{
 		get
@@ -930,6 +1034,9 @@ public class Pokemon
 		} //end set
 	} //end BallUsed
 
+    /***************************************
+     * Name: ObtainType
+     ***************************************/
 	public int ObtainType
 	{
 		get
@@ -942,6 +1049,9 @@ public class Pokemon
 		} //end set
 	} //end ObtainType
 
+    /***************************************
+     * Name: ObtainLevel
+     ***************************************/
 	public int ObtainLevel
 	{
 		get
@@ -954,6 +1064,9 @@ public class Pokemon
 		} //end set
 	} //end ObtainLevel
 
+    /***************************************
+     * Name: Ability
+     ***************************************/
 	public int Ability
 	{
 		get
@@ -966,6 +1079,9 @@ public class Pokemon
 		} //end set
 	} //end Ability 
 
+    /***************************************
+     * Name: Gender
+     ***************************************/
 	public int Gender
 	{
 		get
@@ -978,6 +1094,9 @@ public class Pokemon
 		} //end set
 	} //end Gender
 
+    /***************************************
+     * Name: Nature
+     ***************************************/
 	public int Nature
 	{
 		get
@@ -990,6 +1109,9 @@ public class Pokemon
 		} //end set
 	} //end Nature
 
+    /***************************************
+     * Name: Happiness
+     ***************************************/
 	public int Happiness
 	{
 		get
@@ -1002,26 +1124,49 @@ public class Pokemon
 		} //end set
 	} //end Happiness
 
+    /***************************************
+     * Name: GetMove
+     ***************************************/
 	public int GetMove(int index)
 	{
 		return moves [index];
 	} //end GetMove(int index)
 
+    /***************************************
+     * Name: GetMoveCount
+     ***************************************/
+    public int GetMoveCount()
+    {
+        return moves.Length;
+    } //end GetMoveCount
+
+    /***************************************
+     * Name: SetMove
+     ***************************************/
 	public void SetMove(int index, int value)
 	{
 		moves [index] = value;
 	} //end SetMove(int index, int value)
 
+    /***************************************
+     * Name: GetFirstMove
+     ***************************************/
 	public int GetFirstMove(int index)
 	{
 		return firstMoves [index];
 	} //end GetFirstMove(int index)
 	
+    /***************************************
+     * Name: SetFirstMove
+     ***************************************/
 	public void SetFirstMove(int index, int value)
 	{
 		firstMoves [index] = value;
 	} //end SetFirstMove(int index, int value)
 
+    /***************************************
+     * Name: HasPokerus
+     ***************************************/
 	public bool HasPokerus
 	{
 		get
@@ -1034,6 +1179,9 @@ public class Pokemon
 		} //end set
 	} //end HasPokerus
 
+    /***************************************
+     * Name: IsShiny
+     ***************************************/
 	public bool IsShiny
 	{
 		get
@@ -1046,26 +1194,41 @@ public class Pokemon
 		} //end set
 	} //end HasPokerus
 
+    /***************************************
+     * Name: GetMarking
+     ***************************************/
 	public bool GetMarking(int index)
 	{
 		return markings [index];
 	} //end GetMarkings(int index)
 
+    /***************************************
+     * Name: SetMarking
+     ***************************************/
 	public void SetMarking(int index, bool value)
 	{
 		markings [index] = value;
 	} //end SetMarking(int index, bool value)
 
+    /***************************************
+     * Name: GetRibbon
+     ***************************************/
 	public bool GetRibbon(int index)
 	{
 		return ribbons [index];
 	} //end GetRibbon(int index)
 
+    /***************************************
+     * Name: SetRibbon
+     ***************************************/
 	public void SetRibbon(int index, bool value)
 	{
 		ribbons [index] = value;
 	} //end SetRibbon(int index, bool value)
 
+    /***************************************
+     * Name: Nickname
+     ***************************************/
 	public string Nickname
 	{
 		get
@@ -1078,6 +1241,9 @@ public class Pokemon
 		} //end set
 	} //end Nickname
 
+    /***************************************
+     * Name: ObtainFrom
+     ***************************************/
 	public string ObtainFrom
 	{
 		get
@@ -1090,6 +1256,9 @@ public class Pokemon
 		} //end set
 	} //end ObtainFrom
 
+    /***************************************
+     * Name: OTName
+     ***************************************/
 	public string OTName
 	{
 		get
@@ -1101,6 +1270,21 @@ public class Pokemon
 			OtName = value;
 		} //end set
 	} //end OTName
+
+    /***************************************
+     * Name: ObtainTime
+     ***************************************/
+    public DateTime ObtainTime
+    {
+        get
+        {
+            return obtainTime;
+        } //end get
+        set
+        {
+            obtainTime = value;
+        } //end set
+    } //end ObtainTime
 	#endregion
     #endregion
 } //end Pokemon class
