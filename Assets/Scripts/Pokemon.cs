@@ -1133,6 +1133,14 @@ public class Pokemon
 	} //end GetMove(int index)
 
     /***************************************
+     * Name: GetMoveCount
+     ***************************************/
+    public int GetMoveCount()
+    {
+        return moves.Length;
+    } //end GetMoveCount
+
+    /***************************************
      * Name: SetMove
      ***************************************/
 	public void SetMove(int index, int value)

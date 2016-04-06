@@ -5,6 +5,7 @@
 #region Using
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,6 +22,7 @@ public class SceneManager : MonoBehaviour
         TEAM,
         POKEMONSUBMENU,
         POKEMONSUMMARY,
+        POKEMONSWITCH,
         PC,
         SHOP,
         POKEDEX,
@@ -72,9 +74,11 @@ public class SceneManager : MonoBehaviour
     GameObject summaryScreen;       //Screen showing summary of data for pokemon
     GameObject trainerCard;         //Screen of the trainer card
     GameObject currentTeamSlot;     //The object that is currently highlighted on the team
+    GameObject currentSwitchSlot;   //The object that is currently highlighted for switching to
     int previousTeamSlot;           //The slot last highlighted
     int subMenuChoice;              //What choice is highlighted in the pokemon submenu
     int summaryChoice;              //What page is open on the summary screen
+    int switchChoice;               //The pokemon chosen to switch with the selected
     #endregion
 
     #region Methods
@@ -839,6 +843,7 @@ public class SceneManager : MonoBehaviour
             gameState = MainGame.HOME;
             initialize = false;
             buttonMenu = GameObject.Find("ButtonMenu");
+            EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
             gymBattle = GameObject.Find("GymBattles");
             playerTeam = GameObject.Find("MyTeam");
             summaryScreen = playerTeam.transform.FindChild("Summary").gameObject;
@@ -886,6 +891,7 @@ public class SceneManager : MonoBehaviour
                 //Return to home when X or Right mouse clicked
                 if(Input.GetKeyDown(KeyCode.X) || Input.GetMouseButtonDown(1))
                 {
+                    EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
                     gameState = MainGame.HOME;
                 } //end if
 
@@ -1178,7 +1184,7 @@ public class SceneManager : MonoBehaviour
                                 GameManager.instance.GetTrainer().Team[choiceNumber-1].CurrentLevel.ToString();
                             summaryScreen.transform.GetChild(0).FindChild("Sprite").GetComponent<Image>().sprite=
                                 Resources.Load<Sprite>("Sprites/Pokemon/"+GameManager.instance.GetTrainer().
-                                                       Team[choiceNumber-1].NatSpecies.ToString("000"));
+                                Team[choiceNumber-1].NatSpecies.ToString("000"));
                             summaryScreen.transform.GetChild(0).FindChild("Item").GetComponent<Text>().text=
                                 DataContents.GetItemGameName(GameManager.instance.GetTrainer().Team[choiceNumber-1].Item);
                             summaryScreen.transform.GetChild(0).FindChild("DexNumber").GetComponent<Text>().text=
@@ -1209,15 +1215,15 @@ public class SceneManager : MonoBehaviour
                             GameManager.instance.GetTrainer().Team[choiceNumber-1].CurrentLevel.ToString();
                         summaryScreen.transform.GetChild(1).FindChild("Sprite").GetComponent<Image>().sprite=
                             Resources.Load<Sprite>("Sprites/Pokemon/"+GameManager.instance.GetTrainer().
-                                                   Team[choiceNumber-1].NatSpecies.ToString("000"));
+                            Team[choiceNumber-1].NatSpecies.ToString("000"));
                         summaryScreen.transform.GetChild(1).FindChild("Item").GetComponent<Text>().text=
                             DataContents.GetItemGameName(GameManager.instance.GetTrainer().Team[choiceNumber-1].Item);
                         summaryScreen.transform.GetChild(1).FindChild("Nature").GetComponent<Text>().text=
                             ((Natures)GameManager.instance.GetTrainer().Team[choiceNumber-1].Nature).ToString();
                         summaryScreen.transform.GetChild(1).FindChild("CaughtDate").GetComponent<Text>().text=
                             GameManager.instance.GetTrainer().Team[choiceNumber-1].ObtainTime.ToLongDateString() + 
-                                " at " + GameManager.instance.GetTrainer().Team[choiceNumber-1].ObtainTime.
-                                ToShortTimeString();
+                            " at " + GameManager.instance.GetTrainer().Team[choiceNumber-1].ObtainTime.
+                            ToShortTimeString();
                         summaryScreen.transform.GetChild(1).FindChild("CaughtType").GetComponent<Text>().text=
                             "Acquired from " + GameManager.instance.GetTrainer().Team[choiceNumber-1].ObtainFrom;
                         summaryScreen.transform.GetChild(1).FindChild("CaughtLevel").GetComponent<Text>().text=
@@ -1228,27 +1234,128 @@ public class SceneManager : MonoBehaviour
                     case 2:
                     {
                         summaryScreen.transform.GetChild(2).gameObject.SetActive(true);
+                        summaryScreen.transform.GetChild(2).FindChild("Name").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].Nickname;
+                        summaryScreen.transform.GetChild(2).FindChild("Level").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].CurrentLevel.ToString();
+                        summaryScreen.transform.GetChild(2).FindChild("Sprite").GetComponent<Image>().sprite=
+                            Resources.Load<Sprite>("Sprites/Pokemon/"+GameManager.instance.GetTrainer().
+                            Team[choiceNumber-1].NatSpecies.ToString("000"));
+                        summaryScreen.transform.GetChild(2).FindChild("Item").GetComponent<Text>().text=
+                            DataContents.GetItemGameName(GameManager.instance.GetTrainer().Team[choiceNumber-1].Item);
+                        summaryScreen.transform.GetChild(2).FindChild("HP").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].CurrentHP.ToString() +
+                            "/" + GameManager.instance.GetTrainer().Team[choiceNumber-1].TotalHP.ToString();
+                        summaryScreen.transform.GetChild(2).FindChild("RemainingHP").
+                            GetComponentInChildren<RectTransform>().localScale = new Vector3((float)GameManager.instance.
+                            GetTrainer().Team[choiceNumber-1].CurrentHP/(float)GameManager.instance.GetTrainer().
+                            Team[choiceNumber-1].TotalHP, 1f, 1f);
+                        summaryScreen.transform.GetChild(2).FindChild("Attack").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].Attack.ToString();
+                        summaryScreen.transform.GetChild(2).FindChild("Defense").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].Defense.ToString();
+                        summaryScreen.transform.GetChild(2).FindChild("SpAttack").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].SpecialA.ToString();
+                        summaryScreen.transform.GetChild(2).FindChild("SpDefense").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].SpecialD.ToString();
+                        summaryScreen.transform.GetChild(2).FindChild("Speed").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].Speed.ToString();
+                        summaryScreen.transform.GetChild(2).FindChild("AbilityName").GetComponent<Text>().text=
+                            DataContents.ExecuteSQL<String>("SELECT ability1 FROM Pokemon WHERE rowid=" +
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].NatSpecies);
+                        summaryScreen.transform.GetChild(2).FindChild("AbilityDescription").GetComponent<Text>().text=
+                            "The description would go here";
+                            //GameManager.instance.GetTrainer().Team[choiceNumber-1].Speed.ToString();
                         break;
                     } //end case 2 (Stats)
                     //EV-IV
                     case 3:
                     {
                         summaryScreen.transform.GetChild(3).gameObject.SetActive(true);
+                        summaryScreen.transform.GetChild(3).gameObject.SetActive(true);
+                        summaryScreen.transform.GetChild(3).FindChild("Name").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].Nickname;
+                        summaryScreen.transform.GetChild(3).FindChild("Level").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].CurrentLevel.ToString();
+                        summaryScreen.transform.GetChild(3).FindChild("Sprite").GetComponent<Image>().sprite=
+                            Resources.Load<Sprite>("Sprites/Pokemon/"+GameManager.instance.GetTrainer().
+                            Team[choiceNumber-1].NatSpecies.ToString("000"));
+                        summaryScreen.transform.GetChild(3).FindChild("Item").GetComponent<Text>().text=
+                            DataContents.GetItemGameName(GameManager.instance.GetTrainer().Team[choiceNumber-1].Item);
+                        summaryScreen.transform.GetChild(3).FindChild("HP").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].GetEV(0).ToString() +
+                            "/" + GameManager.instance.GetTrainer().Team[choiceNumber-1].GetIV(0).ToString();
+                        summaryScreen.transform.GetChild(3).FindChild("RemainingHP").
+                            GetComponentInChildren<RectTransform>().localScale = new Vector3((float)GameManager.instance.
+                            GetTrainer().Team[choiceNumber-1].CurrentHP/(float)GameManager.instance.GetTrainer().
+                            Team[choiceNumber-1].TotalHP, 1f, 1f);
+                        summaryScreen.transform.GetChild(3).FindChild("Attack").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].GetEV(1).ToString() +
+                            "/" + GameManager.instance.GetTrainer().Team[choiceNumber-1].GetIV(1).ToString();
+                        summaryScreen.transform.GetChild(3).FindChild("Defense").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].GetEV(2).ToString() +
+                            "/" + GameManager.instance.GetTrainer().Team[choiceNumber-1].GetIV(2).ToString();
+                        summaryScreen.transform.GetChild(3).FindChild("SpAttack").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].GetEV(4).ToString() +
+                            "/" + GameManager.instance.GetTrainer().Team[choiceNumber-1].GetIV(4).ToString();
+                        summaryScreen.transform.GetChild(3).FindChild("SpDefense").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].GetEV(5).ToString() +
+                            "/" + GameManager.instance.GetTrainer().Team[choiceNumber-1].GetIV(5).ToString();
+                        summaryScreen.transform.GetChild(3).FindChild("Speed").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].GetEV(3).ToString() +
+                            "/" + GameManager.instance.GetTrainer().Team[choiceNumber-1].GetIV(3).ToString();
+                        summaryScreen.transform.GetChild(3).FindChild("AbilityName").GetComponent<Text>().text=
+                            DataContents.ExecuteSQL<String>("SELECT ability1 FROM Pokemon WHERE rowid=" +
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].NatSpecies);
+                        summaryScreen.transform.GetChild(3).FindChild("AbilityDescription").GetComponent<Text>().text=
+                            "The description would go here";
                         break;
                     } //end case 3 (EV-IV)
                     //Moves
                     case 4:
                     {
                         summaryScreen.transform.GetChild(4).gameObject.SetActive(true);
+                        summaryScreen.transform.GetChild(4).gameObject.SetActive(true);
+                        summaryScreen.transform.GetChild(4).FindChild("Name").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].Nickname;
+                        summaryScreen.transform.GetChild(4).FindChild("Level").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].CurrentLevel.ToString();
+                        summaryScreen.transform.GetChild(4).FindChild("Sprite").GetComponent<Image>().sprite=
+                            Resources.Load<Sprite>("Sprites/Pokemon/"+GameManager.instance.GetTrainer().
+                                                   Team[choiceNumber-1].NatSpecies.ToString("000"));
+                        summaryScreen.transform.GetChild(4).FindChild("Item").GetComponent<Text>().text=
+                            DataContents.GetItemGameName(GameManager.instance.GetTrainer().Team[choiceNumber-1].Item);
+                        SetMoveSprites(GameManager.instance.GetTrainer().Team[choiceNumber-1],
+                                       summaryScreen.transform.GetChild(4));
                         break;
                     } //end case 4 (Moves)
                 } //end switch
+            } //end else if
+            else if(gameState == MainGame.POKEMONSWITCH)
+            {
+                //Get player input
+                GatherInput();
+
+                //If a switch choice has been made, switch them
+                if(switchChoice != -1)
+                {
+                    //If the choice equals the switch, don't run swap
+                    if(choiceNumber == switchChoice)
+                    {
+                        //Switch function
+                        GameManager.instance.GetTrainer().Swap(choiceNumber-1, switchChoice-1);
+                    } //end if
+
+                    //Go back to team
+                    gameState = MainGame.TEAM;
+                } //end if 
             } //end else if
             else if(gameState == MainGame.TRAINERCARD)
             {
                 //Return to home when X or Right mouse clicked
                 if(Input.GetKeyDown(KeyCode.X) || Input.GetMouseButtonDown(1))
                 {
+                    EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
                     gameState = MainGame.HOME;
                 } //end if
 
@@ -1543,6 +1650,36 @@ public class SceneManager : MonoBehaviour
     } //end SetTypeSprites(Image type1, Image type2)
 
     /***************************************
+     * Name: SetMoveSprites
+     * Sets the correct sprite, or disables
+     * if a move isn't found.
+     ***************************************/
+    void SetMoveSprites(Pokemon teamMember, Transform moveScreen)
+    {
+        //Loop through the list of pokemon moves and set each one
+        for (int i = 0; i < teamMember.GetMoveCount(); i++)
+        {
+            //Set the move type
+            moveScreen.FindChild("MoveType" + (i+1).ToString()).GetComponent<Image>().sprite = 
+                DataContents.typeSprites [Convert.ToInt32 (Enum.Parse (typeof(Types),
+                DataContents.ExecuteSQL<string> ("SELECT type FROM Moves WHERE rowid=" +
+                GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(i))))];
+
+            //Set the move name
+            moveScreen.FindChild("MoveName" + (i+1).ToString()).GetComponent<Text>().text = 
+                DataContents.ExecuteSQL<string> ("SELECT gameName FROM Moves WHERE rowid=" +
+                GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(i));
+
+            //Set the move PP
+            moveScreen.FindChild("MovePP" + (i+1).ToString()).GetComponent<Text>().text = "PP " +
+                DataContents.ExecuteSQL<string> ("SELECT totalPP FROM Moves WHERE rowid=" +
+                GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(i)) + "/" +
+                DataContents.ExecuteSQL<string> ("SELECT totalPP FROM Moves WHERE rowid=" +
+                GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(i));
+        } //end for
+    } //end SetMoveSprites(Pokemon teamMember, Transform moveScreen)
+
+    /***************************************
      * Name: WaitForResize
      * Waits for choice menu to resize before 
      * setting selection dimensions
@@ -1596,7 +1733,20 @@ public class SceneManager : MonoBehaviour
                 {
                     choiceNumber = GameManager.instance.GetTrainer().Team.Count;
                 } //end if
-            } //end else if Pokemon submenu on Continue Game -> My Team
+            } //end else if Continue Game -> My Team
+
+            //Pokemon Switch on Continue Game -> Switch
+            else if(gameState == MainGame.POKEMONSWITCH)
+            {
+                //Decrease (higher slots are lower childs)
+                switchChoice--;
+                
+                //Clamp between 1 and team size
+                if(switchChoice < 1)
+                {
+                    switchChoice = GameManager.instance.GetTrainer().Team.Count;
+                } //end if
+            } //end else if Pokemon Switch on Continue Game -> Switch
         } //end if Left Arrow
 
         //Right Arrow
@@ -1630,6 +1780,19 @@ public class SceneManager : MonoBehaviour
                     choiceNumber = -1;
                 } //end if
             } //end else if Pokemon submenu on Continue Game -> My Team
+
+            //Pokemon Switch on Continue Game -> Switch
+            else if(gameState == MainGame.POKEMONSWITCH)
+            {
+                //Increase (lower slots are higher childs)
+                switchChoice++;
+                
+                //Clamp between 1 and team size
+                if(switchChoice < GameManager.instance.GetTrainer().Team.Count)
+                {
+                    switchChoice = 1;
+                } //end if
+            } //end else if Pokemon Switch on Continue Game -> Switch
         } //end else if Right Arrow
 
         //Up Arrow
@@ -1675,6 +1838,21 @@ public class SceneManager : MonoBehaviour
                     choiceNumber -= 2;
                 } //end else
             } //end else if Continue Game -> My Team
+
+            //Pokemon Switch on Continue Game -> Switch
+            else if(gameState == MainGame.POKEMONSWITCH)
+            {
+                //Move from top slot to Cancel button
+                if(switchChoice <= 2)
+                {
+                    switchChoice = GameManager.instance.GetTrainer().Team.Count;
+                } //end else if
+                //Go up vertically
+                else
+                {
+                    switchChoice -= 2;
+                } //end else
+            } //end else if Pokemon Switch on Continue Game -> Switch
         }//end else if Up Arrow
 
         //Down Arrow
@@ -1722,6 +1900,21 @@ public class SceneManager : MonoBehaviour
                     choiceNumber += 2;
                 } //end else
             } //end else if Continue Game -> My Team
+
+            //Pokemon Switch on Continue Game -> Switch
+            else if(gameState == MainGame.POKEMONSWITCH)
+            {
+                //Move from bottom slot to top slot
+                if(switchChoice >= GameManager.instance.GetTrainer().Team.Count - 1)
+                {
+                    switchChoice = 1;
+                } //end else if
+                //Go up vertically
+                else
+                {
+                    switchChoice += 2;
+                } //end else
+            } //end else if Pokemon Switch on Continue Game -> Switch
         }//end else if Down Arrow
 
         //Mouse Moves Down
@@ -1772,6 +1965,25 @@ public class SceneManager : MonoBehaviour
                     currentTeamSlot = playerTeam.transform.FindChild("Pokemon"+choiceNumber).gameObject;
                 } //end else
             } //end else if Continue Game -> My Team
+
+            //Pokemon Switch on Continue Game -> Switch
+            else if(gameState == MainGame.POKEMONSWITCH &&
+                    Input.mousePosition.y < Camera.main.WorldToScreenPoint(currentSwitchSlot.transform.
+                    position).y - currentSwitchSlot.GetComponent<RectTransform>().rect.height/2)
+            {
+                //If on second to last slot or higher, go to first slot
+                if(choiceNumber >= GameManager.instance.GetTrainer().Team.Count - 1)
+                {
+                    switchChoice = 1;
+                    currentSwitchSlot = playerTeam.transform.FindChild("Pokemon1").gameObject;
+                } //end if
+                //Go down vertically
+                else
+                {
+                    choiceNumber += 2;
+                    currentTeamSlot = playerTeam.transform.FindChild("Pokemon"+switchChoice).gameObject;
+                } //end else
+            } //end else if Pokemon Switch on Continue Game -> Switch
         } //end else if Mouse Moves Down
 
         //Mouse Moves Up
@@ -1820,6 +2032,24 @@ public class SceneManager : MonoBehaviour
                     currentTeamSlot = playerTeam.transform.FindChild("Pokemon"+choiceNumber).gameObject;
                 } //end else
             } //end else if Continue Game -> My Team
+
+            //Pokemon Switch on Continue Game -> Switch
+            else if(gameState == MainGame.POKEMONSWITCH &&
+                    Input.mousePosition.y > Camera.main.WorldToScreenPoint(currentSwitchSlot.transform.
+                    position).y + currentSwitchSlot.GetComponent<RectTransform>().rect.height/2)
+            {
+                //If on a top slot, stay there (Causes glitches when mouse is above slot)
+                if(switchChoice == 1 || switchChoice == 2)
+                {
+                    switchChoice = switchChoice;
+                } //end if
+                //Go up vertically
+                else
+                {
+                    switchChoice -= 2;
+                    currentSwitchSlot = playerTeam.transform.FindChild("Pokemon"+switchChoice).gameObject;
+                } //end else
+            } //end else if Pokemon Switch on Continue Game -> Switch
         } //end else if Mouse Moves Up
 
         //Mouse Moves Left
@@ -1830,13 +2060,24 @@ public class SceneManager : MonoBehaviour
             //Continue Game -> My Team
             if(gameState == MainGame.TEAM)
             {
-                //If choice number is not odd, and is greater than 0, move right
+                //If choice number is not odd, and is greater than 0, move left
                 if((choiceNumber&1) != 1 && choiceNumber > 0)
                 {
                     choiceNumber--;
                     currentTeamSlot = playerTeam.transform.FindChild("Pokemon"+choiceNumber).gameObject;
                 } //end if   
             } //end if Continue Game -> My Team
+
+            //Pokemon Switch on Continue Game -> Switch
+            if(gameState == MainGame.POKEMONSWITCH)
+            {
+                //If switch number is not odd, and is greater than 0, move left
+                if((switchChoice&1) != 1 && switchChoice > 0)
+                {
+                    switchChoice--;
+                    currentSwitchSlot = playerTeam.transform.FindChild("Pokemon"+switchChoice).gameObject;
+                } //end if   
+            } //end if Pokemon Switch on Continue Game -> Switch
         } //end if Mouse Moves Left
 
         //Mouse Moves Right
@@ -1847,7 +2088,7 @@ public class SceneManager : MonoBehaviour
             //Continue Game -> My Team
             if(gameState == MainGame.TEAM)
             {
-                //If choice is odd and team is not odd numbered and choice is greater than 0, move left
+                //If choice is odd and team is not odd numbered and choice is greater than 0, move right
                 if((choiceNumber&1) == 1 && choiceNumber != GameManager.instance.GetTrainer().Team.Count
                    && choiceNumber > 0)
                 {
@@ -1855,6 +2096,17 @@ public class SceneManager : MonoBehaviour
                     currentTeamSlot = playerTeam.transform.FindChild("Pokemon"+choiceNumber).gameObject;
                 } //end if   
             } //end if Continue Game -> My Team
+
+            //Pokemon Switch on Continue Game -> Switch
+            if(gameState == MainGame.POKEMONSWITCH)
+            {
+                //If switch is odd and team is not odd numbered, move right
+                if((switchChoice&1) == 1 && switchChoice != GameManager.instance.GetTrainer().Team.Count)
+                {
+                    switchChoice++;
+                    currentSwitchSlot = playerTeam.transform.FindChild("Pokemon"+switchChoice).gameObject;
+                } //end if   
+            } //end if Pokemon Switch on Continue Game -> Switch
         } //end else if Mouse Moves Right
 
         //Left Mouse Button
@@ -1882,21 +2134,23 @@ public class SceneManager : MonoBehaviour
                         break;
                     } //end case 0 (Summary)
                         
-                        //Switch
+                    //Switch
                     case 1:
                     {
-                        Debug.Log("Switch");
+                        switchChoice = -1;
+                        currentSwitchSlot = playerTeam.transform.FindChild("Pokemon1").gameObject;
+                        gameState = MainGame.POKEMONSWITCH;
                         break;
                     } //end case 1 (Switch)
                         
-                        //Item
+                    //Item
                     case 2:
                     {
                         Debug.Log("Item");
                         break;
                     } //end case 2 (Item)
                         
-                        //Cancel
+                    //Cancel
                     case 3:
                     {
                         choices.SetActive(false);
@@ -1973,6 +2227,7 @@ public class SceneManager : MonoBehaviour
             //Continue Game -> My Team
             else if(gameState == MainGame.TEAM)
             {
+                EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
                 gameState = MainGame.HOME;
             } //end else if Continue Game -> My Team
         } //end else if Right Mouse Button
@@ -2005,7 +2260,9 @@ public class SceneManager : MonoBehaviour
                     //Switch
                     case 1:
                     {
-                        Debug.Log("Switch");
+                        switchChoice = -1;
+                        currentSwitchSlot = playerTeam.transform.FindChild("Pokemon1").gameObject;
+                        gameState = MainGame.POKEMONSWITCH;
                         break;
                     } //end case 1 (Switch)
 
@@ -2093,6 +2350,7 @@ public class SceneManager : MonoBehaviour
             //Continue Game -> My Team
             else if(gameState == MainGame.TEAM)
             {
+                EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
                 gameState = MainGame.HOME;
             } //end else if Continue Game -> My Team
         } //end else if X Key
