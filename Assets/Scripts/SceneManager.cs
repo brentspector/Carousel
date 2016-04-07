@@ -79,6 +79,7 @@ public class SceneManager : MonoBehaviour
     int subMenuChoice;              //What choice is highlighted in the pokemon submenu
     int summaryChoice;              //What page is open on the summary screen
     int switchChoice;               //The pokemon chosen to switch with the selected
+    int previousSwitchSlot;         //The slot last highlighted for switching to
     #endregion
 
     #region Methods
@@ -1336,19 +1337,95 @@ public class SceneManager : MonoBehaviour
                 //Get player input
                 GatherInput();
 
-                //If a switch choice has been made, switch them
-                if(switchChoice != -1)
+                //Change background sprites based on player input
+                if(previousSwitchSlot != switchChoice)
                 {
-                    //If the choice equals the switch, don't run swap
-                    if(choiceNumber == switchChoice)
+                    //Deactivate panel
+                    if(previousSwitchSlot != choiceNumber)
                     {
-                        //Switch function
-                        GameManager.instance.GetTrainer().Swap(choiceNumber-1, switchChoice-1);
+                        if(previousSwitchSlot == 1)
+                        {
+                            if(GameManager.instance.GetTrainer().Team[previousSwitchSlot-1].Status!=1)
+                            {
+                                playerTeam.transform.FindChild("Background").GetChild(previousSwitchSlot-1).
+                                    GetComponentInChildren<Image>().sprite = 
+                                        Resources.Load<Sprite>("Sprites/Menus/partyPanelRound");
+                            } //end if
+                            else
+                            {
+                                playerTeam.transform.FindChild("Background").GetChild(previousSwitchSlot-1).
+                                    GetComponentInChildren<Image>().sprite = 
+                                        Resources.Load<Sprite>("Sprites/Menus/partyPanelRoundFnt");
+                            } //end else
+                        } //end if
+                        else if(previousSwitchSlot > 0)
+                        {
+                            if(GameManager.instance.GetTrainer().Team[previousSwitchSlot-1].Status!=1)
+                            {
+                                playerTeam.transform.FindChild("Background").GetChild(previousSwitchSlot-1).
+                                    GetComponentInChildren<Image>().sprite = 
+                                        Resources.Load<Sprite>("Sprites/Menus/partyPanelRect");
+                            } //end if
+                            else
+                            {
+                                playerTeam.transform.FindChild("Background").GetChild(previousSwitchSlot-1).
+                                    GetComponentInChildren<Image>().sprite = 
+                                        Resources.Load<Sprite>("Sprites/Menus/partyPanelRectFnt");
+                            } //end else
+                        } //end else if
                     } //end if
 
-                    //Go back to team
-                    gameState = MainGame.TEAM;
-                } //end if 
+                    //Activate panel
+                    if(switchChoice != choiceNumber)
+                    {
+                        if(switchChoice == 1)
+                        {
+                            if(GameManager.instance.GetTrainer().Team[switchChoice-1].Status!=1)
+                            {
+                                playerTeam.transform.FindChild("Background").GetChild(switchChoice-1).
+                                    GetComponentInChildren<Image>().sprite = 
+                                        Resources.Load<Sprite>("Sprites/Menus/partyPanelRoundSel");
+                            } //end if
+                            else
+                            {
+                                playerTeam.transform.FindChild("Background").GetChild(switchChoice-1).
+                                    GetComponentInChildren<Image>().sprite = 
+                                        Resources.Load<Sprite>("Sprites/Menus/partyPanelRoundSelFnt");
+                            } //end else
+                            if(previousSwitchSlot > 0)
+                            {
+                                playerTeam.transform.FindChild("Pokemon" + previousSwitchSlot).FindChild("PartyBall").
+                                    GetComponentInChildren<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBall");
+                            } //end if
+                            playerTeam.transform.FindChild("Pokemon" + switchChoice).FindChild("PartyBall").
+                                GetComponentInChildren<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBallSel");
+                        } //end if
+                        else
+                        {
+                            if(GameManager.instance.GetTrainer().Team[switchChoice-1].Status!=1)
+                            {
+                                playerTeam.transform.FindChild("Background").GetChild(switchChoice-1).
+                                    GetComponentInChildren<Image>().sprite = 
+                                        Resources.Load<Sprite>("Sprites/Menus/partyPanelRectSel");
+                            } //end if
+                            else
+                            {
+                                playerTeam.transform.FindChild("Background").GetChild(switchChoice-1).
+                                    GetComponentInChildren<Image>().sprite = 
+                                        Resources.Load<Sprite>("Sprites/Menus/partyPanelRectSelFnt");
+                            } //end else
+                            if(previousSwitchSlot > 0)
+                            {
+                                playerTeam.transform.FindChild("Pokemon" + previousSwitchSlot).FindChild("PartyBall").
+                                    GetComponentInChildren<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBall");
+                            } //end if
+                            playerTeam.transform.FindChild("Pokemon" + switchChoice).FindChild("PartyBall").
+                                GetComponentInChildren<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBallSel");
+                        } //end else
+                    } //end if
+                    //Previous slot is now deactivated, set equal to current
+                    previousSwitchSlot = switchChoice;
+                } //end if
             } //end else if
             else if(gameState == MainGame.TRAINERCARD)
             {
@@ -1801,7 +1878,7 @@ public class SceneManager : MonoBehaviour
             //Pokemon submenu on Continue Game -> My Team
             if(gameState == MainGame.POKEMONSUBMENU)
             {
-                //Decrease choice
+                //Decrease choice (higher slots on lower children)
                 subMenuChoice--;
                 
                 //If on the first option, loop to end
@@ -1842,7 +1919,7 @@ public class SceneManager : MonoBehaviour
             //Pokemon Switch on Continue Game -> Switch
             else if(gameState == MainGame.POKEMONSWITCH)
             {
-                //Move from top slot to Cancel button
+                //Move from top slot to last slot
                 if(switchChoice <= 2)
                 {
                     switchChoice = GameManager.instance.GetTrainer().Team.Count;
@@ -1861,7 +1938,7 @@ public class SceneManager : MonoBehaviour
             //Pokemon submenu on Continue Game -> My Team
             if(gameState == MainGame.POKEMONSUBMENU)
             {
-                //Increase choice
+                //Increase choice (lower slots on higher children)
                 subMenuChoice++;
                 
                 //If on the last option, loop to first
@@ -1894,7 +1971,7 @@ public class SceneManager : MonoBehaviour
                 {
                     choiceNumber = 0;
                 } //end else if
-                //Go up vertically
+                //Go down vertically
                 else
                 {
                     choiceNumber += 2;
@@ -1909,7 +1986,7 @@ public class SceneManager : MonoBehaviour
                 {
                     switchChoice = 1;
                 } //end else if
-                //Go up vertically
+                //Go down vertically
                 else
                 {
                     switchChoice += 2;
@@ -1924,7 +2001,7 @@ public class SceneManager : MonoBehaviour
             if(gameState == MainGame.POKEMONSUBMENU && Input.mousePosition.y < 
                selection.transform.position.y-1)
             {
-                //If not on the last option, increase
+                //If not on the last option, increase (lower slots on higher children)
                 if(subMenuChoice < choices.transform.childCount-1)
                 {
                     subMenuChoice++;
@@ -1971,16 +2048,10 @@ public class SceneManager : MonoBehaviour
                     Input.mousePosition.y < Camera.main.WorldToScreenPoint(currentSwitchSlot.transform.
                     position).y - currentSwitchSlot.GetComponent<RectTransform>().rect.height/2)
             {
-                //If on second to last slot or higher, go to first slot
+                //If not on second to last or last slot, go to down vertically
                 if(choiceNumber >= GameManager.instance.GetTrainer().Team.Count - 1)
                 {
-                    switchChoice = 1;
-                    currentSwitchSlot = playerTeam.transform.FindChild("Pokemon1").gameObject;
-                } //end if
-                //Go down vertically
-                else
-                {
-                    choiceNumber += 2;
+                    switchChoice += 2;
                     currentTeamSlot = playerTeam.transform.FindChild("Pokemon"+switchChoice).gameObject;
                 } //end else
             } //end else if Pokemon Switch on Continue Game -> Switch
@@ -2038,13 +2109,8 @@ public class SceneManager : MonoBehaviour
                     Input.mousePosition.y > Camera.main.WorldToScreenPoint(currentSwitchSlot.transform.
                     position).y + currentSwitchSlot.GetComponent<RectTransform>().rect.height/2)
             {
-                //If on a top slot, stay there (Causes glitches when mouse is above slot)
-                if(switchChoice == 1 || switchChoice == 2)
-                {
-                    switchChoice = switchChoice;
-                } //end if
-                //Go up vertically
-                else
+                //If not on a top slot, go up vertically
+                if(switchChoice > 2)
                 {
                     switchChoice -= 2;
                     currentSwitchSlot = playerTeam.transform.FindChild("Pokemon"+switchChoice).gameObject;
@@ -2071,8 +2137,8 @@ public class SceneManager : MonoBehaviour
             //Pokemon Switch on Continue Game -> Switch
             if(gameState == MainGame.POKEMONSWITCH)
             {
-                //If switch number is not odd, and is greater than 0, move left
-                if((switchChoice&1) != 1 && switchChoice > 0)
+                //If switch number is not odd, move left
+                if((switchChoice&1) != 1)
                 {
                     switchChoice--;
                     currentSwitchSlot = playerTeam.transform.FindChild("Pokemon"+switchChoice).gameObject;
@@ -2137,8 +2203,10 @@ public class SceneManager : MonoBehaviour
                     //Switch
                     case 1:
                     {
-                        switchChoice = -1;
-                        currentSwitchSlot = playerTeam.transform.FindChild("Pokemon1").gameObject;
+                        selection.SetActive(false);
+                        choices.SetActive(false);
+                        switchChoice = choiceNumber;
+                        currentSwitchSlot = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
                         gameState = MainGame.POKEMONSWITCH;
                         break;
                     } //end case 1 (Switch)
@@ -2165,7 +2233,7 @@ public class SceneManager : MonoBehaviour
                 } //end switch
             } //end if Pokemon submenu on Continue Game -> My Team is Open
             
-            //Open menu is not open, as long as player isn't selecting a button
+            //Open menu if not open, as long as player isn't selecting a button
             else if(gameState == MainGame.TEAM && choiceNumber > 0)
             {
                 //Set submenu active
@@ -2190,6 +2258,20 @@ public class SceneManager : MonoBehaviour
                 subMenuChoice = 0;
                 gameState = MainGame.POKEMONSUBMENU;
             } //end else if Open menu if not open
+
+            //Pokemon Switch on Continue Game -> Switch
+            else if(gameState == MainGame.POKEMONSWITCH)
+            {
+                //If the choice equals the switch, don't run swap
+                if(choiceNumber != switchChoice)
+                {
+                    //Switch function
+                    GameManager.instance.GetTrainer().Swap(choiceNumber-1, switchChoice-1);
+                } //end if
+                    
+                //Go back to team
+                gameState = MainGame.TEAM;
+            } //end else if Pokemon Switch on Continue Game -> Switch
         } //end else if Left Mouse Button
 
         //Right Mouse Button
@@ -2230,6 +2312,13 @@ public class SceneManager : MonoBehaviour
                 EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
                 gameState = MainGame.HOME;
             } //end else if Continue Game -> My Team
+
+            //Pokemon Switch on Continue Game -> Switch
+            else if(gameState == MainGame.POKEMONSWITCH)
+            {
+                //Go back to team
+                gameState = MainGame.TEAM;
+            } //end else if Pokemon Switch on Continue Game -> Switch
         } //end else if Right Mouse Button
 
         //Enter/Return Key
@@ -2260,8 +2349,10 @@ public class SceneManager : MonoBehaviour
                     //Switch
                     case 1:
                     {
-                        switchChoice = -1;
-                        currentSwitchSlot = playerTeam.transform.FindChild("Pokemon1").gameObject;
+                        selection.SetActive(false);
+                        choices.SetActive(false);
+                        switchChoice = choiceNumber;
+                        currentSwitchSlot = playerTeam.transform.FindChild("Pokemon"+choiceNumber).gameObject;
                         gameState = MainGame.POKEMONSWITCH;
                         break;
                     } //end case 1 (Switch)
@@ -2313,6 +2404,20 @@ public class SceneManager : MonoBehaviour
                 subMenuChoice = 0;
                 gameState = MainGame.POKEMONSUBMENU;
             } //end else if Open menu if not open
+            
+            //Pokemon Switch on Continue Game -> Switch
+            else if(gameState == MainGame.POKEMONSWITCH)
+            {
+                //If the choice equals the switch, don't run swap
+                if(choiceNumber != switchChoice)
+                {
+                    //Switch function
+                    GameManager.instance.GetTrainer().Swap(choiceNumber-1, switchChoice-1);
+                } //end if
+                
+                //Go back to team
+                gameState = MainGame.TEAM;
+            } //end else if Pokemon Switch on Continue Game -> Switch
         } //end else if Enter/Return Key
 
         //X Key
@@ -2353,6 +2458,13 @@ public class SceneManager : MonoBehaviour
                 EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
                 gameState = MainGame.HOME;
             } //end else if Continue Game -> My Team
+
+            //Pokemon Switch on Continue Game -> Switch
+            else if(gameState == MainGame.POKEMONSWITCH)
+            {
+                //Return to team
+                gameState = MainGame.TEAM;
+            } //end else if Pokemon Switch on Continue Game -> My Team
         } //end else if X Key
     } //end GatherInput
     #endregion
