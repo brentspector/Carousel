@@ -62,8 +62,8 @@ public class Pokemon
      * Contructor for pokemon encounters
      ***************************************/
 	public Pokemon(int species = 0, int tID = 0, int level = 5, int item = 0, int ball = 0, 
-	               int oType = 0, int oLevel = 5, int ability = 0, int gender = 0,
-	               int nature = 0, int happy = 0, bool pokerus = false, bool shiny = false)
+	               int oType = 0, int oLevel = 5, int ability = 0, int gender = -1,
+	               int nature = -1, int happy = 70, bool pokerus = false, bool shiny = false)
 	{
 		//Set data fields
 		if(species == 0)
@@ -74,8 +74,122 @@ public class Pokemon
 		{
 			natSpecies = species;
 		} //end else
+        if (tID == 0)
+        {
+            trainerID = GameManager.instance.GetTrainer().PlayerID;
+        } //end if
+        else
+        {
+            trainerID = tID;
+        } //end else
+        if (gender == -1)
+        {
+            string genderRate = DataContents.ExecuteSQL<string>("SELECT genderRate FROM Pokemon WHERE rowid=" +
+                                                                natSpecies);
+            switch(genderRate)
+            {
+                case "AlwaysMale":
+                {
+                    Gender = 0;
+                    break;
+                } //end case AlwaysMale
+                case "FemaleOneEighth":
+                {
+                    int randomNum = Random.Range(1,200);
+                    if(randomNum < 26)
+                    {
+                        Gender = 1;
+                    } //end if
+                    else
+                    {
+                        Gender = 0;
+                    } //end else
+                    break;
+                } //end case FemaleOneEighth
+                case "Female25Percent":
+                {
+                    int randomNum = Random.Range(1,200);
+                    if(randomNum < 51)
+                    {
+                        Gender = 1;
+                    } //end if
+                    else
+                    {
+                        Gender = 0;
+                    } //end else
+                    break;
+                } //end case Female25Percent
+                case "Female50Percent":
+                {
+                    int randomNum = Random.Range(1,200);
+                    if(randomNum < 101)
+                    {
+                        Gender = 1;
+                    } //end if
+                    else
+                    {
+                        Gender = 0;
+                    } //end else
+                    break;
+                } //end case Female50Percent
+                case "Female75Percent":
+                {
+                    int randomNum = Random.Range(1,200);
+                    if(randomNum < 151)
+                    {
+                        Gender = 1;
+                    } //end if
+                    else
+                    {
+                        Gender = 0;
+                    } //end else
+                    break;
+                } //end case Female75Percent
+                case "FemaleSevenEighths":
+                {
+                    int randomNum = Random.Range(1,200);
+                    if(randomNum < 176)
+                    {
+                        Gender = 1;
+                    } //end if
+                    else
+                    {
+                        Gender = 0;
+                    } //end else
+                    break;
+                } //end case FemaleSevenEighths
+                case "AlwaysFemale":
+                {
+                    Gender = 1;
+                    break;
+                } //end case AlwaysFemale
+                case "Genderless":
+                {
+                    Gender = 2;
+                    break;
+                } //end case Genderless
+                default:
+                {
+                    GameManager.instance.LogErrorMessage("Default for gender reached for " + natSpecies + " " 
+                                                         + genderRate);
+                    Gender = 0;
+                    break;
+                } //end case default
+            } //end switch
+        } //end if
+        else
+        {
+            Gender = gender;
+        } //end else
+        if (nature == -1)
+        {
+            Nature = Random.Range(0,(int)Natures.COUNT-1);
+        } //end if
+        else
+        {
+            Nature = nature;
+        } //end else
         totalEV = 0;
-		trainerID = tID;
 		currentEXP = CalculateEXP (level);
         remainingEXP = CalculateRemainingEXP (level);
         currentLevel = level;
@@ -84,8 +198,6 @@ public class Pokemon
 		obtainType = oType;
 		obtainLevel = oLevel;
 		Ability = ability;
-		Gender = gender;
-		Nature = nature;
 		happiness = happy;
 		hasPokerus = pokerus;
 		isShiny = shiny;

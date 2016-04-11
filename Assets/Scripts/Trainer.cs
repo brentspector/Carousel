@@ -18,10 +18,12 @@ public class Trainer
     float version;        //What version this save started on     
     int bups;             //The number of backups made
     string pName;         //The player's name
+    uint pID;             //The Trainer ID
     int pBadges;          //The number of badges the player has
     int pHours;           //Total number of hours played
     int pMinutes;         //Total number of minutes played
     int pSeconds;         //Total number of seconds played
+    bool[] pEarnedBadges; //Which badges the player has obtained
 
     //Gym Battle count
     //Kalos
@@ -67,6 +69,44 @@ public class Trainer
     #endregion
 
     #region Methods
+    /***************************************
+     * Name: Trainer
+     * Creates and initalizes trainer data
+     ***************************************/
+    public Trainer()
+    {
+        //Create PC
+        InitPC();
+
+        //Set version
+        if (GameManager.instance != null)
+        {
+            version = GameManager.instance.VersionNumber;
+        } //end if
+
+        //No backups made yet
+        bups = 0;
+
+        //Initialize team
+        team = new List<Pokemon>();
+
+        //Player has no name yet
+        pName = "-";
+
+        //Give player a random ID
+        pID = (uint)UnityEngine.Random.Range (0,255);
+        pID |= (uint)UnityEngine.Random.Range (0,255) << 8;
+        pID |= (uint)UnityEngine.Random.Range (0,255) << 16;
+
+        //Player has no badges yet
+        pBadges = 0;
+
+        //Time played is zero
+        pHours = 0;
+        pMinutes = 0;
+        pSeconds = 0;
+    } //end Trainer
+
     /***************************************
      * Name: InitPC
      * Creates PC
@@ -299,6 +339,21 @@ public class Trainer
             pName = value;
         } //end set
     } //end PlayerName
+
+    /***************************************
+     * Name: PlayerID
+     ***************************************/
+    public int PlayerID
+    {
+        get
+        {
+            return (int)pID;
+        } //end get
+        set
+        {
+            pID = (uint)value;
+        } //end set
+    } //end PlayerID
 
     /***************************************
      * Name: PlayerBadges

@@ -88,6 +88,8 @@ public class SceneManager : MonoBehaviour
     int previousTeamSlot;           //The slot last highlighted
     int subMenuChoice;              //What choice is highlighted in the pokemon submenu
     int summaryChoice;              //What page is open on the summary screen
+    int moveChoice;                 //What move is being highlighted for details
+    int detailsSize;                //Font size for move description
     int switchChoice;               //The pokemon chosen to switch with the selected
     int previousSwitchSlot;         //The slot last highlighted for switching to
     #endregion
@@ -395,66 +397,43 @@ public class SceneManager : MonoBehaviour
 		else if(checkpoint == 3)
 		{
 			processing = true;
-			//Don't continue until player requests next text
-			if(Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0))
-			{
-				//Attempt to display text
-				if(GameManager.instance.DisplayText("This circus has attracted major gym leaders from " +
-					"around the world! In fact, that's why you're here, isn't it?"))
-				{
-					checkpoint = 4;
-				} //end if
-			} //end if
+
+            //Get player input
+            GatherInput();
+
 			processing = false;
 		} //end else if
 		else if(checkpoint == 4)
 		{
 			processing = true;
-			//Don't continue until player requests next text
-			if(Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0))
-			{
-				//Attempt to display text
-				if(GameManager.instance.DisplayText("Alright, let's get you set up. First, what is " +
-					"your name?"))
-				{
-					checkpoint = 5;
-				} //end if
-			} //end if
+
+            //Get player input
+            GatherInput();
+
 			processing = false;
 		} //end else if
 		else if(checkpoint == 5)
 		{
 			processing = true;
-			//Don't continue until player requests next text
-			if(Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0))
-			{
-				//Display name input
-				input.SetActive(true);
-				input.transform.GetChild(2).GetComponent<Text>().text = "Please enter your name.";
-				input.transform.GetChild(0).GetComponent<Text>().text = "Player name:";
-				inputText.text = "";
-				inputText.ActivateInputField();
-				checkpoint = 6;
-			} //end if
+
+            //Get player input
+            GatherInput();
+
 			processing = false;
 		} //end else if
 		else if(checkpoint == 6)
 		{
 			processing = true;
-			//Make sure text field is always active
+			
+            //Make sure text field is always active
 			if(input.activeInHierarchy)
 			{
 				inputText.ActivateInputField();
 			} //end if
-			//Don't continue until player requests next text
-			if((Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0)) && inputText.text.Length != 0)
-			{
-				//Convert input name to player's name
-				playerName = inputText.text;
-				input.SetActive(false);
-				GameManager.instance.DisplayText("So your name is " + playerName + "?");
-				checkpoint = 7;
-			} //end if
+
+            //Get player input
+            GatherInput();
+
 			processing = false;
 		} //end else if
 		else if(checkpoint == 7)
@@ -493,98 +472,11 @@ public class SceneManager : MonoBehaviour
 		else if(checkpoint == 8)
 		{
 			processing = true;
-			//If down arrow is pressed
-			if(Input.GetKeyDown(KeyCode.DownArrow))
-			{
-				//Increase choice to show next option is highlighted
-				choiceNumber++;
-				//Loop back to start if it's higher than the amount of choices
-				if(choiceNumber > 1)
-				{
-					choiceNumber = 0;
-				} //end if
-				
-				//Reposition to choice location
-				selection.transform.position = new Vector3(
-					confirm.transform.GetChild(choiceNumber).position.x,
-					confirm.transform.GetChild(choiceNumber).position.y, 100);
-			} //end if
-			
-			//If up arrow is pressed
-			if(Input.GetKeyDown(KeyCode.UpArrow))
-			{
-				//Decrease choice to show previous option is highlighted
-				choiceNumber--;
-				//Loop to last choice if it's lower than zero
-				if(choiceNumber < 0)
-				{
-					choiceNumber = 1;
-				} //end if
-				
-				//Resize to choice width
-				selection.transform.position = new Vector3(
-					confirm.transform.GetChild(choiceNumber).position.x,
-					confirm.transform.GetChild(choiceNumber).position.y, 100);
-			} //end if
-			
-            //If the mouse is lower than the selection box, and it moved, reposition to next choice
-            else if(Input.GetAxis("Mouse Y") < 0 && Input.mousePosition.y < selection.transform.position.y-1)
-            {
-                //Make sure it's not on last choice
-                if(choiceNumber == 0)
-                {
-                    //Update choiceNumber
-                    choiceNumber++;
-                    
-                    //Reposition to choice location
-                    selection.transform.position = new Vector3(
-                        confirm.transform.GetChild(choiceNumber).position.x,
-                        confirm.transform.GetChild(choiceNumber).position.y, 100);
-                } //end if
-                
-                //Menu finished this check
-                processing = false;
-            } //end else if
-            
-            //If the mouse is higher than the selection box, and it moved, reposition to next choice
-            else if(Input.GetAxis("Mouse Y") > 0 && Input.mousePosition.y > selection.transform.position.y+1)
-            {
-                //Make sure it's not on last choice
-                if(choiceNumber == 1)
-                {
-                    //Update choiceNumber
-                    choiceNumber--;
-    
-                    //Reposition to choice location
-                    selection.transform.position = new Vector3(
-                        confirm.transform.GetChild(choiceNumber).position.x,
-                        confirm.transform.GetChild(choiceNumber).position.y, 100);
-                } //end if
-                
-                //Menu finished this check
-                processing = false;
-            } //end else if
 
-			//If an option was selected, process it
-			if(Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0))
-			{
-				// Yes selected
-				if(choiceNumber == 0)
-				{
-					checkpoint = 9;
-				} //end if
-				// No selected
-				else if(choiceNumber == 1)
-				{
-					GameManager.instance.DisplayText("Ok let's try again. What is your name?");
-					checkpoint = 5;
-				} //end else if
-				
-				//Disable choice and selection
-				selection.SetActive(false);
-				confirm.SetActive(false);
-			} //end if
-			processing = false;
+            //Get player input
+            GatherInput();
+
+            processing = false;
 		} //end else if
 		else if(checkpoint == 9)
 		{
@@ -602,15 +494,10 @@ public class SceneManager : MonoBehaviour
 		else if(checkpoint == 10)
 		{
 			processing = true;
-			//Don't continue until player requests next text
-			if((Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0)) && !GameManager.instance.IsDisplaying())
-			{
-				text.SetActive(false);
-				checkpoint = 0;
-				GameManager.instance.Persist();
-                sceneState = OverallGame.INTRO;
-				Application.LoadLevel("Intro");
-			} //end if
+
+            //Get player input
+            GatherInput();
+
 			processing = false;
 		} //end else if
 	} //end NewGame
@@ -682,13 +569,6 @@ public class SceneManager : MonoBehaviour
             } //end if
             else if(gameState == MainGame.GYMBATTLE)
             {
-                //Return to home when X or Right mouse clicked
-                if(Input.GetKeyDown(KeyCode.X) || Input.GetMouseButtonDown(1))
-                {
-                    EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
-                    gameState = MainGame.HOME;
-                } //end if
-
                 //Initialize each scene only once
                 if(!initialize)
                 {
@@ -696,6 +576,9 @@ public class SceneManager : MonoBehaviour
                     buttonMenu.SetActive(false);
                     gymBattle.SetActive(true);
                 } //end if
+
+                //Get player input
+                GatherInput();
             } //end else if
             else if(gameState == MainGame.TEAM)
             {
@@ -962,11 +845,14 @@ public class SceneManager : MonoBehaviour
             } //end else if
             else if(gameState == MainGame.POKEMONSUBMENU)
             {
+                //Get player input
                 GatherInput();
             } //end else if
             else if(gameState == MainGame.POKEMONSUMMARY)
             {
+                //Get player input
                 GatherInput();
+
                 //Fill in the summary screen with the correct data
                 switch(summaryChoice)
                 {
@@ -1067,7 +953,6 @@ public class SceneManager : MonoBehaviour
                     case 3:
                     {
                         summaryScreen.transform.GetChild(3).gameObject.SetActive(true);
-                        summaryScreen.transform.GetChild(3).gameObject.SetActive(true);
                         summaryScreen.transform.GetChild(3).FindChild("Name").GetComponent<Text>().text=
                             GameManager.instance.GetTrainer().Team[choiceNumber-1].Nickname;
                         summaryScreen.transform.GetChild(3).FindChild("Level").GetComponent<Text>().text=
@@ -1110,7 +995,6 @@ public class SceneManager : MonoBehaviour
                     case 4:
                     {
                         summaryScreen.transform.GetChild(4).gameObject.SetActive(true);
-                        summaryScreen.transform.GetChild(4).gameObject.SetActive(true);
                         summaryScreen.transform.GetChild(4).FindChild("Name").GetComponent<Text>().text=
                             GameManager.instance.GetTrainer().Team[choiceNumber-1].Nickname;
                         summaryScreen.transform.GetChild(4).FindChild("Level").GetComponent<Text>().text=
@@ -1124,6 +1008,21 @@ public class SceneManager : MonoBehaviour
                                        summaryScreen.transform.GetChild(4));
                         break;
                     } //end case 4 (Moves)
+                    //Move Details
+                    case 5:
+                    {
+                        summaryScreen.transform.GetChild(5).gameObject.SetActive(true);
+                        summaryScreen.transform.GetChild(5).FindChild("Sprite").GetComponent<Image>().sprite=
+                            Resources.Load<Sprite>("Sprites/Icons/icon"+GameManager.instance.GetTrainer().
+                                                   Team[choiceNumber-1].NatSpecies.ToString("000"));
+                        SetMoveDetails(GameManager.instance.GetTrainer().Team[choiceNumber-1],
+                                       summaryScreen.transform.GetChild(5));
+                        SetTypeSprites(summaryScreen.transform.GetChild(5).FindChild("SpeciesTypes").GetChild(0).GetComponent<Image>(),
+                                       summaryScreen.transform.GetChild(5).FindChild("SpeciesTypes").GetChild(1).GetComponent<Image>());
+                        SetMoveSprites(GameManager.instance.GetTrainer().Team[choiceNumber-1],
+                                       summaryScreen.transform.GetChild(5));
+                        break;
+                    } //end case 5 (Move Details)
                 } //end switch
             } //end else if
             else if(gameState == MainGame.POKEMONSWITCH)
@@ -1221,13 +1120,6 @@ public class SceneManager : MonoBehaviour
             } //end else if
             else if(gameState == MainGame.TRAINERCARD)
             {
-                //Return to home when X or Right mouse clicked
-                if(Input.GetKeyDown(KeyCode.X) || Input.GetMouseButtonDown(1))
-                {
-                    EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
-                    gameState = MainGame.HOME;
-                } //end if
-
                 //Initalize each scene only once
                 if(!initialize)
                 {
@@ -1235,6 +1127,9 @@ public class SceneManager : MonoBehaviour
                     buttonMenu.SetActive(false);
                     trainerCard.SetActive(true);
                 } //end if
+
+                //Get player input
+                GatherInput();
             } //end eise if
 
             //End processing
@@ -1529,25 +1424,90 @@ public class SceneManager : MonoBehaviour
         //Loop through the list of pokemon moves and set each one
         for (int i = 0; i < teamMember.GetMoveCount(); i++)
         {
-            //Set the move type
-            moveScreen.FindChild("MoveType" + (i+1).ToString()).GetComponent<Image>().sprite = 
-                DataContents.typeSprites [Convert.ToInt32 (Enum.Parse (typeof(Types),
-                DataContents.ExecuteSQL<string> ("SELECT type FROM Moves WHERE rowid=" +
-                GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(i))))];
+            //Make sure move isn't null
+            if( GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(i) != -1)
+            {
+                //Set the move type
+                moveScreen.FindChild("MoveType" + (i+1).ToString()).gameObject.SetActive(true);
+                moveScreen.FindChild("MoveType" + (i+1).ToString()).GetComponent<Image>().sprite = 
+                    DataContents.typeSprites [Convert.ToInt32 (Enum.Parse (typeof(Types),
+                    DataContents.ExecuteSQL<string> ("SELECT type FROM Moves WHERE rowid=" +
+                    GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(i))))];
+                //Set the move name
+                moveScreen.FindChild("MoveName" + (i+1).ToString()).GetComponent<Text>().text = 
+                    DataContents.ExecuteSQL<string> ("SELECT gameName FROM Moves WHERE rowid=" +
+                    GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(i));
 
-            //Set the move name
-            moveScreen.FindChild("MoveName" + (i+1).ToString()).GetComponent<Text>().text = 
-                DataContents.ExecuteSQL<string> ("SELECT gameName FROM Moves WHERE rowid=" +
-                GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(i));
+                //Set the move PP
+                moveScreen.FindChild("MovePP" + (i+1).ToString()).GetComponent<Text>().text = "PP " +
+                    DataContents.ExecuteSQL<string> ("SELECT totalPP FROM Moves WHERE rowid=" +
+                    GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(i)) + "/" +
+                    DataContents.ExecuteSQL<string> ("SELECT totalPP FROM Moves WHERE rowid=" +
+                    GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(i));
+            } //end if
+            else
+            {
+                //Blank out the type
+                moveScreen.FindChild("MoveType" + (i+1).ToString()).gameObject.SetActive(false);
 
-            //Set the move PP
-            moveScreen.FindChild("MovePP" + (i+1).ToString()).GetComponent<Text>().text = "PP " +
-                DataContents.ExecuteSQL<string> ("SELECT totalPP FROM Moves WHERE rowid=" +
-                GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(i)) + "/" +
-                DataContents.ExecuteSQL<string> ("SELECT totalPP FROM Moves WHERE rowid=" +
-                GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(i));
+                //Blank out the name
+                moveScreen.FindChild("MoveName" + (i+1).ToString()).GetComponent<Text>().text = "";
+                               
+                //Blank out the pp
+                moveScreen.FindChild("MovePP" + (i+1).ToString()).GetComponent<Text>().text = "";
+            } //end else
         } //end for
     } //end SetMoveSprites(Pokemon teamMember, Transform moveScreen)
+
+    /***************************************
+     * Name: SetMoveDetails
+     * Sets the details of the move
+     ***************************************/
+    void SetMoveDetails(Pokemon teamMember, Transform moveScreen)
+    { 
+        //Set the move category
+        moveScreen.FindChild("Category").GetComponent<Image>().sprite = 
+            DataContents.categorySprites [Convert.ToInt32 (Enum.Parse (typeof(Categories),
+            DataContents.ExecuteSQL<string> ("SELECT category FROM Moves WHERE rowid=" +
+            GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(moveChoice))))];
+            
+        //Set the move power
+        moveScreen.FindChild("Power").GetComponent<Text>().text = 
+            DataContents.ExecuteSQL<string> ("SELECT baseDamage FROM Moves WHERE rowid=" +
+            GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(moveChoice));
+            
+        //Set the move accuracy
+        moveScreen.FindChild("Accuracy").GetComponent<Text>().text = 
+            DataContents.ExecuteSQL<string> ("SELECT accuracy FROM Moves WHERE rowid=" +
+            GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(moveChoice));
+
+        //Set font size of move description
+        if (detailsSize == -1)
+        {
+            moveScreen.FindChild("MoveDescription").GetComponent<Text>().text = 
+                DataContents.ExecuteSQL<string> ("SELECT description FROM Moves WHERE gameName='Rollout'");
+            detailsSize = moveScreen.FindChild("MoveDescription").GetComponent<Text>().cachedTextGenerator.
+                fontSizeUsedForBestFit;
+
+            //If the size has been fit to the screen
+            if(detailsSize > 0)
+            {
+                moveScreen.FindChild("MoveDescription").GetComponent<Text>().fontSize = detailsSize;
+                moveScreen.FindChild("MoveDescription").GetComponent<Text>().resizeTextForBestFit = false;
+            } //end if
+
+            //Otherwise wait for another frame
+            else
+            {
+                detailsSize = -1;
+            } //end else
+        } //end if
+
+        //Set the move description text
+        moveScreen.FindChild("MoveDescription").GetComponent<Text>().text = 
+            DataContents.ExecuteSQL<string> ("SELECT description FROM Moves WHERE rowid=" +
+            GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(moveChoice));
+    } //end SetMoveDetails(Pokemon teamMember, Transform moveScreen)
 
     /***************************************
      * Name: WaitForResize
@@ -1821,6 +1781,22 @@ public class SceneManager : MonoBehaviour
                     //New Game
                 case OverallGame.NEWGAME:
                 {
+                    //If up arrow is pressed on confirm box
+                    if(checkpoint == 8)
+                    {
+                        //Decrease choice to show previous option is highlighted
+                        choiceNumber--;
+                        //Loop to last choice if it's lower than zero
+                        if(choiceNumber < 0)
+                        {
+                            choiceNumber = 1;
+                        } //end if
+                        
+                        //Resize to choice width
+                        selection.transform.position = new Vector3(
+                            confirm.transform.GetChild(choiceNumber).position.x,
+                            confirm.transform.GetChild(choiceNumber).position.y, 100);
+                    } //end if
                     break;
                 } //end case OverallGame NEWGAME
                     
@@ -1969,6 +1945,22 @@ public class SceneManager : MonoBehaviour
                     //New Game
                 case OverallGame.NEWGAME:
                 {
+                    //If down arrow is pressed on confirm box
+                    if(checkpoint == 8)
+                    {
+                        //Increase choice to show next option is highlighted
+                        choiceNumber++;
+                        //Loop back to start if it's higher than the amount of choices
+                        if(choiceNumber > 1)
+                        {
+                            choiceNumber = 0;
+                        } //end if
+                        
+                        //Reposition to choice location
+                        selection.transform.position = new Vector3(
+                            confirm.transform.GetChild(choiceNumber).position.x,
+                            confirm.transform.GetChild(choiceNumber).position.y, 100);
+                    } //end if
                     break;
                 } //end case OverallGame NEWGAME
                     
@@ -2122,6 +2114,21 @@ public class SceneManager : MonoBehaviour
                 //New Game
                 case OverallGame.NEWGAME:
                 {
+                    //If the mouse is lower than the selection box, and it moved, reposition to next choice
+                    if(checkpoint == 8 && Input.mousePosition.y < selection.transform.position.y-1)
+                    {
+                        //Make sure it's not on last choice
+                        if(choiceNumber == 0)
+                        {
+                            //Update choiceNumber
+                            choiceNumber++;
+                            
+                            //Reposition to choice location
+                            selection.transform.position = new Vector3(
+                                confirm.transform.GetChild(choiceNumber).position.x,
+                                confirm.transform.GetChild(choiceNumber).position.y, 100);
+                        } //end if
+                    } //end if
                     break;
                 } //end case OverallGame NEWGAME
                     
@@ -2259,6 +2266,21 @@ public class SceneManager : MonoBehaviour
                 //New Game
                 case OverallGame.NEWGAME:
                 {
+                    //If the mouse is higher than the selection box, and it moved, reposition to next choice
+                    if(checkpoint == 8 && Input.mousePosition.y > selection.transform.position.y+1)
+                    {
+                        //Make sure it's not on last choice
+                        if(choiceNumber == 1)
+                        {
+                            //Update choiceNumber
+                            choiceNumber--;
+                            
+                            //Reposition to choice location
+                            selection.transform.position = new Vector3(
+                                confirm.transform.GetChild(choiceNumber).position.x,
+                                confirm.transform.GetChild(choiceNumber).position.y, 100);
+                        } //end if
+                    } //end if
                     break;
                 } //end case OverallGame NEWGAME
                     
@@ -2480,6 +2502,80 @@ public class SceneManager : MonoBehaviour
                     //New Game
                 case OverallGame.NEWGAME:
                 {
+                    //Don't continue until player requests next text
+                    if(checkpoint == 3)
+                    {
+                        //Attempt to display text
+                        if(GameManager.instance.DisplayText("This circus has attracted major gym leaders from " +
+                                                            "around the world! In fact, that's why you're here, isn't it?"))
+                        {
+                            checkpoint = 4;
+                        } //end if
+                    } //end if
+
+                    //Don't continue until player requests next text
+                    else if(checkpoint == 4)
+                    {
+                        //Attempt to display text
+                        if(GameManager.instance.DisplayText("Alright, let's get you set up. First, what is " +
+                                                            "your name?"))
+                        {
+                            checkpoint = 5;
+                        } //end if
+                    } //end else if
+
+                    //Don't continue until player requests next text
+                    else if(checkpoint == 5)
+                    {
+                        //Display name input
+                        input.SetActive(true);
+                        input.transform.GetChild(2).GetComponent<Text>().text = "Please enter your name.";
+                        input.transform.GetChild(0).GetComponent<Text>().text = "Player name:";
+                        inputText.text = "";
+                        inputText.ActivateInputField();
+                        checkpoint = 6;
+                    } //end else if
+
+                    //Don't continue until player requests next text
+                    else if(checkpoint == 6 && inputText.text.Length != 0)
+                    {
+                        //Convert input name to player's name
+                        playerName = inputText.text;
+                        input.SetActive(false);
+                        GameManager.instance.DisplayText("So your name is " + playerName + "?");
+                        checkpoint = 7;
+                    } //end else if
+
+                    //If an option was selected, process it
+                    else if(checkpoint == 8)
+                    {
+                        // Yes selected
+                        if(choiceNumber == 0)
+                        {
+                            checkpoint = 9;
+                        } //end if
+                        // No selected
+                        else if(choiceNumber == 1)
+                        {
+                            GameManager.instance.DisplayText("Ok let's try again. What is your name?");
+                            checkpoint = 5;
+                        } //end else if
+                        
+                        //Disable choice and selection
+                        selection.SetActive(false);
+                        confirm.SetActive(false);
+                    } //end else if
+
+                    //Don't continue until player requests next text
+                    else if(checkpoint == 10 && !GameManager.instance.IsDisplaying())
+                    {
+                        text.SetActive(false);
+                        checkpoint = 0;
+                        GameManager.instance.GetTrainer().RandomTeam();
+                        GameManager.instance.Persist();
+                        sceneState = OverallGame.INTRO;
+                        Application.LoadLevel("Intro");
+                    } //end else if
                     break;
                 } //end case OverallGame NEWGAME
                     
@@ -2504,6 +2600,7 @@ public class SceneManager : MonoBehaviour
                                 summaryScreen.transform.GetChild(2).gameObject.SetActive(false);
                                 summaryScreen.transform.GetChild(3).gameObject.SetActive(false);
                                 summaryScreen.transform.GetChild(4).gameObject.SetActive(false);
+                                summaryScreen.transform.GetChild(5).gameObject.SetActive(false);
                                 gameState = MainGame.POKEMONSUMMARY;
                                 break;
                             } //end case 0 (Summary)
@@ -2602,6 +2699,18 @@ public class SceneManager : MonoBehaviour
                             interactable = true;
                         gameState = MainGame.TEAM;
                     } //end else if Pokemon Switch on Continue Game -> Switch
+
+                    //Pokemon Summary on Continue Game -> Summary
+                    else if(gameState == MainGame.POKEMONSUMMARY)
+                    {
+                        //If on moves screen, switch to move details
+                        if(summaryChoice == 4)
+                        {
+                            moveChoice = 0;
+                            detailsSize = -1;
+                            summaryChoice = 5;
+                        } //end if
+                    } //end else if Pokemon Summary on Continue Game -> Summary
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -2682,6 +2791,20 @@ public class SceneManager : MonoBehaviour
                             interactable = true;
                         gameState = MainGame.TEAM;
                     } //end else if Pokemon Switch on Continue Game -> Switch
+
+                    //Continue Game -> Gym Leader
+                    else if(gameState == MainGame.GYMBATTLE)
+                    {
+                        EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
+                        gameState = MainGame.HOME;
+                    } //end else if 
+
+                    //Continue Game -> Trainer Card
+                    else if(gameState == MainGame.TRAINERCARD)
+                    {
+                        EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
+                        gameState = MainGame.HOME;
+                    } //end else if 
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -2732,6 +2855,80 @@ public class SceneManager : MonoBehaviour
                 //New Game
                 case OverallGame.NEWGAME:
                 {
+                    //Don't continue until player requests next text
+                    if(checkpoint == 3)
+                    {
+                        //Attempt to display text
+                        if(GameManager.instance.DisplayText("This circus has attracted major gym leaders from " +
+                                                            "around the world! In fact, that's why you're here, isn't it?"))
+                        {
+                            checkpoint = 4;
+                        } //end if
+                    } //end if
+
+                    //Don't continue until player requests next text
+                    else if(checkpoint == 4)
+                    {
+                        //Attempt to display text
+                        if(GameManager.instance.DisplayText("Alright, let's get you set up. First, what is " +
+                                                            "your name?"))
+                        {
+                            checkpoint = 5;
+                        } //end if
+                    } //end else if
+
+                    //Don't continue until player requests next text
+                    else if(checkpoint == 5)
+                    {
+                        //Display name input
+                        input.SetActive(true);
+                        input.transform.GetChild(2).GetComponent<Text>().text = "Please enter your name.";
+                        input.transform.GetChild(0).GetComponent<Text>().text = "Player name:";
+                        inputText.text = "";
+                        inputText.ActivateInputField();
+                        checkpoint = 6;
+                    } //end else if
+
+                    //Don't continue until player requests next text
+                    else if(checkpoint == 6 && inputText.text.Length != 0)
+                    {
+                        //Convert input name to player's name
+                        playerName = inputText.text;
+                        input.SetActive(false);
+                        GameManager.instance.DisplayText("So your name is " + playerName + "?");
+                        checkpoint = 7;
+                    } //end else if
+
+                    //If an option was selected, process it
+                    else if(checkpoint == 8)
+                    {
+                        // Yes selected
+                        if(choiceNumber == 0)
+                        {
+                            checkpoint = 9;
+                        } //end if
+                        // No selected
+                        else if(choiceNumber == 1)
+                        {
+                            GameManager.instance.DisplayText("Ok let's try again. What is your name?");
+                            checkpoint = 5;
+                        } //end else if
+                        
+                        //Disable choice and selection
+                        selection.SetActive(false);
+                        confirm.SetActive(false);
+                    } //end else if
+
+                    //Don't continue until player requests next text
+                    else if(checkpoint == 10 && !GameManager.instance.IsDisplaying())
+                    {
+                        text.SetActive(false);
+                        checkpoint = 0;
+                        GameManager.instance.GetTrainer().RandomTeam();
+                        GameManager.instance.Persist();
+                        sceneState = OverallGame.INTRO;
+                        Application.LoadLevel("Intro");
+                    } //end else if
                     break;
                 } //end case OverallGame NEWGAME
                     
@@ -2756,6 +2953,7 @@ public class SceneManager : MonoBehaviour
                                 summaryScreen.transform.GetChild(2).gameObject.SetActive(false);
                                 summaryScreen.transform.GetChild(3).gameObject.SetActive(false);
                                 summaryScreen.transform.GetChild(4).gameObject.SetActive(false);
+                                summaryScreen.transform.GetChild(5).gameObject.SetActive(false);
                                 gameState = MainGame.POKEMONSUMMARY;
                                 break;
                             } //end case 0 (Summary)
@@ -2854,6 +3052,18 @@ public class SceneManager : MonoBehaviour
                             interactable = true;
                         gameState = MainGame.TEAM;
                     } //end else if Pokemon Switch on Continue Game -> Switch
+
+                    //Pokemon Summary on Continue Game -> Summary
+                    else if(gameState == MainGame.POKEMONSUMMARY)
+                    {
+                        //If on moves screen, switch to move details
+                        if(summaryChoice == 4)
+                        {
+                            moveChoice = 0;
+                            detailsSize = -1;
+                            summaryChoice = 5;
+                        } //end if
+                    } //end else if Pokemon Summary on Continue Game -> Summary
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -2930,6 +3140,20 @@ public class SceneManager : MonoBehaviour
                         //Return to team
                         gameState = MainGame.TEAM;
                     } //end else if Pokemon Switch on Continue Game -> My Team
+
+                    //Continue Game -> Gym Leader
+                    else if(gameState == MainGame.GYMBATTLE)
+                    {
+                        EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
+                        gameState = MainGame.HOME;
+                    } //end else if 
+
+                    //Continue Game -> Trainer Card
+                    else if(gameState == MainGame.TRAINERCARD)
+                    {
+                        EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
+                        gameState = MainGame.HOME;
+                    } //end else if 
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -2972,6 +3196,23 @@ public class SceneManager : MonoBehaviour
     {
         gameState = newGameState; 
     } //end SetCheckpoint(MainGame newGameState)
+
+    /***************************************
+     * Name: SetSummaryPage
+     * Sets summaryChoice to parameter
+     ***************************************/
+    public void SetSummaryPage(int summaryPage)
+    {
+        //Change screen only if summary screen is active
+        if (summaryScreen.activeSelf)
+        {
+            //Deactivate current page
+            summaryScreen.transform.GetChild(summaryChoice).gameObject.SetActive(false);
+
+            //Change to new page
+            summaryChoice = summaryPage;
+        } //end if
+    } //end SetSummaryPage(int summaryPage)
 	#endregion
     #endregion
 } //end SceneManager class

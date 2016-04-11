@@ -26,6 +26,7 @@ public static class DataContents : System.Object
     //Sprite Arrays
     public static Sprite[] statusSprites;           //Sprites for each status ailment
     public static Sprite[] typeSprites;             //Sprites for each type
+    public static Sprite[] categorySprites;         //Sprites for each category of move
 
     //Shorthand for main data path
     static string dataLocation;                     
@@ -80,8 +81,9 @@ public static class DataContents : System.Object
         experienceTable = new ExperienceTable();
                 
         //Load sprites
-        statusSprites = Resources.LoadAll<Sprite> ("Sprites/Icons/statuses");
-        typeSprites   = Resources.LoadAll<Sprite> ("Sprites/Icons/pokedexTypes");
+        statusSprites   = Resources.LoadAll<Sprite> ("Sprites/Icons/statuses");
+        typeSprites     = Resources.LoadAll<Sprite> ("Sprites/Icons/pokedexTypes");
+        categorySprites = Resources.LoadAll<Sprite> ("Sprites/Icons/category");
         return true;
     } //end InitDataContents()
 
@@ -638,3 +640,20 @@ public enum Types
     FAIRY   = 18,
     COUNT   = 19
 } //end Types enum
+
+/***************************************************************************************** 
+ * Enum:    Categories
+ * Summary: Lists and organizes categories for integer reference
+ *****************************************************************************************/ 
+[Serializable]
+/***************************************
+ * Name: Categories
+ * List of categories moves can be
+ ***************************************/
+public enum Categories
+{
+    Physical= 0,
+    Special = 1,
+    Status  = 2,
+    COUNT   = 3
+} //end Categories enum
