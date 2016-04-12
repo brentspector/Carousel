@@ -31,6 +31,7 @@ public class SceneManager : MonoBehaviour
         TEAM,
         POKEMONSUBMENU,
         POKEMONSUMMARY,
+        MOVESWITCH,
         POKEMONSWITCH,
         PC,
         SHOP,
@@ -85,12 +86,13 @@ public class SceneManager : MonoBehaviour
     GameObject trainerCard;         //Screen of the trainer card
     GameObject currentTeamSlot;     //The object that is currently highlighted on the team
     GameObject currentSwitchSlot;   //The object that is currently highlighted for switching to
+    GameObject currentMoveSlot;     //The object that is currently highlighted for reading/moving
     int previousTeamSlot;           //The slot last highlighted
     int subMenuChoice;              //What choice is highlighted in the pokemon submenu
     int summaryChoice;              //What page is open on the summary screen
     int moveChoice;                 //What move is being highlighted for details
     int detailsSize;                //Font size for move description
-    int switchChoice;               //The pokemon chosen to switch with the selected
+    int switchChoice;               //The pokemon or move chosen to switch with the selected
     int previousSwitchSlot;         //The slot last highlighted for switching to
     #endregion
 
@@ -1118,6 +1120,25 @@ public class SceneManager : MonoBehaviour
                     previousSwitchSlot = switchChoice;
                 } //end if
             } //end else if
+            else if(gameState == MainGame.MOVESWITCH)
+            {
+                //Get player input
+                GatherInput();
+                
+                //Highlight selected switch to
+                selection.SetActive(true);
+                
+                //Resize to same as top choice
+                Transform moveScreen =  summaryScreen.transform.GetChild(5);
+                Vector3 scale = new Vector3(moveScreen.FindChild("Move"+(moveChoice+1)).GetComponent<RectTransform>().rect.width,
+                                            moveScreen.FindChild("Move"+(moveChoice+1)).GetComponent<RectTransform>().rect.height,
+                                            0);
+                selection.GetComponent<RectTransform>().sizeDelta = scale;
+                
+                //Reposition to location of top choice, with 2 unit offset to center it
+                selection.transform.position = Camera.main.WorldToScreenPoint (currentMoveSlot.transform.
+                                                                               position);
+            } //end else if
             else if(gameState == MainGame.TRAINERCARD)
             {
                 //Initalize each scene only once
@@ -1422,24 +1443,24 @@ public class SceneManager : MonoBehaviour
     void SetMoveSprites(Pokemon teamMember, Transform moveScreen)
     {
         //Loop through the list of pokemon moves and set each one
-        for (int i = 0; i < teamMember.GetMoveCount(); i++)
+        for (int i = 0; i < 4; i++)
         {
             //Make sure move isn't null
             if( GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(i) != -1)
             {
                 //Set the move type
-                moveScreen.FindChild("MoveType" + (i+1).ToString()).gameObject.SetActive(true);
-                moveScreen.FindChild("MoveType" + (i+1).ToString()).GetComponent<Image>().sprite = 
+                moveScreen.FindChild("Move" + (i+1).ToString()).gameObject.SetActive(true);
+                moveScreen.FindChild("Move" + (i+1).ToString()).GetChild(0).GetComponent<Image>().sprite = 
                     DataContents.typeSprites [Convert.ToInt32 (Enum.Parse (typeof(Types),
                     DataContents.ExecuteSQL<string> ("SELECT type FROM Moves WHERE rowid=" +
                     GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(i))))];
                 //Set the move name
-                moveScreen.FindChild("MoveName" + (i+1).ToString()).GetComponent<Text>().text = 
+                moveScreen.FindChild("Move" + (i+1).ToString()).GetChild(1).GetComponent<Text>().text = 
                     DataContents.ExecuteSQL<string> ("SELECT gameName FROM Moves WHERE rowid=" +
                     GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(i));
 
                 //Set the move PP
-                moveScreen.FindChild("MovePP" + (i+1).ToString()).GetComponent<Text>().text = "PP " +
+                moveScreen.FindChild("Move" + (i+1).ToString()).GetChild(2).GetComponent<Text>().text = "PP " +
                     DataContents.ExecuteSQL<string> ("SELECT totalPP FROM Moves WHERE rowid=" +
                     GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(i)) + "/" +
                     DataContents.ExecuteSQL<string> ("SELECT totalPP FROM Moves WHERE rowid=" +
@@ -1448,13 +1469,7 @@ public class SceneManager : MonoBehaviour
             else
             {
                 //Blank out the type
-                moveScreen.FindChild("MoveType" + (i+1).ToString()).gameObject.SetActive(false);
-
-                //Blank out the name
-                moveScreen.FindChild("MoveName" + (i+1).ToString()).GetComponent<Text>().text = "";
-                               
-                //Blank out the pp
-                moveScreen.FindChild("MovePP" + (i+1).ToString()).GetComponent<Text>().text = "";
+                moveScreen.FindChild("Move" + (i+1).ToString()).gameObject.SetActive(false);
             } //end else
         } //end for
     } //end SetMoveSprites(Pokemon teamMember, Transform moveScreen)
@@ -1464,13 +1479,26 @@ public class SceneManager : MonoBehaviour
      * Sets the details of the move
      ***************************************/
     void SetMoveDetails(Pokemon teamMember, Transform moveScreen)
-    { 
+    {
+        //Reposition selection rect
+        selection.SetActive(true);
+        
+        //Resize to same as top choice
+        Vector3 scale = new Vector3(moveScreen.FindChild("Move"+(moveChoice+1)).GetComponent<RectTransform>().rect.width,
+                                    moveScreen.FindChild("Move"+(moveChoice+1)).GetComponent<RectTransform>().rect.height,
+                                    0);
+        selection.GetComponent<RectTransform>().sizeDelta = scale;
+
+        //Reposition to location of top choice, with 2 unit offset to center it
+        selection.transform.position = Camera.main.WorldToScreenPoint (currentMoveSlot.transform.
+                                                                       position);
+
         //Set the move category
         moveScreen.FindChild("Category").GetComponent<Image>().sprite = 
             DataContents.categorySprites [Convert.ToInt32 (Enum.Parse (typeof(Categories),
             DataContents.ExecuteSQL<string> ("SELECT category FROM Moves WHERE rowid=" +
             GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(moveChoice))))];
-            
+
         //Set the move power
         moveScreen.FindChild("Power").GetComponent<Text>().text = 
             DataContents.ExecuteSQL<string> ("SELECT baseDamage FROM Moves WHERE rowid=" +
@@ -1482,31 +1510,20 @@ public class SceneManager : MonoBehaviour
             GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(moveChoice));
 
         //Set font size of move description
-        if (detailsSize == -1)
+        if (detailsSize != -1)
         {
-            moveScreen.FindChild("MoveDescription").GetComponent<Text>().text = 
-                DataContents.ExecuteSQL<string> ("SELECT description FROM Moves WHERE gameName='Rollout'");
-            detailsSize = moveScreen.FindChild("MoveDescription").GetComponent<Text>().cachedTextGenerator.
-                fontSizeUsedForBestFit;
-
-            //If the size has been fit to the screen
-            if(detailsSize > 0)
-            {
-                moveScreen.FindChild("MoveDescription").GetComponent<Text>().fontSize = detailsSize;
-                moveScreen.FindChild("MoveDescription").GetComponent<Text>().resizeTextForBestFit = false;
-            } //end if
-
-            //Otherwise wait for another frame
-            else
-            {
-                detailsSize = -1;
-            } //end else
+            //Set the move description text
+            moveScreen.FindChild ("MoveDescription").GetComponent<Text> ().text = 
+                DataContents.ExecuteSQL<string> ("SELECT description FROM Moves WHERE rowid=" +
+                GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove (moveChoice));
         } //end if
-
-        //Set the move description text
-        moveScreen.FindChild("MoveDescription").GetComponent<Text>().text = 
-            DataContents.ExecuteSQL<string> ("SELECT description FROM Moves WHERE rowid=" +
-            GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove(moveChoice));
+        else
+        {
+            //Get font size
+            moveScreen.FindChild ("MoveDescription").GetComponent<Text> ().text = 
+                DataContents.ExecuteSQL<string> ("SELECT description FROM Moves WHERE gameName='Rollout'");
+            StartCoroutine (WaitForFontResize (moveScreen));
+        } //end else
     } //end SetMoveDetails(Pokemon teamMember, Transform moveScreen)
 
     /***************************************
@@ -1525,6 +1542,23 @@ public class SceneManager : MonoBehaviour
             GetComponent<RectTransform>().position;
         selection.SetActive(true);
     } //end WaitForResize
+
+    /***************************************
+     * Name: WaitForFontResize
+     * Waits for move description font to
+     * resize to best fit
+     ***************************************/
+    IEnumerator WaitForFontResize(Transform moveScreen)
+    {
+        yield return new WaitForEndOfFrame ();
+        detailsSize = moveScreen.FindChild("MoveDescription").GetComponent<Text>().cachedTextGenerator.
+            fontSizeUsedForBestFit;
+        moveScreen.FindChild("MoveDescription").GetComponent<Text>().fontSize = detailsSize;
+        moveScreen.FindChild("MoveDescription").GetComponent<Text>().resizeTextForBestFit = false;
+        moveScreen.FindChild ("MoveDescription").GetComponent<Text> ().text = 
+            DataContents.ExecuteSQL<string> ("SELECT description FROM Moves WHERE rowid=" +
+            GameManager.instance.GetTrainer ().Team [choiceNumber - 1].GetMove (moveChoice));
+    } //end WaitForFontResize(Transform moveScreen)
 
     /***************************************
      * Name: GatherInput
@@ -1565,16 +1599,20 @@ public class SceneManager : MonoBehaviour
                     //Pokemon Summary on Continue Game -> Summary
                     if(gameState == MainGame.POKEMONSUMMARY)
                     {
-                        //Deactivate current page
-                        summaryScreen.transform.GetChild(summaryChoice).gameObject.SetActive(false);
-                        
-                        //Decrease choice
-                        summaryChoice--;
-                        
-                        //Loop to last child if on first child
-                        if(summaryChoice < 0)
+                        //If on any page besides move details
+                        if(summaryChoice != 5)
                         {
-                            summaryChoice = 4;
+                            //Deactivate current page
+                            summaryScreen.transform.GetChild(summaryChoice).gameObject.SetActive(false);
+                            
+                            //Decrease choice
+                            summaryChoice--;
+                            
+                            //Loop to last child if on first child
+                            if(summaryChoice < 0)
+                            {
+                                summaryChoice = 4;
+                            } //end if
                         } //end if
                     } //end if Pokemon Summary on Continue Game -> Summary
 
@@ -1657,16 +1695,20 @@ public class SceneManager : MonoBehaviour
                     //Pokemon Summary on Continue Game -> Summary
                     if(gameState == MainGame.POKEMONSUMMARY)
                     {
-                        //Deactivate current page
-                        summaryScreen.transform.GetChild(summaryChoice).gameObject.SetActive(false);
-                        
-                        //Increase choice
-                        summaryChoice++;
-                        
-                        //Loop to last child if on first child
-                        if(summaryChoice > 4)
+                        //If on any page besides move details
+                        if(summaryChoice != 5)
                         {
-                            summaryChoice = 0;
+                            //Deactivate current page
+                            summaryScreen.transform.GetChild(summaryChoice).gameObject.SetActive(false);
+                            
+                            //Increase choice
+                            summaryChoice++;
+                            
+                            //Loop to last child if on first child
+                            if(summaryChoice > 4)
+                            {
+                                summaryChoice = 0;
+                            } //end if
                         } //end if
                     } //end if Pokemon Summary on Continue Game -> Summary
 
@@ -1851,15 +1893,35 @@ public class SceneManager : MonoBehaviour
                     //Pokemon Summary on Continue Game -> Summary
                     else if(gameState == MainGame.POKEMONSUMMARY)
                     {
-                        //Decrease (higher slots are lower childs)
-                        choiceNumber--;
-                        
-                        //Clamp between 1 and team size
-                        if(choiceNumber < 1)
+                        //If on any page besides move details
+                        if(summaryChoice != 5)
                         {
-                            choiceNumber = GameManager.instance.GetTrainer().Team.Count;
+                            //Decrease (higher slots are lower childs)
+                            choiceNumber--;
+                            
+                            //Clamp between 1 and team size
+                            if(choiceNumber < 1)
+                            {
+                                choiceNumber = GameManager.instance.GetTrainer().Team.Count;
+                            } //end if
                         } //end if
+                        else
+                        {
+                            //Decrease (higher slots are lower childs)
+                            moveChoice--;
+
+                            //Clamp between 0 and highest non-null move
+                            if(moveChoice < 0)
+                            {
+                                moveChoice = GameManager.instance.GetTrainer().Team[choiceNumber-1].GetMoveCount()-1;
+                            } //end if
+
+                            //Set move slot
+                            currentMoveSlot = summaryScreen.transform.GetChild(5).
+                                FindChild("Move"+(moveChoice+1)).gameObject;
+                        } //end else
                     } //end else if Pokemon Summary on Continue Game -> Summary
+
                     //Pokemon Switch on Continue Game -> Switch
                     else if(gameState == MainGame.POKEMONSWITCH)
                     {
@@ -1877,6 +1939,23 @@ public class SceneManager : MonoBehaviour
                         //Set currentSwitchSlot
                         currentSwitchSlot = playerTeam.transform.FindChild("Pokemon"+switchChoice).gameObject;
                     } //end else if Pokemon Switch on Continue Game -> Switch
+
+                    //Move Switch on Continue Game -> Summary -> Move Details
+                    else if(gameState  == MainGame.MOVESWITCH)
+                    {
+                        //Decrease (higher slots on lower children)
+                        switchChoice--;
+
+                        //Clamp between 0 and highest non-null move
+                        if(switchChoice < 0)
+                        {
+                            switchChoice = GameManager.instance.GetTrainer().Team[choiceNumber-1].GetMoveCount()-1;
+                        } //end if
+
+                        //Set currentSwitchSlot
+                        currentSwitchSlot = summaryScreen.transform.GetChild(5).
+                            FindChild("Move"+(switchChoice+1)).gameObject;
+                    } //end else if Move Switch on Continue Game -> Summary -> Move Details
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -2017,14 +2096,34 @@ public class SceneManager : MonoBehaviour
                     //Pokemon Summary on Continue Game -> Summary
                     else if(gameState == MainGame.POKEMONSUMMARY)
                     {
-                        //Decrease (lower slots are on higher childs)
-                        choiceNumber++;
-                        
-                        //Clamp between 1 and team size
-                        if(choiceNumber > GameManager.instance.GetTrainer().Team.Count)
+                        //If on any page besides move details
+                        if(summaryChoice != 5)
                         {
-                            choiceNumber = 1;
+                            //Decrease (lower slots are on higher childs)
+                            choiceNumber++;
+                            
+                            //Clamp between 1 and team size
+                            if(choiceNumber > GameManager.instance.GetTrainer().Team.Count)
+                            {
+                                choiceNumber = 1;
+                            } //end if
                         } //end if
+                        else
+                        {
+                            //Increase (lower slots are on higher childs)
+                            moveChoice++;
+                            
+                            //If chosen move is null, loop to top
+                            if(moveChoice >= 4 || GameManager.instance.GetTrainer().Team[choiceNumber-1].
+                               GetMove(moveChoice) == -1)
+                            {
+                                moveChoice = 0;
+                            } //end if
+
+                            //Set move slot
+                            currentMoveSlot = summaryScreen.transform.GetChild(5).
+                                FindChild("Move"+(moveChoice+1)).gameObject;
+                        } //end else
                     } //end else if Pokemon Summary on Continue Game -> Summary
 
                     //Pokemon Switch on Continue Game -> Switch
@@ -2044,6 +2143,23 @@ public class SceneManager : MonoBehaviour
                         //Set currentSwitchSlot
                         currentSwitchSlot = playerTeam.transform.FindChild("Pokemon"+switchChoice).gameObject;
                     } //end else if Pokemon Switch on Continue Game -> Switch
+
+                    //Move Switch on Continue Game -> Summary -> Move Details
+                    else if(gameState  == MainGame.MOVESWITCH)
+                    {
+                        //Increase (lower slots on higher children)
+                        switchChoice++;
+                        
+                        //Clamp between 0 and highest non-null move
+                        if(switchChoice > GameManager.instance.GetTrainer().Team[choiceNumber-1].GetMoveCount()-1)
+                        {
+                            switchChoice = 0;
+                        } //end if
+
+                        //Set currentSwitchSlot
+                        currentSwitchSlot = summaryScreen.transform.GetChild(5).
+                            FindChild("Move"+(switchChoice+1)).gameObject;
+                    } //end else if Move Switch on Continue Game -> Summary -> Move Details
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -2193,6 +2309,44 @@ public class SceneManager : MonoBehaviour
                             currentSwitchSlot = playerTeam.transform.FindChild("Pokemon"+switchChoice).gameObject;
                         } //end else
                     } //end else if Pokemon Switch on Continue Game -> Switch
+
+                    //Pokemon Summary on Continue Game -> Summary
+                    else if(gameState == MainGame.POKEMONSUMMARY && summaryChoice == 5 &&
+                            Input.mousePosition.y < Camera.main.WorldToScreenPoint(currentMoveSlot.transform.
+                            position).y - currentMoveSlot.GetComponent<RectTransform>().rect.height/2)
+                    {
+                        //If not on the last slot
+                        if(moveChoice < 3)
+                        {
+                            //If next slot is null, don't move
+                            moveChoice++;
+                            if(moveChoice >= GameManager.instance.GetTrainer().Team[choiceNumber-1].GetMoveCount())
+                            {
+                                moveChoice--;
+                            } //end if
+
+                            //Set currentMoveSlot
+                            currentMoveSlot = summaryScreen.transform.GetChild(5).
+                                FindChild("Move"+(moveChoice+1)).gameObject;
+                        } //end if
+                    } //end else if Pokemon Summary on Continue Game -> Summary
+
+                    //Move Switch on Continue Game -> Summary -> Move Details
+                    else if(gameState  == MainGame.MOVESWITCH &&
+                            Input.mousePosition.y < Camera.main.WorldToScreenPoint(currentSwitchSlot.transform.
+                            position).y - currentSwitchSlot.GetComponent<RectTransform>().rect.height/2)
+                    {
+                        //If next slot is null, don't move
+                        switchChoice++;
+                        if(switchChoice >= GameManager.instance.GetTrainer().Team[choiceNumber-1].GetMoveCount())
+                        {
+                            switchChoice--;
+                        } //end if
+
+                        //Set currentSwitchSlot
+                        currentSwitchSlot = summaryScreen.transform.GetChild(5).
+                            FindChild("Move"+(switchChoice+1)).gameObject;
+                    } //end else if Move Switch on Continue Game -> Summary -> Move Details
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -2343,6 +2497,34 @@ public class SceneManager : MonoBehaviour
                             currentSwitchSlot = playerTeam.transform.FindChild("Pokemon"+switchChoice).gameObject;
                         } //end else
                     } //end else if Pokemon Switch on Continue Game -> Switch
+
+                    //Pokemon Summary on Continue Game -> Summary
+                    else if(gameState == MainGame.POKEMONSUMMARY && summaryChoice == 5 &&
+                            Input.mousePosition.y > Camera.main.WorldToScreenPoint(currentMoveSlot.transform.
+                            position).y + currentMoveSlot.GetComponent<RectTransform>().rect.height/2)
+                    {
+                        //If not on first slot, go up vertically
+                        if(moveChoice > 0)
+                        {
+                            moveChoice--;
+                            currentMoveSlot = summaryScreen.transform.GetChild(5).
+                                FindChild("Move"+(moveChoice+1)).gameObject;
+                        } //end if
+                    } //end else if Pokemon Summary on Continue Game -> Summary
+
+                    //Move Switch on Continue Game -> Summary -> Move Details
+                    else if(gameState  == MainGame.MOVESWITCH &&
+                            Input.mousePosition.y > Camera.main.WorldToScreenPoint(currentSwitchSlot.transform.
+                            position).y + currentSwitchSlot.GetComponent<RectTransform>().rect.height/2)
+                    {
+                        //If not on first slot ,go up vertically
+                        if(switchChoice > 0)
+                        {
+                            switchChoice--;                        
+                            currentSwitchSlot = summaryScreen.transform.GetChild(5).
+                                FindChild("Move"+(switchChoice+1)).gameObject;
+                        } //end if
+                    } //end else if Move Switch on Continue Game -> Summary -> Move Details
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -2709,8 +2891,32 @@ public class SceneManager : MonoBehaviour
                             moveChoice = 0;
                             detailsSize = -1;
                             summaryChoice = 5;
+                            currentMoveSlot = summaryScreen.transform.GetChild(5).
+                                FindChild("Move1").gameObject;
                         } //end if
+
+                        //If on move details screen, go to move switch
+                        else if(summaryChoice == 5)
+                        {
+                            currentMoveSlot.GetComponent<Image>().color = Color.white;
+                            switchChoice = moveChoice;
+                            currentSwitchSlot = currentMoveSlot;
+                            gameState = MainGame.MOVESWITCH;
+                        } //end else if
                     } //end else if Pokemon Summary on Continue Game -> Summary
+
+                    //Move Switch on Continue Game -> Summary -> Move Details
+                    else if(gameState  == MainGame.MOVESWITCH)
+                    {
+                        //If switching spots aren't the same
+                        if(moveChoice != switchChoice)
+                        {
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].SwitchMoves(moveChoice, switchChoice);
+                        } //end if
+
+                        currentMoveSlot.GetComponent<Image>().color = Color.clear;
+                        gameState = MainGame.POKEMONSUMMARY;
+                    } //end else if Move Switch on Continue Game -> Summary -> Move Details
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -2748,15 +2954,25 @@ public class SceneManager : MonoBehaviour
                     //Pokemon Summary on Continue Game -> Summary
                     if(gameState == MainGame.POKEMONSUMMARY)
                     {
-                        //Deactivate summary
-                        summaryScreen.SetActive(false);
-                        
-                        //Enable buttons again
-                        playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Button>().
-                            interactable = true;
-                        playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Button>().
-                            interactable = true;
-                        gameState = MainGame.TEAM;
+                        //If on any page besides details
+                        if(summaryChoice != 5)
+                        {
+                            //Deactivate summary
+                            summaryScreen.SetActive(false);
+                            
+                            //Enable buttons again
+                            playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Button>().
+                                interactable = true;
+                            playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Button>().
+                                interactable = true;
+                            gameState = MainGame.TEAM;
+                        } //end if
+                        else
+                        {
+                            summaryScreen.transform.GetChild(5).gameObject.SetActive(false);
+                            selection.SetActive(false);
+                            summaryChoice = 4;
+                        } //end else
                     } //end if Pokemon Summary on Continue Game -> Summary
 
                     //Pokemon submenu on Continue Game -> My Team
@@ -3062,8 +3278,32 @@ public class SceneManager : MonoBehaviour
                             moveChoice = 0;
                             detailsSize = -1;
                             summaryChoice = 5;
+                            currentMoveSlot = summaryScreen.transform.GetChild(5).
+                                FindChild("Move1").gameObject;
                         } //end if
+
+                        //If on move details screen, go to move switch
+                        else if(summaryChoice == 5)
+                        {
+                            currentMoveSlot.GetComponent<Image>().color = Color.white;
+                            switchChoice = moveChoice;
+                            currentSwitchSlot = currentMoveSlot;
+                            gameState = MainGame.MOVESWITCH;
+                        } //end else if
                     } //end else if Pokemon Summary on Continue Game -> Summary
+                    
+                    //Move Switch on Continue Game -> Summary -> Move Details
+                    else if(gameState  == MainGame.MOVESWITCH)
+                    {
+                        //If switching spots aren't the same
+                        if(moveChoice != switchChoice)
+                        {
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].SwitchMoves(moveChoice, switchChoice);
+                        } //end if
+                        
+                        currentMoveSlot.GetComponent<Image>().color = Color.clear;
+                        gameState = MainGame.POKEMONSUMMARY;
+                    } //end else if Move Switch on Continue Game -> Summary -> Move Details
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -3101,15 +3341,25 @@ public class SceneManager : MonoBehaviour
                     //Pokemon Summary on Continue Game -> Summary
                     if(gameState == MainGame.POKEMONSUMMARY)
                     {
-                        //Deactivate summary
-                        summaryScreen.SetActive(false);
-                        
-                        //Enable buttons again
-                        playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Button>().
-                            interactable = true;
-                        playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Button>().
-                            interactable = true;
-                        gameState = MainGame.TEAM;
+                        //If on any page besides details
+                        if(summaryChoice != 5)
+                        {
+                            //Deactivate summary
+                            summaryScreen.SetActive(false);
+                            
+                            //Enable buttons again
+                            playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Button>().
+                                interactable = true;
+                            playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Button>().
+                                interactable = true;
+                            gameState = MainGame.TEAM;
+                        } //end if
+                        else
+                        {
+                            summaryScreen.transform.GetChild(5).gameObject.SetActive(false);
+                            selection.SetActive(false);
+                            summaryChoice = 4;
+                        } //end else
                     } //end if Pokemon Summary on Continue Game -> Summary
 
                     //Pokemon submenu on Continue Game -> My Team

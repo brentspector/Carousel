@@ -648,7 +648,7 @@ public class Pokemon
         //Fill in missing values
         if (values.Length < 4)
         {
-            //Create new 6 int long array
+            //Create new 4 int long array
             int[] fixedValues = new int[4]; 
             
             //Fill in fixedValues with given values
@@ -831,6 +831,17 @@ public class Pokemon
         specialA = results[3];
         specialD = results[4];
     } //end CalculateStat
+
+    /***************************************
+     * Name: SwitchMoves
+     * Switches position of two moves
+     ***************************************/
+    public void SwitchMoves(int move1, int move2)
+    {
+        int temp = moves [move1];
+        moves [move1] = moves [move2];
+        moves [move2] = temp;
+    } //end SwitchMoves(int move1, int move2)
 
     /***************************************
      * Name: FaintPokemon
@@ -1249,7 +1260,7 @@ public class Pokemon
      ***************************************/
     public int GetMoveCount()
     {
-        return moves.Length;
+        return moves.Count(x => x >= 0);
     } //end GetMoveCount
 
     /***************************************
