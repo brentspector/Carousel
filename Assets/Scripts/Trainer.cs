@@ -153,7 +153,7 @@ public class Trainer
         team.Clear ();
         for (int i = 0; i < 6; i++)
         {
-            Pokemon myPokemon = new Pokemon (level: UnityEngine.Random.Range (1, 100));
+            Pokemon myPokemon = new Pokemon (level: UnityEngine.Random.Range (1, 100), oType: 5, oWhere: 2);
             team.Add (myPokemon);
         }
     } //end AddPokemon(Pokemon newPokemon)

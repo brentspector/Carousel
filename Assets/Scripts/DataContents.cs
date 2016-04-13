@@ -22,6 +22,7 @@ public static class DataContents : System.Object
     static int speciesCount;                        //Number of entries in Pokemon table
     static int moveCount;                           //Number of entries in Move table
     static int itemCount;                           //Number of entries in Items table
+    static int abilityCount;                        //Number of entries in Abilities table
 
     //Sprite Arrays
     public static Sprite[] statusSprites;           //Sprites for each status ailment
@@ -76,6 +77,7 @@ public static class DataContents : System.Object
         speciesCount = ExecuteSQL<int>("SELECT Count(*) FROM Pokemon");
         moveCount = ExecuteSQL<int>("SELECT Count(*) FROM Moves");
         itemCount = ExecuteSQL<int>("SELECT Count(*) FROM Items");
+        abilityCount = ExecuteSQL<int> ("SELECT Count(*) FROM Abilities");
 
         //Create an experience table
         experienceTable = new ExperienceTable();
@@ -657,3 +659,43 @@ public enum Categories
     Status  = 2,
     COUNT   = 3
 } //end Categories enum
+
+/***************************************************************************************** 
+ * Enum:    ObtainType
+ * Summary: Lists and organizes obtain methods for integer reference
+ *****************************************************************************************/ 
+[Serializable]
+/***************************************
+ * Name: ObtainType
+ * List of methods pokemon can be obtained
+ ***************************************/
+public enum ObtainType
+{
+    Bought  = 0,
+    Traded  = 1,
+    Egg     = 2,
+    Gift    = 3,
+    Code    = 4,
+    Function= 5,
+    Unknown = 6,
+    COUNT   = 7
+} //end ObtainType enum
+
+/***************************************************************************************** 
+ * Enum:    ObtainFrom
+ * Summary: Lists and organizes obtain locations for integer reference
+ *****************************************************************************************/ 
+[Serializable]
+/***************************************
+ * Name: ObtainFrom
+ * List of locations pokemon can be obtained
+ ***************************************/
+public enum ObtainFrom
+{
+    Shop         = 0,
+    MysteryEvent = 1,
+    RandomTeam   = 2,
+    AddPokemon   = 3,
+    UnknownSource= 4,
+    COUNT        = 5
+} //end ObtainFrom enum

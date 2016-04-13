@@ -281,7 +281,23 @@ public class CodeWarehouse : MonoBehaviour
         dbCommand.Prepare();
         dbCommand.ExecuteNonQuery();
         dbCommand.Parameters.Clear();
-    }*/
+    }
+        SystemManager sysm = new SystemManager ();
+        sysm.GetContents (dataLocation + "abilities.txt");
+        dbCommand.CommandText = "DELETE FROM Abilities";
+        dbCommand.ExecuteNonQuery();
+        for (int i = 0; i < 191; i++)
+        {
+            string[] contents = sysm.ReadCSV(i);
+            dbCommand.CommandText = "INSERT INTO Abilities(internalName,gameName,description) VALUES  (@in,@gn,@desc)";
+            dbCommand.Parameters.Add(new SqliteParameter("@in", contents[1]));
+            dbCommand.Parameters.Add(new SqliteParameter("@gn", contents[2]));
+            dbCommand.Parameters.Add(new SqliteParameter("@desc", contents[3].Replace("\"", "")));
+            dbCommand.Prepare();
+            dbCommand.ExecuteNonQuery();
+            dbCommand.Parameters.Clear();
+        } //end for
+     */
     #endregion
     #region LevelUpFinder
     /*string[] arrayList = moveList.Split(',');

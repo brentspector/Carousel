@@ -109,8 +109,8 @@ public class GameManager : MonoBehaviour
 #if UNITY_EDITOR
                     //Debug mode (development in the editor) commands go here
                     sysm.GetPersist();
-                    sysm.PlayerTrainer.EmptyTeam();
-                    sysm.PlayerTrainer.RandomTeam();
+                    //sysm.PlayerTrainer.EmptyTeam();
+                    //sysm.PlayerTrainer.RandomTeam();
                     sysm.Persist();
 
 #else
