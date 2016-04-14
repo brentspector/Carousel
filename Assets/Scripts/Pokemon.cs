@@ -872,6 +872,9 @@ public class Pokemon
         int temp = moves [move1];
         moves [move1] = moves [move2];
         moves [move2] = temp;
+        temp = ppReamaining [move1];
+        ppReamaining [move1] = ppReamaining [move2];
+        ppReamaining [move2] = temp;
     } //end SwitchMoves(int move1, int move2)
 
     /***************************************
@@ -985,6 +988,26 @@ public class Pokemon
             } //end default
         } //end switch
     } //end GetAbilityDescription
+
+    /***************************************
+     * Name: GetMarkings
+     * Returns string of colored markings
+     ***************************************/
+    public string GetMarkings()
+    {
+        //String of markings that have been colored
+        string coloredMarkings = "";
+
+        //Loop through markings and add to string
+        for(int i = 0; i < GameManager.instance.NumberOfMarkings; i++)
+        {
+            coloredMarkings += markings[i] ? 
+                "<color=white>" + DataContents.markingCharacters[i].ToString() + "</color>" :
+                "<color=grey>" + DataContents.markingCharacters[i].ToString() + "</color>"; 
+        } //end for
+
+        return coloredMarkings;
+    } //end GetMarkings
 	#region Accessors
 	//Stats
     /***************************************

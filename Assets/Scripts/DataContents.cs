@@ -19,6 +19,7 @@ public static class DataContents : System.Object
 {
     #region Variables
     public static ExperienceTable experienceTable;  //Holds experience values for growth rates
+    public static char[] markingCharacters;         //Holds the characters you can mark with
     static int speciesCount;                        //Number of entries in Pokemon table
     static int moveCount;                           //Number of entries in Move table
     static int itemCount;                           //Number of entries in Items table
@@ -72,6 +73,9 @@ public static class DataContents : System.Object
         {
             return false;
         } //end if
+
+        //Initialize markings
+        markingCharacters = new char[] {'●','■','▲','♥'};
 
         //Initialize max count for each table
         speciesCount = ExecuteSQL<int>("SELECT Count(*) FROM Pokemon");

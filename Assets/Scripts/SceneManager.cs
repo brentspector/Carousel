@@ -875,6 +875,8 @@ public class SceneManager : MonoBehaviour
                         summaryScreen.transform.GetChild(0).FindChild("Sprite").GetComponent<Image>().sprite=
                             Resources.Load<Sprite>("Sprites/Pokemon/"+GameManager.instance.GetTrainer().
                             Team[choiceNumber-1].NatSpecies.ToString("000"));
+                        summaryScreen.transform.GetChild(0).FindChild("Markings").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].GetMarkings();
                         summaryScreen.transform.GetChild(0).FindChild("Item").GetComponent<Text>().text=
                             DataContents.GetItemGameName(GameManager.instance.GetTrainer().Team[choiceNumber-1].Item);
                         summaryScreen.transform.GetChild(0).FindChild("DexNumber").GetComponent<Text>().text=
@@ -911,11 +913,13 @@ public class SceneManager : MonoBehaviour
                         summaryScreen.transform.GetChild(1).FindChild("Sprite").GetComponent<Image>().sprite=
                             Resources.Load<Sprite>("Sprites/Pokemon/"+GameManager.instance.GetTrainer().
                             Team[choiceNumber-1].NatSpecies.ToString("000"));
+                        summaryScreen.transform.GetChild(1).FindChild("Markings").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].GetMarkings();
                         summaryScreen.transform.GetChild(1).FindChild("Item").GetComponent<Text>().text=
                             DataContents.GetItemGameName(GameManager.instance.GetTrainer().Team[choiceNumber-1].Item);
-                        summaryScreen.transform.GetChild(1).FindChild("Nature").GetComponent<Text>().text=
-                            ((Natures)GameManager.instance.GetTrainer().Team[choiceNumber-1].Nature).ToString() + 
-                                " nature";
+                        summaryScreen.transform.GetChild(1).FindChild("Nature").GetComponent<Text>().text= 
+                            "<color=#cc0000ff>" + ((Natures)GameManager.instance.GetTrainer().Team[choiceNumber-1].
+                                 Nature).ToString() + "</color> nature";
                         summaryScreen.transform.GetChild(1).FindChild("CaughtDate").GetComponent<Text>().text=
                             GameManager.instance.GetTrainer().Team[choiceNumber-1].ObtainTime.ToLongDateString() + 
                             " at " + GameManager.instance.GetTrainer().Team[choiceNumber-1].ObtainTime.
@@ -945,6 +949,8 @@ public class SceneManager : MonoBehaviour
                         summaryScreen.transform.GetChild(2).FindChild("Sprite").GetComponent<Image>().sprite=
                             Resources.Load<Sprite>("Sprites/Pokemon/"+GameManager.instance.GetTrainer().
                             Team[choiceNumber-1].NatSpecies.ToString("000"));
+                        summaryScreen.transform.GetChild(2).FindChild("Markings").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].GetMarkings();
                         summaryScreen.transform.GetChild(2).FindChild("Item").GetComponent<Text>().text=
                             DataContents.GetItemGameName(GameManager.instance.GetTrainer().Team[choiceNumber-1].Item);
                         summaryScreen.transform.GetChild(2).FindChild("HP").GetComponent<Text>().text=
@@ -988,6 +994,8 @@ public class SceneManager : MonoBehaviour
                         summaryScreen.transform.GetChild(3).FindChild("Sprite").GetComponent<Image>().sprite=
                             Resources.Load<Sprite>("Sprites/Pokemon/"+GameManager.instance.GetTrainer().
                             Team[choiceNumber-1].NatSpecies.ToString("000"));
+                        summaryScreen.transform.GetChild(3).FindChild("Markings").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].GetMarkings();
                         summaryScreen.transform.GetChild(3).FindChild("Item").GetComponent<Text>().text=
                             DataContents.GetItemGameName(GameManager.instance.GetTrainer().Team[choiceNumber-1].Item);
                         summaryScreen.transform.GetChild(3).FindChild("HP").GetComponent<Text>().text=
@@ -1035,6 +1043,8 @@ public class SceneManager : MonoBehaviour
                         summaryScreen.transform.GetChild(4).FindChild("Sprite").GetComponent<Image>().sprite=
                             Resources.Load<Sprite>("Sprites/Pokemon/"+GameManager.instance.GetTrainer().
                             Team[choiceNumber-1].NatSpecies.ToString("000"));
+                        summaryScreen.transform.GetChild(4).FindChild("Markings").GetComponent<Text>().text=
+                            GameManager.instance.GetTrainer().Team[choiceNumber-1].GetMarkings();
                         summaryScreen.transform.GetChild(4).FindChild("Item").GetComponent<Text>().text=
                             DataContents.GetItemGameName(GameManager.instance.GetTrainer().Team[choiceNumber-1].Item);
                         SetMoveSprites(GameManager.instance.GetTrainer().Team[choiceNumber-1],
@@ -1488,17 +1498,17 @@ public class SceneManager : MonoBehaviour
             //If stat up
             if(i == nd5 && nd5 != nm5)
             {
-                summaryScreen.transform.GetChild(2).GetChild(i+8).GetComponent<Text>().color = new Color(0.75f, 0, 0, 1);
+                summaryScreen.transform.GetChild(2).GetChild(i+9).GetComponent<Text>().color = new Color(0.75f, 0, 0, 1);
             } //end if
             //If stat down
             else if(i == nm5 && nd5 != nm5)
             {
-                summaryScreen.transform.GetChild(2).GetChild(i+8).GetComponent<Text>().color = new Color(0, 0, 0.75f, 1);
+                summaryScreen.transform.GetChild(2).GetChild(i+9).GetComponent<Text>().color = new Color(0, 0, 0.75f, 1);
             } //end else if
             //Otherwise black
             else
             {
-                summaryScreen.transform.GetChild(2).GetChild(i+8).GetComponent<Text>().color = Color.black;
+                summaryScreen.transform.GetChild(2).GetChild(i+9).GetComponent<Text>().color = Color.black;
             } //end else
         } //end for
     } //end SetStatColor()
