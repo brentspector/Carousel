@@ -1492,23 +1492,26 @@ public class SceneManager : MonoBehaviour
         //Find stat down
         int nm5 = (int)Mathf.Floor (currentNature % 5);
 
+        //Get child number of attack
+        int childNumber = summaryScreen.transform.GetChild (2).FindChild ("Attack").GetSiblingIndex ();
+
         //Set stat colors
         for (int i = 0; i < 5; i++)
         {
             //If stat up
             if(i == nd5 && nd5 != nm5)
             {
-                summaryScreen.transform.GetChild(2).GetChild(i+9).GetComponent<Text>().color = new Color(0.75f, 0, 0, 1);
+                summaryScreen.transform.GetChild(2).GetChild(i+childNumber).GetComponent<Text>().color = new Color(0.75f, 0, 0, 1);
             } //end if
             //If stat down
             else if(i == nm5 && nd5 != nm5)
             {
-                summaryScreen.transform.GetChild(2).GetChild(i+9).GetComponent<Text>().color = new Color(0, 0, 0.75f, 1);
+                summaryScreen.transform.GetChild(2).GetChild(i+childNumber).GetComponent<Text>().color = new Color(0, 0, 0.75f, 1);
             } //end else if
             //Otherwise black
             else
             {
-                summaryScreen.transform.GetChild(2).GetChild(i+9).GetComponent<Text>().color = Color.black;
+                summaryScreen.transform.GetChild(2).GetChild(i+childNumber).GetComponent<Text>().color = Color.black;
             } //end else
         } //end for
     } //end SetStatColor()
