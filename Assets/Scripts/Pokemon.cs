@@ -48,10 +48,10 @@ public class Pokemon
 	int[] moves;			//Move roster of pokemon
 	int[] firstMoves;		//The moves this pokemon first knew when obtained
     int[] ppReamaining;     //The amount of uses each move has left
+    List<int> ribbons;      //What ribbons have been obtained
 	bool hasPokerus;		//Whether pokemon has pokerus
 	bool isShiny;			//Whether pokemon is shiny
 	bool[] markings;		//What markings this pokemon has
-	bool[] ribbons;			//What ribbons have been obtained
 	string nickname;		//Nickname of pokemon
 	string OtName;			//Name of the original trainer
     DateTime obtainTime;    //When this pokemon was obtained at
@@ -235,7 +235,7 @@ public class Pokemon
 		firstMoves = new int[4];
         ppReamaining = new int[4];
 		markings = new bool[GameManager.instance.NumberOfMarkings];
-		ribbons = new bool[GameManager.instance.NumberOfRibbons];
+		ribbons = new List<int>();
 
 		for(int i = 0; i < 6; i++)
 		{
@@ -252,11 +252,6 @@ public class Pokemon
 		for(int i = 0; i < markings.Length; i++)
 		{
 			markings[i] = false;
-		} //end for
-
-		for(int i = 0; i < ribbons.Length; i++)
-		{
-			ribbons[i] = false;
 		} //end for
 
         //Initialize any values that can be given from data
@@ -759,14 +754,24 @@ public class Pokemon
      * Name: ChangeRibbons
      * Awards or removes a ribbon from the pokemon
      ***************************************/
-    public void ChangeRibbons(bool value, int index)
+    public void ChangeRibbons(int value, int index = -1)
     {
-        //Make sure index is valid
-        if (index > -1 && index < ribbons.Length)
+        //Add ribbon
+        if (index < 0)
+        {
+            ribbons.Add (value);
+        } //end if
+        //Remove ribbon
+        else if (value < 0)
+        {
+            ribbons.RemoveAt (index);
+        } //end else if
+        //Otherwise attempt to update
+        else if (value < GameManager.instance.NumberOfRibbons && index < ribbons.Count)
         {
             ribbons[index] = value;
-        } //end if
-    } //end ChangeRibbons(bool value, int index)
+        } //end else if
+    } //end ChangeRibbons(int value, int index = -1)
 
     /***************************************
      * Name: CalculateEXP
@@ -1523,18 +1528,18 @@ public class Pokemon
     /***************************************
      * Name: GetRibbon
      ***************************************/
-	public bool GetRibbon(int index)
+	public int GetRibbon(int index)
 	{
 		return ribbons [index];
 	} //end GetRibbon(int index)
 
     /***************************************
-     * Name: SetRibbon
+     * Name: GetRibbonCount
      ***************************************/
-	public void SetRibbon(int index, bool value)
-	{
-		ribbons [index] = value;
-	} //end SetRibbon(int index, bool value)
+    public int GetRibbonCount()
+    {
+        return ribbons.Count;
+    } //end GetRibbonCount()
 
     /***************************************
      * Name: Nickname

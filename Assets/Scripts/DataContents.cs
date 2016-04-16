@@ -29,6 +29,8 @@ public static class DataContents : System.Object
     public static Sprite[] statusSprites;           //Sprites for each status ailment
     public static Sprite[] typeSprites;             //Sprites for each type
     public static Sprite[] categorySprites;         //Sprites for each category of move
+    public static Sprite[] ribbonSprites;           //Sprites for each ribbon
+    public static Sprite[] badgeSprites;            //Sprites for each badge
 
     //Shorthand for main data path
     static string dataLocation;                     
@@ -90,6 +92,8 @@ public static class DataContents : System.Object
         statusSprites   = Resources.LoadAll<Sprite> ("Sprites/Icons/statuses");
         typeSprites     = Resources.LoadAll<Sprite> ("Sprites/Icons/pokedexTypes");
         categorySprites = Resources.LoadAll<Sprite> ("Sprites/Icons/category");
+        ribbonSprites   = Resources.LoadAll<Sprite> ("Sprites/Icons/ribbons");
+        badgeSprites    = Resources.LoadAll<Sprite> ("Sprites/Icons/Badges");
         return true;
     } //end InitDataContents()
 

@@ -2,10 +2,10 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\SceneManager.cs">
     <Files>
-      <File FileName="Assets\Scripts\SceneManager.cs" Line="1514" Column="75" />
-      <File FileName="Assets\Scripts\Pokemon.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\DataContents.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\GameManager.cs" Line="111" Column="39" />
+      <File FileName="Assets\Scripts\SceneManager.cs" Line="2327" Column="44" />
+      <File FileName="Assets\Scripts\Pokemon.cs" Line="1542" Column="27" />
+      <File FileName="Assets\Scripts\DataContents.cs" Line="95" Column="76" />
+      <File FileName="Assets\Scripts\GameManager.cs" Line="113" Column="21" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
