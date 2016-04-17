@@ -89,6 +89,7 @@ public class SceneManager : MonoBehaviour
     GameObject currentTeamSlot;     //The object that is currently highlighted on the team
     GameObject currentSwitchSlot;   //The object that is currently highlighted for switching to
     GameObject currentMoveSlot;     //The object that is currently highlighted for reading/moving
+    GameObject currentRibbonSlot;   //The object that is currently highlighted for reading
     int previousTeamSlot;           //The slot last highlighted
     int subMenuChoice;              //What choice is highlighted in the pokemon submenu
     int summaryChoice;              //What page is open on the summary screen
@@ -96,6 +97,8 @@ public class SceneManager : MonoBehaviour
     int detailsSize;                //Font size for move description
     int switchChoice;               //The pokemon or move chosen to switch with the selected
     int previousSwitchSlot;         //The slot last highlighted for switching to
+    int ribbonChoice;               //The ribbon currently shown
+    int previousRibbonChoice;       //The ribbon last highlighted for reading
     #endregion
 
     #region Methods
@@ -860,6 +863,7 @@ public class SceneManager : MonoBehaviour
                 if(!initialize)
                 {
                     //Fill in ribbon screen with correct data
+                    ribbonScreen.SetActive(true);
                     ribbonScreen.transform.FindChild("Name").GetComponent<Text>().text=
                         GameManager.instance.GetTrainer().Team[choiceNumber-1].Nickname;
                     ribbonScreen.transform.FindChild("Level").GetComponent<Text>().text=
@@ -877,24 +881,49 @@ public class SceneManager : MonoBehaviour
                         GameManager.instance.GetTrainer().Team[choiceNumber-1].GetMarkings();
                     ribbonScreen.transform.FindChild("Item").GetComponent<Text>().text=
                         DataContents.GetItemGameName(GameManager.instance.GetTrainer().Team[choiceNumber-1].Item);
+                    ribbonScreen.transform.FindChild("RibbonName").gameObject.SetActive(false);
+                    ribbonScreen.transform.FindChild("RibbonDescription").gameObject.SetActive(false);
 
-                    //Clear area and populate with pokemon ribbons
+                    //No ribbon selected yet
+                    previousRibbonChoice = -1;
+                    ribbonChoice = 0;
+
+                    //Set existing ribbons to clear
                     foreach(Transform child in ribbonScreen.transform.FindChild("RibbonRegion").transform)
                     {
-                        Destroy (child.gameObject);
+                        child.GetComponent<Image>().color = Color.clear;
                     } //end for
 
                     //Add ribbons
                     for(int i = 0; i < GameManager.instance.GetTrainer().Team[choiceNumber-1].GetRibbonCount();i++)
                     {
-                        GameObject newRibbon = Instantiate(selection);
-                        newRibbon.transform.SetParent(ribbonScreen.transform.FindChild("RibbonRegion"));
-                        newRibbon.GetComponent<Image>().sprite = DataContents.ribbonSprites[
-                            GameManager.instance.GetTrainer().Team[choiceNumber-1].GetRibbon(i)];
-                        newRibbon.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
-                        newRibbon.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0);
-                        newRibbon.SetActive(true);
-                        //newRibbon.GetComponent<Button>().onClick.AddListener();
+                        //If at least one ribbon exists, resize the selection box
+                        if(i == 0)
+                        {                            
+                            StartCoroutine("WaitForResize");
+                        } //end if
+
+                        //The ribbon already exists, just fill it in
+                        if(i < ribbonScreen.transform.FindChild("RibbonRegion").childCount)
+                        {
+                            GameObject newRibbon = ribbonScreen.transform.FindChild("RibbonRegion").GetChild(i).
+                                gameObject;
+                            newRibbon.GetComponent<Image>().color = Color.white;
+                            newRibbon.GetComponent<Image>().sprite = DataContents.ribbonSprites[
+                                GameManager.instance.GetTrainer().Team[choiceNumber-1].GetRibbon(i)];
+                        } //end if
+                        //Create new ribbon
+                        else
+                        {
+                            GameObject newRibbon = Instantiate(ribbonScreen.transform.FindChild("RibbonRegion").
+                                GetChild(0).gameObject);
+                            newRibbon.transform.SetParent(ribbonScreen.transform.FindChild("RibbonRegion"));
+                            newRibbon.GetComponent<Image>().sprite = DataContents.ribbonSprites[
+                                GameManager.instance.GetTrainer().Team[choiceNumber-1].GetRibbon(i)];
+                            newRibbon.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
+                            newRibbon.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0);
+                            newRibbon.SetActive(true);
+                        } //end else
                     } //end for
 
                     //Initialization is done
@@ -1661,6 +1690,44 @@ public class SceneManager : MonoBehaviour
     } //end SetMoveDetails(Pokemon teamMember, Transform moveScreen)
 
     /***************************************
+     * Name: ReadRibbon
+     * Sets ribbon details based on ribbon selection
+     ***************************************/
+    public void ReadRibbon()
+    {
+        //If text isn't displayed
+        if (ribbonChoice != previousRibbonChoice && selection.activeSelf)
+        {
+            //Activate the fields
+            ribbonScreen.transform.FindChild("RibbonName").gameObject.SetActive(true);
+            ribbonScreen.transform.FindChild("RibbonDescription").gameObject.SetActive(true);
+
+            //Position selection rectangle
+            selection.transform.position = Camera.main.WorldToScreenPoint(ribbonScreen.transform.
+                FindChild("RibbonRegion").GetChild(ribbonChoice).GetComponent<RectTransform>().position);
+
+            //Get the ribbon value at the index
+            int ribbonValue = GameManager.instance.GetTrainer().Team[choiceNumber-1].GetRibbon(ribbonChoice);
+
+            //Set the name and description
+            ribbonScreen.transform.FindChild("RibbonName").GetComponent<Text>().text = 
+                DataContents.ribbonData.GetRibbonName(ribbonChoice);
+            ribbonScreen.transform.FindChild("RibbonDescription").GetComponent<Text>().text = 
+                DataContents.ribbonData.GetRibbonDescription(ribbonChoice);
+
+            //Set the ribbon choice
+            previousRibbonChoice = ribbonChoice;
+        } //end if
+        //Otherwise hide the text
+        else
+        {
+            ribbonScreen.transform.FindChild("RibbonName").gameObject.SetActive(false);
+            ribbonScreen.transform.FindChild("RibbonDescription").gameObject.SetActive(false);
+            previousRibbonChoice = -1;
+        } //end else
+    } //end ReadRibbon()
+
+    /***************************************
      * Name: WaitForResize
      * Waits for choice menu to resize before 
      * setting selection dimensions
@@ -1668,13 +1735,27 @@ public class SceneManager : MonoBehaviour
     IEnumerator WaitForResize()
     {
         yield return new WaitForEndOfFrame ();
-        Vector3 scale = new Vector3(choices.GetComponent<RectTransform>().rect.width,
-                                    choices.GetComponent<RectTransform>().rect.height/
-                                    choices.transform.childCount, 0);
-        selection.GetComponent<RectTransform>().sizeDelta = scale;
-        selection.transform.position = choices.transform.GetChild(0).
-            GetComponent<RectTransform>().position;
-        selection.SetActive(true);
+        if (gameState == MainGame.POKEMONSUBMENU)
+        {
+            Vector3 scale = new Vector3 (choices.GetComponent<RectTransform> ().rect.width,
+                                        choices.GetComponent<RectTransform> ().rect.height /
+                choices.transform.childCount, 0);
+            selection.GetComponent<RectTransform> ().sizeDelta = scale;
+            selection.transform.position = choices.transform.GetChild (0).
+                GetComponent<RectTransform> ().position;
+            selection.SetActive (true);
+        } //end if
+        else if (gameState == MainGame.POKEMONRIBBONS)
+        {
+            Vector3 scale = new Vector3(ribbonScreen.transform.FindChild("RibbonRegion").GetChild(0).
+                                        GetComponent<RectTransform>().rect.width,
+                                        ribbonScreen.transform.FindChild("RibbonRegion").GetChild(0).
+                                        GetComponent<RectTransform>().rect.height
+                                        , 0);
+            selection.GetComponent<RectTransform>().sizeDelta = scale;
+            selection.transform.position = Camera.main.WorldToScreenPoint(ribbonScreen.transform.
+                FindChild("RibbonRegion").GetChild(0).GetComponent<RectTransform>().position);
+        } //end else if
     } //end WaitForResize
 
     /***************************************
@@ -1792,6 +1873,26 @@ public class SceneManager : MonoBehaviour
                         //Set currentSwitchSlot
                         currentSwitchSlot = playerTeam.transform.FindChild("Pokemon"+switchChoice).gameObject;
                     } //end else if Pokemon Switch on Continue Game -> Switch
+
+                    //Pokemon Ribbons on Continue Game -> Ribbons
+                    else if(gameState == MainGame.POKEMONRIBBONS)
+                    {
+                        //Decrease (higher slots are lower childs)
+                        ribbonChoice--;
+                        
+                        //Clamp between 0 and ribbon length
+                        if(ribbonChoice < 0)
+                        {
+                            ribbonChoice = GameManager.instance.GetTrainer().Team[choiceNumber-1].GetRibbonCount()-1;
+                        } //end if
+                        
+                        //Set currentRibbonSlot
+                        currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").
+                            GetChild(ribbonChoice).gameObject;
+
+                        //Read ribbon
+                        ReadRibbon();
+                    } //end else if Pokemon Ribbons on Continue Game -> Ribbons
                     break;
                 } //end case OverallState CONTINUEGAME
             } //end scene switch
@@ -1889,6 +1990,26 @@ public class SceneManager : MonoBehaviour
                         //Set currentSwitchSlot
                         currentSwitchSlot = playerTeam.transform.FindChild("Pokemon"+switchChoice).gameObject;
                     } //end else if Pokemon Switch on Continue Game -> Switch
+
+                    //Pokemon Ribbons on Continue Game -> Ribbons
+                    else if(gameState == MainGame.POKEMONRIBBONS)
+                    {
+                        //Increase (lower slots are higher childs)
+                        ribbonChoice++;
+                        
+                        //Clamp between 0 and ribbon length
+                        if(ribbonChoice >= GameManager.instance.GetTrainer().Team[choiceNumber-1].GetRibbonCount())
+                        {
+                            ribbonChoice = 0;
+                        } //end if
+                        
+                        //Set currentRibbonSlot
+                        currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").
+                            GetChild(ribbonChoice).gameObject;
+
+                        //Read ribbon
+                        ReadRibbon();
+                    } //end else if Pokemon Ribbons on Continue Game -> Ribbons
                     break;
                 } // end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -2105,7 +2226,7 @@ public class SceneManager : MonoBehaviour
 
                         //Reload ribbons
                         initialize = false;
-                    } //end else if
+                    } //end else if Pokemon Ribbons on Continue Game -> Ribbons
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -2325,7 +2446,7 @@ public class SceneManager : MonoBehaviour
 
                         //Reload ribbons
                         initialize = false;
-                    } //end else if
+                    } //end else if Pokemon Ribbons in Continue Game -> Ribbons
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -2513,6 +2634,25 @@ public class SceneManager : MonoBehaviour
                         currentSwitchSlot = summaryScreen.transform.GetChild(5).
                             FindChild("Move"+(switchChoice+1)).gameObject;
                     } //end else if Move Switch on Continue Game -> Summary -> Move Details
+
+                    //Pokemon Ribbons on Continue Game -> Ribbons
+                    else if(gameState  == MainGame.POKEMONRIBBONS &&
+                            Input.mousePosition.y < Camera.main.WorldToScreenPoint(currentRibbonSlot.transform.
+                            position).y - currentRibbonSlot.GetComponent<RectTransform>().rect.height/2)
+                    {
+                        //If next slot is null, don't move
+                        if(ribbonChoice+4 < GameManager.instance.GetTrainer().Team[choiceNumber-1].GetRibbonCount())
+                        {
+                            ribbonChoice += 4;
+
+                            //Read ribbon
+                            ReadRibbon();
+                        } //end if
+                        
+                        //Set currentRibbonSlot
+                        currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").
+                            GetChild(ribbonChoice).gameObject;
+                    } //end else if Pokemon Ribbons on Continue Game -> Ribbons
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -2691,6 +2831,25 @@ public class SceneManager : MonoBehaviour
                                 FindChild("Move"+(switchChoice+1)).gameObject;
                         } //end if
                     } //end else if Move Switch on Continue Game -> Summary -> Move Details
+
+                    //Pokemon Ribbons on Continue Game -> Ribbons
+                    else if(gameState  == MainGame.POKEMONRIBBONS &&
+                            Input.mousePosition.y > Camera.main.WorldToScreenPoint(currentRibbonSlot.transform.
+                            position).y + currentRibbonSlot.GetComponent<RectTransform>().rect.height/2)
+                    {
+                        //If next slot is null, don't move
+                        if(ribbonChoice-4 > -1)
+                        {
+                            ribbonChoice -= 4;
+
+                            //Read ribbon
+                            ReadRibbon();
+                        } //end if
+                        
+                        //Set currentRibbonSlot
+                        currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").
+                            GetChild(ribbonChoice).gameObject;
+                    } //end else if Pokemon Ribbons on Continue Game -> Ribbons
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -2750,6 +2909,25 @@ public class SceneManager : MonoBehaviour
                             currentSwitchSlot = playerTeam.transform.FindChild("Pokemon"+switchChoice).gameObject;
                         } //end if   
                     } //end if Pokemon Switch on Continue Game -> Switch
+
+                    //Pokemon Ribbons on Continue Game -> Ribbons
+                    else if(gameState  == MainGame.POKEMONRIBBONS &&
+                            Input.mousePosition.x < Camera.main.WorldToScreenPoint(currentRibbonSlot.transform.
+                            position).x - currentRibbonSlot.GetComponent<RectTransform>().rect.width/2)
+                    {
+                        //If next slot is null, don't move
+                        if(ribbonChoice-1 > -1)
+                        {
+                            ribbonChoice--;
+
+                            //Read ribbon
+                            ReadRibbon();
+                        } //end if
+                        
+                        //Set currentRibbonSlot
+                        currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").
+                            GetChild(ribbonChoice).gameObject;
+                    } //end else if Pokemon Ribbons on Continue Game -> Ribbons
                     break;
                 } //end OverallGame CONTINUEGAME
             } //end scene switch
@@ -2810,6 +2988,25 @@ public class SceneManager : MonoBehaviour
                             currentSwitchSlot = playerTeam.transform.FindChild("Pokemon"+switchChoice).gameObject;
                         } //end if   
                     } //end if Pokemon Switch on Continue Game -> Switch
+
+                    //Pokemon Ribbons on Continue Game -> Ribbons
+                    else if(gameState  == MainGame.POKEMONRIBBONS &&
+                            Input.mousePosition.x > Camera.main.WorldToScreenPoint(currentRibbonSlot.transform.
+                            position).x + currentRibbonSlot.GetComponent<RectTransform>().rect.width/2)
+                    {
+                        //If next slot is null, don't move
+                        if(ribbonChoice + 1 < GameManager.instance.GetTrainer().Team[choiceNumber-1].GetRibbonCount())
+                        {
+                            ribbonChoice++;
+
+                            //Read Ribbon
+                            ReadRibbon();
+                        } //end if
+                        
+                        //Set currentRibbonSlot
+                        currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").
+                            GetChild(ribbonChoice).gameObject;
+                    } //end else if Pokemon Ribbons on Continue Game -> Ribbons
                     break;
                 } //end OverallGame CONTINUEGAME
             } //end scene switch
@@ -2994,7 +3191,8 @@ public class SceneManager : MonoBehaviour
                                 initialize = false;
                                 choices.SetActive(false);
                                 selection.SetActive(false);
-                                ribbonScreen.SetActive(true);
+                                currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").
+                                    GetChild(0).gameObject;
                                 gameState = MainGame.POKEMONRIBBONS;
                                 break;
                             } //end case 3 (Ribbons)
@@ -3094,6 +3292,17 @@ public class SceneManager : MonoBehaviour
                         currentMoveSlot.GetComponent<Image>().color = Color.clear;
                         gameState = MainGame.POKEMONSUMMARY;
                     } //end else if Move Switch on Continue Game -> Summary -> Move Details
+
+                    //Pokemon Ribbons on Continue Game -> Ribbons
+                    else if(gameState  == MainGame.POKEMONRIBBONS)
+                    {
+                        //Make sure there are ribbons to be read
+                        if(GameManager.instance.GetTrainer().Team[choiceNumber-1].GetRibbonCount() > 0)
+                        {
+                            selection.SetActive(!selection.activeSelf);
+                            ReadRibbon();
+                        } //end if
+                    } //end else if Pokemon Ribbons on Continue Game -> Ribbons
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -3172,6 +3381,9 @@ public class SceneManager : MonoBehaviour
                     {
                         //Deactivate ribbons
                         ribbonScreen.SetActive(false);
+                        selection.SetActive(false);
+                        ribbonChoice = 0;
+                        previousRibbonChoice = -1;
                         
                         //Enable buttons again
                         playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Button>().
@@ -3414,7 +3626,8 @@ public class SceneManager : MonoBehaviour
                                 initialize = false;
                                 choices.SetActive(false);
                                 selection.SetActive(false);
-                                ribbonScreen.SetActive(true);
+                                currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").
+                                    GetChild(0).gameObject;
                                 gameState = MainGame.POKEMONRIBBONS;
                                 break;
                             } //end case 3 (Ribbons)
@@ -3513,6 +3726,17 @@ public class SceneManager : MonoBehaviour
                         currentMoveSlot.GetComponent<Image>().color = Color.clear;
                         gameState = MainGame.POKEMONSUMMARY;
                     } //end else if Move Switch on Continue Game -> Summary -> Move Details
+
+                    //Pokemon Ribbons on Continue Game -> Ribbons
+                    else if(gameState  == MainGame.POKEMONRIBBONS)
+                    {
+                        //Make sure there are ribbons to be read
+                        if(GameManager.instance.GetTrainer().Team[choiceNumber-1].GetRibbonCount() > 0)
+                        {
+                            selection.SetActive(!selection.activeSelf);
+                            ReadRibbon();
+                        } //end if
+                    } //end else if Pokemon Ribbons on Continue Game -> Ribbons
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -3591,6 +3815,9 @@ public class SceneManager : MonoBehaviour
                     {
                         //Deactivate ribbons
                         ribbonScreen.SetActive(false);
+                        selection.SetActive(false);
+                        ribbonChoice = 0;
+                        previousRibbonChoice = -1;
                         
                         //Enable buttons again
                         playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Button>().

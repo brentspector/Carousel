@@ -19,6 +19,7 @@ public static class DataContents : System.Object
 {
     #region Variables
     public static ExperienceTable experienceTable;  //Holds experience values for growth rates
+    public static RibbonData ribbonData;            //Holds names and description data for ribbons
     public static char[] markingCharacters;         //Holds the characters you can mark with
     static int speciesCount;                        //Number of entries in Pokemon table
     static int moveCount;                           //Number of entries in Move table
@@ -87,7 +88,10 @@ public static class DataContents : System.Object
 
         //Create an experience table
         experienceTable = new ExperienceTable();
-                
+
+        //Create ribbon data
+        ribbonData = new RibbonData ();
+
         //Load sprites
         statusSprites   = Resources.LoadAll<Sprite> ("Sprites/Icons/statuses");
         typeSprites     = Resources.LoadAll<Sprite> ("Sprites/Icons/pokedexTypes");
@@ -139,7 +143,7 @@ public static class DataContents : System.Object
      ***************************************/
     public static int GetMoveID(string moveName)
     {
-        //No move found yet
+        //Search moves for move location
         dbCommand.CommandText = "SELECT rowid FROM Moves WHERE internalName=@nm";
         dbCommand.Parameters.Add(new SqliteParameter("@nm", moveName));
         dbCommand.Prepare ();
@@ -557,6 +561,93 @@ public class ExperienceTable
         return level;
     } //end GetLevel(string experienceRate, int experience)
 } //end ExperienceTable class
+
+/***************************************************************************************** 
+ * Class: RibbonData
+ * Summary: Lists the name and description of each ribbon
+ *****************************************************************************************/ 
+[Serializable]
+public class RibbonData
+{
+    /***************************************
+     * Name: RibbonNames
+     * An array of ribbon names
+     ***************************************/
+    string[] RibbonNames =
+    {
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon"
+    }; //end string[] RibbonNames
+
+    /***************************************
+     * Name: RibbonDescriptions
+     * An array of ribbon descriptions
+     ***************************************/
+    string[] RibbonDescriptions =
+    {
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+    }; //end string[] RibbonDescriptions
+
+    /***************************************
+     * Name: GetRibbonName
+     * Returns the name for the requested ribbon
+     ***************************************/
+    public string GetRibbonName(int ribbonLocation)
+    {
+        if (ribbonLocation > -1 && ribbonLocation < RibbonNames.Length)
+        {
+            return RibbonNames[ribbonLocation];
+        } // end if
+        else
+        {
+            GameManager.instance.LogErrorMessage("Error finding " + ribbonLocation + " in ribbon names");
+            return "N/A";
+        } //end else
+    } //end GetRibbonName(int ribbonLocation)
+
+    /***************************************
+     * Name: GetRibbonDescription
+     * Returns the description for the requested ribbon
+     ***************************************/
+    public string GetRibbonDescription(int ribbonLocation)
+    {
+        if (ribbonLocation > -1 && ribbonLocation < RibbonDescriptions.Length)
+        {
+            return RibbonDescriptions[ribbonLocation];
+        } // end if
+        else
+        {
+            GameManager.instance.LogErrorMessage("Error finding " + ribbonLocation + " in ribbon descriptions");
+            return "N/A";
+        } //end else
+    } //end GetRibbonDescription(int ribbonLocation)
+} //end RibbonData class
 
 /***************************************************************************************** 
  * Enum:    Natures
