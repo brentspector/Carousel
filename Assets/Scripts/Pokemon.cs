@@ -28,8 +28,8 @@ public class Pokemon
 	int[] EV;				//Effort values array
 
 	//Information
+    uint personalID;        //Defines a specific pokemon
 	int natSpecies;			//National species number
-	int personalID;			//Defines a specific pokemon
 	int trainerID;			//ID of trainer who obtained it first
 	int currentEXP;			//Current EXP of pokemon
     int remainingEXP;       //The amount of EXP remaining to next level
@@ -39,6 +39,7 @@ public class Pokemon
 	int statusCount;		//Turns until awaken/turns of toxic
 	int ballUsed;			//What pokeball this pokemon is in
 	int obtainType;			//How this pokemon was obtained
+    int obtainFrom;         //Where this pokemon was obtained from
 	int obtainLevel;		//What level the pokemon was obtained at
 	int ability;			//What ability this pokemon is currently on
 	int gender;				//What gender the pokemon is
@@ -46,12 +47,12 @@ public class Pokemon
 	int happiness;			//Happiness level of pokemon
 	int[] moves;			//Move roster of pokemon
 	int[] firstMoves;		//The moves this pokemon first knew when obtained
+    int[] ppReamaining;     //The amount of uses each move has left
+    List<int> ribbons;      //What ribbons have been obtained
 	bool hasPokerus;		//Whether pokemon has pokerus
 	bool isShiny;			//Whether pokemon is shiny
 	bool[] markings;		//What markings this pokemon has
-	bool[] ribbons;			//What ribbons have been obtained
 	string nickname;		//Nickname of pokemon
-	string obtainFrom;		//Where this pokemon was obtained from
 	string OtName;			//Name of the original trainer
     DateTime obtainTime;    //When this pokemon was obtained at
     #endregion
@@ -62,8 +63,8 @@ public class Pokemon
      * Contructor for pokemon encounters
      ***************************************/
 	public Pokemon(int species = 0, int tID = 0, int level = 5, int item = 0, int ball = 0, 
-	               int oType = 0, int oLevel = 5, int ability = 0, int gender = 0,
-	               int nature = 0, int happy = 0, bool pokerus = false, bool shiny = false)
+	               int oType = 6, int oWhere = 6, int oLevel = 5, int ability = -1, int gender = -1,
+	               int nature = -1, int happy = 70, bool pokerus = false, bool shiny = false)
 	{
 		//Set data fields
 		if(species == 0)
@@ -74,8 +75,144 @@ public class Pokemon
 		{
 			natSpecies = species;
 		} //end else
+        if (tID == 0)
+        {
+            trainerID = GameManager.instance.GetTrainer().PlayerID;
+        } //end if
+        else
+        {
+            trainerID = tID;
+        } //end else
+        if (gender == -1)
+        {
+            string genderRate = DataContents.ExecuteSQL<string>("SELECT genderRate FROM Pokemon WHERE rowid=" +
+                                                                natSpecies);
+            switch(genderRate)
+            {
+                case "AlwaysMale":
+                {
+                    Gender = 0;
+                    break;
+                } //end case AlwaysMale
+                case "FemaleOneEighth":
+                {
+                    int randomNum = Random.Range(1,200);
+                    if(randomNum < 26)
+                    {
+                        Gender = 1;
+                    } //end if
+                    else
+                    {
+                        Gender = 0;
+                    } //end else
+                    break;
+                } //end case FemaleOneEighth
+                case "Female25Percent":
+                {
+                    int randomNum = Random.Range(1,200);
+                    if(randomNum < 51)
+                    {
+                        Gender = 1;
+                    } //end if
+                    else
+                    {
+                        Gender = 0;
+                    } //end else
+                    break;
+                } //end case Female25Percent
+                case "Female50Percent":
+                {
+                    int randomNum = Random.Range(1,200);
+                    if(randomNum < 101)
+                    {
+                        Gender = 1;
+                    } //end if
+                    else
+                    {
+                        Gender = 0;
+                    } //end else
+                    break;
+                } //end case Female50Percent
+                case "Female75Percent":
+                {
+                    int randomNum = Random.Range(1,200);
+                    if(randomNum < 151)
+                    {
+                        Gender = 1;
+                    } //end if
+                    else
+                    {
+                        Gender = 0;
+                    } //end else
+                    break;
+                } //end case Female75Percent
+                case "FemaleSevenEighths":
+                {
+                    int randomNum = Random.Range(1,200);
+                    if(randomNum < 176)
+                    {
+                        Gender = 1;
+                    } //end if
+                    else
+                    {
+                        Gender = 0;
+                    } //end else
+                    break;
+                } //end case FemaleSevenEighths
+                case "AlwaysFemale":
+                {
+                    Gender = 1;
+                    break;
+                } //end case AlwaysFemale
+                case "Genderless":
+                {
+                    Gender = 2;
+                    break;
+                } //end case Genderless
+                default:
+                {
+                    GameManager.instance.LogErrorMessage("Default for gender reached for " + natSpecies + " " 
+                                                         + genderRate);
+                    Gender = 0;
+                    break;
+                } //end case default
+            } //end switch
+        } //end if
+        else
+        {
+            Gender = gender;
+        } //end else
+        if (nature == -1)
+        {
+            Nature = Random.Range(0,(int)Natures.COUNT-1);
+        } //end if
+        else
+        {
+            Nature = nature;
+        } //end else
+        if (ability == -1)
+        {
+            //Choose a number from 0 to 2
+            int temp = Random.Range (0, 2);
+
+            //While the abilty doesn't exist, pick another number
+            while(!CheckAbility(temp))
+            {
+                temp = Random.Range (0, 2);
+            } //end while
+        } //end if
+        else
+        {
+            //Make sure the requested ability works, or set to first ability (guaranteed to exist)
+            Ability = CheckAbility(ability) ? ability : 0;
+        } //end else
+
+        //Give pokemon a random ID
+        personalID = (uint)UnityEngine.Random.Range (0,255);
+        personalID |= (uint)UnityEngine.Random.Range (0,255) << 8;
+        personalID |= (uint)UnityEngine.Random.Range (0,255) << 16;
+
         totalEV = 0;
-		trainerID = tID;
 		currentEXP = CalculateEXP (level);
         remainingEXP = CalculateRemainingEXP (level);
         currentLevel = level;
@@ -83,14 +220,11 @@ public class Pokemon
 		ballUsed = ball;
 		obtainType = oType;
 		obtainLevel = oLevel;
-		Ability = ability;
-		Gender = gender;
-		Nature = nature;
+        obtainFrom = oWhere;
 		happiness = happy;
 		hasPokerus = pokerus;
 		isShiny = shiny;
         nickname = DataContents.ExecuteSQL<string> ("SELECT name FROM Pokemon WHERE rowid=" + natSpecies);
-        obtainFrom = "Shop";
         OtName = GameManager.instance.GetTrainer().PlayerName;
         obtainTime = DateTime.Now;
 
@@ -99,8 +233,9 @@ public class Pokemon
 		EV = new int[6];
 		moves = new int[4];
 		firstMoves = new int[4];
+        ppReamaining = new int[4];
 		markings = new bool[GameManager.instance.NumberOfMarkings];
-		ribbons = new bool[GameManager.instance.NumberOfRibbons];
+		ribbons = new List<int>();
 
 		for(int i = 0; i < 6; i++)
 		{
@@ -117,11 +252,6 @@ public class Pokemon
 		for(int i = 0; i < markings.Length; i++)
 		{
 			markings[i] = false;
-		} //end for
-
-		for(int i = 0; i < ribbons.Length; i++)
-		{
-			ribbons[i] = false;
 		} //end for
 
         //Initialize any values that can be given from data
@@ -513,6 +643,8 @@ public class Pokemon
         if (index > -1 && index < 4)
         {
             moves[index] = values[0];
+            ppReamaining[index] = DataContents.ExecuteSQL<int> 
+                ("SELECT totalPP FROM Moves WHERE rowid=" + moves[index]);
         } //end if
         //No valid index given
         else
@@ -520,6 +652,8 @@ public class Pokemon
             for(int i = 0; i < values.Length; i++)
             {
                 moves[i] = values[i];
+                ppReamaining[i] = DataContents.ExecuteSQL<int> 
+                    ("SELECT totalPP FROM Moves WHERE rowid=" + moves[i]);
             } //end for
         } //end else
     } //end ChangeMoves(int[] values, int index = -1)
@@ -536,7 +670,7 @@ public class Pokemon
         //Fill in missing values
         if (values.Length < 4)
         {
-            //Create new 6 int long array
+            //Create new 4 int long array
             int[] fixedValues = new int[4]; 
             
             //Fill in fixedValues with given values
@@ -568,6 +702,8 @@ public class Pokemon
                 //Set the move to the given value
                 moves[i] = values[i];
                 firstMoves[i] = values[i];
+                ppReamaining[i] = DataContents.ExecuteSQL<int> 
+                    ("SELECT totalPP FROM Moves WHERE rowid=" + moves[i]);
             } //end if
             //If it equals -1, give level up move
             else
@@ -586,6 +722,8 @@ public class Pokemon
                     {
                         moves[j] = moveID;
                         firstMoves[j] = moveID;
+                        ppReamaining[j] = DataContents.ExecuteSQL<int> 
+                            ("SELECT totalPP FROM Moves WHERE rowid=" + moves[j]);
                     } //end if
                     else
                     {
@@ -616,14 +754,24 @@ public class Pokemon
      * Name: ChangeRibbons
      * Awards or removes a ribbon from the pokemon
      ***************************************/
-    public void ChangeRibbons(bool value, int index)
+    public void ChangeRibbons(int value, int index = -1)
     {
-        //Make sure index is valid
-        if (index > -1 && index < ribbons.Length)
+        //Add ribbon
+        if (index < 0)
+        {
+            ribbons.Add (value);
+        } //end if
+        //Remove ribbon
+        else if (value < 0)
+        {
+            ribbons.RemoveAt (index);
+        } //end else if
+        //Otherwise attempt to update
+        else if (value < GameManager.instance.NumberOfRibbons && index < ribbons.Count)
         {
             ribbons[index] = value;
-        } //end if
-    } //end ChangeRibbons(bool value, int index)
+        } //end else if
+    } //end ChangeRibbons(int value, int index = -1)
 
     /***************************************
      * Name: CalculateEXP
@@ -721,6 +869,20 @@ public class Pokemon
     } //end CalculateStat
 
     /***************************************
+     * Name: SwitchMoves
+     * Switches position of two moves
+     ***************************************/
+    public void SwitchMoves(int move1, int move2)
+    {
+        int temp = moves [move1];
+        moves [move1] = moves [move2];
+        moves [move2] = temp;
+        temp = ppReamaining [move1];
+        ppReamaining [move1] = ppReamaining [move2];
+        ppReamaining [move2] = temp;
+    } //end SwitchMoves(int move1, int move2)
+
+    /***************************************
      * Name: FaintPokemon
      * Sets HP to 0 and status to Faint
      ***************************************/
@@ -729,6 +891,128 @@ public class Pokemon
         currentHP = 0;
         status = 1;
     } //end FaintPokemon
+
+    /***************************************
+     * Name: CheckAbility
+     * Verifies the ability exists
+     ***************************************/
+    public bool CheckAbility(int newAbility)
+    {
+        //Check if pokemon has a second ability
+        if(newAbility == 1)
+        {
+            if(string.IsNullOrEmpty(DataContents.ExecuteSQL<string>
+                                    ("SELECT ability2 FROM Pokemon WHERE rowid=" + natSpecies)))
+            {
+                return false;
+            } //end if
+        } //end if
+        
+        //Check if pokemon has a hidden ability
+        else if(newAbility == 2)
+        {
+            if(string.IsNullOrEmpty(DataContents.ExecuteSQL<string>
+                                    ("SELECT hiddenAbility FROM Pokemon WHERE rowid=" + natSpecies)))
+            {
+                return false;
+            } //end if
+        } //end else if
+
+        //Passed the check
+        return true;
+    } //end CheckAbility(int ability)  
+
+    /***************************************
+     * Name: GetAbilityName
+     * Returns ability name
+     ***************************************/
+    public string GetAbilityName()
+    {
+        switch (ability)
+        {
+            case 0:
+            {
+                string internalName = DataContents.ExecuteSQL<string>
+                    ("SELECT ability1 FROM Pokemon WHERE rowid=" + natSpecies);
+                return DataContents.ExecuteSQL<string>
+                    ("SELECT gameName FROM Abilities WHERE internalName='" + internalName + "'");
+            } //end case 0
+            case 1:
+            {
+                string internalName = DataContents.ExecuteSQL<string>
+                    ("SELECT ability2 FROM Pokemon WHERE rowid=" + natSpecies);
+                return DataContents.ExecuteSQL<string>
+                    ("SELECT gameName FROM Abilities WHERE internalName='" + internalName + "'");
+            } //end case 1
+            case 2:
+            {
+                string internalName = DataContents.ExecuteSQL<string>
+                    ("SELECT hiddenAbility FROM Pokemon WHERE rowid=" + natSpecies);
+                return DataContents.ExecuteSQL<string>
+                    ("SELECT gameName FROM Abilities WHERE internalName='" + internalName + "'");
+            } //end case 2
+            default:
+            {
+                return "N/A";
+            } //end default
+        } //end switch
+    } //end GetAbilityName
+
+    /***************************************
+     * Name: GetAbilityDescription
+     * Returns ability description
+     ***************************************/
+    public string GetAbilityDescription()
+    {
+        switch (ability)
+        {
+            case 0:
+            {
+                string internalName = DataContents.ExecuteSQL<string>
+                    ("SELECT ability1 FROM Pokemon WHERE rowid=" + natSpecies);
+                return DataContents.ExecuteSQL<string>
+                    ("SELECT description FROM Abilities WHERE internalName='" + internalName + "'");
+            } //end case 0
+            case 1:
+            {
+                string internalName = DataContents.ExecuteSQL<string>
+                    ("SELECT ability2 FROM Pokemon WHERE rowid=" + natSpecies);
+                return DataContents.ExecuteSQL<string>
+                    ("SELECT description FROM Abilities WHERE internalName='" + internalName + "'");
+            } //end case 1
+            case 2:
+            {
+                string internalName = DataContents.ExecuteSQL<string>
+                    ("SELECT hiddenAbility FROM Pokemon WHERE rowid=" + natSpecies);
+                return DataContents.ExecuteSQL<string>
+                    ("SELECT description FROM Abilities WHERE internalName='" + internalName + "'");
+            } //end case 2
+            default:
+            {
+                return "N/A";
+            } //end default
+        } //end switch
+    } //end GetAbilityDescription
+
+    /***************************************
+     * Name: GetMarkings
+     * Returns string of colored markings
+     ***************************************/
+    public string GetMarkings()
+    {
+        //String of markings that have been colored
+        string coloredMarkings = "";
+
+        //Loop through markings and add to string
+        for(int i = 0; i < GameManager.instance.NumberOfMarkings; i++)
+        {
+            coloredMarkings += markings[i] ? 
+                "<color=white>" + DataContents.markingCharacters[i].ToString() + "</color>" :
+                "<color=grey>" + DataContents.markingCharacters[i].ToString() + "</color>"; 
+        } //end for
+
+        return coloredMarkings;
+    } //end GetMarkings
 	#region Accessors
 	//Stats
     /***************************************
@@ -906,11 +1190,11 @@ public class Pokemon
 	{
 		get
 		{
-			return personalID;
+			return (int)personalID;
 		} //end get
 		set
 		{
-			personalID = value;
+			personalID = (uint)value;
 		} //end set
 	} //end PersonalID
 
@@ -1048,6 +1332,21 @@ public class Pokemon
 			obtainType = value;
 		} //end set
 	} //end ObtainType
+    
+    /***************************************
+     * Name: ObtainFrom
+     ***************************************/
+    public int ObtainFrom
+    {
+        get
+        {
+            return obtainFrom;
+        } //end get
+        set
+        {
+            obtainFrom = value;
+        } //end set
+    } //end ObtainFrom
 
     /***************************************
      * Name: ObtainLevel
@@ -1137,7 +1436,7 @@ public class Pokemon
      ***************************************/
     public int GetMoveCount()
     {
-        return moves.Length;
+        return moves.Count(x => x >= 0);
     } //end GetMoveCount
 
     /***************************************
@@ -1163,6 +1462,22 @@ public class Pokemon
 	{
 		firstMoves [index] = value;
 	} //end SetFirstMove(int index, int value)
+
+    /***************************************
+     * Name: GetMovePP
+     ***************************************/
+    public int GetMovePP(int index)
+    {
+        return ppReamaining [index];
+    } //end GetMovePP(int index)
+    
+    /***************************************
+     * Name: SetMovePP
+     ***************************************/
+    public void SetMovePP(int index, int value)
+    {
+        ppReamaining [index] = value;
+    } //end SetMovePP(int index, int value)
 
     /***************************************
      * Name: HasPokerus
@@ -1213,18 +1528,18 @@ public class Pokemon
     /***************************************
      * Name: GetRibbon
      ***************************************/
-	public bool GetRibbon(int index)
+	public int GetRibbon(int index)
 	{
 		return ribbons [index];
 	} //end GetRibbon(int index)
 
     /***************************************
-     * Name: SetRibbon
+     * Name: GetRibbonCount
      ***************************************/
-	public void SetRibbon(int index, bool value)
-	{
-		ribbons [index] = value;
-	} //end SetRibbon(int index, bool value)
+    public int GetRibbonCount()
+    {
+        return ribbons.Count;
+    } //end GetRibbonCount()
 
     /***************************************
      * Name: Nickname
@@ -1240,21 +1555,6 @@ public class Pokemon
 			nickname = value;
 		} //end set
 	} //end Nickname
-
-    /***************************************
-     * Name: ObtainFrom
-     ***************************************/
-	public string ObtainFrom
-	{
-		get
-		{
-			return obtainFrom;
-		} //end get
-		set
-		{
-			obtainFrom = value;
-		} //end set
-	} //end ObtainFrom
 
     /***************************************
      * Name: OTName

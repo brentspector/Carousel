@@ -88,6 +88,51 @@ public class ButtonFunctions : MonoBehaviour
     } //end TrainerCard
 
     /***************************************
+     * Name: Info
+     * Brings up the Info summary screen
+     ***************************************/ 
+    public void Info()
+    {
+        GameManager.instance.SummaryChange(0);
+    } //end Info
+
+    /***************************************
+     * Name: Memo
+     * Brings up the Memo summary screen
+     ***************************************/ 
+    public void Memo()
+    {
+        GameManager.instance.SummaryChange(1);
+    } //end Memo
+
+    /***************************************
+     * Name: Stats
+     * Brings up the Stats summary screen
+     ***************************************/ 
+    public void Stats()
+    {
+        GameManager.instance.SummaryChange(2);
+    } //end Stats
+
+    /***************************************
+     * Name: EVIV
+     * Brings up the EVIV summary screen
+     ***************************************/ 
+    public void EVIV()
+    {
+        GameManager.instance.SummaryChange(3);
+    } //end EVIV
+
+    /***************************************
+     * Name: Moves
+     * Brings up the Moves summary screen
+     ***************************************/ 
+    public void Moves()
+    {
+        GameManager.instance.SummaryChange(4);
+    } //end Moves
+
+    /***************************************
      * Name: Persist
      * Persists the game
      ***************************************/ 

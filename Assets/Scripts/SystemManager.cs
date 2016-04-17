@@ -334,16 +334,7 @@ public class SystemManager : MonoBehaviour
 		} //end if
 		else
 		{
-            pPlayer = new Trainer();
-            pPlayer.InitPC();
-            pPlayer.Version = GameManager.instance.VersionNumber;
-            pPlayer.BackUps = 0;
-            pPlayer.Team = new List<Pokemon>();
-			pPlayer.PlayerName = "-";
-			pPlayer.PlayerBadges = 0;
-			pPlayer.HoursPlayed = 0;
-			pPlayer.MinutesPlayed = 0;
-			pPlayer.SecondsPlayed = 0;
+            pPlayer = new Trainer();            
 			return false;
 		} //end else
 	} //end GetPersist

@@ -109,6 +109,8 @@ public class GameManager : MonoBehaviour
 #if UNITY_EDITOR
                     //Debug mode (development in the editor) commands go here
                     sysm.GetPersist();
+                    //sysm.PlayerTrainer.EmptyTeam();
+                    //sysm.PlayerTrainer.RandomTeam();
                     sysm.Persist();
 
 #else
@@ -199,8 +201,12 @@ public class GameManager : MonoBehaviour
     {
         if (Application.loadedLevelName == "StartMenu")
         {
-            scenes.SetCheckpoint(5);
+            scenes.SetCheckpoint (5);
         }  //end if
+        else if (Application.loadedLevelName == "MainGame")
+        {
+            scenes.ReadRibbon();
+        } //end else if
     } //end ProcessSelection
 
     /***************************************
@@ -265,7 +271,16 @@ public class GameManager : MonoBehaviour
     {
         scenes.SetGameState (SceneManager.MainGame.TRAINERCARD);
     } //end TrainerCard
-	#endregion
+
+    /***************************************
+     * Name: SummaryChange
+     * Brings up the requested summary screen
+     ***************************************/ 
+    public void SummaryChange(int summaryPage)
+    {
+        scenes.SetSummaryPage (summaryPage);
+    } //end SummaryChange(int summaryPage)
+    #endregion
 
 	//System Manager functions
 	#region SystemManager

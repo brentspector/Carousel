@@ -19,13 +19,19 @@ public static class DataContents : System.Object
 {
     #region Variables
     public static ExperienceTable experienceTable;  //Holds experience values for growth rates
+    public static RibbonData ribbonData;            //Holds names and description data for ribbons
+    public static char[] markingCharacters;         //Holds the characters you can mark with
     static int speciesCount;                        //Number of entries in Pokemon table
     static int moveCount;                           //Number of entries in Move table
     static int itemCount;                           //Number of entries in Items table
+    static int abilityCount;                        //Number of entries in Abilities table
 
     //Sprite Arrays
     public static Sprite[] statusSprites;           //Sprites for each status ailment
     public static Sprite[] typeSprites;             //Sprites for each type
+    public static Sprite[] categorySprites;         //Sprites for each category of move
+    public static Sprite[] ribbonSprites;           //Sprites for each ribbon
+    public static Sprite[] badgeSprites;            //Sprites for each badge
 
     //Shorthand for main data path
     static string dataLocation;                     
@@ -71,17 +77,27 @@ public static class DataContents : System.Object
             return false;
         } //end if
 
+        //Initialize markings
+        markingCharacters = new char[] {'●','■','▲','♥'};
+
         //Initialize max count for each table
         speciesCount = ExecuteSQL<int>("SELECT Count(*) FROM Pokemon");
         moveCount = ExecuteSQL<int>("SELECT Count(*) FROM Moves");
         itemCount = ExecuteSQL<int>("SELECT Count(*) FROM Items");
+        abilityCount = ExecuteSQL<int> ("SELECT Count(*) FROM Abilities");
 
         //Create an experience table
         experienceTable = new ExperienceTable();
-                
+
+        //Create ribbon data
+        ribbonData = new RibbonData ();
+
         //Load sprites
-        statusSprites = Resources.LoadAll<Sprite> ("Sprites/Icons/statuses");
-        typeSprites   = Resources.LoadAll<Sprite> ("Sprites/Icons/pokedexTypes");
+        statusSprites   = Resources.LoadAll<Sprite> ("Sprites/Icons/statuses");
+        typeSprites     = Resources.LoadAll<Sprite> ("Sprites/Icons/pokedexTypes");
+        categorySprites = Resources.LoadAll<Sprite> ("Sprites/Icons/category");
+        ribbonSprites   = Resources.LoadAll<Sprite> ("Sprites/Icons/ribbons");
+        badgeSprites    = Resources.LoadAll<Sprite> ("Sprites/Icons/Badges");
         return true;
     } //end InitDataContents()
 
@@ -127,7 +143,7 @@ public static class DataContents : System.Object
      ***************************************/
     public static int GetMoveID(string moveName)
     {
-        //No move found yet
+        //Search moves for move location
         dbCommand.CommandText = "SELECT rowid FROM Moves WHERE internalName=@nm";
         dbCommand.Parameters.Add(new SqliteParameter("@nm", moveName));
         dbCommand.Prepare ();
@@ -547,6 +563,93 @@ public class ExperienceTable
 } //end ExperienceTable class
 
 /***************************************************************************************** 
+ * Class: RibbonData
+ * Summary: Lists the name and description of each ribbon
+ *****************************************************************************************/ 
+[Serializable]
+public class RibbonData
+{
+    /***************************************
+     * Name: RibbonNames
+     * An array of ribbon names
+     ***************************************/
+    string[] RibbonNames =
+    {
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Default", "That One Ribbon", "Default", "That One Ribbon"
+    }; //end string[] RibbonNames
+
+    /***************************************
+     * Name: RibbonDescriptions
+     * An array of ribbon descriptions
+     ***************************************/
+    string[] RibbonDescriptions =
+    {
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+        "A default ribbon", "A ribbon given for doing things pertaining to testing",  
+    }; //end string[] RibbonDescriptions
+
+    /***************************************
+     * Name: GetRibbonName
+     * Returns the name for the requested ribbon
+     ***************************************/
+    public string GetRibbonName(int ribbonLocation)
+    {
+        if (ribbonLocation > -1 && ribbonLocation < RibbonNames.Length)
+        {
+            return RibbonNames[ribbonLocation];
+        } // end if
+        else
+        {
+            GameManager.instance.LogErrorMessage("Error finding " + ribbonLocation + " in ribbon names");
+            return "N/A";
+        } //end else
+    } //end GetRibbonName(int ribbonLocation)
+
+    /***************************************
+     * Name: GetRibbonDescription
+     * Returns the description for the requested ribbon
+     ***************************************/
+    public string GetRibbonDescription(int ribbonLocation)
+    {
+        if (ribbonLocation > -1 && ribbonLocation < RibbonDescriptions.Length)
+        {
+            return RibbonDescriptions[ribbonLocation];
+        } // end if
+        else
+        {
+            GameManager.instance.LogErrorMessage("Error finding " + ribbonLocation + " in ribbon descriptions");
+            return "N/A";
+        } //end else
+    } //end GetRibbonDescription(int ribbonLocation)
+} //end RibbonData class
+
+/***************************************************************************************** 
  * Enum:    Natures
  * Summary: Lists and organizes natures according to buffs and debuffs
  *****************************************************************************************/ 
@@ -638,3 +741,60 @@ public enum Types
     FAIRY   = 18,
     COUNT   = 19
 } //end Types enum
+
+/***************************************************************************************** 
+ * Enum:    Categories
+ * Summary: Lists and organizes categories for integer reference
+ *****************************************************************************************/ 
+[Serializable]
+/***************************************
+ * Name: Categories
+ * List of categories moves can be
+ ***************************************/
+public enum Categories
+{
+    Physical= 0,
+    Special = 1,
+    Status  = 2,
+    COUNT   = 3
+} //end Categories enum
+
+/***************************************************************************************** 
+ * Enum:    ObtainType
+ * Summary: Lists and organizes obtain methods for integer reference
+ *****************************************************************************************/ 
+[Serializable]
+/***************************************
+ * Name: ObtainType
+ * List of methods pokemon can be obtained
+ ***************************************/
+public enum ObtainType
+{
+    Bought  = 0,
+    Traded  = 1,
+    Egg     = 2,
+    Gift    = 3,
+    Code    = 4,
+    Function= 5,
+    Unknown = 6,
+    COUNT   = 7
+} //end ObtainType enum
+
+/***************************************************************************************** 
+ * Enum:    ObtainFrom
+ * Summary: Lists and organizes obtain locations for integer reference
+ *****************************************************************************************/ 
+[Serializable]
+/***************************************
+ * Name: ObtainFrom
+ * List of locations pokemon can be obtained
+ ***************************************/
+public enum ObtainFrom
+{
+    Shop         = 0,
+    MysteryEvent = 1,
+    RandomTeam   = 2,
+    AddPokemon   = 3,
+    UnknownSource= 4,
+    COUNT        = 5
+} //end ObtainFrom enum
