@@ -277,6 +277,18 @@ public class SystemManager : MonoBehaviour
 	} //end TypeText
 	#endregion
 
+    #region Random
+    /***************************************
+     * Name: RandomInt
+     * Creates a random integer, and reseeds
+     * if the same number keeps appearing
+     ***************************************/
+    public int RandomInt(int min, int max)
+    {
+
+    } //end RandomInt(int min, int max)
+    #endregion
+
 	#region Persistent
     /***************************************
      * Name: Persist

@@ -30,7 +30,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void ReturnHome()
     {
-        GameManager.instance.ReturnHome ();
+        GameManager.instance.SetGameState(SceneManager.MainGame.HOME);
     } //end ReturnHome
 
     /***************************************
@@ -39,7 +39,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void GymBattle()
     {
-        GameManager.instance.GymBattle ();       
+        GameManager.instance.SetGameState(SceneManager.MainGame.GYMBATTLE);       
     } //end GymBattle
 
     /***************************************
@@ -48,7 +48,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void TeamMenu()
     {
-        GameManager.instance.TeamMenu ();
+        GameManager.instance.SetGameState(SceneManager.MainGame.TEAM);
     } //end TeamMenu
 
     /***************************************
@@ -57,7 +57,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void PlayerPC()
     {
-        GameManager.instance.PlayerPC ();
+        GameManager.instance.SetGameState(SceneManager.MainGame.PC);
     } //end PlayerPC
 
     /***************************************
@@ -66,7 +66,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void Shop()
     {
-        GameManager.instance.Shop ();
+        GameManager.instance.SetGameState(SceneManager.MainGame.SHOP);
     } //end Shop
 
     /***************************************
@@ -75,7 +75,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void Pokedex()
     {
-        GameManager.instance.Pokedex ();
+        GameManager.instance.SetGameState(SceneManager.MainGame.POKEDEX);
     } //end Pokedex
 
     /***************************************
@@ -84,7 +84,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void TrainerCard()
     {
-        GameManager.instance.TrainerCard ();
+        GameManager.instance.SetGameState(SceneManager.MainGame.TRAINERCARD);
     } //end TrainerCard
 
     /***************************************

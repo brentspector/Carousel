@@ -210,75 +210,21 @@ public class GameManager : MonoBehaviour
     } //end ProcessSelection
 
     /***************************************
-     * Name: ReturnHome
-     * Brings up the main game button menu
+     * Name: SetGameState
+     * Sets the main game to the state given
      ***************************************/ 
-    public void ReturnHome()
+    public void SetGameState(SceneManager.MainGame newState)
     {
-        scenes.SetGameState (SceneManager.MainGame.HOME);
-    } //end ReturnHome
-
-    /***************************************
-     * Name: GymBattle
-     * Brings up the gym battle screen
-     ***************************************/ 
-    public void GymBattle()
-    {
-        scenes.SetGameState (SceneManager.MainGame.GYMBATTLE);
-    } //end GymBattle
-
-    /***************************************
-     * Name: TeamMenu
-     * Brings up the party screen
-     ***************************************/ 
-    public void TeamMenu()
-    {
-        scenes.SetGameState (SceneManager.MainGame.TEAM);
-    } //end TeamMenu
-
-    /***************************************
-     * Name: PlayerPC
-     * Brings up the pokemon storage screen
-     ***************************************/ 
-    public void PlayerPC()
-    {
-        scenes.SetGameState (SceneManager.MainGame.PC);
-    } //end PlayerPC
-    
-    /***************************************
-     * Name: Shop
-     * Switches to Shop scene
-     ***************************************/ 
-    public void Shop()
-    {
-        scenes.SetGameState (SceneManager.MainGame.SHOP);
-    } //end Shop
-    
-    /***************************************
-     * Name: Pokedex
-     * Switches to pokedex scene
-     ***************************************/ 
-    public void Pokedex()
-    {
-        scenes.SetGameState (SceneManager.MainGame.POKEDEX);
-    } //end Pokedex
-    
-    /***************************************
-     * Name: TrainerCard
-     * Brings up the trainer card screen
-     ***************************************/ 
-    public void TrainerCard()
-    {
-        scenes.SetGameState (SceneManager.MainGame.TRAINERCARD);
-    } //end TrainerCard
-
+        StartCoroutine(scenes.SetGameState (newState));
+    } //end SetGameState(SceneManager.MainGame newState)
+   
     /***************************************
      * Name: SummaryChange
      * Brings up the requested summary screen
      ***************************************/ 
     public void SummaryChange(int summaryPage)
     {
-        scenes.SetSummaryPage (summaryPage);
+        StartCoroutine(scenes.SetSummaryPage (summaryPage));
     } //end SummaryChange(int summaryPage)
     #endregion
 
@@ -329,6 +275,15 @@ public class GameManager : MonoBehaviour
     {
         return sysm.PlayerTrainer;
     } //end GetTrainer
+
+    /***************************************
+     * Name: RandomInt
+     * Returns a random integer
+     ***************************************/
+    public int RandomInt(int min, int max)
+    {
+        sysm.RandomInt (min, max);
+    } //end RandomInt(int min, int max)
 
     /***************************************
      * Name: Persist
