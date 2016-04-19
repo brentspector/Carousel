@@ -112,6 +112,33 @@ public class GameManager : MonoBehaviour
                     //sysm.PlayerTrainer.EmptyTeam();
                     //sysm.PlayerTrainer.RandomTeam();
                     sysm.Persist();
+                    List<int> intList = new List<int>();
+                    for(int i = 0; i < 100; i++)
+                    {
+                        intList.Add(sysm.RandomInt(0, 10));
+                    } //end for
+
+                    int[] results = new int[]{0,0,0,0,0,0,0,0,0,0};
+
+                    string resultString = "";
+                    string sortString = "";
+                    for(int i = 0; i < intList.Count; i++)
+                    {
+                        resultString += intList[i] + ", ";
+                    } //end for
+
+                    intList.Sort();
+
+                    for(int i = 0; i < intList.Count; i++)
+                    {
+                        int temp = results[intList[i]];
+                        sortString += temp + ", ";
+                        temp += 1;
+                        results[intList[i]] = temp;
+                    } //end for
+
+                    Debug.Log(resultString);
+                    Debug.Log(sortString);
 
 #else
                     //Stand-alone mode (user version) diagnostic commands go here
@@ -282,7 +309,7 @@ public class GameManager : MonoBehaviour
      ***************************************/
     public int RandomInt(int min, int max)
     {
-        sysm.RandomInt (min, max);
+        return sysm.RandomInt (min, max);
     } //end RandomInt(int min, int max)
 
     /***************************************

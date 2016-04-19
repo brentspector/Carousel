@@ -10,7 +10,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.IsolatedStorage;
+using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
+using Random = UnityEngine.Random;
 #endregion
 
 public class SystemManager : MonoBehaviour 
@@ -23,6 +25,10 @@ public class SystemManager : MonoBehaviour
 	//Error logging
 	string errorLog;		//Location of error log
 	StreamWriter output;	//The error writer
+
+    //RNG variables
+    int resetRNG = 0;       //Reset the RNG values after this time
+    List<float> results;    //Last results of RNG to prevent patterns
 
 	//Persistent variables
     string dataLocation;    //Path to the save file
@@ -281,11 +287,49 @@ public class SystemManager : MonoBehaviour
     /***************************************
      * Name: RandomInt
      * Creates a random integer, and reseeds
-     * if the same number keeps appearing
+     * to prevent the same number from appearing
      ***************************************/
     public int RandomInt(int min, int max)
     {
+        //Reset the RNG if this is zero
+        if (resetRNG == 0)
+        {
+            //Clear results
+            results = new List<float>();
 
+            uint value = (uint)(System.DateTime.Now.Ticks & 0xbbbbbbbb) + (uint)(Random.seed & 0x7f7f7f7f);
+            if(value % 2 != 0)
+            {
+                value ^= (uint)Random.Range(0, Mathf.Pow(2, 31));
+            } //end if
+
+            //Set the value as the seed
+            Random.seed = (int)value;
+
+            //Reset counter
+            resetRNG = Random.Range(10, 100);
+        } //end if
+
+        //Decrement counter
+        resetRNG--;
+
+        //Generate random number
+        float generated = Random.value;
+
+        //Check that random number isn't a repeating pattern
+        if (results.Contains (generated))
+        {
+            LogErrorMessage("Repeating pattern detected. Seed: " + Random.seed +
+                            " Value: " + generated);
+            resetRNG = 0;
+        } //end if
+        else
+        {
+            results.Add(generated);
+        } //end else
+
+        generated = Random.Range (min, max);
+        return (int)generated;
     } //end RandomInt(int min, int max)
     #endregion
 
