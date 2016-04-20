@@ -27,8 +27,8 @@ public class GameManager : MonoBehaviour
 	public static GameObject tools = null;	//Canvas of SceneTools
 
 	//Scene variables
+    SystemManager sysm;                     //Manages system features
 	SceneManager scenes;					//Manages game scenes
-	SystemManager sysm;						//Manages system features
     bool running = false;                   //Allows methods to run once
     #endregion
 
@@ -62,21 +62,21 @@ public class GameManager : MonoBehaviour
 		//Keep SceneTools from destruction OnLoad
 		DontDestroyOnLoad (tools);
 
-		//Get SceneManager component
-		scenes = GetComponent<SceneManager> ();
-
-		//Get SystemManager component
-		sysm = GetComponent<SystemManager> ();
-
-		//Create error log
-		sysm.InitErrorLog ();
-
+        //Get SystemManager component
+        sysm = GetComponent<SystemManager> ();
+        
+        //Create error log
+        sysm.InitErrorLog ();
+        
         //Initialize DataContents class 
         if(!DataContents.InitDataContents())
         {
             sysm.LogErrorMessage("Could not load data contents");
             Application.Quit();
         } //end if
+
+		//Get SceneManager component
+		scenes = GetComponent<SceneManager> ();
 	} //end Awake
 	
     /***************************************
@@ -108,37 +108,8 @@ public class GameManager : MonoBehaviour
 
 #if UNITY_EDITOR
                     //Debug mode (development in the editor) commands go here
-                    sysm.GetPersist();
-                    //sysm.PlayerTrainer.EmptyTeam();
-                    //sysm.PlayerTrainer.RandomTeam();
-                    sysm.Persist();
-                    List<int> intList = new List<int>();
-                    for(int i = 0; i < 100; i++)
-                    {
-                        intList.Add(sysm.RandomInt(0, 10));
-                    } //end for
-
-                    int[] results = new int[]{0,0,0,0,0,0,0,0,0,0};
-
-                    string resultString = "";
-                    string sortString = "";
-                    for(int i = 0; i < intList.Count; i++)
-                    {
-                        resultString += intList[i] + ", ";
-                    } //end for
-
-                    intList.Sort();
-
-                    for(int i = 0; i < intList.Count; i++)
-                    {
-                        int temp = results[intList[i]];
-                        sortString += temp + ", ";
-                        temp += 1;
-                        results[intList[i]] = temp;
-                    } //end for
-
-                    Debug.Log(resultString);
-                    Debug.Log(sortString);
+                    //sysm.GetPersist();
+                    //sysm.Persist();
 
 #else
                     //Stand-alone mode (user version) diagnostic commands go here
@@ -330,5 +301,38 @@ public class GameManager : MonoBehaviour
 		return sysm.GetPersist ();
 	} //end GetPersist
 	#endregion
+
+    #region Debug
+    /***************************************
+     * Name: RandomTeam
+     * Gives the player a random team
+     ***************************************/ 
+    public void RandomTeam()
+    {
+        sysm.PlayerTrainer.EmptyTeam();
+        sysm.PlayerTrainer.RandomTeam();
+        sysm.PlayerTrainer.Team [0].ChangeRibbons (GameManager.instance.RandomInt (0, 20));
+        sysm.PlayerTrainer.Team [0].ChangeRibbons (GameManager.instance.RandomInt (0, 20));
+        sysm.PlayerTrainer.Team [1].ChangeRibbons (GameManager.instance.RandomInt (0, 20));
+    } //end RandomTeam
+    
+    /***************************************
+     * Name: RandomPokemon
+     * Adds a single random pokemon to the team
+     ***************************************/ 
+    public void RandomPokemon()
+    {
+        //If the team isn't full, add a pokemon
+        if (sysm.PlayerTrainer.Team.Count < 6)
+        {
+            sysm.PlayerTrainer.AddPokemon(new Pokemon(oType: 5, oWhere: 3));
+        } //end if
+        //Otherwise replace first slot
+        else
+        {
+            sysm.PlayerTrainer.Team[0] = new Pokemon(oType: 5, oWhere: 3);
+        } //end else
+    } //end RandomPokemon
+    #endregion
     #endregion
 } //end GameManager class

@@ -88,6 +88,15 @@ public class ButtonFunctions : MonoBehaviour
     } //end TrainerCard
 
     /***************************************
+     * Name: Debug
+     * Brings up the debug mode options screen
+     ***************************************/ 
+    public void Debug()
+    {
+        GameManager.instance.SetGameState(SceneManager.MainGame.DEBUG);
+    } //end Debug
+
+    /***************************************
      * Name: Info
      * Brings up the Info summary screen
      ***************************************/ 
@@ -140,5 +149,23 @@ public class ButtonFunctions : MonoBehaviour
     {
         GameManager.instance.Persist ();
     } //end Persist
+
+    /***************************************
+     * Name: GiveRandomTeam
+     * Gives the player a random team
+     ***************************************/ 
+    public void GiveRandomTeam()
+    {
+        GameManager.instance.RandomTeam ();
+    } //end GiveRandomTeam
+
+    /***************************************
+     * Name: GiveRandomPokemon
+     * Adds a single random pokemon to the team
+     ***************************************/ 
+    public void GiveRandomPokemon()
+    {
+        GameManager.instance.RandomPokemon ();
+    } //end GiveRandomPokemon
     #endregion
 } //end ButtonFunctions class

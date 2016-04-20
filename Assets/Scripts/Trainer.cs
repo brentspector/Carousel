@@ -94,9 +94,12 @@ public class Trainer
         pName = "-";
 
         //Give player a random ID
-        pID = (uint)UnityEngine.Random.Range (0,255);
-        pID |= (uint)UnityEngine.Random.Range (0,255) << 8;
-        pID |= (uint)UnityEngine.Random.Range (0,255) << 16;
+        if (GameManager.instance != null)
+        {
+            pID = (uint)GameManager.instance.RandomInt (0, 255);
+            pID |= (uint)GameManager.instance.RandomInt (0, 255) << 8;
+            pID |= (uint)GameManager.instance.RandomInt (0, 255) << 16;
+        } //end if
 
         //Player has no badges yet
         pBadges = 0;
@@ -153,7 +156,7 @@ public class Trainer
         team.Clear ();
         for (int i = 0; i < 6; i++)
         {
-            Pokemon myPokemon = new Pokemon (level: UnityEngine.Random.Range (1, 100), oType: 5, oWhere: 2);
+            Pokemon myPokemon = new Pokemon (level: GameManager.instance.RandomInt (1, 100), oType: 5, oWhere: 2);
             team.Add (myPokemon);
         }
     } //end AddPokemon(Pokemon newPokemon)

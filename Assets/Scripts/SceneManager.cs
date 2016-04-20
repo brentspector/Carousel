@@ -37,7 +37,8 @@ public class SceneManager : MonoBehaviour
         PC,
         SHOP,
         POKEDEX,
-        TRAINERCARD
+        TRAINERCARD,
+        DEBUG
     } //end MainGame
 
 	//Scene variables
@@ -86,6 +87,7 @@ public class SceneManager : MonoBehaviour
     GameObject summaryScreen;       //Screen showing summary of data for pokemon
     GameObject ribbonScreen;        //Screen showing ribbons for pokemon
     GameObject trainerCard;         //Screen of the trainer card
+    GameObject debugOptions;        //Screen of the debug options
     GameObject currentTeamSlot;     //The object that is currently highlighted on the team
     GameObject currentSwitchSlot;   //The object that is currently highlighted for switching to
     GameObject currentMoveSlot;     //The object that is currently highlighted for reading/moving
@@ -537,6 +539,13 @@ public class SceneManager : MonoBehaviour
             summaryScreen = playerTeam.transform.FindChild("Summary").gameObject;
             ribbonScreen = playerTeam.transform.FindChild("Ribbons").gameObject;
             trainerCard = GameObject.Find("PlayerCard");
+            debugOptions = GameObject.Find("DebugOptions");
+
+            //Enable debug button if allowed
+            //#if UNITY_EDITOR
+            buttonMenu.transform.FindChild("Debug").gameObject.SetActive(true);
+            buttonMenu.transform.FindChild("Save").GetComponent<Button>().navigation = Navigation.defaultNavigation;
+            //#endif
 
             //Disable screens
             gymBattle.SetActive(false);
@@ -544,6 +553,7 @@ public class SceneManager : MonoBehaviour
             summaryScreen.SetActive(false);
             ribbonScreen.SetActive(false);
             trainerCard.SetActive(false);
+            debugOptions.SetActive(false);
 
             //Fade in
             StartCoroutine (FadeInAnimation (1));
@@ -574,6 +584,7 @@ public class SceneManager : MonoBehaviour
                 gymBattle.SetActive(false);
                 playerTeam.SetActive(false);
                 trainerCard.SetActive(false);
+                debugOptions.SetActive(false);
                 initialize = false;
             } //end if
             else if(gameState == MainGame.GYMBATTLE)
@@ -887,6 +898,7 @@ public class SceneManager : MonoBehaviour
                     //No ribbon selected yet
                     previousRibbonChoice = -1;
                     ribbonChoice = 0;
+                    selection.SetActive(false);
 
                     //Set existing ribbons to clear
                     foreach(Transform child in ribbonScreen.transform.FindChild("RibbonRegion").transform)
@@ -1277,6 +1289,19 @@ public class SceneManager : MonoBehaviour
                 GatherInput();
             } //end eise if
 
+            else if(gameState == MainGame.DEBUG)
+            {
+                //Initalize each scene only once
+                if(!initialize)
+                {
+                    initialize = true;
+                    buttonMenu.SetActive(false);
+                    debugOptions.SetActive(true);
+                } //end if
+                
+                //Get player input
+                GatherInput();
+            } //end eise if
             //End processing
             processing = false;
         } //end else if
@@ -1696,7 +1721,7 @@ public class SceneManager : MonoBehaviour
     public void ReadRibbon()
     {
         //If text isn't displayed
-        if (ribbonChoice != previousRibbonChoice && selection.activeSelf)
+        if (gameState == MainGame.POKEMONRIBBONS && ribbonChoice != previousRibbonChoice && selection.activeSelf)
         {
             //Activate the fields
             ribbonScreen.transform.FindChild("RibbonName").gameObject.SetActive(true);
@@ -3168,7 +3193,7 @@ public class SceneManager : MonoBehaviour
                                 if(GameManager.instance.GetTrainer().Team[choiceNumber-1].Item == 0)
                                 {
                                 GameManager.instance.GetTrainer().Team[choiceNumber-1].Item=
-                                    UnityEngine.Random.Range(1, 500);
+                                    GameManager.instance.RandomInt(1, 500);
                                 }
                                 else
                                 {
@@ -3428,6 +3453,13 @@ public class SceneManager : MonoBehaviour
 
                     //Continue Game -> Trainer Card
                     else if(gameState == MainGame.TRAINERCARD)
+                    {
+                        EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
+                        gameState = MainGame.HOME;
+                    } //end else if 
+
+                    //Continue Game -> Debug Options
+                    else if(gameState == MainGame.DEBUG)
                     {
                         EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
                         gameState = MainGame.HOME;
@@ -3735,7 +3767,7 @@ public class SceneManager : MonoBehaviour
                                 if(GameManager.instance.GetTrainer().Team[choiceNumber-1].Item == 0)
                                 {
                                     GameManager.instance.GetTrainer().Team[choiceNumber-1].Item=
-                                        UnityEngine.Random.Range(1, 500);
+                                        GameManager.instance.RandomInt(1, 500);
                                 }
                                 else
                                 {
@@ -4005,6 +4037,13 @@ public class SceneManager : MonoBehaviour
 
                     //Continue Game -> Trainer Card
                     else if(gameState == MainGame.TRAINERCARD)
+                    {
+                        EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
+                        gameState = MainGame.HOME;
+                    } //end else if 
+
+                    //Continue Game -> Debug Options
+                    else if(gameState == MainGame.DEBUG)
                     {
                         EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
                         gameState = MainGame.HOME;

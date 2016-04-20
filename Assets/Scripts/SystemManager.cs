@@ -286,7 +286,8 @@ public class SystemManager : MonoBehaviour
     #region Random
     /***************************************
      * Name: RandomInt
-     * Creates a random integer, and reseeds
+     * Creates a random integer between mix
+     * and max, excluding max. Reseeds occasionally
      * to prevent the same number from appearing
      ***************************************/
     public int RandomInt(int min, int max)

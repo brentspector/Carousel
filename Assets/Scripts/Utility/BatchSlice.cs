@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿/*using UnityEngine;
 using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
@@ -45,4 +45,4 @@ public class EditorHelper : MonoBehaviour
         }
         Debug.Log("Done Slicing!");
     }
-}
+}*/
