@@ -200,6 +200,8 @@ public class Pokemon
             {
                 temp = GameManager.instance.RandomInt (0, 3);
             } //end while
+
+            Ability = temp;
         } //end if
         else
         {
@@ -1010,7 +1012,6 @@ public class Pokemon
                 "<color=white>" + DataContents.markingCharacters[i].ToString() + "</color>" :
                 "<color=grey>" + DataContents.markingCharacters[i].ToString() + "</color>"; 
         } //end for
-
         return coloredMarkings;
     } //end GetMarkings
 	#region Accessors

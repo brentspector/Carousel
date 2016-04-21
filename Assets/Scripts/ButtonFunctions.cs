@@ -88,6 +88,15 @@ public class ButtonFunctions : MonoBehaviour
     } //end TrainerCard
 
     /***************************************
+     * Name: Quit
+     * Exits the application
+     ***************************************/ 
+    public void Quit()
+    {
+        Application.Quit ();       
+    } //end Quit
+
+    /***************************************
      * Name: Debug
      * Brings up the debug mode options screen
      ***************************************/ 

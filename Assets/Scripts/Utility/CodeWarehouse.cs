@@ -292,7 +292,12 @@ public class CodeWarehouse : MonoBehaviour
             dbCommand.CommandText = "INSERT INTO Abilities(internalName,gameName,description) VALUES  (@in,@gn,@desc)";
             dbCommand.Parameters.Add(new SqliteParameter("@in", contents[1]));
             dbCommand.Parameters.Add(new SqliteParameter("@gn", contents[2]));
-            dbCommand.Parameters.Add(new SqliteParameter("@desc", contents[3].Replace("\"", "")));
+            string temp = contents[3].Replace("\"", "");
+            for(int j = 4; j < contents.Length; j++)
+            {
+                temp += "," + contents[j].Replace("\"", "");
+            } //end for
+            dbCommand.Parameters.Add(new SqliteParameter("@desc", temp));
             dbCommand.Prepare();
             dbCommand.ExecuteNonQuery();
             dbCommand.Parameters.Clear();

@@ -164,6 +164,7 @@ public class SceneManager : MonoBehaviour
 			checkpoint = 1;
 			processing = false;
 		} //end if
+
 		//Black out starting image, shrink title, hide enter
 		else if(checkpoint == 1)
 		{
@@ -175,6 +176,7 @@ public class SceneManager : MonoBehaviour
 			checkpoint = 2;
 			processing = false;
 		} //end else if
+
 		//Play animation
 		else if(checkpoint == 2)
 		{
@@ -182,6 +184,7 @@ public class SceneManager : MonoBehaviour
 			playing = true;
 			StartCoroutine(IntroAnimation());
 		} //end else if
+
 		//End animation and fade out when player hits enter/return
 		else if(checkpoint == 3)
 		{
@@ -189,6 +192,7 @@ public class SceneManager : MonoBehaviour
             GatherInput();
             processing = false;			
 		} //end else if
+
 		//Move to menu scene when finished fading out
 		else if(checkpoint == 4)
 		{
@@ -225,6 +229,9 @@ public class SceneManager : MonoBehaviour
 			pName = mContinue.transform.GetChild(0).GetComponent<Text>();
 			badges = mContinue.transform.GetChild(1).GetComponent<Text>();
 			totalTime = mContinue.transform.GetChild(2).GetComponent<Text>();
+
+            //Initialize text box
+            GameManager.instance.InitText(text.transform, text.transform.GetChild(1));
 
 			// Initialize rect transform list
 			transforms = new List<RectTransform>();
@@ -393,9 +400,6 @@ public class SceneManager : MonoBehaviour
 		else if(checkpoint == 2)
 		{
 			processing = true;
-			//Attempt to display text
-			text.SetActive(true);
-			GameManager.instance.InitText(text.transform.GetChild(0), text.transform.GetChild(1));
 			if(GameManager.instance.DisplayText("Welcome to Pokemon Carousel! I am the Ringmaster " +
 			                                 "Melotta."))
 			{
@@ -586,6 +590,9 @@ public class SceneManager : MonoBehaviour
                 trainerCard.SetActive(false);
                 debugOptions.SetActive(false);
                 initialize = false;
+
+                //Get player input
+                GatherInput();
             } //end if
             else if(gameState == MainGame.GYMBATTLE)
             {
@@ -3328,6 +3335,16 @@ public class SceneManager : MonoBehaviour
                             ReadRibbon();
                         } //end if
                     } //end else if Pokemon Ribbons on Continue Game -> Ribbons
+
+                    //Home of Continue Game
+                    else if(gameState == MainGame.HOME)
+                    {
+                        //If the text is finished displaying, turn it off
+                        if(!GameManager.instance.IsDisplaying())
+                        {
+                            text.SetActive(false);
+                        } //end if
+                    } //end else if Home of Continue Game
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -3916,6 +3933,16 @@ public class SceneManager : MonoBehaviour
                             ReadRibbon();
                         } //end if
                     } //end else if Pokemon Ribbons on Continue Game -> Ribbons
+
+                    //Home of Continue Game
+                    else if(gameState == MainGame.HOME)
+                    {
+                        //If the text is finished displaying, turn it off
+                        if(!GameManager.instance.IsDisplaying())
+                        {
+                            text.SetActive(false);
+                        } //end if
+                    } //end else if Home of Continue Game
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch

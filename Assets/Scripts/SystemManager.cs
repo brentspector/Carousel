@@ -37,6 +37,7 @@ public class SystemManager : MonoBehaviour
 
 	//Text variables
 	string message;			//Complete text to output
+    GameObject textRegion;  //Region the text is displayed in
 	Text textComp;			//Text currently output
 	GameObject arrow;		//Arrow to signal end of text
 	bool displaying;		//If text is currently being output
@@ -200,7 +201,8 @@ public class SystemManager : MonoBehaviour
 	public void GetText(GameObject textArea, GameObject endArrow)
 	{
 		//Initialize text reference and gate
-		textComp = textArea.GetComponent<Text>();
+        textRegion = textArea;
+		textComp = textArea.transform.GetChild(0).GetComponent<Text>();
 		displaying = false;
 
 		//Disable arrow until text is finished
@@ -222,6 +224,7 @@ public class SystemManager : MonoBehaviour
 
 		//Setup message and begin typewriting
 		displaying = true;
+        textRegion.SetActive (true);
 		arrow.SetActive (false);
 		message = textMessage;
 		StartCoroutine(TypeText ());

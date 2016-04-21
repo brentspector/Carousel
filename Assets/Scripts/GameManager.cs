@@ -16,7 +16,7 @@ public class GameManager : MonoBehaviour
     #region Variables
 	//GLOBAL SETTING VARIABLES
 	public float VersionNumber = 0.1f;      //Version number for save file management
-	public int NumberOfMarkings = 4;        //How many markings are available to be used
+	public int NumberOfMarkings = 6;        //How many markings are available to be used
 	public int NumberOfRibbons = 80;        //How many ribbons are available
 
 	//Singleton handle
@@ -213,6 +213,12 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void SetGameState(SceneManager.MainGame newState)
     {
+        //Disable text screen if active
+        if (tools.transform.GetChild (1).gameObject.activeSelf)
+        {
+            tools.transform.GetChild (1).gameObject.SetActive(false);
+        } //end if
+
         StartCoroutine(scenes.SetGameState (newState));
     } //end SetGameState(SceneManager.MainGame newState)
    
@@ -289,8 +295,13 @@ public class GameManager : MonoBehaviour
      ***************************************/
 	public void Persist()
 	{
-		sysm.Persist ();
-	} //end Persist
+        //If not already saving
+        if (!tools.transform.GetChild (1).gameObject.activeSelf)
+        {
+            sysm.Persist ();
+            sysm.PlayText ("Saved successfully!");
+        } //end if
+    } //end Persist
 
     /***************************************
      * Name: GetPersist
