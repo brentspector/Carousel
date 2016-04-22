@@ -139,6 +139,12 @@ public class GameManager : MonoBehaviour
             {
                 scenes.ContinueGame();
             } //end else if
+
+            //PC scene
+            else if(Application.loadedLevelName == "PC")
+            {
+                scenes.PC();
+            } //end else if
 		} //end try
 
 		//Log error otherwise
@@ -159,37 +165,6 @@ public class GameManager : MonoBehaviour
 
 	//Scene functions
 	#region Scenes
-    /***************************************
-     * Name: Continue
-     * Loads main game and player data
-     ***************************************/
-	public void Continue()
-	{
-        scenes.Reset ();
-		Application.LoadLevel ("MainGame");
-	} //end Continue
-
-    /***************************************
-     * Name: NewGame
-     * Loads new game and creates new save file
-     ***************************************/
-	public void NewGame()
-	{
-		scenes.Reset ();
-		Application.LoadLevel ("NewGame");
-	} //end NewGame
-
-    /***************************************
-     * Name: Options
-     * Displays list of options for player to 
-     * control
-     ***************************************/
-	public void Options()
-	{
-		scenes.Reset ();
-		Application.LoadLevel ("Intro");
-	} //end Options
-
     /***************************************
      * Name: ProcessSelection
      * Sets the appropriate checkpoint
@@ -230,6 +205,25 @@ public class GameManager : MonoBehaviour
     {
         StartCoroutine(scenes.SetSummaryPage (summaryPage));
     } //end SummaryChange(int summaryPage)
+
+    /***************************************
+     * Name: LoadScene
+     * Loads the requested scene, and sets
+     * the appropriate overall state
+     ***************************************/ 
+    public void LoadScene(string levelName, SceneManager.OverallGame state)
+    {
+        StartCoroutine(scenes.LoadScene (levelName, state));
+    } //end LoadScene(string levelName, SceneManager.OverallGame state)
+
+    /***************************************
+     * Name: PartyState
+     * Opens/Closes the Party in PC box
+     ***************************************/ 
+    public void PartyState(bool state)
+    {
+        scenes.PartyState(false);
+    } //end PartyState(bool state)
     #endregion
 
 	//System Manager functions

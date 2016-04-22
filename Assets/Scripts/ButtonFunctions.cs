@@ -57,7 +57,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void PlayerPC()
     {
-        GameManager.instance.SetGameState(SceneManager.MainGame.PC);
+        GameManager.instance.LoadScene ("PC", SceneManager.OverallGame.PC);
     } //end PlayerPC
 
     /***************************************
@@ -66,7 +66,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void Shop()
     {
-        GameManager.instance.SetGameState(SceneManager.MainGame.SHOP);
+        GameManager.instance.LoadScene ("Shop", SceneManager.OverallGame.SHOP);
     } //end Shop
 
     /***************************************
@@ -75,7 +75,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void Pokedex()
     {
-        GameManager.instance.SetGameState(SceneManager.MainGame.POKEDEX);
+        GameManager.instance.LoadScene ("Pokedex", SceneManager.OverallGame.POKEDEX);
     } //end Pokedex
 
     /***************************************
@@ -149,6 +149,24 @@ public class ButtonFunctions : MonoBehaviour
     {
         GameManager.instance.SummaryChange(4);
     } //end Moves
+
+    /***************************************
+     * Name: PartyOpen
+     * Brings up the Party in PC box
+     ***************************************/ 
+    public void PartyOpen()
+    {
+        GameManager.instance.PartyState(true);
+    } //end PartyOpen
+
+    /***************************************
+     * Name: PartyClose
+     * Closes the Party in PC box
+     ***************************************/ 
+    public void PartyClose()
+    {
+        GameManager.instance.PartyState(false);
+    } //end PartyClose
 
     /***************************************
      * Name: Persist

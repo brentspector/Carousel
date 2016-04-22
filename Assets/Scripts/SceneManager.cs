@@ -20,7 +20,10 @@ public class SceneManager : MonoBehaviour
         INTRO,
         MENU,
         NEWGAME,
-        CONTINUE
+        CONTINUE,
+        PC,
+        SHOP,
+        POKEDEX
     } //end OverallGame
 
     //Main game states
@@ -34,9 +37,6 @@ public class SceneManager : MonoBehaviour
         MOVESWITCH,
         POKEMONSWITCH,
         POKEMONRIBBONS,
-        PC,
-        SHOP,
-        POKEDEX,
         TRAINERCARD,
         DEBUG
     } //end MainGame
@@ -101,6 +101,12 @@ public class SceneManager : MonoBehaviour
     int previousSwitchSlot;         //The slot last highlighted for switching to
     int ribbonChoice;               //The ribbon currently shown
     int previousRibbonChoice;       //The ribbon last highlighted for reading
+
+    //PC variables
+    GameObject boxBack;             //The wallpaper and pokemon panels for PC
+    GameObject detailsRegion;       //Area that displays the details of a highlighted pokemon
+    GameObject choiceHand;          //The highlighter for the PC
+    GameObject partyTab;            //The panel displaying the current team in PC
     #endregion
 
     #region Methods
@@ -196,9 +202,7 @@ public class SceneManager : MonoBehaviour
 		//Move to menu scene when finished fading out
 		else if(checkpoint == 4)
 		{
-			checkpoint = 0;
-            sceneState = OverallGame.MENU;
-			Application.LoadLevel("StartMenu");
+            StartCoroutine(LoadScene("StartMenu", OverallGame.MENU));
 		} //end else if
 	} //end Intro
 
@@ -347,23 +351,23 @@ public class SceneManager : MonoBehaviour
 		//Move to relevant scene
 		else if(checkpoint == 5)
 		{
+            //Disable selection
+            selection.SetActive(false);
+
 			// First choice selected, this is usually continue
 			if(choiceNumber == 0)
 			{
-                sceneState = OverallGame.CONTINUE;
-				GameManager.instance.Continue();
+                StartCoroutine(LoadScene("MainGame", OverallGame.CONTINUE));
 			} //end if
 			// Second choice selected, this is usually new game
 			else if(choiceNumber == 1)
 			{
-                sceneState = OverallGame.NEWGAME;
-				GameManager.instance.NewGame();
+                StartCoroutine(LoadScene("NewGame", OverallGame.NEWGAME));
 			} //end else if
 			// Third choice selected, this is usually options
 			else if(choiceNumber == 2)
 			{
-                sceneState = OverallGame.INTRO;
-				GameManager.instance.Options();
+                    StartCoroutine(LoadScene("Intro", OverallGame.INTRO));
 			} //end else if
 		} //end else if
 	} //end Menu
@@ -589,6 +593,8 @@ public class SceneManager : MonoBehaviour
                 playerTeam.SetActive(false);
                 trainerCard.SetActive(false);
                 debugOptions.SetActive(false);
+                choices.SetActive(false);
+                selection.SetActive(false);
                 initialize = false;
 
                 //Get player input
@@ -1309,10 +1315,76 @@ public class SceneManager : MonoBehaviour
                 //Get player input
                 GatherInput();
             } //end eise if
+
             //End processing
             processing = false;
         } //end else if
     } //end ContinueGame
+
+    /***************************************
+     * Name: PC
+     * Loads and plays the PC scene 
+     ***************************************/
+    public void PC()
+    {
+        //Return if processing
+        if (processing)
+        {
+            return;
+        } //end if
+
+        //Begin processing 
+        processing = true;
+
+        //Initialize each scene only once
+        if (checkpoint == 0)
+        {            
+            //Get references
+            boxBack = GameObject.Find ("BoxBack");
+            detailsRegion = GameObject.Find ("Details");
+            partyTab = GameObject.Find ("Party");
+            choiceHand = GameObject.Find ("ChoiceHand");
+
+            //Move to next checkpoint
+            checkpoint = 1;
+        } //end if
+        else if (checkpoint == 1)
+        {
+            //Disable party tab
+            partyTab.SetActive (false);
+
+            //Blank out all box pokemon
+            for(int i = 0; i < 30; i++)
+            {
+                boxBack.transform.FindChild("PokemonRegion").GetChild(i).GetComponent<Image>().
+                    color = Color.clear;
+            } //end for
+            
+            //Blank out details
+            boxBack.transform.FindChild("BoxName").GetComponent<Text>().text = "Box 1";
+            detailsRegion.transform.FindChild("Name").GetComponent<Text>().text = "";
+            detailsRegion.transform.FindChild("Gender").GetComponent<Image>().color = Color.clear;
+            detailsRegion.transform.FindChild("Sprite").GetComponent<Image>().color = Color.clear;
+            detailsRegion.transform.FindChild("Markings").GetComponent<Text>().text = "";
+            detailsRegion.transform.FindChild("Shiny").GetComponent<Text>().text = "";
+            detailsRegion.transform.FindChild("Level").GetComponent<Text>().text = "";
+            detailsRegion.transform.FindChild("Types").GetChild(0).GetComponent<Image>().
+                color = Color.clear;
+            detailsRegion.transform.FindChild("Types").GetChild(1).GetComponent<Image>().
+                color = Color.clear;
+            detailsRegion.transform.FindChild("Ability").GetComponent<Text>().text = "";
+            detailsRegion.transform.FindChild("Item").GetComponent<Text>().text = "";
+            
+            //Position hand at top of box
+            choiceHand.transform.position = new Vector3(30, 55, 100);
+
+            //Move to next checkpoint
+            checkpoint = 2;
+        } //end else if
+
+        //End processing
+        processing = false;
+    } //end PC
 	#endregion
 
 	#region Animations
@@ -3150,8 +3222,7 @@ public class SceneManager : MonoBehaviour
                         checkpoint = 0;
                         GameManager.instance.GetTrainer().RandomTeam();
                         GameManager.instance.Persist();
-                        sceneState = OverallGame.INTRO;
-                        Application.LoadLevel("Intro");
+                        StartCoroutine(LoadScene("Intro", OverallGame.INTRO));
                     } //end else if
                     break;
                 } //end case OverallGame NEWGAME
@@ -3734,8 +3805,7 @@ public class SceneManager : MonoBehaviour
                         checkpoint = 0;
                         GameManager.instance.GetTrainer().RandomTeam();
                         GameManager.instance.Persist();
-                        sceneState = OverallGame.INTRO;
-                        Application.LoadLevel("Intro");
+                        StartCoroutine(LoadScene("Intro", OverallGame.INTRO));
                     } //end else if
                     break;
                 } //end case OverallGame NEWGAME
@@ -4140,7 +4210,8 @@ public class SceneManager : MonoBehaviour
             {
                 //Return to summary
                 currentMoveSlot.GetComponent<Image>().color = Color.clear;
-                summaryScreen.transform.GetChild(summaryChoice).gameObject.SetActive(false);
+                summaryScreen.transform.GetChild(5).gameObject.SetActive(false);
+                summaryScreen.transform.GetChild(4).gameObject.SetActive(false);
                 selection.SetActive(false);
                 
                 //Change to new page
@@ -4164,6 +4235,31 @@ public class SceneManager : MonoBehaviour
             } //end else
         } //end if
     } //end SetSummaryPage(int summaryPage)
+
+    /***************************************
+     * Name: LoadScene
+     * Resets checkpoint and loads scene
+     ***************************************/ 
+    public IEnumerator LoadScene(string sceneName, OverallGame state)
+    {
+        //Process at end of frame
+        yield return new WaitForEndOfFrame ();
+
+        //Load new scene
+        checkpoint = 0;
+        processing = false;
+        sceneState = state;
+        Application.LoadLevel(sceneName);
+    } //end LoadScene(string sceneName, OverallGame state)
+
+    /***************************************
+     * Name: PartyState
+     * Opens/Closes the Party in PC box
+     ***************************************/ 
+    public void PartyState(bool state)
+    {
+        partyTab.SetActive (state);
+    } //end PartyState(bool state)
 	#endregion
     #endregion
 } //end SceneManager class
