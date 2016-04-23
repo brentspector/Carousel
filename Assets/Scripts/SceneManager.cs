@@ -107,6 +107,7 @@ public class SceneManager : MonoBehaviour
     GameObject detailsRegion;       //Area that displays the details of a highlighted pokemon
     GameObject choiceHand;          //The highlighter for the PC
     GameObject partyTab;            //The panel displaying the current team in PC
+    int boxChoice;                  //The pokemon that is highlighted
     #endregion
 
     #region Methods
@@ -164,6 +165,7 @@ public class SceneManager : MonoBehaviour
 		if(checkpoint == 0)
 		{
 			processing = true;
+            text.SetActive(false);
 			title = GameObject.Find("Title");
 			image = GameObject.Find("Image");
 			enter = GameObject.Find("PressEnter");
@@ -367,7 +369,7 @@ public class SceneManager : MonoBehaviour
 			// Third choice selected, this is usually options
 			else if(choiceNumber == 2)
 			{
-                    StartCoroutine(LoadScene("Intro", OverallGame.INTRO));
+                StartCoroutine(LoadScene("Intro", OverallGame.INTRO));
 			} //end else if
 		} //end else if
 	} //end Menu
@@ -1333,57 +1335,100 @@ public class SceneManager : MonoBehaviour
             return;
         } //end if
 
-        //Begin processing 
-        processing = true;
-
         //Initialize each scene only once
         if (checkpoint == 0)
-        {            
+        {         
+            //Begin processing 
+            processing = true;
+
             //Get references
             boxBack = GameObject.Find ("BoxBack");
             detailsRegion = GameObject.Find ("Details");
             partyTab = GameObject.Find ("Party");
             choiceHand = GameObject.Find ("ChoiceHand");
 
+            //Disable choice menu if it's up
+            choices.SetActive(false);
+            selection.SetActive(false);
+
             //Move to next checkpoint
             checkpoint = 1;
+
+            //End processing
+            processing = false;
         } //end if
         else if (checkpoint == 1)
         {
+            //Begin processing 
+            processing = true;
+
             //Disable party tab
             partyTab.SetActive (false);
 
-            //Blank out all box pokemon
-            for(int i = 0; i < 30; i++)
+            //Fill in box
+            for (int i = 0; i < 30; i++)
             {
-                boxBack.transform.FindChild("PokemonRegion").GetChild(i).GetComponent<Image>().
-                    color = Color.clear;
+                //Get the pokemon in the slot
+                Pokemon temp = GameManager.instance.GetTrainer().GetPC(
+                    GameManager.instance.GetTrainer().GetPCBox(), i);
+
+                //If the slot is null, set the sprite to clear
+                if(temp == null)
+                {
+                    boxBack.transform.FindChild ("PokemonRegion").GetChild (i).GetComponent<Image> ().
+                        color = Color.clear;
+                } //end if
+                //Otherwise fill in the icon for the pokemon
+                else
+                {
+                    boxBack.transform.FindChild ("PokemonRegion").GetChild (i).GetComponent<Image> ().
+                        color = Color.white;
+                    boxBack.transform.FindChild ("PokemonRegion").GetChild (i).GetComponent<Image> ().
+                        sprite = Resources.Load<Sprite>("Sprites/Icons/icon"+temp.NatSpecies.ToString("000"));
+                } //end else
             } //end for
             
-            //Blank out details
-            boxBack.transform.FindChild("BoxName").GetComponent<Text>().text = "Box 1";
-            detailsRegion.transform.FindChild("Name").GetComponent<Text>().text = "";
-            detailsRegion.transform.FindChild("Gender").GetComponent<Image>().color = Color.clear;
-            detailsRegion.transform.FindChild("Sprite").GetComponent<Image>().color = Color.clear;
-            detailsRegion.transform.FindChild("Markings").GetComponent<Text>().text = "";
-            detailsRegion.transform.FindChild("Shiny").GetComponent<Text>().text = "";
-            detailsRegion.transform.FindChild("Level").GetComponent<Text>().text = "";
-            detailsRegion.transform.FindChild("Types").GetChild(0).GetComponent<Image>().
+            //Fill in details
+            boxBack.transform.FindChild ("BoxName").GetComponent<Text> ().text = GameManager.instance.
+                GetTrainer().GetPCBoxName();
+            boxBack.GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/box" + 
+                GameManager.instance.GetTrainer().GetPCBoxWallpaper());
+            detailsRegion.transform.FindChild ("Name").GetComponent<Text> ().text = "";
+            detailsRegion.transform.FindChild ("Gender").GetComponent<Image> ().color = Color.clear;
+            detailsRegion.transform.FindChild ("Sprite").GetComponent<Image> ().color = Color.clear;
+            detailsRegion.transform.FindChild ("Markings").GetComponent<Text> ().text = "";
+            detailsRegion.transform.FindChild ("Shiny").GetComponent<Text> ().text = "";
+            detailsRegion.transform.FindChild ("Level").GetComponent<Text> ().text = "";
+            detailsRegion.transform.FindChild ("Types").GetChild (0).GetComponent<Image> ().
                 color = Color.clear;
-            detailsRegion.transform.FindChild("Types").GetChild(1).GetComponent<Image>().
+            detailsRegion.transform.FindChild ("Types").GetChild (1).GetComponent<Image> ().
                 color = Color.clear;
-            detailsRegion.transform.FindChild("Ability").GetComponent<Text>().text = "";
-            detailsRegion.transform.FindChild("Item").GetComponent<Text>().text = "";
+            detailsRegion.transform.FindChild ("Ability").GetComponent<Text> ().text = "";
+            detailsRegion.transform.FindChild ("Item").GetComponent<Text> ().text = "";
             
             //Position hand at top of box
-            choiceHand.transform.position = new Vector3(30, 55, 100);
+            choiceHand.transform.position = new Vector3 (30, 55, 100);
+
+            //Initialize box choice to boxName
+            boxChoice = -2;
 
             //Move to next checkpoint
-            checkpoint = 2;
-        } //end else if
+            StartCoroutine(FadeInAnimation(2));
 
-        //End processing
-        processing = false;
+            //End processing
+            processing = false;
+        } //end else if
+        else if (checkpoint == 2)
+        {
+            //Begin processing 
+            processing = true;
+
+            //Get player input
+            GatherInput();
+
+            //End processing
+            processing = false;
+        } //end else if
     } //end PC
 	#endregion
 
@@ -1511,6 +1556,7 @@ public class SceneManager : MonoBehaviour
 		} //end while
 
 		//Move to next checkpoint
+        fade.gameObject.SetActive (false);
 		checkpoint = targetCheckpoint;
 
 		//End fade animation
@@ -3416,6 +3462,16 @@ public class SceneManager : MonoBehaviour
                             text.SetActive(false);
                         } //end if
                     } //end else if Home of Continue Game
+
+                    //Debug on Continue Game -> Debug
+                    else if(gameState == MainGame.DEBUG)
+                    {
+                        //If the text is finished displaying, turn it off
+                        if(!GameManager.instance.IsDisplaying())
+                        {
+                            text.SetActive(false);
+                        } //end if
+                    } //end else if Debug on Continue Game -> Debug
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -4013,6 +4069,16 @@ public class SceneManager : MonoBehaviour
                             text.SetActive(false);
                         } //end if
                     } //end else if Home of Continue Game
+
+                    //Debug on Continue Game -> Debug
+                    else if(gameState == MainGame.DEBUG)
+                    {
+                        //If the text is finished displaying, turn it off
+                        if(!GameManager.instance.IsDisplaying())
+                        {
+                            text.SetActive(false);
+                        } //end if
+                    } //end else if Debug on Continue Game -> Debug
                     break;
                 } //end case OverallGame CONTINUEGAME
             } //end scene switch
@@ -4240,16 +4306,37 @@ public class SceneManager : MonoBehaviour
      * Name: LoadScene
      * Resets checkpoint and loads scene
      ***************************************/ 
-    public IEnumerator LoadScene(string sceneName, OverallGame state)
+    public IEnumerator LoadScene(string sceneName, OverallGame state, bool fadeOut = false)
     {
         //Process at end of frame
         yield return new WaitForEndOfFrame ();
 
-        //Load new scene
-        checkpoint = 0;
-        processing = false;
-        sceneState = state;
-        Application.LoadLevel(sceneName);
+        //Load new scene when fade out is done
+        if (fadeOut)
+        {
+            //Fade out
+            StartCoroutine (FadeOutAnimation (0));
+
+            //Wait for fade out to finish
+            while(fade.color.a != 1)
+            {
+                yield return null;
+            } //end while
+
+            //Move to next scene
+            processing = false;
+            sceneState = state;
+            Application.LoadLevel (sceneName);
+        } //end if
+
+        //Load new scene if fade out is false
+        else
+        {
+            checkpoint = 0;
+            processing = false;
+            sceneState = state;
+            Application.LoadLevel (sceneName);
+        } //end else
     } //end LoadScene(string sceneName, OverallGame state)
 
     /***************************************

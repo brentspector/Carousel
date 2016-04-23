@@ -14,7 +14,7 @@ public class Trainer
 {
     #region Variables
     List<Pokemon> team;   //The player's current party
-    Pokemon[,] PC;        //THe player's pokemon storage unit
+    PC pPC;               //The PC for the player
     float version;        //What version this save started on     
     int bups;             //The number of backups made
     string pName;         //The player's name
@@ -75,49 +75,42 @@ public class Trainer
      ***************************************/
     public Trainer()
     {
-        //Create PC
-        InitPC();
-
-        //Set version
+        //If the game manager exists
         if (GameManager.instance != null)
         {
-            version = GameManager.instance.VersionNumber;
-        } //end if
+            //Initialize PC
+            pPC = new PC ();
 
-        //No backups made yet
-        bups = 0;
+            //Set version
+            if (GameManager.instance != null)
+            {
+                version = GameManager.instance.VersionNumber;
+            } //end if
 
-        //Initialize team
-        team = new List<Pokemon>();
+            //No backups made yet
+            bups = 0;
 
-        //Player has no name yet
-        pName = "-";
+            //Initialize team
+            team = new List<Pokemon> ();
 
-        //Give player a random ID
-        if (GameManager.instance != null)
-        {
+            //Player has no name yet
+            pName = "-";
+
+            //Give player a random ID
             pID = (uint)GameManager.instance.RandomInt (0, 255);
             pID |= (uint)GameManager.instance.RandomInt (0, 255) << 8;
             pID |= (uint)GameManager.instance.RandomInt (0, 255) << 16;
+
+            //Player has no badges yet
+            pBadges = 0;
+
+            //Time played is zero
+            pHours = 0;
+            pMinutes = 0;
+            pSeconds = 0;
         } //end if
-
-        //Player has no badges yet
-        pBadges = 0;
-
-        //Time played is zero
-        pHours = 0;
-        pMinutes = 0;
-        pSeconds = 0;
     } //end Trainer
 
-    /***************************************
-     * Name: InitPC
-     * Creates PC
-     ***************************************/
-    public void InitPC()
-    {
-        PC = new Pokemon[50, 30];
-    } //end InitPC
     /***************************************
      * Name: Swap
      * Swap pokemon location in party
@@ -162,45 +155,6 @@ public class Trainer
     } //end AddPokemon(Pokemon newPokemon)
 
     /***************************************
-     * Name: DisplayTeam
-     * Show each pokemon in party
-     ***************************************/
-    public void DisplayPokemon()
-    {
-        for(int i = 0; i < team.Count; i++)
-        {
-            Debug.Log(team[i].Nickname + " " + team[i].CurrentLevel);
-        } //end for
-    } //end DisplayPokemon
-
-    /***************************************
-     * Name: DisplayPC
-     * Show each pokemon in box
-     ***************************************/
-    public void DisplayPC(int box)
-    {
-        for(int i = 0; i < 30; i++)
-        {
-            if(PC[box, i] != null)
-            {
-                Debug.Log(PC[box, i].Nickname + " " + PC[box, i].CurrentLevel);
-            } //end if
-        } //end for
-    } //end DisplayPC(int box)
-
-    /***************************************
-     * Name: EmptyPC
-     * Clear all pokemon in box
-     ***************************************/
-    public void EmptyPC(int box)
-    {
-        for(int i = 0; i < 30; i++)
-        {
-            PC [box, i] = null;
-        } //end for
-    } //end EmptyPC(int box)
-
-    /***************************************
      * Name: EmptyTeam
      * Clear all pokemon in team
      ***************************************/
@@ -208,43 +162,6 @@ public class Trainer
     {
         team.Clear();
     } //end EmptyTeam
-
-    /***************************************
-     * Name: SetPCFromTeam
-     * Move a pokemon from the team to the PC
-     ***************************************/
-    public void SetPCFromTeam(int box, int spot, int teamSpot)
-    {
-        //If the spot is empty, fill it
-        if (PC [box, spot] == null)
-        {
-            //Place pokemon
-            PC [box, spot] = team[teamSpot];
-
-            //Remove pokemon from team
-            RemovePokemon (teamSpot);
-        } //end if
-        
-        //Otherwise look for the first unfilled spot
-        else
-        {
-            for(int i = 0; i < 50; i++)
-            {
-                for(int j = 0; j < 30; j++)
-                {
-                    if(PC[ i, j] == null)
-                    {
-                        //Place pokemon
-                        PC [i, j] = team[teamSpot];
-
-                        //Remove pokemon from team
-                        RemovePokemon (teamSpot);
-                        return;
-                    } //end if
-                } //end for
-            } //end for
-        } //end else
-    } //end SetPCFromTeam(int box, int spot, int teamSpot)
 
     #region Properties
     /***************************************
@@ -267,36 +184,48 @@ public class Trainer
      ***************************************/
     public Pokemon GetPC(int box, int spot)
     {
-        return PC [box, spot];
+        return pPC.GetPC (box, spot);
     } //end GetPC(int box, int spot)
 
     /***************************************
-     * Name: SetPC
+     * Name: AddToPC
      ***************************************/
-    public void SetPC(int box, int spot, Pokemon newPokemon)
+    public void AddToPC(int box, int spot, Pokemon newPokemon)
     {
-        //If the spot is empty, fill it
-        if (PC [box, spot] == null)
-        {
-            PC [box, spot] = newPokemon;
-        } //end if
+        pPC.AddToPC (box, spot, newPokemon);
+    } //end AddToPC(int box, int spot, Pokemon newPokemon)
 
-        //Otherwise look for the first unfilled spot
-        else
-        {
-            for(int i = 0; i < 50; i++)
-            {
-                for(int j = 0; j < 30; j++)
-                {
-                    if(PC[ i, j] == null)
-                    {
-                        PC [i, j] = newPokemon;
-                        return;
-                    } //end if
-                } //end for
-            } //end for
-        } //end else
-    } //end SetPC(int box, int spot, Pokemon newPokemon)
+    /***************************************
+     * Name: RemoveFromPC
+     ***************************************/
+    public void RemoveFromPC(int box, int spot)
+    {
+        pPC.RemoveFromPC (box, spot);
+    } //end RemoveFromPC(int box, int spot)
+
+    /***************************************
+     * Name: GetPCBox
+     ***************************************/
+    public int GetPCBox()
+    {
+        return pPC.GetPCBox ();
+    } //end GetPCBox
+
+    /***************************************
+     * Name: GetPCBoxName
+     ***************************************/
+    public string GetPCBoxName()
+    {
+        return pPC.GetPCBoxName();
+    } //end GetPCBoxName
+    
+    /***************************************
+     * Name: GetPCBoxWallpaper
+     ***************************************/
+    public int GetPCBoxWallpaper()
+    {
+        return pPC.GetPCBoxWallpaper();
+    } //end GetPCBoxWallpaper
 
     /***************************************
      * Name: Version

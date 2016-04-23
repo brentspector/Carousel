@@ -57,7 +57,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void PlayerPC()
     {
-        GameManager.instance.LoadScene ("PC", SceneManager.OverallGame.PC);
+        GameManager.instance.LoadScene ("PC", SceneManager.OverallGame.PC, true);
     } //end PlayerPC
 
     /***************************************
@@ -77,6 +77,15 @@ public class ButtonFunctions : MonoBehaviour
     {
         GameManager.instance.LoadScene ("Pokedex", SceneManager.OverallGame.POKEDEX);
     } //end Pokedex
+
+    /***************************************
+     * Name: ContinueGame
+     * Switches to MainGame scene
+     ***************************************/ 
+    public void ContinueGame()
+    {
+        GameManager.instance.LoadScene ("MainGame", SceneManager.OverallGame.CONTINUE);
+    } //end ContinueGame
 
     /***************************************
      * Name: TrainerCard
@@ -177,6 +186,7 @@ public class ButtonFunctions : MonoBehaviour
         GameManager.instance.Persist ();
     } //end Persist
 
+    #region Debug
     /***************************************
      * Name: GiveRandomTeam
      * Gives the player a random team
@@ -194,5 +204,15 @@ public class ButtonFunctions : MonoBehaviour
     {
         GameManager.instance.RandomPokemon ();
     } //end GiveRandomPokemon
+
+    /***************************************
+     * Name: AddRandomPokemonToPC
+     * Adds a single random pokemon to the pc
+     ***************************************/ 
+    public void AddRandomPokemonToPC()
+    {
+        GameManager.instance.AddRandomPokemonToPC ();
+    } //end AddRandomPokemonToPC
+    #endregion
     #endregion
 } //end ButtonFunctions class

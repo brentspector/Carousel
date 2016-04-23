@@ -18,6 +18,7 @@ public class GameManager : MonoBehaviour
 	public float VersionNumber = 0.1f;      //Version number for save file management
 	public int NumberOfMarkings = 6;        //How many markings are available to be used
 	public int NumberOfRibbons = 80;        //How many ribbons are available
+    public int NumberOfWallpaper = 25;      //How many wallpapers are available
 
 	//Singleton handle
 	public static GameManager instance = null;
@@ -211,10 +212,10 @@ public class GameManager : MonoBehaviour
      * Loads the requested scene, and sets
      * the appropriate overall state
      ***************************************/ 
-    public void LoadScene(string levelName, SceneManager.OverallGame state)
+    public void LoadScene(string levelName, SceneManager.OverallGame state, bool fadeOut = false)
     {
-        StartCoroutine(scenes.LoadScene (levelName, state));
-    } //end LoadScene(string levelName, SceneManager.OverallGame state)
+        StartCoroutine(scenes.LoadScene (levelName, state, fadeOut));
+    } //end LoadScene(string levelName, SceneManager.OverallGame state, bool fadeOut)
 
     /***************************************
      * Name: PartyState
@@ -338,6 +339,21 @@ public class GameManager : MonoBehaviour
             sysm.PlayerTrainer.Team[0] = new Pokemon(oType: 5, oWhere: 3);
         } //end else
     } //end RandomPokemon
+
+    /***************************************
+     * Name: AddRandomPokemonToPC
+     * Adds a single random pokemon to the pc
+     ***************************************/ 
+    public void AddRandomPokemonToPC(int box = -1, int slot = 0)
+    {
+        //Assign box
+        if (box == -1)
+        {
+            box = sysm.PlayerTrainer.GetPCBox ();
+        } //end if
+
+        sysm.PlayerTrainer.AddToPC (box, slot, new Pokemon (oType: 5, oWhere: 3));
+    } //end AddRandomPokemonToPC
     #endregion
     #endregion
 } //end GameManager class
