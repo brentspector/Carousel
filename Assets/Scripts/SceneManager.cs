@@ -1344,7 +1344,7 @@ public class SceneManager : MonoBehaviour
             //Get references
             boxBack = GameObject.Find ("BoxBack");
             detailsRegion = GameObject.Find ("Details");
-            partyTab = GameObject.Find ("Party");
+            partyTab = GameObject.Find ("PartyTab");
             choiceHand = GameObject.Find ("ChoiceHand");
 
             //Disable choice menu if it's up
@@ -1397,26 +1397,20 @@ public class SceneManager : MonoBehaviour
             detailsRegion.transform.FindChild ("Gender").GetComponent<Image> ().color = Color.clear;
             detailsRegion.transform.FindChild ("Sprite").GetComponent<Image> ().color = Color.clear;
             detailsRegion.transform.FindChild ("Markings").GetComponent<Text> ().text = "";
-            detailsRegion.transform.FindChild ("Shiny").GetComponent<Text> ().text = "";
+            detailsRegion.transform.FindChild ("Shiny").GetComponent<Text> ().color = Color.clear;
             detailsRegion.transform.FindChild ("Level").GetComponent<Text> ().text = "";
-            detailsRegion.transform.FindChild ("Types").GetChild (0).GetComponent<Image> ().
-                color = Color.clear;
-            detailsRegion.transform.FindChild ("Types").GetChild (1).GetComponent<Image> ().
-                color = Color.clear;
+            detailsRegion.transform.FindChild ("Types").GetChild (0).gameObject.SetActive(false);
+            detailsRegion.transform.FindChild ("Types").GetChild (1).gameObject.SetActive(false);
             detailsRegion.transform.FindChild ("Ability").GetComponent<Text> ().text = "";
             detailsRegion.transform.FindChild ("Item").GetComponent<Text> ().text = "";
-            
-            //Position hand at top of box
-            choiceHand.transform.position = new Vector3 (30, 55, 100);
 
             //Initialize box choice to boxName
+            choiceHand.transform.position = new Vector3(boxBack.transform.FindChild ("BoxName").position.x,
+                boxBack.transform.FindChild ("BoxName").position.y + 8, 100);
             boxChoice = -2;
 
             //Move to next checkpoint
             StartCoroutine(FadeInAnimation(2));
-
-            //End processing
-            processing = false;
         } //end else if
         else if (checkpoint == 2)
         {
@@ -1425,6 +1419,133 @@ public class SceneManager : MonoBehaviour
 
             //Get player input
             GatherInput();
+
+            //Position choice hand
+            switch(boxChoice)
+            {
+                //Left box arrow
+                case -3:
+                {
+                    //Load previous PC box
+                    GameManager.instance.GetTrainer().PreviousBox();
+
+                    //Reset scene
+                    checkpoint = 1;
+                    break;
+                } //end case -3 (Left box arrow)
+                //Box name
+                case -2:
+                {
+
+                    choiceHand.transform.position = new Vector3(boxBack.transform.FindChild ("BoxName").position.x,
+                        boxBack.transform.FindChild ("BoxName").position.y + 8, 100);
+                    detailsRegion.transform.FindChild ("Name").GetComponent<Text> ().text = "";
+                    detailsRegion.transform.FindChild ("Gender").GetComponent<Image> ().color = Color.clear;
+                    detailsRegion.transform.FindChild ("Sprite").GetComponent<Image> ().color = Color.clear;
+                    detailsRegion.transform.FindChild ("Markings").GetComponent<Text> ().text = "";
+                    detailsRegion.transform.FindChild ("Shiny").GetComponent<Text> ().color = Color.clear;
+                    detailsRegion.transform.FindChild ("Level").GetComponent<Text> ().text = "";
+                    detailsRegion.transform.FindChild ("Types").GetChild (0).gameObject.SetActive(false);
+                    detailsRegion.transform.FindChild ("Types").GetChild (1).gameObject.SetActive(false);
+                    detailsRegion.transform.FindChild ("Ability").GetComponent<Text> ().text = "";
+                    detailsRegion.transform.FindChild ("Item").GetComponent<Text> ().text = "";
+                    break;
+                } //end case -2 (Box name)
+                //Right box arrow
+                case -1:
+                {
+                    //Load next PC box
+                    GameManager.instance.GetTrainer().NextBox();
+                    
+                    //Reset scene
+                    checkpoint = 1;
+                    break;
+                } //end case -1 (Right box arrow)
+                //Party button
+                case 30:
+                {
+                    choiceHand.transform.position = new Vector3(
+                        detailsRegion.transform.FindChild ("Buttons").GetChild(0).position.x,
+                        detailsRegion.transform.FindChild ("Buttons").GetChild(0).position.y + 8, 100);
+                    detailsRegion.transform.FindChild ("Name").GetComponent<Text> ().text = "";
+                    detailsRegion.transform.FindChild ("Gender").GetComponent<Image> ().color = Color.clear;
+                    detailsRegion.transform.FindChild ("Sprite").GetComponent<Image> ().color = Color.clear;
+                    detailsRegion.transform.FindChild ("Markings").GetComponent<Text> ().text = "";
+                    detailsRegion.transform.FindChild ("Shiny").GetComponent<Text> ().color = Color.clear;
+                    detailsRegion.transform.FindChild ("Level").GetComponent<Text> ().text = "";
+                    detailsRegion.transform.FindChild ("Types").GetChild (0).gameObject.SetActive(false);
+                    detailsRegion.transform.FindChild ("Types").GetChild (1).gameObject.SetActive(false);
+                    detailsRegion.transform.FindChild ("Ability").GetComponent<Text> ().text = "";
+                    detailsRegion.transform.FindChild ("Item").GetComponent<Text> ().text = "";
+                    break;
+                } //end case 30 (Party button)
+                //Return button
+                case 31:
+                {
+                    choiceHand.transform.position = new Vector3(
+                        detailsRegion.transform.FindChild ("Buttons").GetChild(1).position.x,
+                        detailsRegion.transform.FindChild ("Buttons").GetChild(1).position.y + 8, 100);
+                    detailsRegion.transform.FindChild ("Name").GetComponent<Text> ().text = "";
+                    detailsRegion.transform.FindChild ("Gender").GetComponent<Image> ().color = Color.clear;
+                    detailsRegion.transform.FindChild ("Sprite").GetComponent<Image> ().color = Color.clear;
+                    detailsRegion.transform.FindChild ("Markings").GetComponent<Text> ().text = "";
+                    detailsRegion.transform.FindChild ("Shiny").GetComponent<Text> ().color = Color.clear;
+                    detailsRegion.transform.FindChild ("Level").GetComponent<Text> ().text = "";
+                    detailsRegion.transform.FindChild ("Types").GetChild (0).gameObject.SetActive(false);
+                    detailsRegion.transform.FindChild ("Types").GetChild (1).gameObject.SetActive(false);
+                    detailsRegion.transform.FindChild ("Ability").GetComponent<Text> ().text = "";
+                    detailsRegion.transform.FindChild ("Item").GetComponent<Text> ().text = "";
+                    break;
+                } //end case 31 (Return button)
+                //Pokemon region
+                default:
+                {
+                    choiceHand.transform.position = new Vector3(
+                        boxBack.transform.FindChild("PokemonRegion").GetChild (boxChoice).position.x,
+                        boxBack.transform.FindChild("PokemonRegion").GetChild (boxChoice).position.y + 8, 100);
+
+                    //Get the pokemon in the slot
+                    Pokemon temp = GameManager.instance.GetTrainer().GetPC(
+                        GameManager.instance.GetTrainer().GetPCBox(), boxChoice);
+
+                    //If it's not null, populate
+                    if(temp != null)
+                    {
+                        detailsRegion.transform.FindChild ("Name").GetComponent<Text> ().text = temp.Nickname;
+                        detailsRegion.transform.FindChild ("Gender").GetComponent<Image> ().color = Color.white;
+                        detailsRegion.transform.FindChild ("Gender").GetComponent<Image> ().sprite = 
+                            Resources.Load<Sprite>("Sprites/Icons/gender" + temp.Gender);
+                        detailsRegion.transform.FindChild ("Sprite").GetComponent<Image> ().color = Color.white;
+                        detailsRegion.transform.FindChild ("Sprite").GetComponent<Image> ().sprite = 
+                            Resources.Load<Sprite>("Sprites/Pokemon/" + temp.NatSpecies.ToString("000"));
+                        detailsRegion.transform.FindChild ("Markings").GetComponent<Text> ().text = temp.GetMarkings();
+                        detailsRegion.transform.FindChild ("Shiny").GetComponent<Text> ().color = 
+                            temp.IsShiny ? Color.white : Color.clear;
+                        detailsRegion.transform.FindChild ("Ability").GetComponent<Text> ().text = temp.GetAbilityName();
+                        detailsRegion.transform.FindChild ("Item").GetComponent<Text> ().text = 
+                            DataContents.GetItemGameName(temp.Item);
+                        detailsRegion.transform.FindChild ("Level").GetComponent<Text> ().text = "Lv. " + 
+                            temp.CurrentLevel.ToString();
+                        SetTypeSprites(detailsRegion.transform.FindChild ("Types").GetChild (0).GetComponent<Image> (),
+                                       detailsRegion.transform.FindChild ("Types").GetChild (1).GetComponent<Image> (),
+                                       temp.NatSpecies);
+                    } //end if
+                    else
+                    {
+                        detailsRegion.transform.FindChild ("Name").GetComponent<Text> ().text = "";
+                        detailsRegion.transform.FindChild ("Gender").GetComponent<Image> ().color = Color.clear;
+                        detailsRegion.transform.FindChild ("Sprite").GetComponent<Image> ().color = Color.clear;
+                        detailsRegion.transform.FindChild ("Markings").GetComponent<Text> ().text = "";
+                        detailsRegion.transform.FindChild ("Shiny").GetComponent<Text> ().color = Color.clear;
+                        detailsRegion.transform.FindChild ("Level").GetComponent<Text> ().text = "";
+                        detailsRegion.transform.FindChild ("Types").GetChild (0).gameObject.SetActive(false);
+                        detailsRegion.transform.FindChild ("Types").GetChild (1).gameObject.SetActive(false);
+                        detailsRegion.transform.FindChild ("Ability").GetComponent<Text> ().text = "";
+                        detailsRegion.transform.FindChild ("Item").GetComponent<Text> ().text = "";
+                    } //end else
+                    break;
+                } //end default (Pokemon region)
+            } //end switch
 
             //End processing
             processing = false;
@@ -1685,27 +1806,53 @@ public class SceneManager : MonoBehaviour
      * Sets the correct sprite, or disables
      * if a type isn't found.
      ***************************************/
-    void SetTypeSprites(Image type1, Image type2)
+    void SetTypeSprites(Image type1, Image type2, int natSpecies = -1)
     {
-        //Set the primary (first) type
-        type1.sprite = DataContents.typeSprites[Convert.ToInt32(Enum.Parse(typeof(Types),
-                       DataContents.ExecuteSQL<string>("SELECT type1 FROM Pokemon WHERE rowid=" +
-                       GameManager.instance.GetTrainer().Team[choiceNumber-1].NatSpecies)))];
-
-        //Get the string for the secondary type
-        string type2SQL = DataContents.ExecuteSQL<string> ("SELECT type2 FROM Pokemon WHERE rowid=" +
-                          GameManager.instance.GetTrainer ().Team [choiceNumber - 1].NatSpecies); 
-
-        //If a second type exists, load the appropriate sprite
-        if (!String.IsNullOrEmpty (type2SQL))
+        //If nat species is provided
+        if (natSpecies != -1)
         {
-            type2.gameObject.SetActive(true);
-            type2.sprite = DataContents.typeSprites [Convert.ToInt32 (Enum.Parse (typeof(Types), type2SQL))];
+            //Set the primary (first) type
+            type1.gameObject.SetActive(true);
+            type1.sprite = DataContents.typeSprites [Convert.ToInt32 (Enum.Parse (typeof(Types),
+                DataContents.ExecuteSQL<string> ("SELECT type1 FROM Pokemon WHERE rowid=" + natSpecies)))];
+            
+            //Get the string for the secondary type
+            string type2SQL = DataContents.ExecuteSQL<string> ("SELECT type2 FROM Pokemon WHERE rowid=" + natSpecies);
+            
+            //If a second type exists, load the appropriate sprite
+            if (!String.IsNullOrEmpty (type2SQL))
+            {
+                type2.gameObject.SetActive (true);
+                type2.sprite = DataContents.typeSprites [Convert.ToInt32 (Enum.Parse (typeof(Types), type2SQL))];
+            } //end if
+            //Otherwise disable the image
+            else
+            {
+                type2.gameObject.SetActive (false);
+            } //end else
         } //end if
-        //Otherwise disable the image
         else
         {
-            type2.gameObject.SetActive(false);
+            //Set the primary (first) type
+            type1.sprite = DataContents.typeSprites [Convert.ToInt32 (Enum.Parse (typeof(Types),
+                DataContents.ExecuteSQL<string> ("SELECT type1 FROM Pokemon WHERE rowid=" +
+                GameManager.instance.GetTrainer ().Team [choiceNumber - 1].NatSpecies)))];
+
+            //Get the string for the secondary type
+            string type2SQL = DataContents.ExecuteSQL<string> ("SELECT type2 FROM Pokemon WHERE rowid=" +
+                GameManager.instance.GetTrainer ().Team [choiceNumber - 1].NatSpecies); 
+
+            //If a second type exists, load the appropriate sprite
+            if (!String.IsNullOrEmpty (type2SQL))
+            {
+                type2.gameObject.SetActive (true);
+                type2.sprite = DataContents.typeSprites [Convert.ToInt32 (Enum.Parse (typeof(Types), type2SQL))];
+            } //end if
+            //Otherwise disable the image
+            else
+            {
+                type2.gameObject.SetActive (false);
+            } //end else
         } //end else
     } //end SetTypeSprites(Image type1, Image type2)
 
@@ -2045,6 +2192,28 @@ public class SceneManager : MonoBehaviour
                     } //end else if Pokemon Ribbons on Continue Game -> Ribbons
                     break;
                 } //end case OverallState CONTINUEGAME
+
+                //PC
+                case OverallGame.PC:
+                {
+                    //If on box title
+                    if(boxChoice == -2)
+                    {
+                        boxChoice = -3;
+                    } //end if
+                    //If on top left slot
+                    else if(boxChoice == 0)
+                    {
+                        boxChoice = -2;
+                    } //end else if
+                    //Otherwise move left
+                    else
+                    {
+                        //Decrease (higher slots on lower children)
+                        boxChoice--;
+                    } //end else
+                    break;
+                } //end case OverallState PC
             } //end scene switch
         } //end if Left Arrow
 
@@ -2162,6 +2331,20 @@ public class SceneManager : MonoBehaviour
                     } //end else if Pokemon Ribbons on Continue Game -> Ribbons
                     break;
                 } // end case OverallGame CONTINUEGAME
+
+                //PC
+                case OverallGame.PC:
+                {
+                    //Increase (lower slots on higher children)
+                    boxChoice++;
+                    
+                    //Clamp at 31
+                    if(boxChoice > 31)
+                    {
+                        boxChoice = 31;
+                    } //end if
+                    break;
+                } //end case OverallState PC
             } //end scene switch
         } //end else if Right Arrow
 
@@ -2379,6 +2562,28 @@ public class SceneManager : MonoBehaviour
                     } //end else if Pokemon Ribbons on Continue Game -> Ribbons
                     break;
                 } //end case OverallGame CONTINUEGAME
+
+                //PC
+                case OverallGame.PC:
+                {
+                    //If on title, move to party button
+                    if(boxChoice == -2)
+                    {
+                        boxChoice = 30;
+                    } //end if
+                    else
+                    {
+                        //Decrease (higher slots on lower children)
+                        boxChoice -= 6;
+                        
+                        //Clamp at -2 if not on a pokemon
+                        if(boxChoice < 0)
+                        {
+                            boxChoice = -2;
+                        } //end if
+                    } //end else
+                    break;
+                } //end case OverallState PC
             } //end scene switch
         }//end else if Up Arrow
 
@@ -2599,6 +2804,29 @@ public class SceneManager : MonoBehaviour
                     } //end else if Pokemon Ribbons in Continue Game -> Ribbons
                     break;
                 } //end case OverallGame CONTINUEGAME
+
+                 //PC
+                case OverallGame.PC:
+                {
+                    //If on party button, move to box title
+                    if(boxChoice == 30)
+                    {
+                        boxChoice = -2;
+                    } //end if
+
+                    //Otherwise increase (lower slots on higher children)
+                    else
+                    {
+                        boxChoice += 6;
+
+                        //Clamp to 30 (party button)
+                        if(boxChoice > 29)
+                        {
+                            boxChoice = 30;
+                        } //end if
+                    } //end else
+                    break;
+                } //end case OverallState PC
             } //end scene switch
         }//end else if Down Arrow
 
@@ -4315,10 +4543,11 @@ public class SceneManager : MonoBehaviour
         if (fadeOut)
         {
             //Fade out
+            playing = true;
             StartCoroutine (FadeOutAnimation (0));
 
             //Wait for fade out to finish
-            while(fade.color.a != 1)
+            while(playing)
             {
                 yield return null;
             } //end while

@@ -153,5 +153,37 @@ public class PC
     {
         return wallpaper[currentBox];
     } //end GetPCBoxWallpaper
+
+    /***************************************
+     * Name: PreviousBox
+     * Sets the PC to the previous box
+     ***************************************/
+    public void PreviousBox()
+    {
+        //Decrease the currentBox
+        currentBox--;
+
+        //Clamp between 0 and 49
+        if (currentBox < 0)
+        {
+            currentBox = 49;
+        } //end if
+    } //end PreviousBox
+    
+    /***************************************
+     * Name: NextBox
+     * Sets the PC to the next box
+     ***************************************/
+    public void NextBox()
+    {
+        //Increase the currentBox
+        currentBox++;
+        
+        //Clamp between 0 and 49
+        if (currentBox > 49)
+        {
+            currentBox = 0;
+        } //end if
+    } //end NextBox
     #endregion
 } //end class PC

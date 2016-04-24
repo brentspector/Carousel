@@ -163,6 +163,81 @@ public class Trainer
         team.Clear();
     } //end EmptyTeam
 
+    /***************************************
+     * Name: GetPC
+     * Gets the pokemon at the requested 
+     * box and spot
+     ***************************************/
+    public Pokemon GetPC(int box, int spot)
+    {
+        return pPC.GetPC (box, spot);
+    } //end GetPC(int box, int spot)
+    
+    /***************************************
+     * Name: AddToPC
+     * Adds the pokemon to the spot in the
+     * requested box
+     ***************************************/
+    public void AddToPC(int box, int spot, Pokemon newPokemon)
+    {
+        pPC.AddToPC (box, spot, newPokemon);
+    } //end AddToPC(int box, int spot, Pokemon newPokemon)
+    
+    /***************************************
+     * Name: RemoveFromPC
+     * Deletes the pokemon (if it exists)
+     * in the slot of the requested box
+     ***************************************/
+    public void RemoveFromPC(int box, int spot)
+    {
+        pPC.RemoveFromPC (box, spot);
+    } //end RemoveFromPC(int box, int spot)
+    
+    /***************************************
+     * Name: GetPCBox
+     * Returns the current box
+     ***************************************/
+    public int GetPCBox()
+    {
+        return pPC.GetPCBox ();
+    } //end GetPCBox
+    
+    /***************************************
+     * Name: GetPCBoxName
+     * Returns the current box name
+     ***************************************/
+    public string GetPCBoxName()
+    {
+        return pPC.GetPCBoxName();
+    } //end GetPCBoxName
+    
+    /***************************************
+     * Name: GetPCBoxWallpaper
+     * Returns the current box wallpaper
+     ***************************************/
+    public int GetPCBoxWallpaper()
+    {
+        return pPC.GetPCBoxWallpaper();
+    } //end GetPCBoxWallpaper
+
+    /***************************************
+     * Name: PreviousBox
+     * Sets the PC to the previous box
+     ***************************************/
+    public void PreviousBox()
+    {
+        pPC.PreviousBox ();       
+    } //end PreviousBox
+
+    /***************************************
+     * Name: NextBox
+     * Sets the PC to the next box
+     ***************************************/
+    public void NextBox()
+    {
+        pPC.NextBox ();
+    } //end NextBox
+
     #region Properties
     /***************************************
      * Name: Team
@@ -178,54 +253,6 @@ public class Trainer
             team = value;
         } //end set
     } //end Team
-
-    /***************************************
-     * Name: GetPC
-     ***************************************/
-    public Pokemon GetPC(int box, int spot)
-    {
-        return pPC.GetPC (box, spot);
-    } //end GetPC(int box, int spot)
-
-    /***************************************
-     * Name: AddToPC
-     ***************************************/
-    public void AddToPC(int box, int spot, Pokemon newPokemon)
-    {
-        pPC.AddToPC (box, spot, newPokemon);
-    } //end AddToPC(int box, int spot, Pokemon newPokemon)
-
-    /***************************************
-     * Name: RemoveFromPC
-     ***************************************/
-    public void RemoveFromPC(int box, int spot)
-    {
-        pPC.RemoveFromPC (box, spot);
-    } //end RemoveFromPC(int box, int spot)
-
-    /***************************************
-     * Name: GetPCBox
-     ***************************************/
-    public int GetPCBox()
-    {
-        return pPC.GetPCBox ();
-    } //end GetPCBox
-
-    /***************************************
-     * Name: GetPCBoxName
-     ***************************************/
-    public string GetPCBoxName()
-    {
-        return pPC.GetPCBoxName();
-    } //end GetPCBoxName
-    
-    /***************************************
-     * Name: GetPCBoxWallpaper
-     ***************************************/
-    public int GetPCBoxWallpaper()
-    {
-        return pPC.GetPCBoxWallpaper();
-    } //end GetPCBoxWallpaper
 
     /***************************************
      * Name: Version
