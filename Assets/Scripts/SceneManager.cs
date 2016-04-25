@@ -107,6 +107,7 @@ public class SceneManager : MonoBehaviour
     GameObject detailsRegion;       //Area that displays the details of a highlighted pokemon
     GameObject choiceHand;          //The highlighter for the PC
     GameObject partyTab;            //The panel displaying the current team in PC
+    GameObject currentPCSlot;       //The object that is currently highlighted
     int boxChoice;                  //The pokemon that is highlighted
     #endregion
 
@@ -1431,6 +1432,9 @@ public class SceneManager : MonoBehaviour
                 boxBack.transform.FindChild ("BoxName").position.y + 8, 100);
             boxChoice = -2;
 
+            //Current slot is title
+            currentPCSlot = boxBack.transform.FindChild("BoxName").gameObject;
+
             //Move to next checkpoint
             StartCoroutine(FadeInAnimation(2));
         } //end else if
@@ -1461,6 +1465,7 @@ public class SceneManager : MonoBehaviour
 
                     choiceHand.transform.position = new Vector3(boxBack.transform.FindChild ("BoxName").position.x,
                         boxBack.transform.FindChild ("BoxName").position.y + 8, 100);
+                    currentPCSlot = boxBack.transform.FindChild("BoxName").gameObject;
                     detailsRegion.transform.FindChild ("Name").GetComponent<Text> ().text = "";
                     detailsRegion.transform.FindChild ("Gender").GetComponent<Image> ().color = Color.clear;
                     detailsRegion.transform.FindChild ("Sprite").GetComponent<Image> ().color = Color.clear;
@@ -1489,6 +1494,7 @@ public class SceneManager : MonoBehaviour
                     choiceHand.transform.position = new Vector3(
                         detailsRegion.transform.FindChild ("Buttons").GetChild(0).position.x,
                         detailsRegion.transform.FindChild ("Buttons").GetChild(0).position.y + 8, 100);
+                    currentPCSlot = detailsRegion.transform.FindChild ("Buttons").GetChild(0).gameObject;
                     detailsRegion.transform.FindChild ("Name").GetComponent<Text> ().text = "";
                     detailsRegion.transform.FindChild ("Gender").GetComponent<Image> ().color = Color.clear;
                     detailsRegion.transform.FindChild ("Sprite").GetComponent<Image> ().color = Color.clear;
@@ -1508,6 +1514,7 @@ public class SceneManager : MonoBehaviour
                         detailsRegion.transform.FindChild ("Buttons").GetChild(1).position.x,
                         detailsRegion.transform.FindChild ("Buttons").GetChild(1).position.y + 8, 100);
                     detailsRegion.transform.FindChild ("Name").GetComponent<Text> ().text = "";
+                    currentPCSlot = detailsRegion.transform.FindChild ("Buttons").GetChild(1).gameObject;
                     detailsRegion.transform.FindChild ("Gender").GetComponent<Image> ().color = Color.clear;
                     detailsRegion.transform.FindChild ("Sprite").GetComponent<Image> ().color = Color.clear;
                     detailsRegion.transform.FindChild ("Markings").GetComponent<Text> ().text = "";
@@ -1522,9 +1529,11 @@ public class SceneManager : MonoBehaviour
                 //Pokemon region
                 default:
                 {
+                    //Position hand
                     choiceHand.transform.position = new Vector3(
                         boxBack.transform.FindChild("PokemonRegion").GetChild (boxChoice).position.x,
                         boxBack.transform.FindChild("PokemonRegion").GetChild (boxChoice).position.y + 8, 100);
+                    currentPCSlot = boxBack.transform.FindChild("PokemonRegion").GetChild (boxChoice).gameObject;
 
                     //Get the pokemon in the slot
                     Pokemon temp = GameManager.instance.GetTrainer().GetPC(
@@ -3055,6 +3064,32 @@ public class SceneManager : MonoBehaviour
                     } //end else if Pokemon Ribbons on Continue Game -> Ribbons
                     break;
                 } //end case OverallGame CONTINUEGAME
+                //PC
+                case OverallGame.PC:
+                {
+                    if(checkpoint == 2 && Input.mousePosition.y < 
+                       Camera.main.WorldToScreenPoint(currentPCSlot.transform.position).y - 
+                       currentPCSlot.GetComponent<RectTransform>().rect.height/2)
+                    {
+                        //If not at bottom of PC
+                        if(boxChoice < 24)
+                        {
+                            boxChoice += 6;
+                        } //end if
+                        //Otherwise go to nearest button
+                        else if(boxChoice < 27)
+                        {
+                            //Set to party button
+                            boxChoice = 30;
+                        } //end else if
+                        else
+                        {
+                            //Set to return button
+                            boxChoice = 31;
+                        } //end else
+                    } //end if
+                    break;
+                } //end case OverallGame PC
             } //end scene switch
         } //end else if Mouse Moves Down
 
@@ -3252,6 +3287,26 @@ public class SceneManager : MonoBehaviour
                     } //end else if Pokemon Ribbons on Continue Game -> Ribbons
                     break;
                 } //end case OverallGame CONTINUEGAME
+                //PC
+                case OverallGame.PC:
+                {
+                    if(checkpoint == 2 && Input.mousePosition.y > 
+                       Camera.main.WorldToScreenPoint(currentPCSlot.transform.position).y + 
+                       currentPCSlot.GetComponent<RectTransform>().rect.height/2)
+                    {
+                        //If not at top of PC
+                        if(boxChoice > 5)
+                        {
+                            boxChoice -= 6;
+                        } //end if
+                        else
+                        {
+                            //Go to title                           
+                            boxChoice = -2;
+                        } //end else
+                    } //end if
+                    break;
+                } //end case OverallGame PC
             } //end scene switch
         } //end else if Mouse Moves Up
 
@@ -3330,6 +3385,31 @@ public class SceneManager : MonoBehaviour
                     } //end else if Pokemon Ribbons on Continue Game -> Ribbons
                     break;
                 } //end OverallGame CONTINUEGAME
+                //PC
+                case OverallGame.PC:
+                {
+                    if(checkpoint == 2 && Input.mousePosition.x < 
+                       Camera.main.WorldToScreenPoint(currentPCSlot.transform.position).x - 
+                       currentPCSlot.GetComponent<RectTransform>().rect.width/2)
+                    {
+                        //If not at bottom of PC or on left side
+                        if(boxChoice < 30 || boxChoice % 6 != 0)
+                        {
+                            boxChoice--;
+                        } //end if
+                        else if(boxChoice == 31)
+                        {
+                            //Set to party button
+                            boxChoice = 30;
+                        } //end else if
+                        else if(boxChoice == -2)
+                        {
+                            //Set to left box
+                            boxChoice = -3;
+                        } //end else
+                    } //end if
+                    break;
+                } //end case OverallGame PC
             } //end scene switch
         } //end if Mouse Moves Left
 
@@ -3409,6 +3489,31 @@ public class SceneManager : MonoBehaviour
                     } //end else if Pokemon Ribbons on Continue Game -> Ribbons
                     break;
                 } //end OverallGame CONTINUEGAME
+                //PC
+                case OverallGame.PC:
+                {
+                    if(checkpoint == 2 && Input.mousePosition.x > 
+                       Camera.main.WorldToScreenPoint(currentPCSlot.transform.position).x + 
+                       currentPCSlot.GetComponent<RectTransform>().rect.width/2)
+                    {
+                        //If not at bottom of PC or on right side
+                        if(boxChoice < 30 || boxChoice % 6 != 5)
+                        {
+                            boxChoice++;
+                        } //end if
+                        else if(boxChoice == 30)
+                        {
+                            //Set to return button
+                            boxChoice = 31;
+                        } //end else if
+                        else if(boxChoice == -2)
+                        {
+                            //Set to right box
+                            boxChoice = -1;
+                        } //end else
+                    } //end if
+                    break;
+                } //end case OverallGame PC
             } //end scene switch
         } //end else if Mouse Moves Right
 

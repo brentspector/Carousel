@@ -15,9 +15,13 @@ public class GameManager : MonoBehaviour
 {
     #region Variables
 	//GLOBAL SETTING VARIABLES
-	public float VersionNumber = 0.1f;      //Version number for save file management
+    [System.NonSerialized]
+	public float VersionNumber = 0.2f;      //Version number for save file management
+    [System.NonSerialized]
 	public int NumberOfMarkings = 6;        //How many markings are available to be used
+    [System.NonSerialized]
 	public int NumberOfRibbons = 80;        //How many ribbons are available
+    [System.NonSerialized]
     public int NumberOfWallpaper = 25;      //How many wallpapers are available
 
 	//Singleton handle

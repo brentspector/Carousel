@@ -151,7 +151,8 @@ public class SystemManager : MonoBehaviour
         } //end else
 
 		//Send a starting line
-		LogErrorMessage (DateTime.Now.ToString () + " - Game was started.");
+		LogErrorMessage (DateTime.Now.ToString () + " - Game was started - Version " + 
+                         GameManager.instance.VersionNumber);
        
 		//Report whether successful
 		if(output != null)
