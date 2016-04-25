@@ -1347,6 +1347,28 @@ public class SceneManager : MonoBehaviour
             partyTab = GameObject.Find ("PartyTab");
             choiceHand = GameObject.Find ("ChoiceHand");
 
+            //Fill in choices box
+            for(int i = choices.transform.childCount-1; i < 5; i++)
+            {
+                GameObject clone = Instantiate(choices.transform.GetChild(0).gameObject,
+                                               choices.transform.GetChild(0).position,
+                                               Quaternion.identity) as GameObject;
+                clone.transform.SetParent(choices.transform);
+            } //end for
+            choices.transform.GetChild(0).GetComponent<Text>().text = "Summary";
+            choices.transform.GetChild(1).GetComponent<Text>().text = "Switch";
+            choices.transform.GetChild(2).GetComponent<Text>().text = "Item";
+            choices.transform.GetChild(3).GetComponent<Text>().text = "Ribbons";
+            choices.transform.GetChild(4).GetComponent<Text>().text = "Markings";
+            choices.transform.GetChild(5).GetComponent<Text>().text = "Cancel";
+            if(choices.transform.childCount > 5)
+            {
+                for(int i = 6; i < choices.transform.childCount; i++)
+                {
+                    Destroy(choices.transform.GetChild(i).gameObject);
+                } //end for
+            } //end if
+
             //Disable choice menu if it's up
             choices.SetActive(false);
             selection.SetActive(false);
@@ -4309,6 +4331,16 @@ public class SceneManager : MonoBehaviour
                     } //end else if Debug on Continue Game -> Debug
                     break;
                 } //end case OverallGame CONTINUEGAME
+                //PC
+                case OverallGame.PC:
+                {
+                    //Summon or close choices menu
+                    if(checkpoint == 2)
+                    {
+                        choices.SetActive(!choices.activeSelf);
+                    } //end if
+                    break;
+                } //end OverallGame PC
             } //end scene switch
         } //end else if Enter/Return Key
 
