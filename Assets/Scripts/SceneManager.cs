@@ -41,6 +41,16 @@ public class SceneManager : MonoBehaviour
         DEBUG
     } //end MainGame
 
+    //PC game states
+    public enum PCGame
+    {
+        HOME,
+        POKEMONSUBMENU,
+        POKEMONSUMMARY,
+        MOVESWITCH,
+        POKEMONHELD
+    } //end PCGame
+
 	//Scene variables
     OverallGame sceneState;         //The scene the program is in
 	Image fade;						//Fade screen
