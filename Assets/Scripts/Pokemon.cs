@@ -714,7 +714,9 @@ public class Pokemon
                 string moveList = DataContents.ExecuteSQL<string>("SELECT moves FROM Pokemon WHERE rowid=" + natSpecies);
                 string[] arrayList = moveList.Split(',');
                 int tempHolder = 0;
-                List<string> pos = arrayList.Select((moveLevel,listIndex) => int.TryParse(moveLevel,out tempHolder) ? int.Parse(moveLevel) <= currentLevel ? arrayList[listIndex+1] : "null" : "null").Where(listIndex => listIndex != "null").ToList();
+                List<string> pos = arrayList.Select((moveLevel,listIndex) => int.TryParse(moveLevel,out tempHolder) ? 
+                    int.Parse(moveLevel) <= currentLevel ? arrayList[listIndex+1] : "null" : "null").
+                    Where(listIndex => listIndex != "null").ToList();
 
                 //Fill remaining moves with values
                 for(int j = i, k = pos.Count-1; j < 4 && k > -1; j++, k--)

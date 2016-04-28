@@ -6,6 +6,7 @@
 using UnityEngine;
 using System;
 using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 #endregion
 
@@ -13,7 +14,7 @@ using System.Collections.Generic;
 public class PC
 {
     #region Variables
-    Pokemon[,] pokemonStorage;      //Storage for each box of pokemon
+    Pokemon[][] pokemonStorage;     //Storage for each box of pokemon
     string[] boxNames;              //Name of each storage box
     int[] wallpaper;                //Wallpaper each box has
     int currentBox;                 //The box active for storage/reading
@@ -31,7 +32,12 @@ public class PC
         if (GameManager.instance != null)
         {
             //Set up pokemon storage
-            pokemonStorage = new Pokemon[50, 30];
+            pokemonStorage = new Pokemon[50][];
+
+            for(int i = 0; i <pokemonStorage.Length; i++)
+            {
+                pokemonStorage[i] = new Pokemon[30];
+            } //end for
 
             //No pokemon are in the box
             totalPokemon = 0;
@@ -61,7 +67,7 @@ public class PC
      ***************************************/
     public Pokemon GetPC(int box, int spot)
     {
-        return pokemonStorage [box, spot];
+        return pokemonStorage [box][spot];
     } //end GetPC(int box, int spot)
 
     /***************************************
@@ -79,9 +85,9 @@ public class PC
         } //end if
 
         //If the spot is empty, fill it
-        if (pokemonStorage [box, spot] == null)
+        if (pokemonStorage [box][spot] == null)
         {
-            pokemonStorage [box, spot] = newPokemon;
+            pokemonStorage [box][spot] = newPokemon;
         } //end if
         
         //Otherwise look for the first unfilled spot
@@ -91,9 +97,9 @@ public class PC
             for(int i = 0; i < 30; i++)
             {
                 //Place pokemon in empty spot and end function
-                if(pokemonStorage[box, i]  == null)
+                if(pokemonStorage[box][i]  == null)
                 {
-                    pokemonStorage[box, i] = newPokemon;
+                    pokemonStorage[box][i] = newPokemon;
                     return;
                 } //end if
             } //end for
@@ -104,16 +110,19 @@ public class PC
                 for(int j = 0; j < 30; j++)
                 {
                     //Place pokemon in empty spot and end function
-                    if(pokemonStorage[i, j] == null)
+                    if(pokemonStorage[i][j] == null)
                     {
                         GameManager.instance.DisplayText(boxNames[box] + " is full." +
                            "Placed in box \"" + boxNames[i] + "\" instead.");
-                        pokemonStorage [i, j] = newPokemon;
+                        pokemonStorage [i][j] = newPokemon;
                         currentBox = i;
                         return;
                     } //end if
                 } //end for
             } //end for
+
+            //Increment totalPokemon
+            totalPokemon++;
         } //end else
     } //end SetPC(int box, int spot, Pokemon newPokemon)
 
@@ -124,7 +133,10 @@ public class PC
     public void RemoveFromPC(int box, int spot)
     {
         //Set spot to null
-        pokemonStorage [box, spot] = null;
+        pokemonStorage [box][spot] = null;
+
+        //Decrement total pokemon
+        totalPokemon--;
     } //end RemoveFromPC(int box, int spot)
 
     /***************************************
@@ -185,5 +197,47 @@ public class PC
             currentBox = 0;
         } //end if
     } //end NextBox
+
+    /***************************************
+     * Name: GetLastPokemon
+     * Return the last non null pokemon in box
+     ***************************************/
+    public Pokemon GetLastPokemon()
+    {
+        Pokemon[] boxArray = pokemonStorage [currentBox];
+        return boxArray.Last (pokemon => pokemon != null);
+    } //end GetLastPokemon
+
+    /***************************************
+     * Name: GetFirstPokemon
+     * Return the first non null pokemon in box
+     ***************************************/
+    public Pokemon GetFirstPokemon()
+    {
+        Pokemon[] boxArray = pokemonStorage [currentBox];
+        return boxArray.First (pokemon => pokemon != null);
+    } //end GetFirstPokemon
+
+    /***************************************
+     * Name: GetLastPokemonIndex
+     * Return the index of the last non null 
+     * pokemon in box
+     ***************************************/
+    public int GetLastPokemonIndex()
+    {
+        Pokemon[] boxArray = pokemonStorage [currentBox];
+        return Array.FindIndex (boxArray, pokemon => pokemon == GetLastPokemon ());
+    } //end GetLastPokemonIndex
+    
+    /***************************************
+     * Name: GetFirstPokemonIndex
+     * Return the index of the first non null 
+     * pokemon in box
+     ***************************************/
+    public int GetFirstPokemonIndex()
+    {
+        Pokemon[] boxArray = pokemonStorage [currentBox];
+        return Array.FindIndex (boxArray, pokemon => pokemon == GetFirstPokemon ());
+    } //end GetFirstPokemonIndex
     #endregion
 } //end class PC

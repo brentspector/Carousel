@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using Random = UnityEngine.Random;
 #endregion
@@ -115,7 +116,6 @@ public class GameManager : MonoBehaviour
                     //Debug mode (development in the editor) commands go here
                     //sysm.GetPersist();
                     //sysm.Persist();
-
 #else
                     //Stand-alone mode (user version) diagnostic commands go here
 
@@ -227,7 +227,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void PartyState(bool state)
     {
-        scenes.PartyState(false);
+        scenes.PartyState(state);
     } //end PartyState(bool state)
     #endregion
 

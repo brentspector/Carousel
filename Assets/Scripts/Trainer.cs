@@ -238,6 +238,43 @@ public class Trainer
         pPC.NextBox ();
     } //end NextBox
 
+    /***************************************
+     * Name: GetLastPokemon
+     * Return the last non null pokemon in box
+     ***************************************/
+    public Pokemon GetLastPokemon()
+    {
+        return pPC.GetLastPokemon ();
+    } //end GetLastPokemon
+    
+    /***************************************
+     * Name: GetFirstPokemon
+     * Return the first non null pokemon in box
+     ***************************************/
+    public Pokemon GetFirstPokemon()
+    {
+        return pPC.GetFirstPokemon ();
+    } //end GetFirstPokemon
+    
+    /***************************************
+     * Name: GetLastPokemonIndex
+     * Return the index of the last non null 
+     * pokemon in box
+     ***************************************/
+    public int GetLastPokemonIndex()
+    {
+        return pPC.GetLastPokemonIndex ();
+    } //end GetLastPokemonIndex
+    
+    /***************************************
+     * Name: GetFirstPokemonIndex
+     * Return the index of the first non null 
+     * pokemon in box
+     ***************************************/
+    public int GetFirstPokemonIndex()
+    {
+        return pPC.GetFirstPokemonIndex ();
+    } //end GetFirstPokemonIndex
     #region Properties
     /***************************************
      * Name: Team
