@@ -1479,6 +1479,12 @@ public class SceneManager : MonoBehaviour
                 //Put choice hand at party slot position
                 choiceHand.transform.position = new Vector3 (currentTeamSlot.transform.position.x, 
                     currentTeamSlot.transform.position.y + 8, 100);
+
+                //Selected pokemon is same as choice
+                if(choiceNumber > 0)
+                {
+                    selectedPokemon = GameManager.instance.GetTrainer().Team[choiceNumber-1];
+                } //end if
             } //end else if
 
             //End processing
@@ -3507,7 +3513,6 @@ public class SceneManager : MonoBehaviour
                             Input.mousePosition.y < Camera.main.WorldToScreenPoint(currentSwitchSlot.transform.
                             position).y - currentSwitchSlot.GetComponent<RectTransform>().rect.height/2)
                     {
-                        Debug.Log("Mouse down move details");
                         //If next slot is null, don't move
                         if(switchChoice < selectedPokemon.GetMoveCount() - 1)
                         {
@@ -3907,7 +3912,7 @@ public class SceneManager : MonoBehaviour
                     } //end if
 
                     //Pokemon Party on PC -> Party Tab
-                    if(pcState == PCGame.PARTY && Input.mousePosition.x < 
+                    else if(pcState == PCGame.PARTY && Input.mousePosition.x < 
                        Camera.main.WorldToScreenPoint(currentTeamSlot.transform.position).x - 
                        currentTeamSlot.GetComponent<RectTransform>().rect.width/2)
                     {
@@ -3917,7 +3922,7 @@ public class SceneManager : MonoBehaviour
                             choiceNumber--;
                             currentTeamSlot = partyTab.transform.FindChild("Pokemon"+choiceNumber).gameObject;
                         } //end if   
-                    } //end if Pokemon Party on PC -> Party Tab
+                    } //end else if Pokemon Party on PC -> Party Tab
                     break;
                 } //end case OverallGame PC
             } //end scene switch
@@ -4024,7 +4029,7 @@ public class SceneManager : MonoBehaviour
                     } //end if
 
                     //Pokemon Party on PC -> Party Tab
-                    if(pcState == PCGame.PARTY && Input.mousePosition.x > Camera.main.
+                    else if(pcState == PCGame.PARTY && Input.mousePosition.x > Camera.main.
                        WorldToScreenPoint(currentTeamSlot.transform.position).x + currentTeamSlot.
                        GetComponent<RectTransform>().rect.width/2)
                     {
@@ -4035,7 +4040,7 @@ public class SceneManager : MonoBehaviour
                             choiceNumber++;
                             currentTeamSlot = partyTab.transform.FindChild("Pokemon"+choiceNumber).gameObject;
                         } //end if   
-                    } //end if Pokemon Party on PC -> Party Tab
+                    } //end else if Pokemon Party on PC -> Party Tab
                     break;
                 } //end case OverallGame PC
             } //end scene switch
@@ -4361,6 +4366,30 @@ public class SceneManager : MonoBehaviour
                         } //end if  
                     } //end if Home
 
+                    //Pokemon Party on PC -> Party Tab
+                    else if(pcState == PCGame.PARTY && selectedPokemon != null)
+                    {
+                        //Open submenu as long as player is in party
+                        if(choiceNumber > 0)
+                        {
+                            //Set submenu active
+                            choices.SetActive(true);
+                            selection.SetActive(true);
+                            
+                            //Set up selection box at end of frame if it doesn't fit
+                            if(selection.GetComponent<RectTransform>().sizeDelta != 
+                               choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
+                            {
+                                selection.SetActive(false);
+                                StartCoroutine("WaitForResize");
+                            } //end if
+                            
+                            //Reset position to top of menu
+                            subMenuChoice = 0;
+                            pcState = PCGame.POKEMONSUBMENU;
+                        } //end if  
+                    } //end else if Pokemon Party on PC -> Party Tab
+
                     //Pokemon Submenu on PC
                     else if(pcState == PCGame.POKEMONSUBMENU)
                     {
@@ -4406,7 +4435,7 @@ public class SceneManager : MonoBehaviour
                                 {
                                     selectedPokemon.Item = 0;
                                 } //end else
-                                pcState = PCGame.HOME;
+                                pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
                                 break;
                             } //end case 2 (Item)
                                 
@@ -4435,7 +4464,7 @@ public class SceneManager : MonoBehaviour
                             {
                                 choices.SetActive(false);
                                 selection.SetActive(false);
-                                pcState = PCGame.HOME;
+                                pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
                                 break;
                             } //end case 5 (Cancel)
                         } //end switch
@@ -4605,8 +4634,15 @@ public class SceneManager : MonoBehaviour
                     {
                         choices.SetActive(false);
                         selection.SetActive(false);
-                        pcState = PCGame.HOME;
+                        pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
                     } //end if Pokemon Submenu on PC
+
+                    //Pokemon Party on PC -> Party Tab
+                    else if(pcState == PCGame.PARTY)
+                    {
+                        partyTab.SetActive(false);
+                        pcState = PCGame.HOME;
+                    } //end else if Pokemon Party on PC -> Party Tab
 
                     //Pokemon Summary on PC -> Summary
                     else if(pcState == PCGame.POKEMONSUMMARY)
@@ -4617,8 +4653,8 @@ public class SceneManager : MonoBehaviour
                             //Deactivate summary
                             summaryScreen.SetActive(false);
                             
-                            //Return home
-                            pcState = PCGame.HOME;
+                            //Return home or party
+                            pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
                         } //end if
                         else
                         {
@@ -5175,6 +5211,30 @@ public class SceneManager : MonoBehaviour
                         } //end else if
                     } //end if Home
 
+                    //Pokemon Party on PC -> Party Tab
+                    else if(pcState == PCGame.PARTY && selectedPokemon != null)
+                    {
+                        //Open submenu as long as player is in party
+                        if(choiceNumber > 0)
+                        {
+                            //Set submenu active
+                            choices.SetActive(true);
+                            selection.SetActive(true);
+                            
+                            //Set up selection box at end of frame if it doesn't fit
+                            if(selection.GetComponent<RectTransform>().sizeDelta != 
+                               choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
+                            {
+                                selection.SetActive(false);
+                                StartCoroutine("WaitForResize");
+                            } //end if
+                            
+                            //Reset position to top of menu
+                            subMenuChoice = 0;
+                            pcState = PCGame.POKEMONSUBMENU;
+                        } //end if  
+                    } //end else if Pokemon Party on PC -> Party Tab
+
                     //Pokemon Submenu on PC
                     else if(pcState == PCGame.POKEMONSUBMENU)
                     {
@@ -5220,7 +5280,7 @@ public class SceneManager : MonoBehaviour
                                 {
                                     selectedPokemon.Item = 0;
                                 } //end else
-                                pcState = PCGame.HOME;
+                                pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
                                 break;
                             } //end case 2 (Item)
                                 
@@ -5249,7 +5309,7 @@ public class SceneManager : MonoBehaviour
                             {
                                 choices.SetActive(false);
                                 selection.SetActive(false);
-                                pcState = PCGame.HOME;
+                                pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
                                 break;
                             } //end case 5 (Cancel)
                         } //end switch
@@ -5426,8 +5486,15 @@ public class SceneManager : MonoBehaviour
                     {
                         choices.SetActive(false);
                         selection.SetActive(false);
-                        pcState = PCGame.HOME;
+                        pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
                     } //end if Pokemon Submenu on PC
+
+                    //Pokeon Party on PC -> Party Tab
+                    else if(pcState == PCGame.PARTY)
+                    {
+                        partyTab.SetActive(false);
+                        pcState =  PCGame.HOME;
+                    } //end else if Pokemon Party on PC -> Party Tab
 
                     //Pokemon Summary on PC -> Summary
                     else if(pcState == PCGame.POKEMONSUMMARY)
@@ -5438,8 +5505,8 @@ public class SceneManager : MonoBehaviour
                             //Deactivate summary
                             summaryScreen.SetActive(false);
                             
-                            //Return to home
-                            pcState = PCGame.HOME;
+                            //Return to home or party
+                            pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
                         } //end if
                         else
                         {
