@@ -60,11 +60,13 @@ public static class DataContents : System.Object
         dataLocation = Environment.CurrentDirectory + "/PokemonCarousel_Data/";
         #endif  
 
-        //Manage SQL Database
+        //Setup SQL Database variables
         dbPath = "URI=file:" + dataLocation + "/Supplimental.db";
         dbConnection=new SqliteConnection(dbPath);
         dbConnection.Open();
         dbCommand=dbConnection.CreateCommand();
+
+        //Verify SQL table loaded correctly
         dbCommand.CommandText = "SELECT Count(*) FROM sqlite_master WHERE type='table'";
         dbReader = dbCommand.ExecuteReader ();
         int returnValue = 0;
@@ -78,7 +80,7 @@ public static class DataContents : System.Object
         } //end if
 
         //Initialize markings
-        markingCharacters = new char[] {'●','■','▲','♥'};
+        markingCharacters = new char[] {'●','■','▲','♥','♦','☻'};
 
         //Initialize max count for each table
         speciesCount = ExecuteSQL<int>("SELECT Count(*) FROM Pokemon");

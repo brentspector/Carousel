@@ -14,7 +14,7 @@ public class Trainer
 {
     #region Variables
     List<Pokemon> team;   //The player's current party
-    Pokemon[,] PC;        //THe player's pokemon storage unit
+    PC pPC;               //The PC for the player
     float version;        //What version this save started on     
     int bups;             //The number of backups made
     string pName;         //The player's name
@@ -75,46 +75,42 @@ public class Trainer
      ***************************************/
     public Trainer()
     {
-        //Create PC
-        InitPC();
-
-        //Set version
+        //If the game manager exists
         if (GameManager.instance != null)
         {
-            version = GameManager.instance.VersionNumber;
+            //Initialize PC
+            pPC = new PC ();
+
+            //Set version
+            if (GameManager.instance != null)
+            {
+                version = GameManager.instance.VersionNumber;
+            } //end if
+
+            //No backups made yet
+            bups = 0;
+
+            //Initialize team
+            team = new List<Pokemon> ();
+
+            //Player has no name yet
+            pName = "-";
+
+            //Give player a random ID
+            pID = (uint)GameManager.instance.RandomInt (0, 255);
+            pID |= (uint)GameManager.instance.RandomInt (0, 255) << 8;
+            pID |= (uint)GameManager.instance.RandomInt (0, 255) << 16;
+
+            //Player has no badges yet
+            pBadges = 0;
+
+            //Time played is zero
+            pHours = 0;
+            pMinutes = 0;
+            pSeconds = 0;
         } //end if
-
-        //No backups made yet
-        bups = 0;
-
-        //Initialize team
-        team = new List<Pokemon>();
-
-        //Player has no name yet
-        pName = "-";
-
-        //Give player a random ID
-        pID = (uint)UnityEngine.Random.Range (0,255);
-        pID |= (uint)UnityEngine.Random.Range (0,255) << 8;
-        pID |= (uint)UnityEngine.Random.Range (0,255) << 16;
-
-        //Player has no badges yet
-        pBadges = 0;
-
-        //Time played is zero
-        pHours = 0;
-        pMinutes = 0;
-        pSeconds = 0;
     } //end Trainer
 
-    /***************************************
-     * Name: InitPC
-     * Creates PC
-     ***************************************/
-    public void InitPC()
-    {
-        PC = new Pokemon[50, 30];
-    } //end InitPC
     /***************************************
      * Name: Swap
      * Swap pokemon location in party
@@ -153,49 +149,10 @@ public class Trainer
         team.Clear ();
         for (int i = 0; i < 6; i++)
         {
-            Pokemon myPokemon = new Pokemon (level: UnityEngine.Random.Range (1, 100), oType: 5, oWhere: 2);
+            Pokemon myPokemon = new Pokemon (level: GameManager.instance.RandomInt (1, 100), oType: 5, oWhere: 2);
             team.Add (myPokemon);
         }
     } //end AddPokemon(Pokemon newPokemon)
-
-    /***************************************
-     * Name: DisplayTeam
-     * Show each pokemon in party
-     ***************************************/
-    public void DisplayPokemon()
-    {
-        for(int i = 0; i < team.Count; i++)
-        {
-            Debug.Log(team[i].Nickname + " " + team[i].CurrentLevel);
-        } //end for
-    } //end DisplayPokemon
-
-    /***************************************
-     * Name: DisplayPC
-     * Show each pokemon in box
-     ***************************************/
-    public void DisplayPC(int box)
-    {
-        for(int i = 0; i < 30; i++)
-        {
-            if(PC[box, i] != null)
-            {
-                Debug.Log(PC[box, i].Nickname + " " + PC[box, i].CurrentLevel);
-            } //end if
-        } //end for
-    } //end DisplayPC(int box)
-
-    /***************************************
-     * Name: EmptyPC
-     * Clear all pokemon in box
-     ***************************************/
-    public void EmptyPC(int box)
-    {
-        for(int i = 0; i < 30; i++)
-        {
-            PC [box, i] = null;
-        } //end for
-    } //end EmptyPC(int box)
 
     /***************************************
      * Name: EmptyTeam
@@ -207,42 +164,117 @@ public class Trainer
     } //end EmptyTeam
 
     /***************************************
-     * Name: SetPCFromTeam
-     * Move a pokemon from the team to the PC
+     * Name: GetPC
+     * Gets the pokemon at the requested 
+     * box and spot
      ***************************************/
-    public void SetPCFromTeam(int box, int spot, int teamSpot)
+    public Pokemon GetPC(int box, int spot)
     {
-        //If the spot is empty, fill it
-        if (PC [box, spot] == null)
-        {
-            //Place pokemon
-            PC [box, spot] = team[teamSpot];
+        return pPC.GetPC (box, spot);
+    } //end GetPC(int box, int spot)
+    
+    /***************************************
+     * Name: AddToPC
+     * Adds the pokemon to the spot in the
+     * requested box
+     ***************************************/
+    public void AddToPC(int box, int spot, Pokemon newPokemon)
+    {
+        pPC.AddToPC (box, spot, newPokemon);
+    } //end AddToPC(int box, int spot, Pokemon newPokemon)
+    
+    /***************************************
+     * Name: RemoveFromPC
+     * Deletes the pokemon (if it exists)
+     * in the slot of the requested box
+     ***************************************/
+    public void RemoveFromPC(int box, int spot)
+    {
+        pPC.RemoveFromPC (box, spot);
+    } //end RemoveFromPC(int box, int spot)
+    
+    /***************************************
+     * Name: GetPCBox
+     * Returns the current box
+     ***************************************/
+    public int GetPCBox()
+    {
+        return pPC.GetPCBox ();
+    } //end GetPCBox
+    
+    /***************************************
+     * Name: GetPCBoxName
+     * Returns the current box name
+     ***************************************/
+    public string GetPCBoxName()
+    {
+        return pPC.GetPCBoxName();
+    } //end GetPCBoxName
+    
+    /***************************************
+     * Name: GetPCBoxWallpaper
+     * Returns the current box wallpaper
+     ***************************************/
+    public int GetPCBoxWallpaper()
+    {
+        return pPC.GetPCBoxWallpaper();
+    } //end GetPCBoxWallpaper
 
-            //Remove pokemon from team
-            RemovePokemon (teamSpot);
-        } //end if
-        
-        //Otherwise look for the first unfilled spot
-        else
-        {
-            for(int i = 0; i < 50; i++)
-            {
-                for(int j = 0; j < 30; j++)
-                {
-                    if(PC[ i, j] == null)
-                    {
-                        //Place pokemon
-                        PC [i, j] = team[teamSpot];
+    /***************************************
+     * Name: PreviousBox
+     * Sets the PC to the previous box
+     ***************************************/
+    public void PreviousBox()
+    {
+        pPC.PreviousBox ();       
+    } //end PreviousBox
 
-                        //Remove pokemon from team
-                        RemovePokemon (teamSpot);
-                        return;
-                    } //end if
-                } //end for
-            } //end for
-        } //end else
-    } //end SetPCFromTeam(int box, int spot, int teamSpot)
+    /***************************************
+     * Name: NextBox
+     * Sets the PC to the next box
+     ***************************************/
+    public void NextBox()
+    {
+        pPC.NextBox ();
+    } //end NextBox
 
+    /***************************************
+     * Name: GetLastPokemon
+     * Return the last non null pokemon in box
+     ***************************************/
+    public Pokemon GetLastPokemon()
+    {
+        return pPC.GetLastPokemon ();
+    } //end GetLastPokemon
+    
+    /***************************************
+     * Name: GetFirstPokemon
+     * Return the first non null pokemon in box
+     ***************************************/
+    public Pokemon GetFirstPokemon()
+    {
+        return pPC.GetFirstPokemon ();
+    } //end GetFirstPokemon
+    
+    /***************************************
+     * Name: GetLastPokemonIndex
+     * Return the index of the last non null 
+     * pokemon in box
+     ***************************************/
+    public int GetLastPokemonIndex()
+    {
+        return pPC.GetLastPokemonIndex ();
+    } //end GetLastPokemonIndex
+    
+    /***************************************
+     * Name: GetFirstPokemonIndex
+     * Return the index of the first non null 
+     * pokemon in box
+     ***************************************/
+    public int GetFirstPokemonIndex()
+    {
+        return pPC.GetFirstPokemonIndex ();
+    } //end GetFirstPokemonIndex
     #region Properties
     /***************************************
      * Name: Team
@@ -258,42 +290,6 @@ public class Trainer
             team = value;
         } //end set
     } //end Team
-
-    /***************************************
-     * Name: GetPC
-     ***************************************/
-    public Pokemon GetPC(int box, int spot)
-    {
-        return PC [box, spot];
-    } //end GetPC(int box, int spot)
-
-    /***************************************
-     * Name: SetPC
-     ***************************************/
-    public void SetPC(int box, int spot, Pokemon newPokemon)
-    {
-        //If the spot is empty, fill it
-        if (PC [box, spot] == null)
-        {
-            PC [box, spot] = newPokemon;
-        } //end if
-
-        //Otherwise look for the first unfilled spot
-        else
-        {
-            for(int i = 0; i < 50; i++)
-            {
-                for(int j = 0; j < 30; j++)
-                {
-                    if(PC[ i, j] == null)
-                    {
-                        PC [i, j] = newPokemon;
-                        return;
-                    } //end if
-                } //end for
-            } //end for
-        } //end else
-    } //end SetPC(int box, int spot, Pokemon newPokemon)
 
     /***************************************
      * Name: Version

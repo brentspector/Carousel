@@ -30,7 +30,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void ReturnHome()
     {
-        GameManager.instance.ReturnHome ();
+        GameManager.instance.SetGameState(SceneManager.MainGame.HOME);
     } //end ReturnHome
 
     /***************************************
@@ -39,7 +39,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void GymBattle()
     {
-        GameManager.instance.GymBattle ();       
+        GameManager.instance.SetGameState(SceneManager.MainGame.GYMBATTLE);       
     } //end GymBattle
 
     /***************************************
@@ -48,7 +48,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void TeamMenu()
     {
-        GameManager.instance.TeamMenu ();
+        GameManager.instance.SetGameState(SceneManager.MainGame.TEAM);
     } //end TeamMenu
 
     /***************************************
@@ -57,7 +57,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void PlayerPC()
     {
-        GameManager.instance.PlayerPC ();
+        GameManager.instance.LoadScene ("PC", SceneManager.OverallGame.PC, true);
     } //end PlayerPC
 
     /***************************************
@@ -66,7 +66,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void Shop()
     {
-        GameManager.instance.Shop ();
+        GameManager.instance.LoadScene ("Shop", SceneManager.OverallGame.SHOP);
     } //end Shop
 
     /***************************************
@@ -75,8 +75,17 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void Pokedex()
     {
-        GameManager.instance.Pokedex ();
+        GameManager.instance.LoadScene ("Pokedex", SceneManager.OverallGame.POKEDEX);
     } //end Pokedex
+
+    /***************************************
+     * Name: ContinueGame
+     * Switches to MainGame scene
+     ***************************************/ 
+    public void ContinueGame()
+    {
+        GameManager.instance.LoadScene ("MainGame", SceneManager.OverallGame.CONTINUE);
+    } //end ContinueGame
 
     /***************************************
      * Name: TrainerCard
@@ -84,8 +93,26 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void TrainerCard()
     {
-        GameManager.instance.TrainerCard ();
+        GameManager.instance.SetGameState(SceneManager.MainGame.TRAINERCARD);
     } //end TrainerCard
+
+    /***************************************
+     * Name: Quit
+     * Exits the application
+     ***************************************/ 
+    public void Quit()
+    {
+        Application.Quit ();       
+    } //end Quit
+
+    /***************************************
+     * Name: Debug
+     * Brings up the debug mode options screen
+     ***************************************/ 
+    public void Debug()
+    {
+        GameManager.instance.SetGameState(SceneManager.MainGame.DEBUG);
+    } //end Debug
 
     /***************************************
      * Name: Info
@@ -133,6 +160,24 @@ public class ButtonFunctions : MonoBehaviour
     } //end Moves
 
     /***************************************
+     * Name: PartyOpen
+     * Brings up the Party in PC box
+     ***************************************/ 
+    public void PartyOpen()
+    {
+        GameManager.instance.PartyState(true);
+    } //end PartyOpen
+
+    /***************************************
+     * Name: PartyClose
+     * Closes the Party in PC box
+     ***************************************/ 
+    public void PartyClose()
+    {
+        GameManager.instance.PartyState(false);
+    } //end PartyClose
+
+    /***************************************
      * Name: Persist
      * Persists the game
      ***************************************/ 
@@ -140,5 +185,34 @@ public class ButtonFunctions : MonoBehaviour
     {
         GameManager.instance.Persist ();
     } //end Persist
+
+    #region Debug
+    /***************************************
+     * Name: GiveRandomTeam
+     * Gives the player a random team
+     ***************************************/ 
+    public void GiveRandomTeam()
+    {
+        GameManager.instance.RandomTeam ();
+    } //end GiveRandomTeam
+
+    /***************************************
+     * Name: GiveRandomPokemon
+     * Adds a single random pokemon to the team
+     ***************************************/ 
+    public void GiveRandomPokemon()
+    {
+        GameManager.instance.RandomPokemon ();
+    } //end GiveRandomPokemon
+
+    /***************************************
+     * Name: AddRandomPokemonToPC
+     * Adds a single random pokemon to the pc
+     ***************************************/ 
+    public void AddRandomPokemonToPC()
+    {
+        GameManager.instance.AddRandomPokemonToPC ();
+    } //end AddRandomPokemonToPC
+    #endregion
     #endregion
 } //end ButtonFunctions class

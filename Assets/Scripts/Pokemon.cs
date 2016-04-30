@@ -63,13 +63,13 @@ public class Pokemon
      * Contructor for pokemon encounters
      ***************************************/
 	public Pokemon(int species = 0, int tID = 0, int level = 5, int item = 0, int ball = 0, 
-	               int oType = 6, int oWhere = 6, int oLevel = 5, int ability = -1, int gender = -1,
+	               int oType = 6, int oWhere = 4, int oLevel = 5, int ability = -1, int gender = -1,
 	               int nature = -1, int happy = 70, bool pokerus = false, bool shiny = false)
 	{
 		//Set data fields
 		if(species == 0)
 		{
-			natSpecies = Random.Range(1, 721);
+			natSpecies = GameManager.instance.RandomInt(1, 722);
 		} //end if
 		else
 		{
@@ -96,7 +96,7 @@ public class Pokemon
                 } //end case AlwaysMale
                 case "FemaleOneEighth":
                 {
-                    int randomNum = Random.Range(1,200);
+                    int randomNum = GameManager.instance.RandomInt(0,200);
                     if(randomNum < 26)
                     {
                         Gender = 1;
@@ -109,7 +109,7 @@ public class Pokemon
                 } //end case FemaleOneEighth
                 case "Female25Percent":
                 {
-                    int randomNum = Random.Range(1,200);
+                    int randomNum = GameManager.instance.RandomInt(0,200);
                     if(randomNum < 51)
                     {
                         Gender = 1;
@@ -122,7 +122,7 @@ public class Pokemon
                 } //end case Female25Percent
                 case "Female50Percent":
                 {
-                    int randomNum = Random.Range(1,200);
+                    int randomNum = GameManager.instance.RandomInt(0,200);
                     if(randomNum < 101)
                     {
                         Gender = 1;
@@ -135,7 +135,7 @@ public class Pokemon
                 } //end case Female50Percent
                 case "Female75Percent":
                 {
-                    int randomNum = Random.Range(1,200);
+                    int randomNum = GameManager.instance.RandomInt(0,200);
                     if(randomNum < 151)
                     {
                         Gender = 1;
@@ -148,7 +148,7 @@ public class Pokemon
                 } //end case Female75Percent
                 case "FemaleSevenEighths":
                 {
-                    int randomNum = Random.Range(1,200);
+                    int randomNum = GameManager.instance.RandomInt(0,200);
                     if(randomNum < 176)
                     {
                         Gender = 1;
@@ -184,7 +184,7 @@ public class Pokemon
         } //end else
         if (nature == -1)
         {
-            Nature = Random.Range(0,(int)Natures.COUNT-1);
+            Nature = GameManager.instance.RandomInt(0,(int)Natures.COUNT);
         } //end if
         else
         {
@@ -193,13 +193,15 @@ public class Pokemon
         if (ability == -1)
         {
             //Choose a number from 0 to 2
-            int temp = Random.Range (0, 2);
+            int temp = GameManager.instance.RandomInt (0, 3);
 
             //While the abilty doesn't exist, pick another number
             while(!CheckAbility(temp))
             {
-                temp = Random.Range (0, 2);
+                temp = GameManager.instance.RandomInt (0, 3);
             } //end while
+
+            Ability = temp;
         } //end if
         else
         {
@@ -208,9 +210,9 @@ public class Pokemon
         } //end else
 
         //Give pokemon a random ID
-        personalID = (uint)UnityEngine.Random.Range (0,255);
-        personalID |= (uint)UnityEngine.Random.Range (0,255) << 8;
-        personalID |= (uint)UnityEngine.Random.Range (0,255) << 16;
+        personalID = (uint)GameManager.instance.RandomInt (0,256);
+        personalID |= (uint)GameManager.instance.RandomInt (0,256) << 8;
+        personalID |= (uint)GameManager.instance.RandomInt (0,256) << 16;
 
         totalEV = 0;
 		currentEXP = CalculateEXP (level);
@@ -287,14 +289,14 @@ public class Pokemon
                 //Fill specified IV with random IV
                 if(index > -1 && index < 6)
                 {
-                    IV[index] = Random.Range(0, 31);
+                    IV[index] = GameManager.instance.RandomInt(0, 32);
                 } //end if
                 else
                 {
                     //If not, fill with random IVs
                     for (int i = 0; i < 6; i++)
                     {
-                        IV [i] = Random.Range(0, 31);
+                        IV [i] = GameManager.instance.RandomInt(0, 32);
                     } //end for
                 } //end else
             } //end if
@@ -331,7 +333,7 @@ public class Pokemon
                 //Fill in rest with a random number
                 for(int i = values.Length; i < 6; i++)
                 {
-                    fixedValues[i] = Random.Range(0, 31);
+                    fixedValues[i] = GameManager.instance.RandomInt(0, 32);
                 } //end for
 
                 values = fixedValues;
@@ -343,7 +345,7 @@ public class Pokemon
                 //Make sure value is valid
                 if(values[i] < 0 || values[i] > 31)
                 {
-                    IV[i] = Random.Range(0, 31);
+                    IV[i] = GameManager.instance.RandomInt(0, 32);
                 } //end if
                 else
                 {
@@ -385,7 +387,7 @@ public class Pokemon
                 {
                     //Make sure value is within maximum value
                     int tempCount = totalEV - EV[index];
-                    int tempRand = Random.Range(0, 255);
+                    int tempRand = GameManager.instance.RandomInt(0, 256);
                     if((tempCount + tempRand) <= 510)
                     {
                         totalEV += tempRand - EV[index];
@@ -406,7 +408,7 @@ public class Pokemon
                     for(int i = 0; i < 6; i++)
                     {
                         //Make a new random amount
-                        int tempRand = Random.Range(0, 255);
+                        int tempRand = GameManager.instance.RandomInt(0, 256);
 
                         //Make sure value is withing maximum value
                         if((totalEV + tempRand) <= 510)
@@ -535,7 +537,7 @@ public class Pokemon
                 //Fill in rest with a random number
                 for(int i = values.Length; i < 6; i++)
                 {
-                    fixedValues[i] = Random.Range(0, 255);
+                    fixedValues[i] = GameManager.instance.RandomInt(0, 256);
                 } //end for
                 
                 values = fixedValues;
@@ -551,7 +553,7 @@ public class Pokemon
                 {
                     //Make sure value is within maximum value
                     int tempCount = totalEV;
-                    int tempRand = Random.Range(0, 255);
+                    int tempRand = GameManager.instance.RandomInt(0, 256);
                     if((tempCount + tempRand) <= 510)
                     {
                         totalEV += tempRand;
@@ -712,7 +714,9 @@ public class Pokemon
                 string moveList = DataContents.ExecuteSQL<string>("SELECT moves FROM Pokemon WHERE rowid=" + natSpecies);
                 string[] arrayList = moveList.Split(',');
                 int tempHolder = 0;
-                List<string> pos = arrayList.Select((moveLevel,listIndex) => int.TryParse(moveLevel,out tempHolder) ? int.Parse(moveLevel) <= currentLevel ? arrayList[listIndex+1] : "null" : "null").Where(listIndex => listIndex != "null").ToList();
+                List<string> pos = arrayList.Select((moveLevel,listIndex) => int.TryParse(moveLevel,out tempHolder) ? 
+                    int.Parse(moveLevel) <= currentLevel ? arrayList[listIndex+1] : "null" : "null").
+                    Where(listIndex => listIndex != "null").ToList();
 
                 //Fill remaining moves with values
                 for(int j = i, k = pos.Count-1; j < 4 && k > -1; j++, k--)
@@ -1010,7 +1014,6 @@ public class Pokemon
                 "<color=white>" + DataContents.markingCharacters[i].ToString() + "</color>" :
                 "<color=grey>" + DataContents.markingCharacters[i].ToString() + "</color>"; 
         } //end for
-
         return coloredMarkings;
     } //end GetMarkings
 	#region Accessors

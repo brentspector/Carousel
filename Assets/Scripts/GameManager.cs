@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using Random = UnityEngine.Random;
 #endregion
@@ -15,9 +16,14 @@ public class GameManager : MonoBehaviour
 {
     #region Variables
 	//GLOBAL SETTING VARIABLES
-	public float VersionNumber = 0.1f;      //Version number for save file management
-	public int NumberOfMarkings = 4;        //How many markings are available to be used
+    [System.NonSerialized]
+	public float VersionNumber = 0.2f;      //Version number for save file management
+    [System.NonSerialized]
+	public int NumberOfMarkings = 6;        //How many markings are available to be used
+    [System.NonSerialized]
 	public int NumberOfRibbons = 80;        //How many ribbons are available
+    [System.NonSerialized]
+    public int NumberOfWallpaper = 25;      //How many wallpapers are available
 
 	//Singleton handle
 	public static GameManager instance = null;
@@ -27,8 +33,8 @@ public class GameManager : MonoBehaviour
 	public static GameObject tools = null;	//Canvas of SceneTools
 
 	//Scene variables
+    SystemManager sysm;                     //Manages system features
 	SceneManager scenes;					//Manages game scenes
-	SystemManager sysm;						//Manages system features
     bool running = false;                   //Allows methods to run once
     #endregion
 
@@ -62,21 +68,21 @@ public class GameManager : MonoBehaviour
 		//Keep SceneTools from destruction OnLoad
 		DontDestroyOnLoad (tools);
 
-		//Get SceneManager component
-		scenes = GetComponent<SceneManager> ();
-
-		//Get SystemManager component
-		sysm = GetComponent<SystemManager> ();
-
-		//Create error log
-		sysm.InitErrorLog ();
-
+        //Get SystemManager component
+        sysm = GetComponent<SystemManager> ();
+        
+        //Create error log
+        sysm.InitErrorLog ();
+        
         //Initialize DataContents class 
         if(!DataContents.InitDataContents())
         {
             sysm.LogErrorMessage("Could not load data contents");
             Application.Quit();
         } //end if
+
+		//Get SceneManager component
+		scenes = GetComponent<SceneManager> ();
 	} //end Awake
 	
     /***************************************
@@ -108,11 +114,8 @@ public class GameManager : MonoBehaviour
 
 #if UNITY_EDITOR
                     //Debug mode (development in the editor) commands go here
-                    sysm.GetPersist();
-                    //sysm.PlayerTrainer.EmptyTeam();
-                    //sysm.PlayerTrainer.RandomTeam();
-                    sysm.Persist();
-
+                    //sysm.GetPersist();
+                    //sysm.Persist();
 #else
                     //Stand-alone mode (user version) diagnostic commands go here
 
@@ -141,6 +144,12 @@ public class GameManager : MonoBehaviour
             {
                 scenes.ContinueGame();
             } //end else if
+
+            //PC scene
+            else if(Application.loadedLevelName == "PC")
+            {
+                scenes.PC();
+            } //end else if
 		} //end try
 
 		//Log error otherwise
@@ -162,37 +171,6 @@ public class GameManager : MonoBehaviour
 	//Scene functions
 	#region Scenes
     /***************************************
-     * Name: Continue
-     * Loads main game and player data
-     ***************************************/
-	public void Continue()
-	{
-        scenes.Reset ();
-		Application.LoadLevel ("MainGame");
-	} //end Continue
-
-    /***************************************
-     * Name: NewGame
-     * Loads new game and creates new save file
-     ***************************************/
-	public void NewGame()
-	{
-		scenes.Reset ();
-		Application.LoadLevel ("NewGame");
-	} //end NewGame
-
-    /***************************************
-     * Name: Options
-     * Displays list of options for player to 
-     * control
-     ***************************************/
-	public void Options()
-	{
-		scenes.Reset ();
-		Application.LoadLevel ("Intro");
-	} //end Options
-
-    /***************************************
      * Name: ProcessSelection
      * Sets the appropriate checkpoint
      * depending on scene
@@ -210,76 +188,47 @@ public class GameManager : MonoBehaviour
     } //end ProcessSelection
 
     /***************************************
-     * Name: ReturnHome
-     * Brings up the main game button menu
+     * Name: SetGameState
+     * Sets the main game to the state given
      ***************************************/ 
-    public void ReturnHome()
+    public void SetGameState(SceneManager.MainGame newState)
     {
-        scenes.SetGameState (SceneManager.MainGame.HOME);
-    } //end ReturnHome
+        //Disable text screen if active
+        if (tools.transform.GetChild (1).gameObject.activeSelf)
+        {
+            tools.transform.GetChild (1).gameObject.SetActive(false);
+        } //end if
 
-    /***************************************
-     * Name: GymBattle
-     * Brings up the gym battle screen
-     ***************************************/ 
-    public void GymBattle()
-    {
-        scenes.SetGameState (SceneManager.MainGame.GYMBATTLE);
-    } //end GymBattle
-
-    /***************************************
-     * Name: TeamMenu
-     * Brings up the party screen
-     ***************************************/ 
-    public void TeamMenu()
-    {
-        scenes.SetGameState (SceneManager.MainGame.TEAM);
-    } //end TeamMenu
-
-    /***************************************
-     * Name: PlayerPC
-     * Brings up the pokemon storage screen
-     ***************************************/ 
-    public void PlayerPC()
-    {
-        scenes.SetGameState (SceneManager.MainGame.PC);
-    } //end PlayerPC
-    
-    /***************************************
-     * Name: Shop
-     * Switches to Shop scene
-     ***************************************/ 
-    public void Shop()
-    {
-        scenes.SetGameState (SceneManager.MainGame.SHOP);
-    } //end Shop
-    
-    /***************************************
-     * Name: Pokedex
-     * Switches to pokedex scene
-     ***************************************/ 
-    public void Pokedex()
-    {
-        scenes.SetGameState (SceneManager.MainGame.POKEDEX);
-    } //end Pokedex
-    
-    /***************************************
-     * Name: TrainerCard
-     * Brings up the trainer card screen
-     ***************************************/ 
-    public void TrainerCard()
-    {
-        scenes.SetGameState (SceneManager.MainGame.TRAINERCARD);
-    } //end TrainerCard
-
+        StartCoroutine(scenes.SetGameState (newState));
+    } //end SetGameState(SceneManager.MainGame newState)
+   
     /***************************************
      * Name: SummaryChange
      * Brings up the requested summary screen
      ***************************************/ 
     public void SummaryChange(int summaryPage)
     {
-        scenes.SetSummaryPage (summaryPage);
+        StartCoroutine(scenes.SetSummaryPage (summaryPage));
     } //end SummaryChange(int summaryPage)
+
+    /***************************************
+     * Name: LoadScene
+     * Loads the requested scene, and sets
+     * the appropriate overall state
+     ***************************************/ 
+    public void LoadScene(string levelName, SceneManager.OverallGame state, bool fadeOut = false)
+    {
+        StartCoroutine(scenes.LoadScene (levelName, state, fadeOut));
+    } //end LoadScene(string levelName, SceneManager.OverallGame state, bool fadeOut)
+
+    /***************************************
+     * Name: PartyState
+     * Opens/Closes the Party in PC box
+     ***************************************/ 
+    public void PartyState(bool state)
+    {
+        scenes.PartyState(state);
+    } //end PartyState(bool state)
     #endregion
 
 	//System Manager functions
@@ -331,13 +280,27 @@ public class GameManager : MonoBehaviour
     } //end GetTrainer
 
     /***************************************
+     * Name: RandomInt
+     * Returns a random integer
+     ***************************************/
+    public int RandomInt(int min, int max)
+    {
+        return sysm.RandomInt (min, max);
+    } //end RandomInt(int min, int max)
+
+    /***************************************
      * Name: Persist
      * Stores the player's progress
      ***************************************/
 	public void Persist()
 	{
-		sysm.Persist ();
-	} //end Persist
+        //If not already saving
+        if (!tools.transform.GetChild (1).gameObject.activeSelf)
+        {
+            sysm.Persist ();
+            sysm.PlayText ("Saved successfully!");
+        } //end if
+    } //end Persist
 
     /***************************************
      * Name: GetPersist
@@ -348,5 +311,53 @@ public class GameManager : MonoBehaviour
 		return sysm.GetPersist ();
 	} //end GetPersist
 	#endregion
+
+    #region Debug
+    /***************************************
+     * Name: RandomTeam
+     * Gives the player a random team
+     ***************************************/ 
+    public void RandomTeam()
+    {
+        sysm.PlayerTrainer.EmptyTeam();
+        sysm.PlayerTrainer.RandomTeam();
+        sysm.PlayerTrainer.Team [0].ChangeRibbons (GameManager.instance.RandomInt (0, 20));
+        sysm.PlayerTrainer.Team [0].ChangeRibbons (GameManager.instance.RandomInt (0, 20));
+        sysm.PlayerTrainer.Team [1].ChangeRibbons (GameManager.instance.RandomInt (0, 20));
+    } //end RandomTeam
+    
+    /***************************************
+     * Name: RandomPokemon
+     * Adds a single random pokemon to the team
+     ***************************************/ 
+    public void RandomPokemon()
+    {
+        //If the team isn't full, add a pokemon
+        if (sysm.PlayerTrainer.Team.Count < 6)
+        {
+            sysm.PlayerTrainer.AddPokemon(new Pokemon(oType: 5, oWhere: 3));
+        } //end if
+        //Otherwise replace first slot
+        else
+        {
+            sysm.PlayerTrainer.Team[0] = new Pokemon(oType: 5, oWhere: 3);
+        } //end else
+    } //end RandomPokemon
+
+    /***************************************
+     * Name: AddRandomPokemonToPC
+     * Adds a single random pokemon to the pc
+     ***************************************/ 
+    public void AddRandomPokemonToPC(int box = -1, int slot = 0)
+    {
+        //Assign box
+        if (box == -1)
+        {
+            box = sysm.PlayerTrainer.GetPCBox ();
+        } //end if
+
+        sysm.PlayerTrainer.AddToPC (box, slot, new Pokemon (oType: 5, oWhere: 3));
+    } //end AddRandomPokemonToPC
+    #endregion
     #endregion
 } //end GameManager class

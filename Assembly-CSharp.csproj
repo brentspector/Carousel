@@ -51,6 +51,7 @@
      <Compile Include="Assets\Scripts\Field.cs" />
      <Compile Include="Assets\Scripts\GameManager.cs" />
      <Compile Include="Assets\Scripts\Loader.cs" />
+     <Compile Include="Assets\Scripts\PC.cs" />
      <Compile Include="Assets\Scripts\Pokemon.cs" />
      <Compile Include="Assets\Scripts\SceneManager.cs" />
      <Compile Include="Assets\Scripts\Shop.cs" />
@@ -64,6 +65,9 @@
  </Reference>
  <Reference Include="UnityEngine.Networking">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
+ </Reference>
+ <Reference Include="Mono.Data.Sqlite">
+ <HintPath>C:/Users/Brent/Desktop/Programming/Unity/Pokemon Carousel/Carousel/Assets/Plugins/x86_64/Mono.Data.Sqlite.dll</HintPath>
  </Reference>
  <Reference Include="Mono.Data.SqliteClient">
  <HintPath>C:/Users/Brent/Desktop/Programming/Unity/Pokemon Carousel/Carousel/Assets/Plugins/x86_64/Mono.Data.SqliteClient.dll</HintPath>
