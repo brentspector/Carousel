@@ -123,7 +123,7 @@ public class Trainer
     } //end Swap(int locationA, int locationB)
 
     /***************************************
-     * Name: AddTeam
+     * Name: AddPokemon
      * Add a pokemon to the party
      ***************************************/
     public void AddPokemon(Pokemon newPokemon)
@@ -132,13 +132,22 @@ public class Trainer
     } //end AddPokemon(Pokemon newPokemon)
 
     /***************************************
-     * Name: RemoveTeam
+     * Name: RemovePokemon
      * Remove a pokemon from the party
      ***************************************/
     public void RemovePokemon(int spot)
     {
         team.RemoveAt (spot);
     } //end RemovePokemon(int spot)
+
+    /***************************************
+     * Name: ReplacePokemon
+     * Replaces a pokemon in the party
+     ***************************************/
+    public void ReplacePokemon(Pokemon newPokemon, int spot)
+    {
+        team [spot] = newPokemon;
+    } //end ReplacePokemon(Pokemon newPokemon, int spot)
 
     /***************************************
      * Name: RandomTeam
