@@ -1,9 +1,10 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\SceneManager.cs">
     <Files>
-      <File FileName="Assets\Scripts\SceneManager.cs" Line="1590" Column="111" />
-      <File FileName="Assets\Scripts\Trainer.cs" Line="149" Column="34" />
+      <File FileName="Assets\Scripts\SceneManager.cs" Line="6355" Column="40" />
+      <File FileName="Assets\Scripts\GameManager.cs" Line="88" Column="1" />
+      <File FileName="Assets\Scripts\Pokemon.cs" Line="1001" Column="29" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

@@ -227,7 +227,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void PartyState(bool state)
     {
-        scenes.PartyState(state);
+        StartCoroutine(scenes.PartyState(state));
     } //end PartyState(bool state)
     #endregion
 

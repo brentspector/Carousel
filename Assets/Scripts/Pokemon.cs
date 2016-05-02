@@ -742,19 +742,6 @@ public class Pokemon
     } //end GiveInitialMoves(int[] moves)
 
     /***************************************
-     * Name: ChangeMarkings
-     * Adjusts the pokemon's marking tags
-     ***************************************/
-    public void ChangeMarkings(bool value, int index)
-    {
-        //Make sure index is valid
-        if (index > -1 && index < markings.Length)
-        {
-            markings[index] = value;
-        } //end if
-    } //end ChangeMarkings(bool value, int index)
-
-    /***************************************
      * Name: ChangeRibbons
      * Awards or removes a ribbon from the pokemon
      ***************************************/
@@ -999,10 +986,10 @@ public class Pokemon
     } //end GetAbilityDescription
 
     /***************************************
-     * Name: GetMarkings
+     * Name: GetMarkingsString
      * Returns string of colored markings
      ***************************************/
-    public string GetMarkings()
+    public string GetMarkingsString()
     {
         //String of markings that have been colored
         string coloredMarkings = "";
@@ -1011,11 +998,11 @@ public class Pokemon
         for(int i = 0; i < GameManager.instance.NumberOfMarkings; i++)
         {
             coloredMarkings += markings[i] ? 
-                "<color=white>" + DataContents.markingCharacters[i].ToString() + "</color>" :
+                "<color=aqua>" + DataContents.markingCharacters[i].ToString() + "</color>" :
                 "<color=grey>" + DataContents.markingCharacters[i].ToString() + "</color>"; 
         } //end for
         return coloredMarkings;
-    } //end GetMarkings
+    } //end GetMarkingsString
 	#region Accessors
 	//Stats
     /***************************************
@@ -1510,23 +1497,23 @@ public class Pokemon
 		{
 			isShiny = value;
 		} //end set
-	} //end HasPokerus
+	} //end IsShiny
 
     /***************************************
-     * Name: GetMarking
+     * Name: GetMarkings
      ***************************************/
-	public bool GetMarking(int index)
-	{
-		return markings [index];
-	} //end GetMarkings(int index)
+    public bool[] GetMarkings()
+    {
+        return markings;
+    } //end GetMarkings
 
     /***************************************
-     * Name: SetMarking
+     * Name: SetMarkings
      ***************************************/
-	public void SetMarking(int index, bool value)
-	{
-		markings [index] = value;
-	} //end SetMarking(int index, bool value)
+    public void SetMarkings(bool[] newMarkings)
+    {
+        markings = newMarkings; 
+    } //end SetMarkings(bool[] newMarkings)
 
     /***************************************
      * Name: GetRibbon
