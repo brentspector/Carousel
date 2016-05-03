@@ -123,7 +123,7 @@ public class Trainer
     } //end Swap(int locationA, int locationB)
 
     /***************************************
-     * Name: AddTeam
+     * Name: AddPokemon
      * Add a pokemon to the party
      ***************************************/
     public void AddPokemon(Pokemon newPokemon)
@@ -132,13 +132,22 @@ public class Trainer
     } //end AddPokemon(Pokemon newPokemon)
 
     /***************************************
-     * Name: RemoveTeam
+     * Name: RemovePokemon
      * Remove a pokemon from the party
      ***************************************/
     public void RemovePokemon(int spot)
     {
         team.RemoveAt (spot);
     } //end RemovePokemon(int spot)
+
+    /***************************************
+     * Name: ReplacePokemon
+     * Replaces a pokemon in the party
+     ***************************************/
+    public void ReplacePokemon(Pokemon newPokemon, int spot)
+    {
+        team [spot] = newPokemon;
+    } //end ReplacePokemon(Pokemon newPokemon, int spot)
 
     /***************************************
      * Name: RandomTeam
@@ -237,44 +246,26 @@ public class Trainer
     {
         pPC.NextBox ();
     } //end NextBox
-
-    /***************************************
-     * Name: GetLastPokemon
-     * Return the last non null pokemon in box
-     ***************************************/
-    public Pokemon GetLastPokemon()
-    {
-        return pPC.GetLastPokemon ();
-    } //end GetLastPokemon
     
     /***************************************
-     * Name: GetFirstPokemon
-     * Return the first non null pokemon in box
+     * Name: GetPreviousPokemon
+     * Return the index of the nearest non null 
+     * pokemon in box to the left of spot
      ***************************************/
-    public Pokemon GetFirstPokemon()
+    public int GetPreviousPokemon(int spot)
     {
-        return pPC.GetFirstPokemon ();
-    } //end GetFirstPokemon
+        return pPC.GetPreviousPokemon (spot);
+    } //end GetPreviousPokemon(int spot)
     
     /***************************************
-     * Name: GetLastPokemonIndex
-     * Return the index of the last non null 
-     * pokemon in box
+     * Name: GetNextPokemon
+     * Return the index of the nearest non null 
+     * pokemon in box to the right of spot
      ***************************************/
-    public int GetLastPokemonIndex()
+    public int GetNextPokemon(int spot)
     {
-        return pPC.GetLastPokemonIndex ();
-    } //end GetLastPokemonIndex
-    
-    /***************************************
-     * Name: GetFirstPokemonIndex
-     * Return the index of the first non null 
-     * pokemon in box
-     ***************************************/
-    public int GetFirstPokemonIndex()
-    {
-        return pPC.GetFirstPokemonIndex ();
-    } //end GetFirstPokemonIndex
+        return pPC.GetNextPokemon (spot);
+    } //end GetNextPokemon(int spot)
     #region Properties
     /***************************************
      * Name: Team

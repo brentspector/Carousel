@@ -41,6 +41,7 @@ public class SystemManager : MonoBehaviour
 	Text textComp;			//Text currently output
 	GameObject arrow;		//Arrow to signal end of text
 	bool displaying;		//If text is currently being output
+    bool closeBox;          //Whether or not to close the box at the end
     #endregion
     #region Methods
     #region FileReading
@@ -215,12 +216,12 @@ public class SystemManager : MonoBehaviour
      * Name: DisplayText
      * Plays the text using the animation
      ***************************************/
-	public bool PlayText(string textMessage)
+	public void DisplayText(string textMessage, bool closeAfter)
 	{
 		//If already displaying text, end function
 		if(displaying)
 		{
-			return false;
+			return;
 		} //end if
 
 		//Setup message and begin typewriting
@@ -228,18 +229,9 @@ public class SystemManager : MonoBehaviour
         textRegion.SetActive (true);
 		arrow.SetActive (false);
 		message = textMessage;
+        closeBox = closeAfter;
 		StartCoroutine(TypeText ());
-		return true;
-	} //end PlayText(string textMessage)
-
-    /***************************************
-     * Name: GetDisplay
-     * Whether the text finished displaying
-     ***************************************/
-	public bool GetDisplay()
-	{
-		return displaying;
-	} //end GetDisplay
+	} //end DisplayText(string textMessage, bool closeAfter)
 
     /***************************************
      * Name: TypeText
@@ -285,6 +277,30 @@ public class SystemManager : MonoBehaviour
 		displaying = false;
 		arrow.SetActive (true);
 	} //end TypeText
+
+    /***************************************
+     * Name: ManageTextbox
+     * Close box if requested
+     ***************************************/
+    public bool ManageTextbox(bool immediate)
+    {
+        //Proceed when text is finished and player hits enter
+        if ((Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonUp(0) || immediate) && !displaying)
+        {
+            //Close box if requested
+            if(closeBox)
+            {
+                textRegion.SetActive (false);
+                arrow.SetActive (false);
+            } //end if
+
+            //Finished displaying message
+            return false;
+        } //end if
+
+        //Still displaying message
+        return true;
+    } //end ManageTextbox(bool immediate)
 	#endregion
 
     #region Random

@@ -80,7 +80,7 @@ public class PC
         //Make sure PC isn't full
         if (totalPokemon == pokemonStorage.Length)
         {
-            GameManager.instance.DisplayText("PC is full. Pokemon could not be added");
+            GameManager.instance.DisplayText("PC is full. Pokemon could not be added", true);
             return;
         } //end if
 
@@ -113,7 +113,7 @@ public class PC
                     if(pokemonStorage[i][j] == null)
                     {
                         GameManager.instance.DisplayText(boxNames[box] + " is full." +
-                           "Placed in box \"" + boxNames[i] + "\" instead.");
+                           "Placed in box \"" + boxNames[i] + "\" instead.", true);
                         pokemonStorage [i][j] = newPokemon;
                         currentBox = i;
                         return;
@@ -219,25 +219,57 @@ public class PC
     } //end GetFirstPokemon
 
     /***************************************
-     * Name: GetLastPokemonIndex
-     * Return the index of the last non null 
-     * pokemon in box
+     * Name: GetPreviousPokemon
+     * Return the index of the nearest non null 
+     * pokemon in box to the left of spot
      ***************************************/
-    public int GetLastPokemonIndex()
+    public int GetPreviousPokemon(int spot)
     {
+        //Get array of the box
         Pokemon[] boxArray = pokemonStorage [currentBox];
+
+        //Search to the left while not at beginning
+        while (spot > 0)
+        {
+            //If the previous spot is not null, return that spot
+            if(boxArray[spot-1] != null)
+            {
+                return spot-1;
+            } //end if
+
+            //Decrease for next search
+            spot--;
+        } //end while
+
+        //Return the last pokemon
         return Array.FindIndex (boxArray, pokemon => pokemon == GetLastPokemon ());
-    } //end GetLastPokemonIndex
+    } //end GetPreviousPokemon(int spot)
     
     /***************************************
-     * Name: GetFirstPokemonIndex
-     * Return the index of the first non null 
-     * pokemon in box
+     * Name: GetNextPokemon
+     * Return the index of the nearest non null 
+     * pokemon in box to the right of spot
      ***************************************/
-    public int GetFirstPokemonIndex()
+    public int GetNextPokemon(int spot)
     {
+        //Get array of the box
         Pokemon[] boxArray = pokemonStorage [currentBox];
+        
+        //Search to the right while not at end
+        while (spot < 29)
+        {
+            //If next pokemon is not null, return that pokemon
+            if(boxArray[spot+1] != null)
+            {
+                return spot+1;
+            } //end if
+
+            //Increment for next search
+            spot++;
+        } //end while
+        
+        //Return the first pokemon
         return Array.FindIndex (boxArray, pokemon => pokemon == GetFirstPokemon ());
-    } //end GetFirstPokemonIndex
+    } //end GetNextPokemon(int spot)
     #endregion
 } //end class PC

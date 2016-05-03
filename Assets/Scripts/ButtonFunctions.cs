@@ -57,7 +57,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void PlayerPC()
     {
-        GameManager.instance.LoadScene ("PC", SceneManager.OverallGame.PC, true);
+        GameManager.instance.LoadScene ("PC", SceneManager.OverallGame.PC);
     } //end PlayerPC
 
     /***************************************

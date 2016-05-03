@@ -59,6 +59,7 @@
      <Compile Include="Assets\Scripts\Trainer.cs" />
      <Compile Include="Assets\Scripts\Utility\BatchSlice.cs" />
      <Compile Include="Assets\Scripts\Utility\CodeWarehouse.cs" />
+     <Compile Include="Assets\Scripts\Utility\ExtensionMethods.cs" />
      <Compile Include="Assets\Scripts\Utility\Test.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>

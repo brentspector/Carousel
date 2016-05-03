@@ -19,10 +19,6 @@ public class GameManager : MonoBehaviour
     [System.NonSerialized]
 	public float VersionNumber = 0.2f;      //Version number for save file management
     [System.NonSerialized]
-	public int NumberOfMarkings = 6;        //How many markings are available to be used
-    [System.NonSerialized]
-	public int NumberOfRibbons = 80;        //How many ribbons are available
-    [System.NonSerialized]
     public int NumberOfWallpaper = 25;      //How many wallpapers are available
 
 	//Singleton handle
@@ -36,6 +32,8 @@ public class GameManager : MonoBehaviour
     SystemManager sysm;                     //Manages system features
 	SceneManager scenes;					//Manages game scenes
     bool running = false;                   //Allows methods to run once
+    bool textDisplayed = false;             //If text is displayed
+    bool continueImmediate;                 //Continue as soon as able, don't wait for enter
     #endregion
 
     #region Methods
@@ -102,8 +100,14 @@ public class GameManager : MonoBehaviour
 				return;
 			} //end if
 
+            //Don't continue updating game until text box is gone
+            if(textDisplayed)
+            {
+                textDisplayed = sysm.ManageTextbox(continueImmediate);
+            } //end if textDisplayed
+
 			//Intro scene
-			if(Application.loadedLevelName == "Intro")
+			else if(Application.loadedLevelName == "Intro")
 			{
                 //Allows running, testing, and compiling while bypassing standard operation
                 //for one-off events.
@@ -125,7 +129,7 @@ public class GameManager : MonoBehaviour
 
                 //Run the intro after completion of one off methods
 				scenes.Intro();
-			} //end if Intro
+			} //end else if Intro
 
 			//Start Menu scene
 			else if(Application.loadedLevelName == "StartMenu")
@@ -227,7 +231,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void PartyState(bool state)
     {
-        scenes.PartyState(state);
+        StartCoroutine(scenes.PartyState(state));
     } //end PartyState(bool state)
     #endregion
 
@@ -256,19 +260,12 @@ public class GameManager : MonoBehaviour
      * Name: DisplayText
      * Shows text in SceneManager text box
      ***************************************/
-	public bool DisplayText(string text)
+	public void DisplayText(string text, bool closeAfter, bool immediate = false)
 	{
-		return sysm.PlayText (text);
-	} //end DisplayText(string text)
-
-    /***************************************
-     * Name: IsDisplaying
-     * Returns if text has been fully displayed
-     ***************************************/
-	public bool IsDisplaying()
-	{
-		return sysm.GetDisplay ();
-	} //end IsDisplaying
+		sysm.DisplayText (text, closeAfter);
+        textDisplayed = true;
+        continueImmediate = immediate;
+	} //end DisplayText(string text, bool closeAfter, bool immediate)
 
     /***************************************
      * Name: GetTrainer
@@ -292,15 +289,18 @@ public class GameManager : MonoBehaviour
      * Name: Persist
      * Stores the player's progress
      ***************************************/
-	public void Persist()
+	public void Persist(bool message = true)
 	{
         //If not already saving
         if (!tools.transform.GetChild (1).gameObject.activeSelf)
         {
             sysm.Persist ();
-            sysm.PlayText ("Saved successfully!");
+            if(message)
+            {
+                DisplayText ("Saved successfully!", true);
+            } //end if
         } //end if
-    } //end Persist
+    } //end Persist(bool message = true)
 
     /***************************************
      * Name: GetPersist
