@@ -233,15 +233,6 @@ public class SystemManager : MonoBehaviour
 	} //end PlayText(string textMessage)
 
     /***************************************
-     * Name: GetDisplay
-     * Whether the text finished displaying
-     ***************************************/
-	public bool GetDisplay()
-	{
-		return displaying;
-	} //end GetDisplay
-
-    /***************************************
      * Name: TypeText
      * Displays text letter by letter
      ***************************************/

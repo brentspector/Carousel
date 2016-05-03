@@ -262,15 +262,6 @@ public class GameManager : MonoBehaviour
 	} //end DisplayText(string text)
 
     /***************************************
-     * Name: IsDisplaying
-     * Returns if text has been fully displayed
-     ***************************************/
-	public bool IsDisplaying()
-	{
-		return sysm.GetDisplay ();
-	} //end IsDisplaying
-
-    /***************************************
      * Name: GetTrainer
      * Retrieves the player's trainer profile
      ***************************************/

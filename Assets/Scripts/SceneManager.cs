@@ -9,6 +9,7 @@ using UnityEngine.EventSystems;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 #endregion
 
 public class SceneManager : MonoBehaviour 
@@ -125,7 +126,7 @@ public class SceneManager : MonoBehaviour
     GameObject heldImage;           //Image of the held pokemon
     GameObject partyTab;            //The panel displaying the current team in PC
     GameObject currentPCSlot;       //The object that is currently highlighted
-    bool[] markingChoices;          //Am array of the marking choices made for the pokemon
+    List<bool> markingChoices;      //A list of the marking choices made for the pokemon
     int boxChoice;                  //The pokemon that is highlighted
     #endregion
 
@@ -909,8 +910,28 @@ public class SceneManager : MonoBehaviour
             } //end else if
             else if(gameState == MainGame.POKEMONSUBMENU)
             {
+                //Initialize
+                if(!initialize)
+                {                    
+                    //Reposition choices to bottom right
+                    choices.GetComponent<RectTransform>().position = new Vector3(
+                        choices.GetComponent<RectTransform>().position.x,
+                        choices.GetComponent<RectTransform>().rect.height/2);
+                    
+                    //Reposition selection to top menu choice
+                    selection.transform.position = choices.transform.GetChild(0).position;
+                    
+                    //Finished initializing
+                    initialize = true;
+                } //end if
+
                 //Get player input
                 GatherInput();
+
+                //Reposition choices to bottom right
+                choices.GetComponent<RectTransform>().position = new Vector3(
+                    choices.GetComponent<RectTransform>().position.x,
+                    choices.GetComponent<RectTransform>().rect.height/2);
             } //end else if
             else if(gameState == MainGame.POKEMONRIBBONS)
             {
@@ -1196,9 +1217,6 @@ public class SceneManager : MonoBehaviour
                 } //end for
             } //end if
 
-            //Initialize markingChoices list
-            markingChoices = new bool[DataContents.markingCharacters.Length];
-
             //Details size has not been set yet
             detailsSize = -1;
 
@@ -1212,7 +1230,8 @@ public class SceneManager : MonoBehaviour
         {
             //Begin processing 
             processing = true;
-
+            System.Diagnostics.Stopwatch myStopwatch = new System.Diagnostics.Stopwatch();
+            myStopwatch.Start();
             //Disable screens
             partyTab.SetActive (false);
             summaryScreen.SetActive (false);
@@ -1390,6 +1409,21 @@ public class SceneManager : MonoBehaviour
             } //end if
             else if (pcState == PCGame.POKEMONSUBMENU)
             {
+                //Initialize
+                if(!initialize)
+                {                    
+                    //Reposition choices to bottom right
+                    choices.GetComponent<RectTransform>().position = new Vector3(
+                        choices.GetComponent<RectTransform>().position.x,
+                        choices.GetComponent<RectTransform>().rect.height/2);
+
+                    //Reposition selection to top menu choice
+                    selection.transform.position = choices.transform.GetChild(0).position;
+
+                    //Finished initializing
+                    initialize = true;
+                } //end if
+
                 //Get player input
                 GatherInput ();
             } //end else if
@@ -1655,7 +1689,7 @@ public class SceneManager : MonoBehaviour
             {
                 //Initialize
                 if(!initialize)
-                {
+                {                              
                     //Fill in choices box
                     for (int i = choices.transform.childCount-1; i < DataContents.markingCharacters.Length+2; i++)
                     {
@@ -1680,16 +1714,16 @@ public class SceneManager : MonoBehaviour
                         } //end else
                     } //end for
 
-                    if (choices.transform.childCount > DataContents.markingCharacters.Length+2)
+                    if (choices.transform.childCount > DataContents.markingCharacters.Length+1)
                     {
-                        for (int i = DataContents.markingCharacters.Length+3; i < choices.transform.childCount; i++)
+                        for (int i = DataContents.markingCharacters.Length+2; i < choices.transform.childCount; i++)
                         {
                             Destroy (choices.transform.GetChild (i).gameObject);
                         } //end for
                     } //end if
 
                     //Color in choices
-                    for(int i = 0; i < markingChoices.Length; i++)
+                    for(int i = 0; i < markingChoices.Count; i++)
                     {
                         choices.transform.GetChild(i).GetComponent<Text>().color =
                             markingChoices[i] ? Color.black : Color.gray;
@@ -1698,12 +1732,15 @@ public class SceneManager : MonoBehaviour
                     //SubmenuChoice at top
                     subMenuChoice = 0;
 
-                    //Reposition selection
-                    selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+                    //Reposition choices menu and selection rectangle
+                    StartCoroutine("WaitForResize");
 
                     //Initialize finished
                     initialize = true;
                 } //end if
+
+                //Reposition selection rectangle
+                selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
 
                 //Get player input
                 GatherInput ();
@@ -2423,13 +2460,28 @@ public class SceneManager : MonoBehaviour
         if (gameState == MainGame.POKEMONSUBMENU || pcState == PCGame.POKEMONSUBMENU)
         {
             Vector3 scale = new Vector3 (choices.GetComponent<RectTransform> ().rect.width,
-                                        choices.GetComponent<RectTransform> ().rect.height /
+                choices.GetComponent<RectTransform> ().rect.height /
                 choices.transform.childCount, 0);
             selection.GetComponent<RectTransform> ().sizeDelta = scale;
             selection.transform.position = choices.transform.GetChild (0).
                 GetComponent<RectTransform> ().position;
             selection.SetActive (true);
         } //end if
+        else if (pcState == PCGame.POKEMONMARKINGS)
+        {
+            //Reposition choices to bottom right
+            choices.GetComponent<RectTransform>().position = new Vector3(
+                choices.GetComponent<RectTransform>().position.x,
+                choices.GetComponent<RectTransform>().rect.height/2);
+
+            Vector3 scale = new Vector3 (choices.GetComponent<RectTransform> ().rect.width,
+                choices.GetComponent<RectTransform> ().rect.height /
+                choices.transform.childCount, 0);
+            selection.GetComponent<RectTransform> ().sizeDelta = scale;
+            selection.transform.position = choices.transform.GetChild (0).
+                GetComponent<RectTransform> ().position;
+            selection.SetActive (true);
+        } //end else if
         else if (gameState == MainGame.POKEMONRIBBONS || pcState == PCGame.POKEMONRIBBONS)
         {
             Vector3 scale = new Vector3(ribbonScreen.transform.FindChild("RibbonRegion").GetChild(0).
@@ -3201,14 +3253,8 @@ public class SceneManager : MonoBehaviour
                             } //end if
                             else if(!partyTab.activeSelf && heldPokemon == null)
                             {
-                                //Decrease (higher slots are lower childs)
-                                boxChoice--;
-
-                                //Clamp between top pokemon and last pokemon index
-                                if(boxChoice < GameManager.instance.GetTrainer().GetFirstPokemonIndex())
-                                {
-                                    boxChoice = GameManager.instance.GetTrainer().GetLastPokemonIndex();
-                                } //end if
+                                //Decrease to previous pokemon index
+                                boxChoice = GameManager.instance.GetTrainer().GetPreviousPokemon(boxChoice);
                             } //end else
                         } //end if
                         else
@@ -3266,14 +3312,8 @@ public class SceneManager : MonoBehaviour
                         //If in pokemon region
                         else if(!partyTab.activeSelf && heldPokemon == null)
                         {
-                            //Decrease (higher slots are lower childs)
-                            boxChoice--;
-                            
-                            //Clamp between first pokemon and last pokemon
-                            if(boxChoice < GameManager.instance.GetTrainer().GetFirstPokemonIndex())
-                            {
-                                boxChoice = GameManager.instance.GetTrainer().GetLastPokemonIndex();
-                            } //end if
+                            //Decrease to previous pokemon index
+                            boxChoice = GameManager.instance.GetTrainer().GetPreviousPokemon(boxChoice);
 
                             //Update selected pokemon
                             selectedPokemon = GameManager.instance.GetTrainer().GetPC(
@@ -3295,9 +3335,6 @@ public class SceneManager : MonoBehaviour
                         {
                             subMenuChoice = choices.transform.childCount-1;
                         } //end if
-                        
-                        //Reposition selection
-                        selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
                     } //end else if Pokemon Markings on PC -> Submenu
                     break;
                 } //end case OverallState PC
@@ -3632,14 +3669,8 @@ public class SceneManager : MonoBehaviour
                             //If in pokemon region
                             else if(!partyTab.activeSelf && heldPokemon == null)
                             {
-                                //Increase (lower slots are on higher childs)
-                                boxChoice++;
-                                
-                                //Clamp between first index and last index of box
-                                if(boxChoice > GameManager.instance.GetTrainer().GetLastPokemonIndex())
-                                {
-                                    boxChoice = GameManager.instance.GetTrainer().GetFirstPokemonIndex();
-                                } //end if
+                                //Increase to next pokemon slot
+                                boxChoice = GameManager.instance.GetTrainer().GetNextPokemon(boxChoice);
                             } //end else if
                         } //end else if
                         else
@@ -3697,15 +3728,8 @@ public class SceneManager : MonoBehaviour
                         //If in pokemon region
                         else if(!partyTab.activeSelf && heldPokemon == null)
                         {
-                            Debug.Log("Down key in Pokemon region  with no held");
-                            //Increase (lower slots are on higher childs)
-                            boxChoice++;
-                            
-                            //Clamp between first index and last index of box
-                            if(boxChoice > GameManager.instance.GetTrainer().GetLastPokemonIndex())
-                            {
-                                boxChoice = GameManager.instance.GetTrainer().GetFirstPokemonIndex();
-                            } //end if
+                            //Increase to next pokemon slot
+                            boxChoice = GameManager.instance.GetTrainer().GetNextPokemon(boxChoice);
                             
                             //Update selected pokemon
                             selectedPokemon = GameManager.instance.GetTrainer().GetPC(
@@ -3727,9 +3751,6 @@ public class SceneManager : MonoBehaviour
                         {
                             subMenuChoice = 0;
                         } //end if
-                        
-                        //Reposition selection
-                        selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
                     } //end else if Pokemon Markings on PC -> Submenu
                     break;
                 } //end case OverallState PC
@@ -4090,9 +4111,6 @@ public class SceneManager : MonoBehaviour
                         {
                             subMenuChoice++;
                         } //end if
-                        
-                        //Reposition selection
-                        selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
                     } //end else if Pokemon Markings on PC -> Submenu
                     break;
                 } //end case OverallGame PC
@@ -4414,9 +4432,6 @@ public class SceneManager : MonoBehaviour
                         {
                             subMenuChoice--;
                         } //end if
-                        
-                        //Reposition selection
-                        selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
                     } //end else if Pokemon Markings on PC -> Submenu
                     break;
                 } //end case OverallGame PC
@@ -4900,7 +4915,7 @@ public class SceneManager : MonoBehaviour
                         //Set submenu active
                         choices.SetActive(true);
                         selection.SetActive(true);
-                        
+
                         //Set up selection box at end of frame if it doesn't fit
                         if(selection.GetComponent<RectTransform>().sizeDelta != 
                            choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
@@ -4910,6 +4925,7 @@ public class SceneManager : MonoBehaviour
                         } //end if
                         
                         //Reset position to top of menu
+                        initialize = false;
                         subMenuChoice = 0;
                         gameState = MainGame.POKEMONSUBMENU;
                     } //end else if Open menu if not open
@@ -5008,7 +5024,7 @@ public class SceneManager : MonoBehaviour
                             //Set submenu active
                             choices.SetActive(true);
                             selection.SetActive(true);
-                            
+
                             //Set up selection box at end of frame if it doesn't fit
                             if(selection.GetComponent<RectTransform>().sizeDelta != 
                                choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
@@ -5019,6 +5035,7 @@ public class SceneManager : MonoBehaviour
                             
                             //Reset position to top of menu
                             subMenuChoice = 0;
+                            initialize = false;
                             pcState = PCGame.POKEMONSUBMENU;
                         } //end if  
                     } //end if Home
@@ -5032,7 +5049,7 @@ public class SceneManager : MonoBehaviour
                             //Set submenu active
                             choices.SetActive(true);
                             selection.SetActive(true);
-                            
+
                             //Set up selection box at end of frame if it doesn't fit
                             if(selection.GetComponent<RectTransform>().sizeDelta != 
                                choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
@@ -5043,6 +5060,7 @@ public class SceneManager : MonoBehaviour
                             
                             //Reset position to top of menu
                             subMenuChoice = 0;
+                            initialize = false;
                             pcState = PCGame.POKEMONSUBMENU;
                         } //end if  
                         //Close submenu if open
@@ -5117,8 +5135,8 @@ public class SceneManager : MonoBehaviour
                             //Markings
                             case 4:
                             {
-                                markingChoices = heldPokemon == null ? selectedPokemon.GetMarkings() :
-                                    heldPokemon.GetMarkings();
+                                markingChoices = heldPokemon == null ? selectedPokemon.GetMarkings().ToList() :
+                                    heldPokemon.GetMarkings().ToList();
                                 initialize = false;
                                 pcState = PCGame.POKEMONMARKINGS;
                                 break;
@@ -5130,13 +5148,36 @@ public class SceneManager : MonoBehaviour
                                 //If party tab is open
                                 if(partyTab.activeSelf && GameManager.instance.GetTrainer().Team.Count > 1)
                                 {
+                                    //Remove the pokemon from the party
                                     GameManager.instance.GetTrainer().RemovePokemon(choiceNumber-1);
+
+                                    //Fill in party tab
+                                    for(int i = 1; i < GameManager.instance.GetTrainer().Team.Count + 1; i++)
+                                    {
+                                        partyTab.transform.FindChild("Pokemon"+i).GetComponent<Image>().sprite =
+                                            Resources.Load<Sprite>("Sprites/Icons/icon"+GameManager.instance.GetTrainer().
+                                                                   Team[i-1].NatSpecies.ToString("000"));
+                                    } //end for
+                                    
+                                    //Deactivate any empty party spots
+                                    for(int i = 6; i > GameManager.instance.GetTrainer().Team.Count; i--)
+                                    {
+                                        partyTab.transform.FindChild("Pokemon" + (i)).gameObject.SetActive(false);
+                                    } //end for
                                 } //end if
                                 else
                                 {
+                                    //Remove the pokemon from the PC
                                     GameManager.instance.GetTrainer().RemoveFromPC(
                                         GameManager.instance.GetTrainer().GetPCBox(), boxChoice);
+
+                                    //Set PC slot to clear
+                                    boxBack.transform.FindChild("PokemonRegion").GetChild(boxChoice).
+                                        GetComponent<Image>().color = Color.clear;
                                 } //end else
+
+                                choices.SetActive(false);
+                                selection.SetActive(false);
                                 pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
                                 break;
                             } //end case 5 (Release)
@@ -5207,7 +5248,7 @@ public class SceneManager : MonoBehaviour
                             markingChoices[subMenuChoice] = !markingChoices[subMenuChoice];
 
                             //Color in choices
-                            for(int i = 0; i < markingChoices.Length; i++)
+                            for(int i = 0; i < markingChoices.Count; i++)
                             {
                                 choices.transform.GetChild(i).GetComponent<Text>().color =
                                     markingChoices[i] ? Color.black : Color.gray;
@@ -5252,7 +5293,7 @@ public class SceneManager : MonoBehaviour
                             if(heldPokemon != null)
                             {
                                 //Update held pokemon markings
-                                heldPokemon.SetMarkings(markingChoices);
+                                heldPokemon.SetMarkings(markingChoices.ToArray());
 
                                 //Return to home or party
                                 pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
@@ -5261,7 +5302,7 @@ public class SceneManager : MonoBehaviour
                             else if(partyTab.activeSelf)
                             {
                                 //Update team pokemon markings
-                                GameManager.instance.GetTrainer().Team[choiceNumber-1].SetMarkings(markingChoices);
+                                GameManager.instance.GetTrainer().Team[choiceNumber-1].SetMarkings(markingChoices.ToArray());
 
                                 //Return to party
                                 pcState = PCGame.PARTY;
@@ -5272,7 +5313,7 @@ public class SceneManager : MonoBehaviour
                                 //Update pc box pokemon markings
                                 GameManager.instance.GetTrainer().GetPC(
                                     GameManager.instance.GetTrainer().GetPCBox(),
-                                    boxChoice).SetMarkings(markingChoices);
+                                    boxChoice).SetMarkings(markingChoices.ToArray());
 
                                 //Return to home
                                 pcState = PCGame.HOME;
@@ -5280,7 +5321,6 @@ public class SceneManager : MonoBehaviour
                         } //end else if
                         else if(subMenuChoice == DataContents.markingCharacters.Length+1)
                         {
-                            //Turn menu off
                             //Turn menu off
                             //Fill in choices box
                             for (int i = choices.transform.childCount-1; i < 6; i++)
@@ -5442,13 +5482,19 @@ public class SceneManager : MonoBehaviour
                 //PC
                 case OverallGame.PC:
                 {
+                    //PC Home
+                    if(pcState == PCGame.HOME)
+                    {
+                        StartCoroutine(LoadScene("MainGame", OverallGame.CONTINUE, true));
+                    } //end if PC Home
+
                     //Pokemon Submenu on PC
-                    if(pcState == PCGame.POKEMONSUBMENU)
+                    else  if(pcState == PCGame.POKEMONSUBMENU)
                     {
                         choices.SetActive(false);
                         selection.SetActive(false);
                         pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
-                    } //end if Pokemon Submenu on PC
+                    } //end else if Pokemon Submenu on PC
 
                     //Pokemon Party on PC -> Party Tab
                     else if(pcState == PCGame.PARTY)
@@ -5502,7 +5548,6 @@ public class SceneManager : MonoBehaviour
                     //Pokemon Markings on PC -> Submenu
                     else if(pcState == PCGame.POKEMONMARKINGS)
                     {
-                        //Turn menu off
                         //Turn menu off
                         //Fill in choices box
                         for (int i = choices.transform.childCount-1; i < 6; i++)
@@ -5630,14 +5675,8 @@ public class SceneManager : MonoBehaviour
                             } //end if
                             else if(!partyTab.activeSelf && heldPokemon == null)
                             {
-                                //Decrease (higher slots are lower childs)
-                                boxChoice--;
-                                
-                                //Clamp between 0 and box size
-                                if(boxChoice < 0)
-                                {
-                                    boxChoice = GameManager.instance.GetTrainer().GetLastPokemonIndex();
-                                } //end if
+                                //Decrease to previous pokemon slot
+                                boxChoice = GameManager.instance.GetTrainer().GetPreviousPokemon(boxChoice);
                             } //end else if
                         } //end if
                     } //end if Pokemon Summary on PC -> Summary
@@ -5663,14 +5702,8 @@ public class SceneManager : MonoBehaviour
                         //If in pokemon region
                         else if(!partyTab.activeSelf && heldPokemon == null)
                         {
-                            //Decrease (higher slots are lower childs)
-                            boxChoice--;
-                            
-                            //Clamp between first pokemon and last pokemon
-                            if(boxChoice < GameManager.instance.GetTrainer().GetFirstPokemonIndex())
-                            {
-                                boxChoice = GameManager.instance.GetTrainer().GetLastPokemonIndex();
-                            } //end if
+                            //Decrease to previous pokemon slot
+                            boxChoice = GameManager.instance.GetTrainer().GetPreviousPokemon(boxChoice);
                         } //end else if
                     } //end else if Pokemon Ribbons on PC -> Ribbons
                     break;
@@ -5764,14 +5797,8 @@ public class SceneManager : MonoBehaviour
                             } //end if
                             else if(!partyTab.activeSelf && heldPokemon == null)
                             {
-                                //Increase (lower slots are higher childs)
-                                boxChoice++;
-                                
-                                //Clamp between 0 and box size
-                                if(boxChoice > GameManager.instance.GetTrainer().GetLastPokemonIndex())
-                                {
-                                    boxChoice = GameManager.instance.GetTrainer().GetFirstPokemonIndex();
-                                } //end if
+                                //Increase to next pokemon slot
+                                boxChoice = GameManager.instance.GetTrainer().GetNextPokemon(boxChoice);
                             } //end else if
                         } //end if
                     } //end if Pokemon Summary on PC -> Summary
@@ -5793,14 +5820,8 @@ public class SceneManager : MonoBehaviour
                         } //end if
                         else if(!partyTab.activeSelf && heldPokemon == null)
                         {
-                            //Increase (lower slots are higher childs)
-                            boxChoice++;
-                            
-                            //Clamp between 0 and box size
-                            if(boxChoice > GameManager.instance.GetTrainer().GetLastPokemonIndex())
-                            {
-                                boxChoice = GameManager.instance.GetTrainer().GetFirstPokemonIndex();
-                            } //end if
+                            //Increase to next pokemon slot
+                            boxChoice = GameManager.instance.GetTrainer().GetNextPokemon(boxChoice);
                         } //end else if
                     } //end else if Pokemon Ribbons on PC -> Ribbons
                     break;
@@ -6017,7 +6038,7 @@ public class SceneManager : MonoBehaviour
                             //Set submenu active
                             choices.SetActive(true);
                             selection.SetActive(true);
-                            
+
                             //Set up selection box at end of frame if it doesn't fit
                             if(selection.GetComponent<RectTransform>().sizeDelta != 
                                choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
@@ -6028,6 +6049,7 @@ public class SceneManager : MonoBehaviour
                             
                             //Reset position to top of menu
                             subMenuChoice = 0;
+                            initialize = false;
                             gameState = MainGame.POKEMONSUBMENU;
                         } //end if
                         //Open PC if choice is PC
@@ -6152,6 +6174,7 @@ public class SceneManager : MonoBehaviour
                             
                             //Reset position to top of menu
                             subMenuChoice = 0;
+                            initialize = false;
                             pcState = PCGame.POKEMONSUBMENU;
                         } //end if
                         //If on Party button
@@ -6175,7 +6198,7 @@ public class SceneManager : MonoBehaviour
                             //Set submenu active
                             choices.SetActive(true);
                             selection.SetActive(true);
-                            
+
                             //Set up selection box at end of frame if it doesn't fit
                             if(selection.GetComponent<RectTransform>().sizeDelta != 
                                choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
@@ -6186,10 +6209,12 @@ public class SceneManager : MonoBehaviour
                             
                             //Reset position to top of menu
                             subMenuChoice = 0;
+                            initialize = false;
                             pcState = PCGame.POKEMONSUBMENU;
                         } //end if  
                         else
                         {
+                            Debug.Log("Closing party tab");
                             StartCoroutine(PartyState(false));
                         } //end else 
                     } //end else if Pokemon Party on PC -> Party Tab
@@ -6258,8 +6283,8 @@ public class SceneManager : MonoBehaviour
                             //Markings
                             case 4:
                             {
-                                markingChoices = heldPokemon == null ? selectedPokemon.GetMarkings() :
-                                    heldPokemon.GetMarkings();
+                                markingChoices = heldPokemon == null ? selectedPokemon.GetMarkings().ToList() :
+                                    heldPokemon.GetMarkings().ToList();
                                 initialize = false;
                                 pcState = PCGame.POKEMONMARKINGS;
                                 break;
@@ -6271,13 +6296,35 @@ public class SceneManager : MonoBehaviour
                                 //If party tab is open
                                 if(partyTab.activeSelf && GameManager.instance.GetTrainer().Team.Count > 1)
                                 {
+                                    //Remove the pokemon from the party
                                     GameManager.instance.GetTrainer().RemovePokemon(choiceNumber-1);
+                                    
+                                    //Fill in party tab
+                                    for(int i = 1; i < GameManager.instance.GetTrainer().Team.Count + 1; i++)
+                                    {
+                                        partyTab.transform.FindChild("Pokemon"+i).GetComponent<Image>().sprite =
+                                            Resources.Load<Sprite>("Sprites/Icons/icon"+GameManager.instance.GetTrainer().
+                                                                   Team[i-1].NatSpecies.ToString("000"));
+                                    } //end for
+                                    
+                                    //Deactivate any empty party spots
+                                    for(int i = 6; i > GameManager.instance.GetTrainer().Team.Count; i--)
+                                    {
+                                        partyTab.transform.FindChild("Pokemon" + (i)).gameObject.SetActive(false);
+                                    } //end for
                                 } //end if
                                 else
                                 {
+                                    //Remove the pokemon from the PC
                                     GameManager.instance.GetTrainer().RemoveFromPC(
                                         GameManager.instance.GetTrainer().GetPCBox(), boxChoice);
+                                    
+                                    //Set PC slot to clear
+                                    boxBack.transform.FindChild("PokemonRegion").GetChild(boxChoice).
+                                        GetComponent<Image>().color = Color.clear;
                                 } //end else
+                                choices.SetActive(false);
+                                selection.SetActive(false);
                                 pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
                                 break;
                             } //end case 5 (Release)
@@ -6348,7 +6395,7 @@ public class SceneManager : MonoBehaviour
                             markingChoices[subMenuChoice] = !markingChoices[subMenuChoice];
 
                             //Color in choices
-                            for(int i = 0; i < markingChoices.Length; i++)
+                            for(int i = 0; i < markingChoices.Count; i++)
                             {
                                 choices.transform.GetChild(i).GetComponent<Text>().color =
                                     markingChoices[i] ? Color.black : Color.gray;
@@ -6356,7 +6403,6 @@ public class SceneManager : MonoBehaviour
                         } //end if
                         else if(subMenuChoice == DataContents.markingCharacters.Length)
                         {
-                            //Turn menu off
                             //Turn menu off
                             //Fill in choices box
                             for (int i = choices.transform.childCount-1; i < 6; i++)
@@ -6394,7 +6440,7 @@ public class SceneManager : MonoBehaviour
                             if(heldPokemon != null)
                             {
                                 //Update held pokemon markings
-                                heldPokemon.SetMarkings(markingChoices);
+                                heldPokemon.SetMarkings(markingChoices.ToArray());
                                 
                                 //Return to home or party
                                 pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
@@ -6403,8 +6449,8 @@ public class SceneManager : MonoBehaviour
                             else if(partyTab.activeSelf)
                             {
                                 //Update team pokemon markings
-                                GameManager.instance.GetTrainer().Team[choiceNumber-1].SetMarkings(markingChoices);
-                                
+                                GameManager.instance.GetTrainer().Team[choiceNumber-1].SetMarkings(markingChoices.ToArray());
+
                                 //Return to party
                                 pcState = PCGame.PARTY;
                             } //end else if
@@ -6414,8 +6460,8 @@ public class SceneManager : MonoBehaviour
                                 //Update pc box pokemon markings
                                 GameManager.instance.GetTrainer().GetPC(
                                     GameManager.instance.GetTrainer().GetPCBox(),
-                                    boxChoice).SetMarkings(markingChoices);
-                                
+                                    boxChoice).SetMarkings(markingChoices.ToArray());
+
                                 //Return to home
                                 pcState = PCGame.HOME;
                             } //end else
@@ -6455,7 +6501,7 @@ public class SceneManager : MonoBehaviour
                             } //end if
                             choices.SetActive(false);
                             selection.SetActive(false);
-                            
+
                             //Return to home or party
                             pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
                         } //end else if
@@ -6592,13 +6638,19 @@ public class SceneManager : MonoBehaviour
                 //PC
                 case OverallGame.PC:
                 {
+                    //PC Home
+                    if(pcState == PCGame.HOME)
+                    {
+                        StartCoroutine(LoadScene("MainGame", OverallGame.CONTINUE, true));
+                    } //end if PC Home
+
                     //Pokemon Submenu on PC
-                    if(pcState == PCGame.POKEMONSUBMENU)
+                    else if(pcState == PCGame.POKEMONSUBMENU)
                     {
                         choices.SetActive(false);
                         selection.SetActive(false);
                         pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
-                    } //end if Pokemon Submenu on PC
+                    } //end else if Pokemon Submenu on PC
 
                     //Pokeon Party on PC -> Party Tab
                     else if(pcState == PCGame.PARTY)
