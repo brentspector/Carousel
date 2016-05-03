@@ -425,43 +425,68 @@ public class SceneManager : MonoBehaviour
 		//Begin scene
 		else if(checkpoint == 2)
 		{
+            //Begin processing
 			processing = true;
-			if(GameManager.instance.DisplayText("Welcome to Pokemon Carousel! I am the Ringmaster " +
-			                                 "Melotta."))
-			{
-				checkpoint = 3;
-			} //end if
+			
+            //Play text
+            GameManager.instance.DisplayText("Welcome to Pokemon Carousel! I am the Ringmaster " +
+            "Melotta.", false);
+
+            //Move to next checkpoint
+    		checkpoint = 3;
+
+            //End processing
 			processing = false;
 		} //end else if
 		else if(checkpoint == 3)
 		{
+            //Begin processing
 			processing = true;
 
-            //Get player input
-            GatherInput();
+            //Display text
+            GameManager.instance.DisplayText("This circus has attracted major gym leaders from " +
+                "around the world! In fact, that's why you're here, isn't it?", false);
 
+            //Move to next checkpoint
+            checkpoint = 4;          
+
+            //End processing
 			processing = false;
 		} //end else if
 		else if(checkpoint == 4)
 		{
+            //Begin processing
 			processing = true;
 
-            //Get player input
-            GatherInput();
+            //Display text
+            GameManager.instance.DisplayText("Alright, let's get you set up. First, what is " +
+                "your name?", true);
+            
+            //Move to next checkpoint
+            checkpoint = 5;
 
+            //End processing
 			processing = false;
 		} //end else if
 		else if(checkpoint == 5)
 		{
+            //Begin processing
 			processing = true;
 
-            //Get player input
-            GatherInput();
+            //Display name input
+            input.SetActive(true);
+            input.transform.GetChild(2).GetComponent<Text>().text = "Please enter your name.";
+            input.transform.GetChild(0).GetComponent<Text>().text = "Player name:";
+            inputText.text = "";
+            inputText.ActivateInputField();
+            checkpoint = 6;
 
+            //End processing
 			processing = false;
 		} //end else if
 		else if(checkpoint == 6)
 		{
+            //Begin processing
 			processing = true;
 			
             //Make sure text field is always active
@@ -473,70 +498,82 @@ public class SceneManager : MonoBehaviour
             //Get player input
             GatherInput();
 
+            //End processing
 			processing = false;
 		} //end else if
 		else if(checkpoint == 7)
 		{
+            //Being processing
 			processing = true;
-			//Make sure text has finished displaying before activating the confirm box
-			if(!GameManager.instance.IsDisplaying())
+
+			//Activate confirmation box
+			confirm.SetActive(true);
+
+			//Get confirm's dimensions
+			Vector3[] boxDimensions = new Vector3[4];
+			confirm.transform.GetChild(0).GetComponent<RectTransform>().GetWorldCorners(boxDimensions);
+			float width = boxDimensions[2].x - boxDimensions[0].x;
+			float height = boxDimensions[2].y - boxDimensions[0].y;
+
+			//Reposition selection rect
+			selection.SetActive(true);
+			choiceNumber = 0;
+
+			//Resize to same as top choice
+			selection.GetComponent<RectTransform>().sizeDelta = new Vector2(width, height);
+			//Reposition to location of top choice, with 2 unit offset to center it
+			selection.transform.position = new Vector3(confirm.transform.GetChild(0).position.x,
+			                                           confirm.transform.GetChild(0).position.y,
+			                                           100);
+
+			//Continue to next section when selection rect is properly set
+			if(selection.GetComponent<RectTransform>().sizeDelta.x != 0)
 			{
-				//Activate confirmation box
-				confirm.SetActive(true);
-
-				//Get confirm's dimensions
-				Vector3[] boxDimensions = new Vector3[4];
-				confirm.transform.GetChild(0).GetComponent<RectTransform>().GetWorldCorners(boxDimensions);
-				float width = boxDimensions[2].x - boxDimensions[0].x;
-				float height = boxDimensions[2].y - boxDimensions[0].y;
-
-				//Reposition selection rect
-				selection.SetActive(true);
-				choiceNumber = 0;
-
-				//Resize to same as top choice
-				selection.GetComponent<RectTransform>().sizeDelta = new Vector2(width, height);
-				//Reposition to location of top choice, with 2 unit offset to center it
-				selection.transform.position = new Vector3(confirm.transform.GetChild(0).position.x,
-				                                           confirm.transform.GetChild(0).position.y,
-				                                           100);
-				//Continue to next section when selection rect is properly set
-				if(selection.GetComponent<RectTransform>().sizeDelta.x != 0)
-				{
-					checkpoint = 8;
-				} //end if
+				checkpoint = 8;
 			} //end if
+
+            //End processing
 			processing = false;
 		} //end else if
 		else if(checkpoint == 8)
 		{
+            //Begin processing
 			processing = true;
 
             //Get player input
             GatherInput();
 
+            //End processing
             processing = false;
 		} //end else if
 		else if(checkpoint == 9)
 		{
+            //Begin processing
 			processing = true;
+
 			//Set name
 			GameManager.instance.GetTrainer().PlayerName = playerName;
 
-			//Attempt to display text
-			if(GameManager.instance.DisplayText("Great! Now here's your things. See you again."))
-			{
-				checkpoint = 10;
-			} //end if
-			processing = false;
+            //Display text
+            GameManager.instance.DisplayText("Great! Now here's your things. See you again.", true);
+
+            //Move to next checkpoint
+            checkpoint = 10;
+			
+            //End processing
+            processing = false;
 		} //end else if
 		else if(checkpoint == 10)
 		{
+            //Begin processing
 			processing = true;
 
-            //Get player input
-            GatherInput();
+            checkpoint = 0;
+            GameManager.instance.GetTrainer().RandomTeam();
+            GameManager.instance.Persist(false);
+            StartCoroutine(LoadScene("Intro", OverallGame.INTRO));
 
+            //End processing
 			processing = false;
 		} //end else if
 	} //end NewGame
@@ -4753,51 +4790,14 @@ public class SceneManager : MonoBehaviour
                 //New Game
                 case OverallGame.NEWGAME:
                 {
-                    //Don't continue until player requests next text
-                    if(checkpoint == 3)
-                    {
-                        //Attempt to display text
-                        if(GameManager.instance.DisplayText("This circus has attracted major gym leaders from " +
-                                                            "around the world! In fact, that's why you're here, isn't it?"))
-                        {
-                            checkpoint = 4;
-                        } //end if
-                    } //end if
-
-                    //Don't continue until player requests next text
-                    else if(checkpoint == 4)
-                    {
-                        //Attempt to display text
-                        if(GameManager.instance.DisplayText("Alright, let's get you set up. First, what is " +
-                                                            "your name?"))
-                        {
-                            checkpoint = 5;
-                        } //end if
-                    } //end else if
-
-                    //Don't continue until player requests next text
-                    else if(checkpoint == 5)
-                    {
-                        //Display name input
-                        input.SetActive(true);
-                        input.transform.GetChild(2).GetComponent<Text>().text = "Please enter your name.";
-                        input.transform.GetChild(0).GetComponent<Text>().text = "Player name:";
-                        inputText.text = "";
-                        inputText.ActivateInputField();
-                        checkpoint = 6;
-                    } //end else if
-
-                    //Don't continue until player requests next text
-                    else if(checkpoint == 6 && inputText.text.Length != 0)
+                    if(checkpoint == 6 && inputText.text.Length != 0)
                     {
                         //Convert input name to player's name
                         playerName = inputText.text;
                         input.SetActive(false);
-                        GameManager.instance.DisplayText("So your name is " + playerName + "?");
+                        GameManager.instance.DisplayText("So your name is " + playerName + "?", false);
                         checkpoint = 7;
-                    } //end else if
-
-                    //If an option was selected, process it
+                    } //end if
                     else if(checkpoint == 8)
                     {
                         // Yes selected
@@ -4808,23 +4808,13 @@ public class SceneManager : MonoBehaviour
                         // No selected
                         else if(choiceNumber == 1)
                         {
-                            GameManager.instance.DisplayText("Ok let's try again. What is your name?");
+                            GameManager.instance.DisplayText("Ok let's try again. What is your name?", true);
                             checkpoint = 5;
                         } //end else if
                         
                         //Disable choice and selection
                         selection.SetActive(false);
                         confirm.SetActive(false);
-                    } //end else if
-
-                    //Don't continue until player requests next text
-                    else if(checkpoint == 10 && !GameManager.instance.IsDisplaying())
-                    {
-                        text.SetActive(false);
-                        checkpoint = 0;
-                        GameManager.instance.GetTrainer().RandomTeam();
-                        GameManager.instance.Persist();
-                        StartCoroutine(LoadScene("Intro", OverallGame.INTRO));
                     } //end else if
                     break;
                 } //end case OverallGame NEWGAME
@@ -4990,26 +4980,6 @@ public class SceneManager : MonoBehaviour
                             ReadRibbon();
                         } //end if
                     } //end else if Pokemon Ribbons on Continue Game -> Ribbons
-
-                    //Home of Continue Game
-                    else if(gameState == MainGame.HOME)
-                    {
-                        //If the text is finished displaying, turn it off
-                        if(!GameManager.instance.IsDisplaying())
-                        {
-                            text.SetActive(false);
-                        } //end if
-                    } //end else if Home of Continue Game
-
-                    //Debug on Continue Game -> Debug
-                    else if(gameState == MainGame.DEBUG)
-                    {
-                        //If the text is finished displaying, turn it off
-                        if(!GameManager.instance.IsDisplaying())
-                        {
-                            text.SetActive(false);
-                        } //end if
-                    } //end else if Debug on Continue Game -> Debug
                     break;
                 } //end case OverallGame CONTINUEGAME
                 //PC
@@ -5148,6 +5118,9 @@ public class SceneManager : MonoBehaviour
                                 //If party tab is open
                                 if(partyTab.activeSelf && GameManager.instance.GetTrainer().Team.Count > 1)
                                 {
+                                    //Get the pokemon
+                                    selectedPokemon = GameManager.instance.GetTrainer().Team[choiceNumber-1];
+
                                     //Remove the pokemon from the party
                                     GameManager.instance.GetTrainer().RemovePokemon(choiceNumber-1);
 
@@ -5167,6 +5140,10 @@ public class SceneManager : MonoBehaviour
                                 } //end if
                                 else
                                 {
+                                    //Get the pokemon
+                                    selectedPokemon = GameManager.instance.GetTrainer().GetPC(
+                                        GameManager.instance.GetTrainer().GetPCBox(), boxChoice);
+
                                     //Remove the pokemon from the PC
                                     GameManager.instance.GetTrainer().RemoveFromPC(
                                         GameManager.instance.GetTrainer().GetPCBox(), boxChoice);
@@ -5178,6 +5155,8 @@ public class SceneManager : MonoBehaviour
 
                                 choices.SetActive(false);
                                 selection.SetActive(false);
+                                GameManager.instance.DisplayText("You released " + selectedPokemon.Nickname, true);
+                                selectedPokemon = null;
                                 pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
                                 break;
                             } //end case 5 (Release)
@@ -5874,51 +5853,14 @@ public class SceneManager : MonoBehaviour
                 //New Game
                 case OverallGame.NEWGAME:
                 {
-                    //Don't continue until player requests next text
-                    if(checkpoint == 3)
-                    {
-                        //Attempt to display text
-                        if(GameManager.instance.DisplayText("This circus has attracted major gym leaders from " +
-                                                            "around the world! In fact, that's why you're here, isn't it?"))
-                        {
-                            checkpoint = 4;
-                        } //end if
-                    } //end if
-
-                    //Don't continue until player requests next text
-                    else if(checkpoint == 4)
-                    {
-                        //Attempt to display text
-                        if(GameManager.instance.DisplayText("Alright, let's get you set up. First, what is " +
-                                                            "your name?"))
-                        {
-                            checkpoint = 5;
-                        } //end if
-                    } //end else if
-
-                    //Don't continue until player requests next text
-                    else if(checkpoint == 5)
-                    {
-                        //Display name input
-                        input.SetActive(true);
-                        input.transform.GetChild(2).GetComponent<Text>().text = "Please enter your name.";
-                        input.transform.GetChild(0).GetComponent<Text>().text = "Player name:";
-                        inputText.text = "";
-                        inputText.ActivateInputField();
-                        checkpoint = 6;
-                    } //end else if
-
-                    //Don't continue until player requests next text
-                    else if(checkpoint == 6 && inputText.text.Length != 0)
+                    if(checkpoint == 6 && inputText.text.Length != 0)
                     {
                         //Convert input name to player's name
                         playerName = inputText.text;
                         input.SetActive(false);
-                        GameManager.instance.DisplayText("So your name is " + playerName + "?");
+                        GameManager.instance.DisplayText("So your name is " + playerName + "?", false, true);
                         checkpoint = 7;
-                    } //end else if
-
-                    //If an option was selected, process it
+                    } //end if
                     else if(checkpoint == 8)
                     {
                         // Yes selected
@@ -5929,23 +5871,13 @@ public class SceneManager : MonoBehaviour
                         // No selected
                         else if(choiceNumber == 1)
                         {
-                            GameManager.instance.DisplayText("Ok let's try again. What is your name?");
+                            GameManager.instance.DisplayText("Ok let's try again. What is your name?", true);
                             checkpoint = 5;
                         } //end else if
                         
                         //Disable choice and selection
                         selection.SetActive(false);
                         confirm.SetActive(false);
-                    } //end else if
-
-                    //Don't continue until player requests next text
-                    else if(checkpoint == 10 && !GameManager.instance.IsDisplaying())
-                    {
-                        text.SetActive(false);
-                        checkpoint = 0;
-                        GameManager.instance.GetTrainer().RandomTeam();
-                        GameManager.instance.Persist();
-                        StartCoroutine(LoadScene("Intro", OverallGame.INTRO));
                     } //end else if
                     break;
                 } //end case OverallGame NEWGAME
@@ -6129,36 +6061,16 @@ public class SceneManager : MonoBehaviour
                             ReadRibbon();
                         } //end if
                     } //end else if Pokemon Ribbons on Continue Game -> Ribbons
-
-                    //Home of Continue Game
-                    else if(gameState == MainGame.HOME)
-                    {
-                        //If the text is finished displaying, turn it off
-                        if(!GameManager.instance.IsDisplaying())
-                        {
-                            text.SetActive(false);
-                        } //end if
-                    } //end else if Home of Continue Game
-
-                    //Debug on Continue Game -> Debug
-                    else if(gameState == MainGame.DEBUG)
-                    {
-                        //If the text is finished displaying, turn it off
-                        if(!GameManager.instance.IsDisplaying())
-                        {
-                            text.SetActive(false);
-                        } //end if
-                    } //end else if Debug on Continue Game -> Debug
                     break;
                 } //end case OverallGame CONTINUEGAME
                 //PC
                 case OverallGame.PC:
                 {
                     //PC Home
-                    if(pcState == PCGame.HOME && (selectedPokemon != null || heldPokemon != null))
+                    if(pcState == PCGame.HOME)
                     {
                         //Open submenu as long as player is in pokemon region
-                        if(boxChoice > -1 && boxChoice < 30)
+                        if(boxChoice > -1 && boxChoice < 30 && (selectedPokemon != null || heldPokemon != null))
                         {
                             //Set submenu active
                             choices.SetActive(true);
@@ -6190,10 +6102,10 @@ public class SceneManager : MonoBehaviour
                     } //end if Home
 
                     //Pokemon Party on PC -> Party Tab
-                    else if(pcState == PCGame.PARTY && (selectedPokemon != null || heldPokemon != null))
+                    else if(pcState == PCGame.PARTY)
                     {
                         //Open submenu as long as player is in party
-                        if(choiceNumber > 0)
+                        if(choiceNumber > 0 && (selectedPokemon != null || heldPokemon != null))
                         {
                             //Set submenu active
                             choices.SetActive(true);
@@ -6214,7 +6126,6 @@ public class SceneManager : MonoBehaviour
                         } //end if  
                         else
                         {
-                            Debug.Log("Closing party tab");
                             StartCoroutine(PartyState(false));
                         } //end else 
                     } //end else if Pokemon Party on PC -> Party Tab
@@ -6296,6 +6207,9 @@ public class SceneManager : MonoBehaviour
                                 //If party tab is open
                                 if(partyTab.activeSelf && GameManager.instance.GetTrainer().Team.Count > 1)
                                 {
+                                    //Get the pokemon
+                                    selectedPokemon = GameManager.instance.GetTrainer().Team[choiceNumber-1];
+
                                     //Remove the pokemon from the party
                                     GameManager.instance.GetTrainer().RemovePokemon(choiceNumber-1);
                                     
@@ -6315,6 +6229,10 @@ public class SceneManager : MonoBehaviour
                                 } //end if
                                 else
                                 {
+                                    //Get the pokemon
+                                    selectedPokemon = GameManager.instance.GetTrainer().GetPC(
+                                        GameManager.instance.GetTrainer().GetPCBox(), boxChoice);
+
                                     //Remove the pokemon from the PC
                                     GameManager.instance.GetTrainer().RemoveFromPC(
                                         GameManager.instance.GetTrainer().GetPCBox(), boxChoice);
@@ -6325,6 +6243,8 @@ public class SceneManager : MonoBehaviour
                                 } //end else
                                 choices.SetActive(false);
                                 selection.SetActive(false);
+                                GameManager.instance.DisplayText("You released " + selectedPokemon.Nickname, true);
+                                selectedPokemon = null;
                                 pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
                                 break;
                             } //end case 5 (Release)
@@ -6842,8 +6762,7 @@ public class SceneManager : MonoBehaviour
         //If holding a pokemon
         if (heldPokemon != null)
         {
-            GameManager.instance.LogErrorMessage ("You tried to return while holding a pokemon." +
-                "This message will be shown in game at the appropriate time.");
+            GameManager.instance.DisplayText ("You can't leave while holding a pokemon", true);
             return false;
         } //end if
 

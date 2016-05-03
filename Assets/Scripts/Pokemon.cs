@@ -236,7 +236,7 @@ public class Pokemon
 		moves = new int[4];
 		firstMoves = new int[4];
         ppReamaining = new int[4];
-		markings = new bool[GameManager.instance.NumberOfMarkings];
+		markings = new bool[DataContents.markingCharacters.Length];
 		ribbons = new List<int>();
 
 		for(int i = 0; i < 6; i++)
@@ -758,7 +758,7 @@ public class Pokemon
             ribbons.RemoveAt (index);
         } //end else if
         //Otherwise attempt to update
-        else if (value < GameManager.instance.NumberOfRibbons && index < ribbons.Count)
+        else if (value < DataContents.ribbonSprites.Length && index < ribbons.Count)
         {
             ribbons[index] = value;
         } //end else if
@@ -995,7 +995,7 @@ public class Pokemon
         string coloredMarkings = "";
 
         //Loop through markings and add to string
-        for(int i = 0; i < GameManager.instance.NumberOfMarkings; i++)
+        for(int i = 0; i < DataContents.markingCharacters.Length; i++)
         {
             coloredMarkings += markings[i] ? 
                 "<color=aqua>" + DataContents.markingCharacters[i].ToString() + "</color>" :

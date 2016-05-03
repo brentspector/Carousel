@@ -80,7 +80,7 @@ public class PC
         //Make sure PC isn't full
         if (totalPokemon == pokemonStorage.Length)
         {
-            GameManager.instance.DisplayText("PC is full. Pokemon could not be added");
+            GameManager.instance.DisplayText("PC is full. Pokemon could not be added", true);
             return;
         } //end if
 
@@ -113,7 +113,7 @@ public class PC
                     if(pokemonStorage[i][j] == null)
                     {
                         GameManager.instance.DisplayText(boxNames[box] + " is full." +
-                           "Placed in box \"" + boxNames[i] + "\" instead.");
+                           "Placed in box \"" + boxNames[i] + "\" instead.", true);
                         pokemonStorage [i][j] = newPokemon;
                         currentBox = i;
                         return;
