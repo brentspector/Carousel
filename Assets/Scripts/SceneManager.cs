@@ -128,6 +128,18 @@ public class SceneManager : MonoBehaviour
     GameObject currentPCSlot;       //The object that is currently highlighted
     List<bool> markingChoices;      //A list of the marking choices made for the pokemon
     int boxChoice;                  //The pokemon that is highlighted
+
+    //Pokedex variables
+    GameObject index;               //Region displaying overall pokedex location
+    GameObject stats;               //The stat bars of the selected pokemon
+    GameObject characteristics;     //The characteristics of the selected pokemon
+    GameObject movesRegion;         //The moves the selected pokemon can learn
+    GameObject evolutionsRegion;    //The pokemon the selected pokemon can evolve into
+    GameObject shownButton;         //Whether weaknesses or resistances are shown
+    GameObject weakTypes;           //Object containing all types selected pokemon is weak to
+    GameObject resistTypes;         //Object containing all types selected pokemon is resistant to
+    Image pokemonImage;             //The image of the selected pokemon
+    Text abilitiesText;             //The abilities the selected pokemon can have
     #endregion
 
     #region Methods
@@ -551,9 +563,6 @@ public class SceneManager : MonoBehaviour
             //Begin processing
 			processing = true;
 
-			//Set name
-			GameManager.instance.GetTrainer().PlayerName = playerName;
-
             //Display text
             GameManager.instance.DisplayText("Great! Now here's your things. See you again.", true);
 
@@ -569,6 +578,8 @@ public class SceneManager : MonoBehaviour
 			processing = true;
 
             checkpoint = 0;
+            GameManager.instance.RestartFile(GameManager.instance.GetPersist());            
+            GameManager.instance.GetTrainer().PlayerName = playerName;
             GameManager.instance.GetTrainer().RandomTeam();
             GameManager.instance.Persist(false);
             StartCoroutine(LoadScene("Intro", OverallGame.INTRO));
@@ -1535,8 +1546,14 @@ public class SceneManager : MonoBehaviour
                 if(heldPokemon == null)
                 {
                     //Pokemon Party
-                    if(partyTab.activeSelf && GameManager.instance.GetTrainer().Team.Count > 1)
+                    if(partyTab.activeSelf)
                     {
+                        //If on last pokemon
+                        if(GameManager.instance.GetTrainer().Team.Count == 1)
+                        {
+                            GameManager.instance.DisplayText("You can't remove your last pokemon.",  true);
+                        } //end if
+
                         heldPokemon = selectedPokemon;
                         selectedPokemon = null;
                         GameManager.instance.GetTrainer().RemovePokemon(choiceNumber-1);
@@ -1787,6 +1804,39 @@ public class SceneManager : MonoBehaviour
             processing = false;
         } //end else if
     } //end PC
+
+    /***************************************
+     * Name: Pokedex
+     * Loads and plays the Pokedex scene
+     ***************************************/
+    public void Pokedex()
+    {
+        //End function if processing
+        if (processing)
+        {
+            return;
+        } //end if
+
+        //Begin processing
+        processing = true;
+
+        //Handle each stage of the scene
+        if (checkpoint == 0)
+        {
+
+        } //end if
+        else if (checkpoint == 1)
+        {
+
+        } //end else if
+        else if (checkpoint == 2)
+        {
+
+        } //end else if
+
+        //End processing
+        processing = false;
+    } //end Pokedex
 	#endregion
 
 	#region Animations

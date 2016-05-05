@@ -15,7 +15,6 @@ public class Trainer
     #region Variables
     List<Pokemon> team;   //The player's current party
     PC pPC;               //The PC for the player
-    float version;        //What version this save started on     
     int bups;             //The number of backups made
     string pName;         //The player's name
     uint pID;             //The Trainer ID
@@ -80,12 +79,6 @@ public class Trainer
         {
             //Initialize PC
             pPC = new PC ();
-
-            //Set version
-            if (GameManager.instance != null)
-            {
-                version = GameManager.instance.VersionNumber;
-            } //end if
 
             //No backups made yet
             bups = 0;
@@ -281,21 +274,6 @@ public class Trainer
             team = value;
         } //end set
     } //end Team
-
-    /***************************************
-     * Name: Version
-     ***************************************/
-    public float Version
-    {
-        get
-        {
-            return version;
-        } //end get
-        set
-        {
-            version = value;
-        } //end set
-    } //end Version
 
     /***************************************
      * Name: BackUps

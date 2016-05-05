@@ -17,7 +17,7 @@ public class GameManager : MonoBehaviour
     #region Variables
 	//GLOBAL SETTING VARIABLES
     [System.NonSerialized]
-	public float VersionNumber = 0.2f;      //Version number for save file management
+	public float VersionNumber = 0.3f;      //Version number for save file management
     [System.NonSerialized]
     public int NumberOfWallpaper = 25;      //How many wallpapers are available
 
@@ -310,6 +310,15 @@ public class GameManager : MonoBehaviour
 	{
 		return sysm.GetPersist ();
 	} //end GetPersist
+
+    /***************************************
+     * Name: RestartFile
+     * Clears data to create new game file
+     ***************************************/
+    public void RestartFile(bool savePrevious = false)
+    {
+        sysm.NewGameReset (savePrevious);
+    } //end RestartFile(bool savePrevious = false)
 	#endregion
 
     #region Debug
