@@ -414,17 +414,10 @@ public class SystemManager : MonoBehaviour
 			pf.Close();
             if(pfd.patchVersion != GameManager.instance.VersionNumber)
             {
-                try
-                {
-                    pPlayer = pfd.player;
-                    pStartVersion = pfd.startVersion;
-                    pPatchVersion = GameManager.instance.VersionNumber;
-                } //end try
-                catch(SystemException e)
-                {
-                    Patch.PatchFile(pfd.player, pfd.patchVersion, e.ToString());
-                } //end catch
-            }
+                GameManager.instance.LogErrorMessage("File patch version doesn't match game version");
+                pPlayer = Patch.PatchFile(pfd.player, pfd.patchVersion);
+                GameManager.instance.LogErrorMessage("Updated trainer file");
+            } //end if
             else
             {
                 pPlayer = pfd.player;

@@ -57,7 +57,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void PlayerPC()
     {
-        GameManager.instance.LoadScene ("PC", SceneManager.OverallGame.PC);
+        GameManager.instance.LoadScene ("PC", SceneManager.OverallGame.PC, true);
     } //end PlayerPC
 
     /***************************************
@@ -66,7 +66,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void Shop()
     {
-        GameManager.instance.LoadScene ("Shop", SceneManager.OverallGame.SHOP);
+        GameManager.instance.LoadScene ("Shop", SceneManager.OverallGame.SHOP, true);
     } //end Shop
 
     /***************************************
@@ -75,7 +75,7 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void Pokedex()
     {
-        GameManager.instance.LoadScene ("Pokedex", SceneManager.OverallGame.POKEDEX);
+        GameManager.instance.LoadScene ("Pokedex", SceneManager.OverallGame.POKEDEX, true);
     } //end Pokedex
 
     /***************************************
@@ -176,6 +176,15 @@ public class ButtonFunctions : MonoBehaviour
     {
         GameManager.instance.PartyState(false);
     } //end PartyClose
+
+    /***************************************
+     * Name: ToggleShown
+     * Toggles Weakness/Resistance in Pokedex
+     ***************************************/ 
+    public void ToggleShown()
+    {
+        GameManager.instance.ToggleShown ();
+    } //end ToggleShown
 
     /***************************************
      * Name: Persist

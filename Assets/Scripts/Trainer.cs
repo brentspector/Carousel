@@ -14,6 +14,8 @@ public class Trainer
 {
     #region Variables
     List<Pokemon> team;   //The player's current party
+    List<int> seen;       //What pokemon has the player encountered
+    List<int> owned;      //What pokemon does(has) the player own(ed)
     PC pPC;               //The PC for the player
     int bups;             //The number of backups made
     string pName;         //The player's name
@@ -77,6 +79,10 @@ public class Trainer
         //If the game manager exists
         if (GameManager.instance != null)
         {
+            //Initialize seen and owned
+            seen = new List<int>();
+            owned = new List<int>();
+
             //Initialize PC
             pPC = new PC ();
 
@@ -274,6 +280,36 @@ public class Trainer
             team = value;
         } //end set
     } //end Team
+
+    /***************************************
+     * Name: Seen
+     ***************************************/
+    public List<int> Seen
+    {
+        get
+        {
+            return seen;
+        } //end get
+        set
+        {
+            seen = value;
+        } //end set
+    } //end Seen
+
+    /***************************************
+     * Name: Owned
+     ***************************************/
+    public List<int> Owned
+    {
+        get
+        {
+            return owned;
+        } //end get
+        set
+        {
+            owned = value;
+        } //end set
+    } //end Owned
 
     /***************************************
      * Name: BackUps

@@ -13,20 +13,28 @@ public static class Patch
     #endregion
 
     #region Methods
-    public static void PatchFile(Trainer pTrainer, float patchVersion, string exception)
+    public static Trainer PatchFile(Trainer fTrainer, float patchVersion)
     {
-        //Apply appropriate patches
-        if (patchVersion >= 0.3f)
+        //Try to apply appropriate patches
+        try
         {
-            GameManager.instance.LogErrorMessage ("You encountered an error loading the save file and your patch " +
-                "matches the current version. Please notify creator of this problem. The error encountered was " +
-                exception);
-        } //end if
-        else
+            if (patchVersion >= GameManager.instance.VersionNumber)
+            {
+                GameManager.instance.LogErrorMessage ("You encountered an error loading the save file and your patch " +
+                    "matches the current version. Please notify creator of this problem.");
+            } //end if
+            else
+            {
+                GameManager.instance.LogErrorMessage ("Your file is old, please notify creator so they can fix it");
+            } //end else
+        } //end try
+        catch(System.Exception e)
         {
-            GameManager.instance.LogErrorMessage ("Your file is old, please notify creator to they can fix it. " +
-                "The error encountered was " + exception);
-        } //end else
-    } //end PatchFile(Trainer pTrainer)
+            GameManager.instance.LogErrorMessage("Attempted to patch file, but an error occured: " + e.ToString() +
+                                                 ". Please notify creator so they can fix it.");
+        } //end catch
+
+        return new Trainer();
+    } //end PatchFile(Trainer fTrainer, float patchVersion)
     #endregion
 } //end class Patch

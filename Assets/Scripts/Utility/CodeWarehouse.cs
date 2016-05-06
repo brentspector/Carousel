@@ -11,6 +11,8 @@ using System.Collections;
 public class CodeWarehouse : MonoBehaviour 
 {
     #region Pokedex SQLite Checker
+    //TODO:http://blogs.unity3d.com/2014/05/21/unit-testing-part-1-unit-tests-by-the-book/
+    //https://www.assetstore.unity3d.com/en/#!/content/13802
     /***************************************
      * Name: ContinueGame
      * Loads and plays the main game

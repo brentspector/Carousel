@@ -95,8 +95,7 @@ public class GameManager : MonoBehaviour
 			//Reset when F12 is pressed
 			if(Input.GetKeyDown(KeyCode.F12))
 			{
-				scenes.Reset();
-				Application.LoadLevel("Intro");
+                scenes.Reset();
 				return;
 			} //end if
 
@@ -153,6 +152,12 @@ public class GameManager : MonoBehaviour
             else if(Application.loadedLevelName == "PC")
             {
                 scenes.PC();
+            } //end else if
+
+            //Pokedex scene
+            else if(Application.loadedLevelName == "Pokedex")
+            {
+                scenes.Pokedex();
             } //end else if
 		} //end try
 
@@ -233,6 +238,15 @@ public class GameManager : MonoBehaviour
     {
         StartCoroutine(scenes.PartyState(state));
     } //end PartyState(bool state)
+
+    /***************************************
+     * Name: ToggleShown
+     * Toggles Weakness/Resistance in Pokedex
+     ***************************************/ 
+    public void ToggleShown()
+    {
+        scenes.ToggleShown ();
+    } //end ToggleShown
     #endregion
 
 	//System Manager functions
