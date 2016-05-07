@@ -380,8 +380,8 @@ public class SystemManager : MonoBehaviour
             npfd.patchVersion = pPatchVersion;
 			bf.Serialize (npf, npfd);
 			npf.Close ();
-			File.Replace(dataLocation + "gameT.dat", dataLocation+ "game.dat", dataLocation + 
-                         pPlayer.PlayerName + pPlayer.BackUps + ".dat");
+			//File.Replace(dataLocation + "gameT.dat", dataLocation+ "game.dat", dataLocation + 
+            //             pPlayer.PlayerName + pPlayer.BackUps + ".dat");
         } //end if
 		//If not
 		else
@@ -450,8 +450,8 @@ public class SystemManager : MonoBehaviour
             npfd.patchVersion = pPatchVersion;
             bf.Serialize (npf, npfd);
             npf.Close ();
-            File.Replace(dataLocation + "gameT.dat", dataLocation + "game.dat", dataLocation + 
-                         pPlayer.PlayerName + pPlayer.HoursPlayed + "h" + pPlayer.MinutesPlayed + "m.dat");
+            //File.Replace(dataLocation + "gameT.dat", dataLocation + "game.dat", dataLocation + 
+            //             pPlayer.PlayerName + pPlayer.HoursPlayed + "h" + pPlayer.MinutesPlayed + "m.dat");
             File.Delete(dataLocation + "game.dat");
         } //end if
         pPlayer = new Trainer();

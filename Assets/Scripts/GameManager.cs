@@ -95,6 +95,7 @@ public class GameManager : MonoBehaviour
 			//Reset when F12 is pressed
 			if(Input.GetKeyDown(KeyCode.F12))
 			{
+                textDisplayed = false;
                 scenes.Reset();
 				return;
 			} //end if
@@ -106,7 +107,7 @@ public class GameManager : MonoBehaviour
             } //end if textDisplayed
 
 			//Intro scene
-			else if(Application.loadedLevelName == "Intro")
+            else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Intro")
 			{
                 //Allows running, testing, and compiling while bypassing standard operation
                 //for one-off events.
@@ -131,31 +132,31 @@ public class GameManager : MonoBehaviour
 			} //end else if Intro
 
 			//Start Menu scene
-			else if(Application.loadedLevelName == "StartMenu")
+            else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "StartMenu")
 			{
 				scenes.Menu();
 			} //end else if	
 
 			//New Game scene
-			else if(Application.loadedLevelName == "NewGame")
+            else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "NewGame")
 			{
 				scenes.NewGame();
 			} //end else if
 
             //Main Game scene
-            else if(Application.loadedLevelName == "MainGame")
+            else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainGame")
             {
                 scenes.ContinueGame();
             } //end else if
 
             //PC scene
-            else if(Application.loadedLevelName == "PC")
+            else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "PC")
             {
                 scenes.PC();
             } //end else if
 
             //Pokedex scene
-            else if(Application.loadedLevelName == "Pokedex")
+            else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Pokedex")
             {
                 scenes.Pokedex();
             } //end else if
@@ -186,11 +187,11 @@ public class GameManager : MonoBehaviour
      ***************************************/
     public void ProcessSelection()
     {
-        if (Application.loadedLevelName == "StartMenu")
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "StartMenu")
         {
             scenes.SetCheckpoint (5);
         }  //end if
-        else if (Application.loadedLevelName == "MainGame")
+        else if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainGame")
         {
             scenes.ReadRibbon();
         } //end else if

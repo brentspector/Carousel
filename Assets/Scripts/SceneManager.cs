@@ -6,6 +6,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -82,7 +83,7 @@ public class SceneManager : MonoBehaviour
 	List<RectTransform> transforms;	//List of RectTransforms of choices
 	GameObject mChoices;			//All the menu choices
 	GameObject mContinue;			//Menu's continue data
-	int choiceNumber = 0;			//What choice is highlighted 
+	int choiceNumber;   			//What choice is highlighted 
 	Text pName;						//Player's name on continue panel
 	Text badges;					//Amount of badges save file has
 	Text totalTime;					//Total time on save file
@@ -269,6 +270,9 @@ public class SceneManager : MonoBehaviour
 			pName = mContinue.transform.GetChild(0).GetComponent<Text>();
 			badges = mContinue.transform.GetChild(1).GetComponent<Text>();
 			totalTime = mContinue.transform.GetChild(2).GetComponent<Text>();
+
+            //Initialize choice number
+            choiceNumber = 0;
 
             //Initialize text box
             GameManager.instance.InitText(text.transform, text.transform.GetChild(1));
@@ -725,6 +729,10 @@ public class SceneManager : MonoBehaviour
                     playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Image>().color = Color.gray;
                     for(int i = 1; i < GameManager.instance.GetTrainer().Team.Count+1; i++)
                     {
+                        //Activate slots
+                        playerTeam.transform.FindChild("Background").GetChild(i-1).gameObject.SetActive(true);
+                        playerTeam.transform.FindChild("Pokemon" + (i)).gameObject.SetActive(true);
+
                         if(i == 1)
                         {
                             if(GameManager.instance.GetTrainer().Team[i-1].Status==1)
@@ -7212,14 +7220,7 @@ public class SceneManager : MonoBehaviour
      * Soft resets the game to intro screen
      ***************************************/
 	public void Reset()
-	{
-		checkpoint = 0;
-		processing = false;
-        selection.SetActive (false);
-        text.SetActive (false);
-        confirm.SetActive (false);
-        choices.SetActive (false);
-        input.SetActive (false);
+    {
 		StopAllCoroutines ();
         StartCoroutine (LoadScene ("Intro", OverallGame.INTRO));
 	} //end Reset
@@ -7303,8 +7304,15 @@ public class SceneManager : MonoBehaviour
         if (heldPokemon != null)
         {
             GameManager.instance.DisplayText ("You can't leave while holding a pokemon", true);
-            return false;
+            yield break;
         } //end if
+
+        //Turn off scene tools 
+        selection.SetActive (false);
+        text.SetActive (false);
+        confirm.SetActive (false);
+        choices.SetActive (false);
+        input.SetActive (false);
 
         //Load new scene when fade out is done
         if (fadeOut)
@@ -7321,8 +7329,9 @@ public class SceneManager : MonoBehaviour
 
             //Move to next scene
             processing = false;
+            initialize = false;
             sceneState = state;
-            Application.LoadLevel (sceneName);
+            UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
         } //end if
 
         //Load new scene if fade out is false
@@ -7330,8 +7339,9 @@ public class SceneManager : MonoBehaviour
         {
             checkpoint = 0;
             processing = false;
+            initialize = false;
             sceneState = state;
-            Application.LoadLevel (sceneName);
+            UnityEngine.SceneManagement.SceneManager.LoadScene (sceneName);
         } //end else
     } //end LoadScene(string sceneName, OverallGame state)
 
