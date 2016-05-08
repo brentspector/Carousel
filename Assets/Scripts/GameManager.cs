@@ -382,6 +382,32 @@ public class GameManager : MonoBehaviour
 
         sysm.PlayerTrainer.AddToPC (box, slot, new Pokemon (oType: 5, oWhere: 3));
     } //end AddRandomPokemonToPC
+
+    /***************************************
+     * Name: UpdateSprite
+     * Changes sprite to reflect name choice
+     ***************************************/ 
+    public void UpdateSprite()
+    {
+        GameObject temp = GameObject.Find ("RightRegion");
+        string chosenString = (temp.transform.FindChild("PokemonName").GetComponent<Dropdown>().value + 1).
+            ToString ("000");
+        chosenString +=  temp.transform.FindChild("Gender").GetComponent<Dropdown>().value == 1 ? "f" : "";
+        chosenString += temp.transform.FindChild("Shiny").GetComponent<Toggle>().isOn ? "s" : "";
+        temp.transform.FindChild("Sprite").GetComponent<Image>().sprite = 
+            Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString);   
+        if( temp.transform.FindChild("Sprite").GetComponent<Image>().sprite == null)
+        {
+            chosenString = chosenString.Replace("f", "");
+            temp.transform.FindChild("Sprite").GetComponent<Image>().sprite = 
+                Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString);
+            if( temp.transform.FindChild("Sprite").GetComponent<Image>().sprite == null)
+            {
+                temp.transform.FindChild("Sprite").GetComponent<Image>().sprite = 
+                    Resources.Load<Sprite>("Sprites/Pokemon/0");
+            } //end if
+        } //end if
+    } //end UpdateSprite()
     #endregion
     #endregion
 } //end GameManager class

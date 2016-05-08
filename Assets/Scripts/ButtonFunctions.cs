@@ -197,31 +197,13 @@ public class ButtonFunctions : MonoBehaviour
 
     #region Debug
     /***************************************
-     * Name: GiveRandomTeam
-     * Gives the player a random team
+     * Name: UpdateSprite
+     * Changes sprite to reflect choice change
      ***************************************/ 
-    public void GiveRandomTeam()
+    public void UpdateSprite()
     {
-        GameManager.instance.RandomTeam ();
-    } //end GiveRandomTeam
-
-    /***************************************
-     * Name: GiveRandomPokemon
-     * Adds a single random pokemon to the team
-     ***************************************/ 
-    public void GiveRandomPokemon()
-    {
-        GameManager.instance.RandomPokemon ();
-    } //end GiveRandomPokemon
-
-    /***************************************
-     * Name: AddRandomPokemonToPC
-     * Adds a single random pokemon to the pc
-     ***************************************/ 
-    public void AddRandomPokemonToPC()
-    {
-        GameManager.instance.AddRandomPokemonToPC ();
-    } //end AddRandomPokemonToPC
+        GameManager.instance.UpdateSprite();
+    } //end UpdateSprite()
     #endregion
     #endregion
 } //end ButtonFunctions class

@@ -1210,7 +1210,14 @@ public class SceneManager : MonoBehaviour
                     initialize = true;
                     buttonMenu.SetActive(false);
                     debugOptions.SetActive(true);
-                    EventSystem.current.SetSelectedGameObject(debugOptions.transform.GetChild(0).gameObject);
+
+                    //Fill pokemon name dropdown list
+                    debugOptions.transform.FindChild ("RightRegion").FindChild ("PokemonName").
+                    GetComponent<Dropdown> ().ClearOptions ();
+                    debugOptions.transform.FindChild ("RightRegion").FindChild ("PokemonName").
+                    GetComponent<Dropdown> ().AddOptions (DataContents.GeneratePokemonList());
+                    debugOptions.transform.FindChild ("RightRegion").FindChild ("PokemonName").
+                    GetComponent<Dropdown> ().RefreshShownValue ();
                 } //end if
                 
                 //Get player input

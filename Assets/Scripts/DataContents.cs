@@ -145,6 +145,21 @@ public static class DataContents : System.Object
     } //end GetLevel(int exp, string growth)
 
     /***************************************
+     * Name: GeneratePokemonList
+     * Returns a list of strings containing
+     * each name of the pokemon in the table
+     ***************************************/
+    public static List<string> GeneratePokemonList()
+    {
+        List<string> nameList = new List<string> ();
+        for (int i = 1; i < speciesCount+1; i++)
+        {
+            nameList.Add (ExecuteSQL<string> ("SELECT name FROM Pokemon WHERE rowid=" + i));
+        } //end for
+        return nameList;
+    } //end GeneratePokemonList()
+
+    /***************************************
      * Name: GetMoveID
      * Returns numeric location of pokemon attack
      ***************************************/
