@@ -203,7 +203,25 @@ public class ButtonFunctions : MonoBehaviour
     public void UpdateSprite()
     {
         GameManager.instance.UpdateSprite();
-    } //end UpdateSprite()
+    } //end UpdateSprite
+
+    /***************************************
+     * Name: RandomTeam
+     * Gives player a random team
+     ***************************************/ 
+    public void RandomTeam()
+    {
+        GameManager.instance.RandomTeam ();
+    } //end RandomTeam
+
+    /***************************************
+     * Name: RandomPokemon
+     * Gives player a random pokemon
+     ***************************************/ 
+    public void RandomPokemon()
+    {
+        GameManager.instance.RandomPokemon ();
+    } //end RandomPokemon
     #endregion
     #endregion
 } //end ButtonFunctions class

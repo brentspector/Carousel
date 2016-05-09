@@ -79,7 +79,7 @@ public static class DataContents : System.Object
         if (returnValue == 0)
         {
             return false;
-        } //end if
+        } //end if 
 
         //Initialize markings
         markingCharacters = new char[] {'●','■','▲','♥','♦','☻'};
@@ -105,6 +105,7 @@ public static class DataContents : System.Object
         categorySprites = Resources.LoadAll<Sprite> ("Sprites/Icons/category");
         ribbonSprites   = Resources.LoadAll<Sprite> ("Sprites/Icons/ribbons");
         badgeSprites    = Resources.LoadAll<Sprite> ("Sprites/Icons/Badges");
+
         return true;
     } //end InitDataContents()
 
@@ -158,6 +159,54 @@ public static class DataContents : System.Object
         } //end for
         return nameList;
     } //end GeneratePokemonList()
+
+    /***************************************
+     * Name: GenerateMoveList
+     * Returns a list of strings containing
+     * each name of the moves in the table
+     ***************************************/
+    public static List<string> GenerateMoveList()
+    {
+        List<string> nameList = new List<string> ();
+        for (int i = 1; i < moveCount+1; i++)
+        {
+            nameList.Add (ExecuteSQL<string> ("SELECT gameName FROM Moves WHERE rowid=" + i));
+        } //end for
+        nameList.Sort();
+        return nameList;
+    } //end GenerateMoveList()
+
+    /***************************************
+     * Name: GenerateAbilityList
+     * Returns a list of strings containing
+     * each name of the abilities in the table
+     ***************************************/
+    public static List<string> GenerateAbilityList()
+    {
+        List<string> nameList = new List<string> ();
+        for (int i = 1; i < abilityCount+1; i++)
+        {
+            nameList.Add (ExecuteSQL<string> ("SELECT gameName FROM Abilities WHERE rowid=" + i));
+        } //end for
+        nameList.Sort();
+        return nameList;
+    } //end GenerateAbilityList()
+
+    /***************************************
+     * Name: GenerateItemList
+     * Returns a list of strings containing
+     * each name of the items in the table
+     ***************************************/
+    public static List<string> GenerateItemList()
+    {
+        List<string> nameList = new List<string> ();
+        for (int i = 1; i < itemCount+1; i++)
+        {
+            nameList.Add (ExecuteSQL<string> ("SELECT gameName FROM Items WHERE rowid=" + i));
+        } //end for
+        nameList.Sort();
+        return nameList;
+    } //end GenerateItemList()
 
     /***************************************
      * Name: GetMoveID

@@ -284,6 +284,76 @@ public class CodeWarehouse : MonoBehaviour
         dbCommand.ExecuteNonQuery();
         dbCommand.Parameters.Clear();
     }
+    
+           //Abilities
+        SystemManager sysm = new SystemManager();
+        sysm.GetContents (dataLocation + "abilities.txt");
+        for (int i = 0; i < 191; i++)
+        {
+            string[] contents = sysm.ReadCSV(i);
+            dbCommand.CommandText = "UPDATE Abilities SET internalName=@in,gameName=@gn,description=@desc WHERE rowid=" + (i+1);
+            dbCommand.Parameters.Add(new SqliteParameter("@in", contents[1]));
+            dbCommand.Parameters.Add(new SqliteParameter("@gn", contents[2]));
+            string temp = contents[3].Replace("\"", "");
+            for(int j = 4; j < contents.Length; j++)
+            {
+                temp += "," + contents[j].Replace("\"", "");
+            } //end for
+            dbCommand.Parameters.Add(new SqliteParameter("@desc", temp));
+            dbCommand.Prepare();
+            dbCommand.ExecuteNonQuery();
+            dbCommand.Parameters.Clear();
+        } //end for
+        //Items
+        sysm.GetContents (dataLocation + "items.txt");
+        for (int i = 0; i < 525; i++)
+        {
+            string[] contents = sysm.ReadCSV(i);
+            dbCommand.CommandText = "UPDATE Items SET internalName=@in,gameName=@gn,bagNumber=@bg,cost=@cs,battleUse=@bu,description=@desc WHERE rowid=" + (i+1);
+            dbCommand.Parameters.Add(new SqliteParameter("@in", contents[1]));
+            dbCommand.Parameters.Add(new SqliteParameter("@gn", contents[2]));
+            dbCommand.Parameters.Add(new SqliteParameter("@bg", contents[3]));
+            dbCommand.Parameters.Add(new SqliteParameter("@cs", contents[4]));
+            string temp = contents[5].Replace("\"", "");
+            for(int j = 6; j < contents.Length-3; j++)
+            {
+                temp += "," + contents[j].Replace("\"", "");
+            } //end for
+            dbCommand.Parameters.Add(new SqliteParameter("@desc", temp));
+            dbCommand.Parameters.Add(new SqliteParameter("@bu", contents[contents.Length-2]));
+            dbCommand.Prepare();
+            dbCommand.ExecuteNonQuery();
+            dbCommand.Parameters.Clear();
+        } //end for
+        //Moves
+        sysm.GetContents (dataLocation + "moves.txt");
+        for (int i = 0; i < 633; i++)
+        {
+            string[] contents = sysm.ReadCSV(i);
+            dbCommand.CommandText = "UPDATE Moves SET internalName=@in,gameName=@gn,functionCode=@fc,baseDamage=@bd,type=@ty,category=@ct,accuracy=@ac,totalPP=@tp,chanceEffect=@ce,target=@tg,priority=@pi,flags=@fg,description=@desc WHERE rowid=" + (i+1);
+            dbCommand.Parameters.Add(new SqliteParameter("@in", contents[1]));
+            dbCommand.Parameters.Add(new SqliteParameter("@gn", contents[2]));
+            dbCommand.Parameters.Add(new SqliteParameter("@fc", contents[3]));
+            dbCommand.Parameters.Add(new SqliteParameter("@bd", contents[4]));
+            dbCommand.Parameters.Add(new SqliteParameter("@ty", contents[5]));
+            dbCommand.Parameters.Add(new SqliteParameter("@ct", contents[6]));
+            dbCommand.Parameters.Add(new SqliteParameter("@ac", contents[7]));
+            dbCommand.Parameters.Add(new SqliteParameter("@tp", contents[8]));
+            dbCommand.Parameters.Add(new SqliteParameter("@ce", contents[9]));
+            dbCommand.Parameters.Add(new SqliteParameter("@tg", contents[10]));
+            dbCommand.Parameters.Add(new SqliteParameter("@pi", contents[11]));
+            dbCommand.Parameters.Add(new SqliteParameter("@fg", contents[12]));
+            string temp = contents[13].Replace("\"", "");
+            for(int j = 14; j < contents.Length; j++)
+            {
+                temp += "," + contents[j].Replace("\"", "");
+            } //end for
+            dbCommand.Parameters.Add(new SqliteParameter("@desc", temp));
+            dbCommand.Prepare();
+            dbCommand.ExecuteNonQuery();
+            dbCommand.Parameters.Clear();
+        } //end for
+        
         SystemManager sysm = new SystemManager ();
         sysm.GetContents (dataLocation + "abilities.txt");
         dbCommand.CommandText = "DELETE FROM Abilities";

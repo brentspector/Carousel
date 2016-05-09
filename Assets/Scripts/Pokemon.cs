@@ -63,7 +63,7 @@ public class Pokemon
      * Contructor for pokemon encounters
      ***************************************/
 	public Pokemon(int species = 0, int tID = 0, int level = 5, int item = 0, int ball = 0, 
-	               int oType = 6, int oWhere = 4, int oLevel = 5, int ability = -1, int gender = -1,
+	               int oType = 6, int oWhere = 4, int ability = -1, int gender = -1,
 	               int nature = -1, int happy = 70, bool pokerus = false, bool shiny = false)
 	{
 		//Set data fields
@@ -217,13 +217,13 @@ public class Pokemon
         totalEV = 0;
 		currentEXP = CalculateEXP (level);
         remainingEXP = CalculateRemainingEXP (level);
-        currentLevel = level;
+        currentLevel = ExtensionMethods.CapAtInt(level, 100);
 		Item = item;
 		ballUsed = ball;
 		obtainType = oType;
-		obtainLevel = oLevel;
+		obtainLevel = currentLevel;
         obtainFrom = oWhere;
-		happiness = happy;
+        happiness = ExtensionMethods.CapAtInt(happy, 255);
 		hasPokerus = pokerus;
 		isShiny = shiny;
         nickname = DataContents.ExecuteSQL<string> ("SELECT name FROM Pokemon WHERE rowid=" + natSpecies);

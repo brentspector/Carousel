@@ -1218,6 +1218,44 @@ public class SceneManager : MonoBehaviour
                     GetComponent<Dropdown> ().AddOptions (DataContents.GeneratePokemonList());
                     debugOptions.transform.FindChild ("RightRegion").FindChild ("PokemonName").
                     GetComponent<Dropdown> ().RefreshShownValue ();
+
+                    //Fill in abilty dropdown list
+                    debugOptions.transform.FindChild ("RightRegion").FindChild ("Ability").
+                    GetComponent<Dropdown> ().ClearOptions ();
+                    debugOptions.transform.FindChild ("RightRegion").FindChild ("Ability").
+                    GetComponent<Dropdown> ().AddOptions (DataContents.GenerateAbilityList());
+                    debugOptions.transform.FindChild ("RightRegion").FindChild ("Ability").
+                    GetComponent<Dropdown> ().RefreshShownValue ();
+
+                    //Fill in item dropdown list
+                    debugOptions.transform.FindChild ("RightRegion").FindChild ("Item").
+                    GetComponent<Dropdown> ().AddOptions (DataContents.GenerateItemList());
+                    debugOptions.transform.FindChild ("RightRegion").FindChild ("Item").
+                    GetComponent<Dropdown> ().RefreshShownValue ();
+
+                    //Fill in nature dropdown list
+                    debugOptions.transform.FindChild ("RightRegion").FindChild ("Nature").
+                    GetComponent<Dropdown> ().ClearOptions ();
+                    List<string> natList = new List<string> ();
+                    for (Natures nat = Natures.HARDY; nat < Natures.COUNT; nat++)
+                    {
+                        natList.Add (nat.ToString ());
+                    } //end for
+                    debugOptions.transform.FindChild ("RightRegion").FindChild ("Nature").
+                    GetComponent<Dropdown> ().AddOptions (natList);
+                    debugOptions.transform.FindChild ("RightRegion").FindChild ("Nature").
+                    GetComponent<Dropdown> ().RefreshShownValue ();
+
+                    //Fill in move dropdown lists
+                    for (int i = 0; i < 4; i++)
+                    {
+                        debugOptions.transform.FindChild ("RightRegion").FindChild ("Moves").GetChild (i).
+                            GetComponent<Dropdown> ().ClearOptions ();
+                        debugOptions.transform.FindChild ("RightRegion").FindChild ("Moves").GetChild (i).
+                            GetComponent<Dropdown> ().AddOptions (DataContents.GenerateMoveList ());
+                        debugOptions.transform.FindChild ("RightRegion").FindChild ("Moves").GetChild (i).
+                            GetComponent<Dropdown> ().RefreshShownValue ();
+                    } //end for
                 } //end if
                 
                 //Get player input
@@ -1329,16 +1367,7 @@ public class SceneManager : MonoBehaviour
                 GetTrainer ().GetPCBoxName ();
             boxBack.GetComponent<Image> ().sprite = Resources.Load<Sprite> ("Sprites/Menus/box" + 
                 GameManager.instance.GetTrainer ().GetPCBoxWallpaper ());
-            detailsRegion.transform.FindChild ("Name").GetComponent<Text> ().text = "";
-            detailsRegion.transform.FindChild ("Gender").GetComponent<Image> ().color = Color.clear;
-            detailsRegion.transform.FindChild ("Sprite").GetComponent<Image> ().color = Color.clear;
-            detailsRegion.transform.FindChild ("Markings").GetComponent<Text> ().text = "";
-            detailsRegion.transform.FindChild ("Shiny").GetComponent<Text> ().color = Color.clear;
-            detailsRegion.transform.FindChild ("Level").GetComponent<Text> ().text = "";
-            detailsRegion.transform.FindChild ("Types").GetChild (0).gameObject.SetActive (false);
-            detailsRegion.transform.FindChild ("Types").GetChild (1).gameObject.SetActive (false);
-            detailsRegion.transform.FindChild ("Ability").GetComponent<Text> ().text = "";
-            detailsRegion.transform.FindChild ("Item").GetComponent<Text> ().text = "";
+            FillDetails ();
 
             //Fill in party tab
             for(int i = 1; i < GameManager.instance.GetTrainer().Team.Count + 1; i++)
@@ -1394,7 +1423,7 @@ public class SceneManager : MonoBehaviour
                     {
                         //Load previous PC box
                         GameManager.instance.GetTrainer ().PreviousBox ();
-
+                                                                                
                         //Reset scene
                         checkpoint = 1;
                         break;
@@ -1405,6 +1434,7 @@ public class SceneManager : MonoBehaviour
                         heldImage.transform.position = new Vector3 (boxBack.transform.FindChild ("BoxName").position.x,
                             boxBack.transform.FindChild ("BoxName").position.y + 8, 100);
                         currentPCSlot = boxBack.transform.FindChild ("BoxName").gameObject;
+                        selectedPokemon = null;
 
                         //Update details region
                         FillDetails();
@@ -1431,6 +1461,7 @@ public class SceneManager : MonoBehaviour
                             detailsRegion.transform.FindChild ("Buttons").GetChild (0).position.x,
                             detailsRegion.transform.FindChild ("Buttons").GetChild (0).position.y + 8, 100);
                         currentPCSlot = detailsRegion.transform.FindChild ("Buttons").GetChild (0).gameObject;
+                        selectedPokemon = null;
 
                         //Update details region
                         FillDetails();
@@ -1447,6 +1478,7 @@ public class SceneManager : MonoBehaviour
                             detailsRegion.transform.FindChild ("Buttons").GetChild (1).position.x,
                             detailsRegion.transform.FindChild ("Buttons").GetChild (1).position.y + 8, 100);
                         currentPCSlot = detailsRegion.transform.FindChild ("Buttons").GetChild (1).gameObject;
+                        selectedPokemon = null;
 
                         //Update details region
                         FillDetails();
