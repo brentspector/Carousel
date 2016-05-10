@@ -52,6 +52,28 @@ public static class ExtensionMethods
     } //end CapAtFloat(float given, float max)
 
     /***************************************
+     * Name: WithinIntRange
+     * Prevent requested from being outside bounds
+     ***************************************/
+    public static int WithinIntRange(int given, int min, int max)
+    {
+        int result = CapAtInt (given, max);
+        result = BindToInt (given, min);
+        return result;
+    } //end WithinIntRange(int given, int min, int max)
+
+    /***************************************
+     * Name: WithinFloatRange
+     * Prevent requested from being outside bounds
+     ***************************************/
+    public static float WithinFloatRange(float given, float min, float max)
+    {
+        float result = CapAtFloat (given, max);
+        result = BindToFloat (given, min);
+        return result;
+    } //end WithinFloatRange(float given, float min, float max)
+
+    /***************************************
      * Name: AddUnique
      * Adds to list if element is unique
      ***************************************/

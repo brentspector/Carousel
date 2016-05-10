@@ -296,7 +296,7 @@ public class GameManager : MonoBehaviour
      * Returns a random integer
      ***************************************/
     public int RandomInt(int min, int max)
-    {
+    {		
         return sysm.RandomInt (min, max);
     } //end RandomInt(int min, int max)
 
@@ -356,53 +356,27 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void RandomPokemon()
     {
-        //Get region where all options are stored
-        GameObject temp = GameObject.Find ("RightRegion");
-
-        //Generate random pokemon
-        Pokemon randomPoke = new Pokemon();
-
-        //Update relevant portions
-        temp.transform.FindChild ("Gender").GetComponent<Dropdown>().value = randomPoke.Gender;
-        temp.transform.FindChild ("Gender").GetComponent<Dropdown> ().RefreshShownValue ();
-        temp.transform.FindChild ("PokemonName").GetComponent<Dropdown> ().value = randomPoke.NatSpecies - 1;
-        temp.transform.FindChild ("PokemonName").GetComponent<Dropdown> ().RefreshShownValue ();
-        temp.transform.FindChild ("Level").GetComponent<InputField>().text = randomPoke.CurrentLevel.ToString();
-        temp.transform.FindChild ("TrainerID").GetComponent<InputField>().text = randomPoke.TrainerID.ToString();
-        temp.transform.FindChild ("Nature").GetComponent<Dropdown> ().value = randomPoke.Nature;
-        temp.transform.FindChild ("Nature").GetComponent<Dropdown> ().RefreshShownValue ();
-        temp.transform.FindChild ("Item").GetComponent<Dropdown> ().value = randomPoke.Item;
-        temp.transform.FindChild ("Item").GetComponent<Dropdown> ().RefreshShownValue ();
-        temp.transform.FindChild ("Ball").GetComponent<Dropdown> ().value = randomPoke.BallUsed;
-        temp.transform.FindChild ("Ball").GetComponent<Dropdown> ().RefreshShownValue ();
-        temp.transform.FindChild ("Ability").GetComponent<Dropdown> ().value = randomPoke.Ability;
-        temp.transform.FindChild ("Ability").GetComponent<Dropdown> ().RefreshShownValue ();
-        //temp.transform.FindChild ("Ribbons").GetComponent<Dropdown> ().value = randomPoke.GetRibbon(0);
-        //temp.transform.FindChild ("Ribbons").GetComponent<Dropdown> ().RefreshShownValue ();
-        temp.transform.FindChild ("Happiness").GetComponent<InputField>().text = randomPoke.Happiness.ToString();
-        temp.transform.FindChild ("Shiny").GetComponent<Toggle> ().isOn = randomPoke.IsShiny;
-        temp.transform.FindChild ("Pokerus").GetComponent<Toggle> ().isOn = randomPoke.HasPokerus;
-        temp.transform.FindChild ("IV").GetChild (0).GetComponent<InputField> ().text = randomPoke.GetIV (0).ToString();
-        temp.transform.FindChild ("IV").GetChild (1).GetComponent<InputField> ().text = randomPoke.GetIV (1).ToString();
-        temp.transform.FindChild ("IV").GetChild (2).GetComponent<InputField> ().text = randomPoke.GetIV (2).ToString();
-        temp.transform.FindChild ("IV").GetChild (3).GetComponent<InputField> ().text = randomPoke.GetIV (3).ToString();
-        temp.transform.FindChild ("IV").GetChild (4).GetComponent<InputField> ().text = randomPoke.GetIV (4).ToString();
-        temp.transform.FindChild ("IV").GetChild (5).GetComponent<InputField> ().text = randomPoke.GetIV (5).ToString();
-        temp.transform.FindChild ("EV").GetChild (0).GetComponent<InputField> ().text = randomPoke.GetEV (0).ToString();
-        temp.transform.FindChild ("EV").GetChild (1).GetComponent<InputField> ().text = randomPoke.GetEV (1).ToString();
-        temp.transform.FindChild ("EV").GetChild (2).GetComponent<InputField> ().text = randomPoke.GetEV (2).ToString();
-        temp.transform.FindChild ("EV").GetChild (3).GetComponent<InputField> ().text = randomPoke.GetEV (3).ToString();
-        temp.transform.FindChild ("EV").GetChild (4).GetComponent<InputField> ().text = randomPoke.GetEV (4).ToString();
-        temp.transform.FindChild ("EV").GetChild (5).GetComponent<InputField> ().text = randomPoke.GetEV (5).ToString();
-        temp.transform.FindChild ("Moves").GetChild (0).GetComponent<Dropdown> ().value = randomPoke.GetMove (0);
-        temp.transform.FindChild ("Moves").GetChild (0).GetComponent<Dropdown> ().RefreshShownValue ();
-        temp.transform.FindChild ("Moves").GetChild (1).GetComponent<Dropdown> ().value = randomPoke.GetMove (1);
-        temp.transform.FindChild ("Moves").GetChild (1).GetComponent<Dropdown> ().RefreshShownValue ();
-        temp.transform.FindChild ("Moves").GetChild (2).GetComponent<Dropdown> ().value = randomPoke.GetMove (2);
-        temp.transform.FindChild ("Moves").GetChild (2).GetComponent<Dropdown> ().RefreshShownValue ();
-        temp.transform.FindChild ("Moves").GetChild (3).GetComponent<Dropdown> ().value = randomPoke.GetMove (3);
-        temp.transform.FindChild ("Moves").GetChild (3).GetComponent<Dropdown> ().RefreshShownValue ();
+        scenes.RandomPokemon ();
     } //end RandomPokemon
+
+    /***************************************
+     * Name: EditPokemon
+     * Grabs a pokemon out of team or pc
+     * and populates debug with it
+     ***************************************/ 
+    public void EditPokemon()
+    {
+        scenes.EditPokemon ();
+    } //end EditPokemon
+
+    /***************************************
+     * Name: FinishEditing
+     * Apply pokemon to requested spot
+     ***************************************/ 
+    public void FinishEditing()
+    {
+        scenes.FinishEditing ();
+    } //end FinishEditing
 
     /***************************************
      * Name: UpdateSprite
@@ -410,30 +384,8 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void UpdateSprite()
     {
-        //Get region where all options are stored
-        GameObject temp = GameObject.Find ("RightRegion");
-
-        //Develop string path to image
-        string chosenString = (temp.transform.FindChild("PokemonName").GetComponent<Dropdown>().value + 1).
-            ToString ("000");
-        chosenString +=  temp.transform.FindChild("Gender").GetComponent<Dropdown>().value == 1 ? "f" : "";
-        chosenString += temp.transform.FindChild("Shiny").GetComponent<Toggle>().isOn ? "s" : "";
-
-        //Change sprite, and fix if sprite is null
-        temp.transform.FindChild("Sprite").GetComponent<Image>().sprite = 
-            Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString);   
-        if( temp.transform.FindChild("Sprite").GetComponent<Image>().sprite == null)
-        {
-            chosenString = chosenString.Replace("f", "");
-            temp.transform.FindChild("Sprite").GetComponent<Image>().sprite = 
-                Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString);
-            if( temp.transform.FindChild("Sprite").GetComponent<Image>().sprite == null)
-            {
-                temp.transform.FindChild("Sprite").GetComponent<Image>().sprite = 
-                    Resources.Load<Sprite>("Sprites/Pokemon/0");
-            } //end if
-        } //end if
-    } //end UpdateSprite()
+        scenes.UpdateSprite ();
+    } //end UpdateSprite
     #endregion
     #endregion
 } //end GameManager class

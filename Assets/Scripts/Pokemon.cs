@@ -200,8 +200,6 @@ public class Pokemon
             {
                 temp = GameManager.instance.RandomInt (0, 3);
             } //end while
-
-            Ability = temp;
         } //end if
         else
         {
@@ -217,7 +215,7 @@ public class Pokemon
         totalEV = 0;
 		currentEXP = CalculateEXP (level);
         remainingEXP = CalculateRemainingEXP (level);
-        currentLevel = ExtensionMethods.CapAtInt(level, 100);
+        CurrentLevel = level;
 		Item = item;
 		ballUsed = ball;
 		obtainType = oType;
@@ -747,15 +745,15 @@ public class Pokemon
      ***************************************/
     public void ChangeRibbons(int value, int index = -1)
     {
-        //Add ribbon
-        if (index < 0)
-        {
-            ribbons.Add (value);
-        } //end if
         //Remove ribbon
-        else if (value < 0)
+        if (value < 0)
         {
             ribbons.RemoveAt (index);
+        } //end if
+        //Add ribbon
+        else if (index < 0)
+        {
+            ribbons.Add (value);
         } //end else if
         //Otherwise attempt to update
         else if (value < DataContents.ribbonSprites.Length && index < ribbons.Count)
@@ -763,7 +761,7 @@ public class Pokemon
             ribbons[index] = value;
         } //end else if
     } //end ChangeRibbons(int value, int index = -1)
-
+        
     /***************************************
      * Name: CalculateEXP
      * Determines the initial EXP for the 
@@ -885,29 +883,51 @@ public class Pokemon
 
     /***************************************
      * Name: CheckAbility
-     * Verifies the ability exists
+     * Verifies the ability exists, and sets it
      ***************************************/
     public bool CheckAbility(int newAbility)
     {
-        //Check if pokemon has a second ability
-        if(newAbility == 1)
+        //Storage for ability name
+        string abilityName = "";
+
+        //Set string to first ability
+        if (newAbility == 0)
         {
-            if(string.IsNullOrEmpty(DataContents.ExecuteSQL<string>
-                                    ("SELECT ability2 FROM Pokemon WHERE rowid=" + natSpecies)))
+            abilityName = DataContents.ExecuteSQL<string>
+                ("SELECT ability1 FROM Pokemon WHERE rowid=" + natSpecies);
+        } //end if
+        //Check if pokemon has a second ability
+        else if(newAbility == 1)
+        {
+            if (string.IsNullOrEmpty (DataContents.ExecuteSQL<string>
+                ("SELECT ability2 FROM Pokemon WHERE rowid=" + natSpecies)))
             {
                 return false;
             } //end if
+            else
+            {
+                abilityName = DataContents.ExecuteSQL<string>
+                    ("SELECT ability2 FROM Pokemon WHERE rowid=" + natSpecies);
+            } //end else
         } //end if
         
         //Check if pokemon has a hidden ability
         else if(newAbility == 2)
         {
-            if(string.IsNullOrEmpty(DataContents.ExecuteSQL<string>
-                                    ("SELECT hiddenAbility FROM Pokemon WHERE rowid=" + natSpecies)))
+            if (string.IsNullOrEmpty (DataContents.ExecuteSQL<string>
+                ("SELECT hiddenAbility FROM Pokemon WHERE rowid=" + natSpecies)))
             {
                 return false;
             } //end if
+            else
+            {
+                abilityName = DataContents.ExecuteSQL<string>
+                    ("SELECT hiddenAbility FROM Pokemon WHERE rowid=" + natSpecies);
+            } //end else
         } //end else if
+
+        //Get rowid of ability
+        ability = DataContents.ExecuteSQL<int>("SELECT rowid FROM Abilities WHERE internalName='" + abilityName + "'");
 
         //Passed the check
         return true;
@@ -919,34 +939,7 @@ public class Pokemon
      ***************************************/
     public string GetAbilityName()
     {
-        switch (ability)
-        {
-            case 0:
-            {
-                string internalName = DataContents.ExecuteSQL<string>
-                    ("SELECT ability1 FROM Pokemon WHERE rowid=" + natSpecies);
-                return DataContents.ExecuteSQL<string>
-                    ("SELECT gameName FROM Abilities WHERE internalName='" + internalName + "'");
-            } //end case 0
-            case 1:
-            {
-                string internalName = DataContents.ExecuteSQL<string>
-                    ("SELECT ability2 FROM Pokemon WHERE rowid=" + natSpecies);
-                return DataContents.ExecuteSQL<string>
-                    ("SELECT gameName FROM Abilities WHERE internalName='" + internalName + "'");
-            } //end case 1
-            case 2:
-            {
-                string internalName = DataContents.ExecuteSQL<string>
-                    ("SELECT hiddenAbility FROM Pokemon WHERE rowid=" + natSpecies);
-                return DataContents.ExecuteSQL<string>
-                    ("SELECT gameName FROM Abilities WHERE internalName='" + internalName + "'");
-            } //end case 2
-            default:
-            {
-                return "N/A";
-            } //end default
-        } //end switch
+        return DataContents.ExecuteSQL<string> ("SELECT gameName FROM Abilities WHERE rowid=" + ability);
     } //end GetAbilityName
 
     /***************************************
@@ -955,34 +948,7 @@ public class Pokemon
      ***************************************/
     public string GetAbilityDescription()
     {
-        switch (ability)
-        {
-            case 0:
-            {
-                string internalName = DataContents.ExecuteSQL<string>
-                    ("SELECT ability1 FROM Pokemon WHERE rowid=" + natSpecies);
-                return DataContents.ExecuteSQL<string>
-                    ("SELECT description FROM Abilities WHERE internalName='" + internalName + "'");
-            } //end case 0
-            case 1:
-            {
-                string internalName = DataContents.ExecuteSQL<string>
-                    ("SELECT ability2 FROM Pokemon WHERE rowid=" + natSpecies);
-                return DataContents.ExecuteSQL<string>
-                    ("SELECT description FROM Abilities WHERE internalName='" + internalName + "'");
-            } //end case 1
-            case 2:
-            {
-                string internalName = DataContents.ExecuteSQL<string>
-                    ("SELECT hiddenAbility FROM Pokemon WHERE rowid=" + natSpecies);
-                return DataContents.ExecuteSQL<string>
-                    ("SELECT description FROM Abilities WHERE internalName='" + internalName + "'");
-            } //end case 2
-            default:
-            {
-                return "N/A";
-            } //end default
-        } //end switch
+        return DataContents.ExecuteSQL<string> ("SELECT description FROM Abilities WHERE rowid=" + ability);
     } //end GetAbilityDescription
 
     /***************************************
@@ -1244,7 +1210,7 @@ public class Pokemon
         } //end get
         set
         {
-            currentLevel = value;
+            currentLevel = ExtensionMethods.WithinIntRange(value, 1, 100);
         } //end set
     } //end CurrentLevel
 
@@ -1428,14 +1394,6 @@ public class Pokemon
     {
         return moves.Count(x => x >= 0);
     } //end GetMoveCount
-
-    /***************************************
-     * Name: SetMove
-     ***************************************/
-	public void SetMove(int index, int value)
-	{
-		moves [index] = value;
-	} //end SetMove(int index, int value)
 
     /***************************************
      * Name: GetFirstMove

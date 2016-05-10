@@ -17,8 +17,7 @@ Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																													GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = Assembly-CSharp.csproj
+	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0
 		$0.TextStylePolicy = $1
 		$1.inheritsSet = VisualStudio
@@ -35,11 +34,6 @@ Global
 		$2.EventRemoveBraceStyle = NextLine
 		$2.StatementBraceStyle = NextLine
 		$2.ArrayInitializerBraceStyle = NextLine
-		$2.BeforeMethodDeclarationParentheses = True
-		$2.BeforeMethodCallParentheses = True
-		$2.BeforeConstructorDeclarationParentheses = True
-		$2.BeforeDelegateDeclarationParentheses = True
-		$2.NewParentheses = True
 		$2.inheritsSet = Mono
 		$2.inheritsScope = text/x-csharp
 		$2.scope = text/x-csharp

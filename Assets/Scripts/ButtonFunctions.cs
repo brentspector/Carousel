@@ -191,7 +191,7 @@ public class ButtonFunctions : MonoBehaviour
      * Persists the game
      ***************************************/ 
     public void Persist()
-    {
+    {		
         GameManager.instance.Persist ();
     } //end Persist
 
@@ -201,7 +201,7 @@ public class ButtonFunctions : MonoBehaviour
      * Changes sprite to reflect choice change
      ***************************************/ 
     public void UpdateSprite()
-    {
+    {		
         GameManager.instance.UpdateSprite();
     } //end UpdateSprite
 
@@ -222,6 +222,25 @@ public class ButtonFunctions : MonoBehaviour
     {
         GameManager.instance.RandomPokemon ();
     } //end RandomPokemon
+
+	/***************************************
+     * Name: EditPokemon
+     * Grabs a pokemon out of team or pc
+     * and populates debug with it
+     ***************************************/ 
+	public void EditPokemon()
+	{		
+		GameManager.instance.EditPokemon ();
+	} //end EditPokemon
+
+    /***************************************
+     * Name: FinishEditing
+     * Apply pokemon to requested spot
+     ***************************************/ 
+    public void FinishEditing()
+    {
+        GameManager.instance.FinishEditing ();
+    } //end FinishEditing
     #endregion
     #endregion
 } //end ButtonFunctions class

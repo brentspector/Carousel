@@ -127,7 +127,15 @@ public class Trainer
      ***************************************/
     public void AddPokemon(Pokemon newPokemon)
     {
-        team.Add (newPokemon);
+        if (team.Count < 6)
+        {
+            team.Add (newPokemon);
+        } //end if
+        else
+        {
+            AddToPC (GetPCBox (), 0, newPokemon);
+            GameManager.instance.DisplayText ("Team was full. Added to PC instead.", true);
+        } //end else
     } //end AddPokemon(Pokemon newPokemon)
 
     /***************************************
@@ -136,7 +144,14 @@ public class Trainer
      ***************************************/
     public void RemovePokemon(int spot)
     {
-        team.RemoveAt (spot);
+        if (team.Count > 1)
+        {
+            team.RemoveAt (spot);
+        } //end if
+        else
+        {
+            GameManager.instance.DisplayText ("Unable to remove from team as you only have 1 pokemon left", true);
+        } //end else
     } //end RemovePokemon(int spot)
 
     /***************************************

@@ -79,7 +79,7 @@ public static class DataContents : System.Object
         if (returnValue == 0)
         {
             return false;
-        } //end if 
+        } //end if
 
         //Initialize markings
         markingCharacters = new char[] {'●','■','▲','♥','♦','☻'};
@@ -172,7 +172,6 @@ public static class DataContents : System.Object
         {
             nameList.Add (ExecuteSQL<string> ("SELECT gameName FROM Moves WHERE rowid=" + i));
         } //end for
-        nameList.Sort();
         return nameList;
     } //end GenerateMoveList()
 
@@ -188,7 +187,6 @@ public static class DataContents : System.Object
         {
             nameList.Add (ExecuteSQL<string> ("SELECT gameName FROM Abilities WHERE rowid=" + i));
         } //end for
-        nameList.Sort();
         return nameList;
     } //end GenerateAbilityList()
 
@@ -204,7 +202,6 @@ public static class DataContents : System.Object
         {
             nameList.Add (ExecuteSQL<string> ("SELECT gameName FROM Items WHERE rowid=" + i));
         } //end for
-        nameList.Sort();
         return nameList;
     } //end GenerateItemList()
 
@@ -1051,7 +1048,7 @@ public enum ObtainFrom
     Shop         = 0,
     MysteryEvent = 1,
     RandomTeam   = 2,
-    AddPokemon   = 3,
+    Debug        = 3,
     UnknownSource= 4,
     COUNT        = 5
 } //end ObtainFrom enum
