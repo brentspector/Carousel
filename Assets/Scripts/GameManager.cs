@@ -116,14 +116,15 @@ public class GameManager : MonoBehaviour
                     //Prevent from running this section again
                     running = true;
 
-#if UNITY_EDITOR
+                    #if UNITY_EDITOR
                     //Debug mode (development in the editor) commands go here
                     //sysm.GetPersist();
                     //sysm.Persist();
-#else
+
+                    #else
                     //Stand-alone mode (user version) diagnostic commands go here
 
-#endif
+                    #endif
                 } //end if !running
 
 
@@ -338,6 +339,24 @@ public class GameManager : MonoBehaviour
 
     #region Debug
     /***************************************
+     * Name: EditPokemonMode
+     * Activates the pokemon edit panel
+     ***************************************/ 
+    public void EditPokemonMode()
+    {
+        scenes.EditPokemonMode ();
+    } //end EditPokemonMode
+
+    /***************************************
+     * Name: EditTrainerMode
+     * Activates the trainer edit panel
+     ***************************************/ 
+    public void EditTrainerMode()
+    {
+        scenes.EditTrainerMode ();
+    } //end EditTrainerMode
+
+    /***************************************
      * Name: RandomTeam
      * Gives the player a random team
      ***************************************/ 
@@ -369,6 +388,15 @@ public class GameManager : MonoBehaviour
         scenes.EditPokemon ();
     } //end EditPokemon
 
+	/***************************************
+     * Name: RemovePokemon
+     * Remove a pokemon from PC or team
+     ***************************************/ 
+	public void RemovePokemon()
+	{			
+		scenes.RemovePokemon ();
+	} //end RemovePokemon
+
     /***************************************
      * Name: FinishEditing
      * Apply pokemon to requested spot
@@ -385,6 +413,15 @@ public class GameManager : MonoBehaviour
     public void UpdateSprite()
     {
         scenes.UpdateSprite ();
+    } //end UpdateSprite
+
+    /***************************************
+     * Name: TrainerSprite
+     * Change player's trainer sprite set
+     ***************************************/ 
+    public void TrainerSprite(int choice)
+    {
+        sysm.PlayerTrainer.PlayerImage = choice;
     } //end UpdateSprite
     #endregion
     #endregion

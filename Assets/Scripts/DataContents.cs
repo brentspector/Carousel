@@ -34,6 +34,7 @@ public static class DataContents : System.Object
     public static Sprite[] categorySprites;         //Sprites for each category of move
     public static Sprite[] ribbonSprites;           //Sprites for each ribbon
     public static Sprite[] badgeSprites;            //Sprites for each badge
+    public static Sprite[] trainerCardSprites;      //Sprites for full trainer for trainer card
 
     //Shorthand for main data path
     static string dataLocation;                     
@@ -100,11 +101,12 @@ public static class DataContents : System.Object
         typeChart = new TypeChart ();
 
         //Load sprites
-        statusSprites   = Resources.LoadAll<Sprite> ("Sprites/Icons/statuses");
-        typeSprites     = Resources.LoadAll<Sprite> ("Sprites/Icons/pokedexTypes");
-        categorySprites = Resources.LoadAll<Sprite> ("Sprites/Icons/category");
-        ribbonSprites   = Resources.LoadAll<Sprite> ("Sprites/Icons/ribbons");
-        badgeSprites    = Resources.LoadAll<Sprite> ("Sprites/Icons/Badges");
+        statusSprites       = Resources.LoadAll<Sprite> ("Sprites/Icons/statuses");
+        typeSprites         = Resources.LoadAll<Sprite> ("Sprites/Icons/pokedexTypes");
+        categorySprites     = Resources.LoadAll<Sprite> ("Sprites/Icons/category");
+        ribbonSprites       = Resources.LoadAll<Sprite> ("Sprites/Icons/ribbons");
+        badgeSprites        = Resources.LoadAll<Sprite> ("Sprites/Icons/Badges");
+        trainerCardSprites  = Resources.LoadAll<Sprite> ("Sprites/Menus/FullTrainers");
 
         return true;
     } //end InitDataContents()
@@ -452,10 +454,14 @@ public class ExperienceTable
      ***************************************/
     public int GetNextValue(string experienceRate, int level)
     {
-        if (experienceRate == "Medium")
+        if (level == 100)
+        {
+            return 0;
+        } //end if
+        else if (experienceRate == "Medium")
         {
             return Medium [level + 1];
-        } //end if
+        } //end else if
         else if (experienceRate == "Erratic")
         {
             return Erratic [level + 1];

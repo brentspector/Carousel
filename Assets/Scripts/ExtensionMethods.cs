@@ -58,7 +58,7 @@ public static class ExtensionMethods
     public static int WithinIntRange(int given, int min, int max)
     {
         int result = CapAtInt (given, max);
-        result = BindToInt (given, min);
+        result = BindToInt (result, min);
         return result;
     } //end WithinIntRange(int given, int min, int max)
 

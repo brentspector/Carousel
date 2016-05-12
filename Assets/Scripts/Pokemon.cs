@@ -795,7 +795,9 @@ public class Pokemon
     {
         int evCalc = EV [0] / 4;
         int baseHP = DataContents.ExecuteSQL<int> ("SELECT health FROM Pokemon WHERE rowid=" + natSpecies);
-        totalHP = ((IV[0] + 2 * baseHP + evCalc + 100) * currentLevel) / 100 + 10;     
+        int firstCalc = (IV [0] + 2 * baseHP + evCalc + 100);
+        int secondCalc = (firstCalc * currentLevel);
+        totalHP = secondCalc/ 100 + 10;
         currentHP = totalHP;
     } //end CalculateHP
 
@@ -846,7 +848,9 @@ public class Pokemon
                 baseStat = DataContents.ExecuteSQL<int>("SELECT specialDefence FROM Pokemon WHERE rowid=" + natSpecies);
             } //end else if
             int evCalc = EV[i]/4;
-            results[i-1] = (((IV[i] + 2 * baseStat + evCalc) * currentLevel/100) + 5) * pvalues[i - 1] / 100;
+            int firstCalc = (IV [i] + 2 * baseStat + evCalc);
+            int secondCalc = (firstCalc*currentLevel / 100);
+            results[i-1] = (secondCalc + 5) * pvalues[i - 1] / 100;
         } //end for
 
         //Set the values

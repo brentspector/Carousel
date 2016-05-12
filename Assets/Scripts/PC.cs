@@ -67,8 +67,18 @@ public class PC
      ***************************************/
     public Pokemon GetPC(int box, int spot)
     {
-        return pokemonStorage [box][spot];
+        return pokemonStorage [box] [spot];
     } //end GetPC(int box, int spot)
+
+    /***************************************
+     * Name: UpdatePC
+     * Replaces a current pokemon with a 
+     * provided pokemon
+     ***************************************/
+    public void UpdatePC(int box, int spot, Pokemon newPokemon)
+    {
+        pokemonStorage [box] [spot] = newPokemon;
+    } //end UpdatePC(int box, int spot, Pokemon newPokemon)
 
     /***************************************
      * Name: AddToPC
@@ -205,7 +215,14 @@ public class PC
     public Pokemon GetLastPokemon()
     {
         Pokemon[] boxArray = pokemonStorage [currentBox];
-        return boxArray.Last (pokemon => pokemon != null);
+        if (boxArray.Any (pokemon => pokemon != null))
+        {
+            return boxArray.Last (pokemon => pokemon != null);
+        } //end if
+        else
+        {
+            return null;
+        } //end else
     } //end GetLastPokemon
 
     /***************************************
@@ -215,7 +232,14 @@ public class PC
     public Pokemon GetFirstPokemon()
     {
         Pokemon[] boxArray = pokemonStorage [currentBox];
-        return boxArray.First (pokemon => pokemon != null);
+        if (boxArray.Any (pokemon => pokemon != null))
+        {
+            return boxArray.First (pokemon => pokemon != null);
+        } //end if
+        else
+        {
+            return null;
+        } //end else
     } //end GetFirstPokemon
 
     /***************************************
