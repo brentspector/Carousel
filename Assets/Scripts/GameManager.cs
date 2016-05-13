@@ -414,15 +414,6 @@ public class GameManager : MonoBehaviour
     {
         scenes.UpdateSprite ();
     } //end UpdateSprite
-
-    /***************************************
-     * Name: TrainerSprite
-     * Change player's trainer sprite set
-     ***************************************/ 
-    public void TrainerSprite(int choice)
-    {
-        sysm.PlayerTrainer.PlayerImage = choice;
-    } //end UpdateSprite
     #endregion
     #endregion
 } //end GameManager class

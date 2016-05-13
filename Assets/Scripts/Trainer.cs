@@ -263,6 +263,24 @@ public class Trainer
         return pPC.GetPCBoxWallpaper();
     } //end GetPCBoxWallpaper
 
+	/***************************************
+     * Name: SetPCBoxName
+     * Sets the current box name
+     ***************************************/
+	public void SetPCBoxName(string requestedName)
+	{
+		pPC.SetPCBoxName(requestedName);
+	} //end SetPCBoxName(string requestedName)
+
+	/***************************************
+     * Name: SetPCBoxWallpaper
+     * Set the current box wallpaper
+     ***************************************/
+	public void SetPCBoxWallpaper(int requestedWallpaper)
+	{
+		pPC.SetPCBoxWallpaper(requestedWallpaper);
+	} //end SetPCBoxWallpaper(int requestedWallpaper)
+
     /***************************************
      * Name: PreviousBox
      * Sets the PC to the previous box
@@ -280,6 +298,15 @@ public class Trainer
     {
         pPC.NextBox ();
     } //end NextBox
+
+	/***************************************
+     * Name: ChangeBox
+     * Sets the PC to the requested box
+     ***************************************/
+	public void ChangeBox(int requestedBox)
+	{
+		pPC.ChangeBox (requestedBox);
+	} //end ChangeBox(int requestedBox)
 
     /***************************************
      * Name: GetLastPokemon

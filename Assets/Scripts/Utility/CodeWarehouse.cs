@@ -228,9 +228,9 @@ public class CodeWarehouse : MonoBehaviour
             "specialAttack,specialDefence,genderRate,growthRate,baseExp,hpEffort,attackEffort," +
                 "defenceEffort,speedEffort,specialAttackEffort,specialDefenceEffort,catchRate,happiness," +
                 "ability1,ability2,hiddenAbility,compatibility1,compatibility2,steps,height,weight,color," +
-                "habitat,kind,pokedex,battlerPlayerY,battlerEnemyY,battlerAltitude) " +
+                "habitat,kind,pokedex,forms,battlerPlayerY,battlerEnemyY,battlerAltitude) " +
                 "VALUES (@nm,@t1,@t2,@hp,@atk,@def,@spe,@spa,@spd,@gdr,@grr,@bex,@hpe,@atke,@defe,@spee," +
-                "@spae,@spde,@cr,@hap,@a1,@a2,@ha,@c1,@c2,@step,@ht,@wt,@col,@hab,@kd,@pdx,@bpy,@bey,@ba)";
+                "@spae,@spde,@cr,@hap,@a1,@a2,@ha,@c1,@c2,@step,@ht,@wt,@col,@hab,@kd,@pdx,@fm,@bpy,@bey,@ba)";
         dbCommand.Parameters.Add(new SqliteParameter("@nm",speciesData[i].name));
         dbCommand.Parameters.Add(new SqliteParameter("@t1",speciesData[i].type1));
         dbCommand.Parameters.Add(new SqliteParameter("@t2",speciesData[i].type2));
@@ -276,7 +276,7 @@ public class CodeWarehouse : MonoBehaviour
         dbCommand.Parameters.Add(new SqliteParameter("@col",speciesData[i].color));
         dbCommand.Parameters.Add(new SqliteParameter("@hab",speciesData[i].habitat));
         dbCommand.Parameters.Add(new SqliteParameter("@kd",speciesData[i].kind));
-        dbCommand.Parameters.Add(new SqliteParameter("@pdx",speciesData[i].pokedex));
+        dbCommand.Parameters.Add(new SqliteParameter("@pdx",speciesData[i].pokedex));        
         dbCommand.Parameters.Add(new SqliteParameter("@bpy",speciesData[i].battlerPlayerY));
         dbCommand.Parameters.Add(new SqliteParameter("@bey",speciesData[i].battlerEnemyY));
         dbCommand.Parameters.Add(new SqliteParameter("@ba",speciesData[i].battlerAltitude));

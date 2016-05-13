@@ -45,6 +45,7 @@ public class Pokemon
 	int gender;				//What gender the pokemon is
 	int nature;				//What nature the pokemon has
 	int happiness;			//Happiness level of pokemon
+	int formNumber;			//What form this pokemon is in
 	int[] moves;			//Move roster of pokemon
 	int[] firstMoves;		//The moves this pokemon first knew when obtained
     int[] ppReamaining;     //The amount of uses each move has left
@@ -63,7 +64,7 @@ public class Pokemon
      * Contructor for pokemon encounters
      ***************************************/
 	public Pokemon(int species = 0, int tID = 0, int level = 5, int item = 0, int ball = 0, 
-	               int oType = 6, int oWhere = 4, int ability = -1, int gender = -1,
+				   int oType = 6, int oWhere = 4, int ability = -1, int gender = -1, int form = 0,
 	               int nature = -1, int happy = 70, bool pokerus = false, bool shiny = false)
 	{
 		//Set data fields
@@ -213,15 +214,18 @@ public class Pokemon
         personalID |= (uint)GameManager.instance.RandomInt (0,256) << 16;
 
         totalEV = 0;
-		currentEXP = CalculateEXP (level);
-        remainingEXP = CalculateRemainingEXP (level);
-        CurrentLevel = level;
+		currentLevel = ExtensionMethods.WithinIntRange(level, 1, 100);
+		currentEXP = CalculateEXP (currentLevel);
+		remainingEXP = CalculateRemainingEXP (currentLevel);
 		Item = item;
 		ballUsed = ball;
 		obtainType = oType;
 		obtainLevel = currentLevel;
         obtainFrom = oWhere;
-        happiness = ExtensionMethods.CapAtInt(happy, 255);
+		string formString = DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=" + natSpecies);
+		int formCount = formString.Split(',').Count();
+		formNumber = ExtensionMethods.WithinIntRange(form, 0, formCount);
+		happiness = ExtensionMethods.WithinIntRange(happy, 0, 255);
 		hasPokerus = pokerus;
 		isShiny = shiny;
         nickname = DataContents.ExecuteSQL<string> ("SELECT name FROM Pokemon WHERE rowid=" + natSpecies);
@@ -1380,6 +1384,21 @@ public class Pokemon
 		set
 		{
 			happiness = value;
+		} //end set
+	} //end Happiness
+
+	/***************************************
+     * Name: FormNumber
+     ***************************************/
+	public int FormNumber
+	{
+		get
+		{
+			return formNumber;
+		} //end get
+		set
+		{
+			formNumber = value;
 		} //end set
 	} //end Happiness
 

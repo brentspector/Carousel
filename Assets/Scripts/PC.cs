@@ -176,6 +176,24 @@ public class PC
         return wallpaper[currentBox];
     } //end GetPCBoxWallpaper
 
+	/***************************************
+     * Name: SetPCBoxName
+     * Sets the current box name
+     ***************************************/
+	public void SetPCBoxName(string requestedName)
+	{
+		boxNames[currentBox] = requestedName;
+	} //end SetPCBoxName(string requestedName)
+
+	/***************************************
+     * Name: SetPCBoxWallpaper
+     * Set the current box wallpaper
+     ***************************************/
+	public void SetPCBoxWallpaper(int requestedWallpaper)
+	{
+		wallpaper[currentBox] = requestedWallpaper;
+	} //end SetPCBoxWallpaper(int requestedWallpaper)
+
     /***************************************
      * Name: PreviousBox
      * Sets the PC to the previous box
@@ -207,6 +225,15 @@ public class PC
             currentBox = 0;
         } //end if
     } //end NextBox
+
+	/***************************************
+     * Name: ChangeBox
+     * Sets the PC to the requested box
+     ***************************************/
+	public void ChangeBox(int requestedBox)
+	{
+		currentBox = requestedBox;
+	} //end ChangeBox(int requestedBox)
 
     /***************************************
      * Name: GetLastPokemon

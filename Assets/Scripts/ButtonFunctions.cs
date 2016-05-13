@@ -464,22 +464,6 @@ public class ButtonFunctions : MonoBehaviour
             GameManager.instance.LogErrorMessage (e.ToString());
         } //end catch
     } //end FinishEditing
-
-    /***************************************
-     * Name: TrainerSprite
-     * Change player's trainer sprite set
-     ***************************************/ 
-    public void TrainerSprite(int choice)
-    {
-        try
-        {
-            GameManager.instance.TrainerSprite (choice);
-        } //end try
-        catch(System.Exception e)
-        {
-            GameManager.instance.LogErrorMessage (e.ToString());
-        } //end catch
-    } //end FinishEditing
     #endregion
     #endregion
 } //end ButtonFunctions class

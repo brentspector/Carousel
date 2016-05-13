@@ -53,7 +53,8 @@ public class SceneManager : MonoBehaviour
         POKEMONRIBBONS,
         POKEMONMARKINGS,
         MOVESWITCH,
-        POKEMONHELD
+        POKEMONHELD,
+		INPUTSCREEN
     } //end PCGame
 
 	//Scene variables
@@ -428,7 +429,7 @@ public class SceneManager : MonoBehaviour
 		} //end if
 
 		//Set up scene
-		if(checkpoint == 0)
+		if (checkpoint == 0)
 		{
 			processing = true;
 			profBase = GameObject.Find("Base").GetComponent<Image>();
@@ -438,93 +439,93 @@ public class SceneManager : MonoBehaviour
 			StartCoroutine(FadeInAnimation(1));
 		} //end if
 		//Init SystemManager variable
-		else if(checkpoint == 1)
+		else if (checkpoint == 1)
 		{
 			processing = true;
-			StartCoroutine(FadeObjectIn(new Image[]{profBase, professor}, 2)); 
+			StartCoroutine(FadeObjectIn(new Image[]{ profBase, professor }, 2)); 
 		} //end else if
 		//Begin scene
-		else if(checkpoint == 2)
+		else if (checkpoint == 2)
 		{
-            //Begin processing
+			//Begin processing
 			processing = true;
 			
-            //Play text
-            GameManager.instance.DisplayText("Welcome to Pokemon Carousel! I am the Ringmaster " +
-            "Melotta.", false);
+			//Play text
+			GameManager.instance.DisplayText("Welcome to Pokemon Carousel! I am the Ringmaster " +
+			"Melotta.", false);
 
-            //Move to next checkpoint
-    		checkpoint = 3;
+			//Move to next checkpoint
+			checkpoint = 3;
 
-            //End processing
+			//End processing
 			processing = false;
 		} //end else if
-		else if(checkpoint == 3)
+		else if (checkpoint == 3)
 		{
-            //Begin processing
+			//Begin processing
 			processing = true;
 
-            //Display text
-            GameManager.instance.DisplayText("This circus has attracted major gym leaders from " +
-                "around the world! In fact, that's why you're here, isn't it?", false);
+			//Display text
+			GameManager.instance.DisplayText("This circus has attracted major gym leaders from " +
+			"around the world! In fact, that's why you're here, isn't it?", false);
 
-            //Move to next checkpoint
-            checkpoint = 4;          
+			//Move to next checkpoint
+			checkpoint = 4;          
 
-            //End processing
+			//End processing
 			processing = false;
 		} //end else if
-		else if(checkpoint == 4)
+		else if (checkpoint == 4)
 		{
-            //Begin processing
+			//Begin processing
 			processing = true;
 
-            //Display text
-            GameManager.instance.DisplayText("Alright, let's get you set up. First, what is " +
-                "your name?", true);
+			//Display text
+			GameManager.instance.DisplayText("Alright, let's get you set up. First, what is " +
+			"your name?", true);
             
-            //Move to next checkpoint
-            checkpoint = 5;
+			//Move to next checkpoint
+			checkpoint = 5;
 
-            //End processing
+			//End processing
 			processing = false;
 		} //end else if
-		else if(checkpoint == 5)
+		else if (checkpoint == 5)
 		{
-            //Begin processing
+			//Begin processing
 			processing = true;
 
-            //Display name input
-            input.SetActive(true);
-            input.transform.GetChild(2).GetComponent<Text>().text = "Please enter your name.";
-            input.transform.GetChild(0).GetComponent<Text>().text = "Player name:";
-            inputText.text = "";
-            inputText.ActivateInputField();
-            checkpoint = 6;
+			//Display name input
+			input.SetActive(true);
+			input.transform.GetChild(2).GetComponent<Text>().text = "Please enter your name.";
+			input.transform.GetChild(0).GetComponent<Text>().text = "Player name:";
+			inputText.text = "";
+			inputText.ActivateInputField();
+			checkpoint = 6;
 
-            //End processing
+			//End processing
 			processing = false;
 		} //end else if
-		else if(checkpoint == 6)
+		else if (checkpoint == 6)
 		{
-            //Begin processing
+			//Begin processing
 			processing = true;
 			
-            //Make sure text field is always active
-			if(input.activeInHierarchy)
+			//Make sure text field is always active
+			if (input.activeInHierarchy)
 			{
 				inputText.ActivateInputField();
 			} //end if
 
-            //Get player input
-            GatherInput();
+			//Get player input
+			GatherInput();
 
-            //End processing
+			//End processing
 			processing = false;
 		} //end else if
-		else if(checkpoint == 7)
+		else if (checkpoint == 7)
 		{
-            //Being processing
+			//Being processing
 			processing = true;
 
 			//Activate confirmation box
@@ -544,44 +545,60 @@ public class SceneManager : MonoBehaviour
 			selection.GetComponent<RectTransform>().sizeDelta = new Vector2(width, height);
 			//Reposition to location of top choice, with 2 unit offset to center it
 			selection.transform.position = new Vector3(confirm.transform.GetChild(0).position.x,
-			                                           confirm.transform.GetChild(0).position.y,
-			                                           100);
+				confirm.transform.GetChild(0).position.y,
+				100);
 
 			//Continue to next section when selection rect is properly set
-			if(selection.GetComponent<RectTransform>().sizeDelta.x != 0)
+			if (selection.GetComponent<RectTransform>().sizeDelta.x != 0)
 			{
 				checkpoint = 8;
 			} //end if
 
-            //End processing
+			//End processing
 			processing = false;
 		} //end else if
-		else if(checkpoint == 8)
+		else if (checkpoint == 8)
 		{
-            //Begin processing
+			//Begin processing
 			processing = true;
 
-            //Get player input
-            GatherInput();
+			//Get player input
+			GatherInput();
 
-            //End processing
-            processing = false;
+			//End processing
+			processing = false;
 		} //end else if
-		else if(checkpoint == 9)
+		else if (checkpoint == 9)
 		{
-            //Begin processing
+			//Begin processing
 			processing = true;
 
-            //Display text
-            GameManager.instance.DisplayText("Great! Now here's your things. See you again.", true);
+			//Display text
+			GameManager.instance.DisplayText("Great! Which character are you?", true);
 
-            //Move to next checkpoint
-            checkpoint = 10;
+			//Move to next checkpoint
+			checkpoint = 10;
 			
-            //End processing
-            processing = false;
+			//End processing
+			processing = false;
 		} //end else if
-		else if(checkpoint == 10)
+		else if (checkpoint == 10)
+		{
+			//Begin processing
+			processing = true;
+
+			//End processing
+			processing = false;
+		} //end else if
+		else if (checkpoint == 11)
+		{
+			//Begin processing
+			processing = true;
+
+			//End processing
+			processing = false;
+		} //end else if
+		else if(checkpoint == 12)
 		{
             //Begin processing
 			processing = true;
@@ -711,25 +728,7 @@ public class SceneManager : MonoBehaviour
                     playerTeam.SetActive(true);
 
                     //Fill in choices box
-                    for(int i = choices.transform.childCount-1; i < 4; i++)
-                    {
-                        GameObject clone = Instantiate(choices.transform.GetChild(0).gameObject,
-                                                       choices.transform.GetChild(0).position,
-                                                       Quaternion.identity) as GameObject;
-                        clone.transform.SetParent(choices.transform);
-                    } //end for
-                    choices.transform.GetChild(0).GetComponent<Text>().text = "Summary";
-                    choices.transform.GetChild(1).GetComponent<Text>().text = "Switch";
-                    choices.transform.GetChild(2).GetComponent<Text>().text = "Item";
-                    choices.transform.GetChild(3).GetComponent<Text>().text = "Ribbons";
-                    choices.transform.GetChild(4).GetComponent<Text>().text = "Cancel";
-                    if(choices.transform.childCount > 5)
-                    {
-                        for(int i = 5; i < choices.transform.childCount; i++)
-                        {
-                            Destroy(choices.transform.GetChild(i).gameObject);
-                        } //end for
-                    } //end if
+                    FillInChoices();
 
                     //Fill in all team data
                     playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Button>().interactable = false;
@@ -829,9 +828,9 @@ public class SceneManager : MonoBehaviour
                             } //end case 6                            
                         } //end switch
 
-                        playerTeam.transform.FindChild("Pokemon" + i).FindChild("Sprite").
-                            GetComponentInChildren<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/icon" 
-                            + GameManager.instance.GetTrainer().Team[i-1].NatSpecies.ToString("000"));
+						playerTeam.transform.FindChild("Pokemon" + i).FindChild("Sprite").
+							GetComponentInChildren<Image>().sprite = GetCorrectIcon(
+							GameManager.instance.GetTrainer().Team[i-1]);
                         playerTeam.transform.FindChild("Pokemon" + i).FindChild("Nickname").
                             GetComponentInChildren<Text>().text = GameManager.instance.GetTrainer().Team[i-1].Nickname;
                         if(GameManager.instance.GetTrainer().Team[i-1].Item != 0)
@@ -1339,29 +1338,6 @@ public class SceneManager : MonoBehaviour
             //Initialize pcState
             pcState = PCGame.HOME;
 
-            //Fill in choices box
-            for (int i = choices.transform.childCount-1; i < 6; i++)
-            {
-                GameObject clone = Instantiate (choices.transform.GetChild (0).gameObject,
-                                               choices.transform.GetChild (0).position,
-                                               Quaternion.identity) as GameObject;
-                clone.transform.SetParent (choices.transform);
-            } //end for
-            choices.transform.GetChild (0).GetComponent<Text> ().text = "Move";
-            choices.transform.GetChild (1).GetComponent<Text> ().text = "Summary";
-            choices.transform.GetChild (2).GetComponent<Text> ().text = "Item";
-            choices.transform.GetChild (3).GetComponent<Text> ().text = "Ribbons";
-            choices.transform.GetChild (4).GetComponent<Text> ().text = "Markings";
-            choices.transform.GetChild (5).GetComponent<Text> ().text = "Release";
-            choices.transform.GetChild (6).GetComponent<Text> ().text = "Cancel";
-            if (choices.transform.childCount > 7)
-            {
-                for (int i = 7; i < choices.transform.childCount; i++)
-                {
-                    Destroy (choices.transform.GetChild (i).gameObject);
-                } //end for
-            } //end if
-
             //Details size has not been set yet
             detailsSize = -1;
 
@@ -1399,8 +1375,8 @@ public class SceneManager : MonoBehaviour
                 {
                     boxBack.transform.FindChild ("PokemonRegion").GetChild (i).GetComponent<Image> ().
                         color = Color.white;
-                    boxBack.transform.FindChild ("PokemonRegion").GetChild (i).GetComponent<Image> ().
-                        sprite = Resources.Load<Sprite> ("Sprites/Icons/icon" + selectedPokemon.NatSpecies.ToString ("000"));
+					boxBack.transform.FindChild("PokemonRegion").GetChild(i).GetComponent<Image>().
+						sprite = GetCorrectIcon(selectedPokemon);
                 } //end else
             } //end for
             
@@ -1415,8 +1391,7 @@ public class SceneManager : MonoBehaviour
             for(int i = 1; i < GameManager.instance.GetTrainer().Team.Count + 1; i++)
             {
                 partyTab.transform.FindChild("Pokemon"+i).GetComponent<Image>().sprite =
-                    Resources.Load<Sprite>("Sprites/Icons/icon"+GameManager.instance.GetTrainer().
-                    Team[i-1].NatSpecies.ToString("000"));
+                    GetCorrectIcon(GameManager.instance.GetTrainer().Team[i-1]);
             } //end for
 
             //Deactivate any empty party spots
@@ -1549,7 +1524,7 @@ public class SceneManager : MonoBehaviour
             {
                 //Initialize
                 if(!initialize)
-                {                    
+                {                  
                     //Reposition choices to bottom right
                     choices.GetComponent<RectTransform>().position = new Vector3(
                         choices.GetComponent<RectTransform>().position.x,
@@ -1649,15 +1624,13 @@ public class SceneManager : MonoBehaviour
                         GameManager.instance.GetTrainer().RemovePokemon(choiceNumber-1);
                         choiceHand.GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/boxfist");
                         heldImage.GetComponent<Image>().color = Color.white;
-                        heldImage.GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/icon" + 
-                            heldPokemon.NatSpecies.ToString("000"));
+						heldImage.GetComponent<Image>().sprite = GetCorrectIcon(heldPokemon);
 
                         //Fill in party tab
                         for(int i = 1; i < GameManager.instance.GetTrainer().Team.Count + 1; i++)
                         {
                             partyTab.transform.FindChild("Pokemon"+i).GetComponent<Image>().sprite =
-                                Resources.Load<Sprite>("Sprites/Icons/icon"+GameManager.instance.GetTrainer().
-                                Team[i-1].NatSpecies.ToString("000"));
+                                GetCorrectIcon(GameManager.instance.GetTrainer().Team[i-1]);
                         } //end for
 
                         //Deactivate any empty party spots
@@ -1675,8 +1648,7 @@ public class SceneManager : MonoBehaviour
                             GameManager.instance.GetTrainer ().GetPCBox (), boxChoice);
                         choiceHand.GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/boxfist");
                         heldImage.GetComponent<Image>().color = Color.white;
-                        heldImage.GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/icon" + 
-                            heldPokemon.NatSpecies.ToString("000"));
+						heldImage.GetComponent<Image>().sprite = GetCorrectIcon(heldPokemon);
                         boxBack.transform.FindChild ("PokemonRegion").GetChild (boxChoice).GetComponent<Image> ().
                             color = Color.clear;
                     } //end else
@@ -1696,11 +1668,9 @@ public class SceneManager : MonoBehaviour
                             GameManager.instance.GetTrainer().ReplacePokemon(heldPokemon, choiceNumber-1);
                             heldPokemon = selectedPokemon;
                             selectedPokemon = GameManager.instance.GetTrainer ().Team[choiceNumber-1];
-                            heldImage.GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/icon" + 
-                                heldPokemon.NatSpecies.ToString("000"));
-                            partyTab.transform.FindChild("Pokemon" + choiceNumber).GetComponent<Image> ().
-                                sprite = Resources.Load<Sprite>("Sprites/Icons/icon" + selectedPokemon.NatSpecies.
-                                ToString("000"));
+							heldImage.GetComponent<Image>().sprite = GetCorrectIcon(heldPokemon);
+							partyTab.transform.FindChild("Pokemon" + choiceNumber).GetComponent<Image>().
+								sprite = GetCorrectIcon(selectedPokemon);
                         } //end if
                         else
                         {
@@ -1709,9 +1679,8 @@ public class SceneManager : MonoBehaviour
                             heldPokemon = null;
                             choiceHand.GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/boxpoint1");
                             heldImage.GetComponent<Image>().color = Color.clear;
-                            partyTab.transform.FindChild("Pokemon" + choiceNumber).GetComponent<Image> ().
-                                sprite = Resources.Load<Sprite>("Sprites/Icons/icon" + selectedPokemon.NatSpecies.
-                                ToString("000"));
+							partyTab.transform.FindChild("Pokemon" + choiceNumber).GetComponent<Image>().
+								sprite = GetCorrectIcon(selectedPokemon);
                             partyTab.transform.FindChild("Pokemon" + choiceNumber).gameObject.SetActive(true);
                         } //end else
                     } //end if
@@ -1728,11 +1697,9 @@ public class SceneManager : MonoBehaviour
                             heldPokemon = selectedPokemon;
                             selectedPokemon = GameManager.instance.GetTrainer ().GetPC(
                                 GameManager.instance.GetTrainer().GetPCBox(), boxChoice);
-                            heldImage.GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/icon" + 
-                                heldPokemon.NatSpecies.ToString("000"));
-                            boxBack.transform.FindChild ("PokemonRegion").GetChild (boxChoice).GetComponent<Image> ().
-                                sprite = Resources.Load<Sprite>("Sprites/Icons/icon" + selectedPokemon.NatSpecies.
-                                ToString("000"));
+							heldImage.GetComponent<Image>().sprite = GetCorrectIcon(heldPokemon);
+							boxBack.transform.FindChild("PokemonRegion").GetChild(boxChoice).GetComponent<Image>().
+							sprite = GetCorrectIcon(selectedPokemon);
                         } //end if
                         else
                         {
@@ -1742,8 +1709,8 @@ public class SceneManager : MonoBehaviour
                             heldPokemon = null;
                             choiceHand.GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/boxpoint1");
                             heldImage.GetComponent<Image>().color = Color.clear;
-                            boxBack.transform.FindChild ("PokemonRegion").GetChild (boxChoice).GetComponent<Image>().sprite = 
-                                Resources.Load<Sprite>("Sprites/Icons/icon" + selectedPokemon.NatSpecies.ToString("000"));
+							boxBack.transform.FindChild("PokemonRegion").GetChild(boxChoice).GetComponent<Image>().sprite = 
+								GetCorrectIcon(selectedPokemon);
                             boxBack.transform.FindChild ("PokemonRegion").GetChild (boxChoice).GetComponent<Image> ().
                                 color = Color.white;
 
@@ -1835,43 +1802,7 @@ public class SceneManager : MonoBehaviour
                 if(!initialize)
                 {                              
                     //Fill in choices box
-                    for (int i = choices.transform.childCount-1; i < DataContents.markingCharacters.Length+2; i++)
-                    {
-                        GameObject clone = Instantiate (choices.transform.GetChild (0).gameObject,
-                        choices.transform.GetChild (0).position, Quaternion.identity) as GameObject;
-                        clone.transform.SetParent (choices.transform);
-                    } //end for
-                    for(int i = 0; i < DataContents.markingCharacters.Length+2; i++)
-                    {
-                        if(i == DataContents.markingCharacters.Length)
-                        {
-                            choices.transform.GetChild(i).GetComponent<Text>().text = "OK";
-                        } //end if
-                        else if(i == DataContents.markingCharacters.Length+1)
-                        {
-                            choices.transform.GetChild(i).GetComponent<Text>().text = "Cancel";
-                        } //end else if
-                        else
-                        {                           
-                            choices.transform.GetChild(i).GetComponent<Text>().text =
-                                DataContents.markingCharacters[i].ToString(); 
-                        } //end else
-                    } //end for
-
-                    if (choices.transform.childCount > DataContents.markingCharacters.Length+1)
-                    {
-                        for (int i = DataContents.markingCharacters.Length+2; i < choices.transform.childCount; i++)
-                        {
-                            Destroy (choices.transform.GetChild (i).gameObject);
-                        } //end for
-                    } //end if
-
-                    //Color in choices
-                    for(int i = 0; i < markingChoices.Count; i++)
-                    {
-                        choices.transform.GetChild(i).GetComponent<Text>().color =
-                            markingChoices[i] ? Color.black : Color.gray;
-                    } //end for
+                    FillInChoices();
 
                     //SubmenuChoice at top
                     subMenuChoice = 0;
@@ -1889,6 +1820,17 @@ public class SceneManager : MonoBehaviour
                 //Get player input
                 GatherInput ();
             } //end else if
+			else if(pcState == PCGame.INPUTSCREEN)
+			{
+				//Make sure text field is always active
+				if(input.activeInHierarchy)
+				{
+					inputText.ActivateInputField();
+				} //end if
+
+				//Get player input
+				GatherInput();
+			} //end else if
 
             //End processing
             processing = false;
@@ -2665,10 +2607,12 @@ public class SceneManager : MonoBehaviour
                     Resources.Load<Sprite>("Sprites/Icons/summaryBall"+pokemonChoice.BallUsed.ToString("00"));
                 summaryScreen.transform.GetChild(0).FindChild("Gender").GetComponent<Image>().sprite=
                     Resources.Load<Sprite>("Sprites/Icons/gender"+pokemonChoice.Gender.ToString());
-                summaryScreen.transform.GetChild(0).FindChild("Sprite").GetComponent<Image>().sprite=
-                    Resources.Load<Sprite>("Sprites/Pokemon/"+pokemonChoice.NatSpecies.ToString("000"));
+				summaryScreen.transform.GetChild(0).FindChild("Sprite").GetComponent<Image>().sprite =
+					GetCorrectSprite(pokemonChoice);
                 summaryScreen.transform.GetChild(0).FindChild("Markings").GetComponent<Text>().text=
                     pokemonChoice.GetMarkingsString();
+				summaryScreen.transform.GetChild(0).FindChild("Shiny").gameObject.SetActive(
+					pokemonChoice.IsShiny);
                 summaryScreen.transform.GetChild(0).FindChild("Item").GetComponent<Text>().text=
                     DataContents.GetItemGameName(pokemonChoice.Item);
                 summaryScreen.transform.GetChild(0).FindChild("DexNumber").GetComponent<Text>().text=
@@ -2701,10 +2645,12 @@ public class SceneManager : MonoBehaviour
                     Resources.Load<Sprite>("Sprites/Icons/summaryBall"+pokemonChoice.BallUsed.ToString("00"));
                 summaryScreen.transform.GetChild(1).FindChild("Gender").GetComponent<Image>().sprite=
                     Resources.Load<Sprite>("Sprites/Icons/gender"+pokemonChoice.Gender.ToString());
-                summaryScreen.transform.GetChild(1).FindChild("Sprite").GetComponent<Image>().sprite=
-                    Resources.Load<Sprite>("Sprites/Pokemon/"+pokemonChoice.NatSpecies.ToString("000"));
+				summaryScreen.transform.GetChild(1).FindChild("Sprite").GetComponent<Image>().sprite =
+					GetCorrectSprite(pokemonChoice);
                 summaryScreen.transform.GetChild(1).FindChild("Markings").GetComponent<Text>().text=
                     pokemonChoice.GetMarkingsString();
+				summaryScreen.transform.GetChild(1).FindChild("Shiny").gameObject.SetActive(
+					pokemonChoice.IsShiny);
                 summaryScreen.transform.GetChild(1).FindChild("Item").GetComponent<Text>().text=
                     DataContents.GetItemGameName(pokemonChoice.Item);
                 summaryScreen.transform.GetChild(1).FindChild("Nature").GetComponent<Text>().text= 
@@ -2734,10 +2680,12 @@ public class SceneManager : MonoBehaviour
                     Resources.Load<Sprite>("Sprites/Icons/summaryBall"+pokemonChoice.BallUsed.ToString("00"));
                 summaryScreen.transform.GetChild(2).FindChild("Gender").GetComponent<Image>().sprite=
                     Resources.Load<Sprite>("Sprites/Icons/gender"+pokemonChoice.Gender.ToString());
-                summaryScreen.transform.GetChild(2).FindChild("Sprite").GetComponent<Image>().sprite=
-                    Resources.Load<Sprite>("Sprites/Pokemon/"+pokemonChoice.NatSpecies.ToString("000"));
+				summaryScreen.transform.GetChild(2).FindChild("Sprite").GetComponent<Image>().sprite =
+					GetCorrectSprite(pokemonChoice);
                 summaryScreen.transform.GetChild(2).FindChild("Markings").GetComponent<Text>().text=
                     pokemonChoice.GetMarkingsString();
+				summaryScreen.transform.GetChild(2).FindChild("Shiny").gameObject.SetActive(
+					pokemonChoice.IsShiny);
                 summaryScreen.transform.GetChild(2).FindChild("Item").GetComponent<Text>().text=
                     DataContents.GetItemGameName(pokemonChoice.Item);
                 summaryScreen.transform.GetChild(2).FindChild("HP").GetComponent<Text>().text=
@@ -2775,10 +2723,12 @@ public class SceneManager : MonoBehaviour
                     Resources.Load<Sprite>("Sprites/Icons/summaryBall"+pokemonChoice.BallUsed.ToString("00"));
                 summaryScreen.transform.GetChild(3).FindChild("Gender").GetComponent<Image>().sprite=
                     Resources.Load<Sprite>("Sprites/Icons/gender"+pokemonChoice.Gender.ToString());
-                summaryScreen.transform.GetChild(3).FindChild("Sprite").GetComponent<Image>().sprite=
-                    Resources.Load<Sprite>("Sprites/Pokemon/"+pokemonChoice.NatSpecies.ToString("000"));
+				summaryScreen.transform.GetChild(3).FindChild("Sprite").GetComponent<Image>().sprite =
+					GetCorrectSprite(pokemonChoice);
                 summaryScreen.transform.GetChild(3).FindChild("Markings").GetComponent<Text>().text=
                     pokemonChoice.GetMarkingsString();
+				summaryScreen.transform.GetChild(3).FindChild("Shiny").gameObject.SetActive(
+					pokemonChoice.IsShiny);
                 summaryScreen.transform.GetChild(3).FindChild("Item").GetComponent<Text>().text=
                     DataContents.GetItemGameName(pokemonChoice.Item);
                 summaryScreen.transform.GetChild(3).FindChild("HP").GetComponent<Text>().text=
@@ -2820,10 +2770,12 @@ public class SceneManager : MonoBehaviour
                     Resources.Load<Sprite>("Sprites/Icons/summaryBall"+pokemonChoice.BallUsed.ToString("00"));
                 summaryScreen.transform.GetChild(4).FindChild("Gender").GetComponent<Image>().sprite=
                     Resources.Load<Sprite>("Sprites/Icons/gender"+pokemonChoice.Gender.ToString());
-                summaryScreen.transform.GetChild(4).FindChild("Sprite").GetComponent<Image>().sprite=
-                    Resources.Load<Sprite>("Sprites/Pokemon/"+pokemonChoice.NatSpecies.ToString("000"));
+				summaryScreen.transform.GetChild(4).FindChild("Sprite").GetComponent<Image>().sprite =
+					GetCorrectSprite(pokemonChoice);
                 summaryScreen.transform.GetChild(4).FindChild("Markings").GetComponent<Text>().text=
                     pokemonChoice.GetMarkingsString();
+				summaryScreen.transform.GetChild(4).FindChild("Shiny").gameObject.SetActive(
+					pokemonChoice.IsShiny);
                 summaryScreen.transform.GetChild(4).FindChild("Item").GetComponent<Text>().text=
                     DataContents.GetItemGameName(pokemonChoice.Item);
                 SetMoveSprites(pokemonChoice, summaryScreen.transform.GetChild(4));
@@ -2833,8 +2785,8 @@ public class SceneManager : MonoBehaviour
             case 5:
             {
                 summaryScreen.transform.GetChild(5).gameObject.SetActive(true);
-                summaryScreen.transform.GetChild(5).FindChild("Sprite").GetComponent<Image>().sprite=
-                    Resources.Load<Sprite>("Sprites/Icons/icon"+pokemonChoice.NatSpecies.ToString("000"));
+				summaryScreen.transform.GetChild(5).FindChild("Sprite").GetComponent<Image>().sprite =
+					GetCorrectIcon(pokemonChoice);
                 SetMoveDetails(pokemonChoice, summaryScreen.transform.GetChild(5));
                 SetTypeSprites(summaryScreen.transform.GetChild(5).FindChild("SpeciesTypes").GetChild(0).GetComponent<Image>(),
                     summaryScreen.transform.GetChild(5).FindChild("SpeciesTypes").GetChild(1).GetComponent<Image>(), 
@@ -2906,12 +2858,11 @@ public class SceneManager : MonoBehaviour
             detailsRegion.transform.FindChild ("Gender").GetComponent<Image> ().sprite = 
                 Resources.Load<Sprite> ("Sprites/Icons/gender" + selectedPokemon.Gender);
             detailsRegion.transform.FindChild ("Sprite").GetComponent<Image> ().color = Color.white;
-            detailsRegion.transform.FindChild ("Sprite").GetComponent<Image> ().sprite = 
-                Resources.Load<Sprite> ("Sprites/Pokemon/" + selectedPokemon.NatSpecies.ToString ("000"));
+			detailsRegion.transform.FindChild("Sprite").GetComponent<Image>().sprite = 
+				GetCorrectSprite(selectedPokemon);
             detailsRegion.transform.FindChild ("Markings").GetComponent<Text> ().text = selectedPokemon.
                 GetMarkingsString();
-            detailsRegion.transform.FindChild ("Shiny").GetComponent<Text> ().color = 
-                selectedPokemon.IsShiny ? Color.white : Color.clear;
+			detailsRegion.transform.FindChild  ("Shiny").gameObject.SetActive(selectedPokemon.IsShiny);
             detailsRegion.transform.FindChild ("Ability").GetComponent<Text> ().text = selectedPokemon.
                 GetAbilityName ();
             detailsRegion.transform.FindChild ("Item").GetComponent<Text> ().text = 
@@ -2928,7 +2879,7 @@ public class SceneManager : MonoBehaviour
             detailsRegion.transform.FindChild ("Gender").GetComponent<Image> ().color = Color.clear;
             detailsRegion.transform.FindChild ("Sprite").GetComponent<Image> ().color = Color.clear;
             detailsRegion.transform.FindChild ("Markings").GetComponent<Text> ().text = "";
-            detailsRegion.transform.FindChild ("Shiny").GetComponent<Text> ().color = Color.clear;
+			detailsRegion.transform.FindChild ("Shiny").gameObject.SetActive(false);
             detailsRegion.transform.FindChild ("Level").GetComponent<Text> ().text = "";
             detailsRegion.transform.FindChild ("Types").GetChild (0).gameObject.SetActive (false);
             detailsRegion.transform.FindChild ("Types").GetChild (1).gameObject.SetActive (false);
@@ -2958,8 +2909,8 @@ public class SceneManager : MonoBehaviour
                     GameManager.instance.GetTrainer ().Owned.Contains (chosenPoke) ? 
                 Resources.Load<Sprite> ("Sprites/Icons/ballnormal") :
                 Resources.Load<Sprite> ("Sprites/Icons/ballfainted");
-                child.FindChild ("Icon").GetComponent<Image> ().sprite = Resources.Load<Sprite> ("Sprites/Icons/icon" + 
-                    chosenPoke.ToString ("000"));
+				child.FindChild("Icon").GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/icon" + 
+					chosenPoke.ToString("000"));
             } //end for
         } //end if
     } //end FillInIndex
@@ -3016,10 +2967,188 @@ public class SceneManager : MonoBehaviour
     void FillInChoices()
     {
         //If in Team
+        if (sceneState == OverallGame.CONTINUE)
+        {
+            for(int i = choices.transform.childCount-1; i < 4; i++)
+            {
+                GameObject clone = Instantiate(choices.transform.GetChild(0).gameObject,
+                    choices.transform.GetChild(0).position,
+                    Quaternion.identity) as GameObject;
+                clone.transform.SetParent(choices.transform);
+            } //end for
+            choices.transform.GetChild(0).GetComponent<Text>().text = "Summary";
+            choices.transform.GetChild(1).GetComponent<Text>().text = "Switch";
+            choices.transform.GetChild(2).GetComponent<Text>().text = "Item";
+            choices.transform.GetChild(3).GetComponent<Text>().text = "Ribbons";
+            choices.transform.GetChild(4).GetComponent<Text>().text = "Cancel";
+            if(choices.transform.childCount > 5)
+            {
+                for(int i = 5; i < choices.transform.childCount; i++)
+                {
+                    Destroy(choices.transform.GetChild(i).gameObject);
+                } //end for
+            } //end if
+        } //end if
         //If in PC in Pokemon Region
+        else if (sceneState == OverallGame.PC && boxChoice > -1)
+        {
+            //Fill in choices box
+            for (int i = choices.transform.childCount - 1; i < 6; i++)
+            {
+                GameObject clone = Instantiate (choices.transform.GetChild (0).gameObject,
+                                       choices.transform.GetChild (0).position,
+                                       Quaternion.identity) as GameObject;
+                clone.transform.SetParent (choices.transform);
+            } //end for
+            choices.transform.GetChild (0).GetComponent<Text> ().text = "Move";
+            choices.transform.GetChild (1).GetComponent<Text> ().text = "Summary";
+            choices.transform.GetChild (2).GetComponent<Text> ().text = "Item";
+            choices.transform.GetChild (3).GetComponent<Text> ().text = "Ribbons";
+            choices.transform.GetChild (4).GetComponent<Text> ().text = "Markings";
+            choices.transform.GetChild (5).GetComponent<Text> ().text = "Release";
+            choices.transform.GetChild (6).GetComponent<Text> ().text = "Cancel";
+            choices.transform.GetChild (0).GetComponent<Text> ().color = Color.black;
+            choices.transform.GetChild (1).GetComponent<Text> ().color = Color.black;
+            choices.transform.GetChild (2).GetComponent<Text> ().color = Color.black;
+            choices.transform.GetChild (3).GetComponent<Text> ().color = Color.black;
+            choices.transform.GetChild (4).GetComponent<Text> ().color = Color.black;
+            choices.transform.GetChild (5).GetComponent<Text> ().color = Color.black;
+            choices.transform.GetChild (6).GetComponent<Text> ().color = Color.black;
+            if (choices.transform.childCount > 7)
+            {
+                for (int i = 7; i < choices.transform.childCount; i++)
+                {
+                    Destroy (choices.transform.GetChild (i).gameObject);
+                } //end for
+            } //end if
+        } //end else if
         //If in PC on Box Title
+        else if (sceneState == OverallGame.PC && boxChoice == -2)
+        {
+            //Fill in choices box
+            for (int i = choices.transform.childCount-1; i < 3; i++)
+            {
+                GameObject clone = Instantiate (choices.transform.GetChild (0).gameObject,
+                    choices.transform.GetChild (0).position,
+                    Quaternion.identity) as GameObject;
+                clone.transform.SetParent (choices.transform);
+            } //end for
+            choices.transform.GetChild (0).GetComponent<Text> ().text = "Jump To";
+            choices.transform.GetChild (1).GetComponent<Text> ().text = "Rename";
+            choices.transform.GetChild (2).GetComponent<Text> ().text = "Wallpaper";
+            choices.transform.GetChild (3).GetComponent<Text> ().text = "Cancel";
+            choices.transform.GetChild (0).GetComponent<Text> ().color = Color.black;
+            choices.transform.GetChild (1).GetComponent<Text> ().color = Color.black;
+            choices.transform.GetChild (2).GetComponent<Text> ().color = Color.black;
+            choices.transform.GetChild (3).GetComponent<Text> ().color = Color.black;
+            if (choices.transform.childCount > 4)
+            {
+                for (int i = 4; i < choices.transform.childCount; i++)
+                {
+                    Destroy (choices.transform.GetChild (i).gameObject);
+                } //end for
+            } //end if
+        }  //end else if
         //If in PC Markings
+        else if (sceneState == OverallGame.PC && pcState == PCGame.POKEMONMARKINGS)
+        {
+            for (int i = choices.transform.childCount-1; i < DataContents.markingCharacters.Length+2; i++)
+            {
+                GameObject clone = Instantiate (choices.transform.GetChild (0).gameObject,
+                    choices.transform.GetChild (0).position, Quaternion.identity) as GameObject;
+                clone.transform.SetParent (choices.transform);
+            } //end for
+            for(int i = 0; i < DataContents.markingCharacters.Length+2; i++)
+            {
+                if(i == DataContents.markingCharacters.Length)
+                {
+                    choices.transform.GetChild(i).GetComponent<Text>().text = "OK";
+                } //end if
+                else if(i == DataContents.markingCharacters.Length+1)
+                {
+                    choices.transform.GetChild(i).GetComponent<Text>().text = "Cancel";
+                } //end else if
+                else
+                {                           
+                    choices.transform.GetChild(i).GetComponent<Text>().text =
+                        DataContents.markingCharacters[i].ToString(); 
+                } //end else
+            } //end for
+
+            //Destroy extra
+            if (choices.transform.childCount > DataContents.markingCharacters.Length+1)
+            {
+                for (int i = DataContents.markingCharacters.Length+2; i < choices.transform.childCount; i++)
+                {
+                    Destroy (choices.transform.GetChild (i).gameObject);
+                } //end for
+            } //end if
+
+            //Color in choices
+            for(int i = 0; i < markingChoices.Count; i++)
+            {
+                choices.transform.GetChild(i).GetComponent<Text>().color =
+                    markingChoices[i] ? Color.black : Color.gray;
+            } //end for           
+        } //end else if
     } //end FillInChoices
+
+	/***************************************
+     * Name: GetCorrectSprite
+     * Returns the sprite for the pokemon,
+     * based on species, gender, shiny, and
+     * form
+     ***************************************/
+	Sprite GetCorrectSprite(Pokemon myPokemon)
+	{
+		//Get requested sprite
+		string chosenString = myPokemon.NatSpecies.ToString("000");
+		chosenString += myPokemon.Gender == 1 ? "f" : "";
+		chosenString += myPokemon.IsShiny ? "s" : "";
+		chosenString += myPokemon.FormNumber > 0 ? "_" + myPokemon.FormNumber.ToString() : "";
+
+		//Change sprite, and fix if sprite is null
+		Sprite result = Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString);
+		if(result == null)
+		{
+			chosenString = chosenString.Replace("f", "");
+			result = Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString);
+			if(result == null)
+			{
+				result = Resources.Load<Sprite>("Sprites/Pokemon/0");
+			} //end if
+		} //end if
+
+		return result;
+	} //end GetCorrectSprite(Pokemon myPokemon)
+
+	/***************************************
+     * Name: GetCorrectIcon
+     * Returns the icon sprite for the pokemon,
+     * based on species, gender, shiny, and
+     * form
+     ***************************************/
+	Sprite GetCorrectIcon(Pokemon myPokemon)
+	{
+		//Get requested sprite
+		string chosenString = myPokemon.NatSpecies.ToString("000");
+		chosenString += myPokemon.Gender == 1 ? "f" : "";
+		chosenString += myPokemon.FormNumber > 0 ? "_" + myPokemon.FormNumber.ToString() : "";
+
+		//Change sprite, and fix if sprite is null
+		Sprite result = Resources.Load<Sprite>("Sprites/Icons/icon" + chosenString);
+		if(result == null)
+		{
+			chosenString = chosenString.Replace("f", "");
+			result = Resources.Load<Sprite>("Sprites/Icons/icon" + chosenString);
+			if(result == null)
+			{
+				result = Resources.Load<Sprite>("Sprites/Icons/icon000");
+			} //end if
+		} //end if
+
+		return result;
+	} //end GetCorrectSprite(Pokemon myPokemon)
 
     /***************************************
      * Name: WaitForResize
@@ -5576,10 +5705,10 @@ public class SceneManager : MonoBehaviour
                 case OverallGame.PC:
                 {
                     //PC Home
-                    if(pcState == PCGame.HOME && (selectedPokemon != null || heldPokemon != null))
+                    if(pcState == PCGame.HOME && (selectedPokemon != null || heldPokemon != null || boxChoice == -2))
                     {
-                        //Open submenu as long as player is in pokemon region
-                        if(boxChoice > -1 && boxChoice < 30)
+                        //Open submenu as long as player is in pokemon region or on title
+						if((boxChoice > -1 && boxChoice < 30) || boxChoice == -2)
                         {
                             //Set submenu active
                             choices.SetActive(true);
@@ -5593,6 +5722,9 @@ public class SceneManager : MonoBehaviour
                                 StartCoroutine("WaitForResize");
                             } //end if
                             
+                            //Fill in choices
+                            FillInChoices();
+
                             //Reset position to top of menu
                             subMenuChoice = 0;
                             initialize = false;
@@ -5617,7 +5749,10 @@ public class SceneManager : MonoBehaviour
                                 selection.SetActive(false);
                                 StartCoroutine("WaitForResize");
                             } //end if
-                            
+
+                            //Fill in choices
+                            FillInChoices(); 
+
                             //Reset position to top of menu
                             subMenuChoice = 0;
                             initialize = false;
@@ -5634,132 +5769,185 @@ public class SceneManager : MonoBehaviour
                     //Pokemon Submenu on PC
                     else if(pcState == PCGame.POKEMONSUBMENU)
                     {
-                        //Apply appropriate action based on submenu selection
-                        switch(subMenuChoice)
+                        if(boxChoice != -2)
                         {
-                            //Move
-                            case 0:
+                            //Apply appropriate action based on submenu selection
+                            switch(subMenuChoice)
                             {
-                                selection.SetActive(false);
-                                choices.SetActive(false);
-                                pcState = PCGame.POKEMONHELD;
-                                break;
-                            } //end case 0 (Move)
-                                                                
-                            //Summary
-                            case 1:
-                            {
-                                selection.SetActive(false);
-                                choices.SetActive(false);
-                                summaryScreen.SetActive(true);
-                                summaryChoice = 0;
-                                summaryScreen.transform.GetChild(0).gameObject.SetActive(false);
-                                summaryScreen.transform.GetChild(1).gameObject.SetActive(false);
-                                summaryScreen.transform.GetChild(2).gameObject.SetActive(false);
-                                summaryScreen.transform.GetChild(3).gameObject.SetActive(false);
-                                summaryScreen.transform.GetChild(4).gameObject.SetActive(false);
-                                summaryScreen.transform.GetChild(5).gameObject.SetActive(false);
-                                pcState = PCGame.POKEMONSUMMARY;
-                                break;
-                            } //end case 1 (Summary)
-
-                            //Item
-                            case 2:
-                            {
-                                selection.SetActive(false);
-                                choices.SetActive(false);
-                                if(selectedPokemon.Item == 0)
+                                //Move
+                                case 0:
                                 {
-                                    selectedPokemon.Item = GameManager.instance.RandomInt(1, 500);
-                                } //end if
-                                else
+                                    selection.SetActive(false);
+                                    choices.SetActive(false);
+                                    pcState = PCGame.POKEMONHELD;
+                                    break;
+                                } //end case 0 (Move)
+                                                                    
+                                //Summary
+                                case 1:
                                 {
-                                    selectedPokemon.Item = 0;
-                                } //end else
-                                pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
-                                break;
-                            } //end case 2 (Item)
-                                
-                            //Ribbons
-                            case 3:
-                            {
-                                initialize = false;
-                                choices.SetActive(false);
-                                selection.SetActive(false);
-                                currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").
-                                    GetChild(0).gameObject;
-                                pcState = PCGame.POKEMONRIBBONS;
-                                break;
-                            } //end case 3 (Ribbons)
+                                    selection.SetActive(false);
+                                    choices.SetActive(false);
+                                    summaryScreen.SetActive(true);
+                                    summaryChoice = 0;
+                                    summaryScreen.transform.GetChild(0).gameObject.SetActive(false);
+                                    summaryScreen.transform.GetChild(1).gameObject.SetActive(false);
+                                    summaryScreen.transform.GetChild(2).gameObject.SetActive(false);
+                                    summaryScreen.transform.GetChild(3).gameObject.SetActive(false);
+                                    summaryScreen.transform.GetChild(4).gameObject.SetActive(false);
+                                    summaryScreen.transform.GetChild(5).gameObject.SetActive(false);
+                                    pcState = PCGame.POKEMONSUMMARY;
+                                    break;
+                                } //end case 1 (Summary)
 
-                            //Markings
-                            case 4:
-                            {
-                                markingChoices = heldPokemon == null ? selectedPokemon.GetMarkings().ToList() :
-                                    heldPokemon.GetMarkings().ToList();
-                                initialize = false;
-                                pcState = PCGame.POKEMONMARKINGS;
-                                break;
-                            } //end case 4 (Markings)
-
-                            //Release
-                            case 5:
-                            {
-                                //If party tab is open
-                                if(partyTab.activeSelf && GameManager.instance.GetTrainer().Team.Count > 1)
+                                //Item
+                                case 2:
                                 {
-                                    //Get the pokemon
-                                    selectedPokemon = GameManager.instance.GetTrainer().Team[choiceNumber-1];
-
-                                    //Remove the pokemon from the party
-                                    GameManager.instance.GetTrainer().RemovePokemon(choiceNumber-1);
-
-                                    //Fill in party tab
-                                    for(int i = 1; i < GameManager.instance.GetTrainer().Team.Count + 1; i++)
+                                    selection.SetActive(false);
+                                    choices.SetActive(false);
+                                    if(selectedPokemon.Item == 0)
                                     {
-                                        partyTab.transform.FindChild("Pokemon"+i).GetComponent<Image>().sprite =
-                                            Resources.Load<Sprite>("Sprites/Icons/icon"+GameManager.instance.GetTrainer().
-                                                                   Team[i-1].NatSpecies.ToString("000"));
-                                    } //end for
+                                        selectedPokemon.Item = GameManager.instance.RandomInt(1, 500);
+                                    } //end if
+                                    else
+                                    {
+                                        selectedPokemon.Item = 0;
+                                    } //end else
+                                    pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
+                                    break;
+                                } //end case 2 (Item)
                                     
-                                    //Deactivate any empty party spots
-                                    for(int i = 6; i > GameManager.instance.GetTrainer().Team.Count; i--)
-                                    {
-                                        partyTab.transform.FindChild("Pokemon" + (i)).gameObject.SetActive(false);
-                                    } //end for
-                                } //end if
-                                else
+                                //Ribbons
+                                case 3:
                                 {
-                                    //Get the pokemon
-                                    selectedPokemon = GameManager.instance.GetTrainer().GetPC(
-                                        GameManager.instance.GetTrainer().GetPCBox(), boxChoice);
+                                    initialize = false;
+                                    choices.SetActive(false);
+                                    selection.SetActive(false);
+                                    currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").
+                                        GetChild(0).gameObject;
+                                    pcState = PCGame.POKEMONRIBBONS;
+                                    break;
+                                } //end case 3 (Ribbons)
 
-                                    //Remove the pokemon from the PC
-                                    GameManager.instance.GetTrainer().RemoveFromPC(
-                                        GameManager.instance.GetTrainer().GetPCBox(), boxChoice);
+                                //Markings
+                                case 4:
+                                {
+                                    markingChoices = heldPokemon == null ? selectedPokemon.GetMarkings().ToList() :
+                                        heldPokemon.GetMarkings().ToList();
+                                    initialize = false;
+                                    pcState = PCGame.POKEMONMARKINGS;
+                                    break;
+                                } //end case 4 (Markings)
 
-                                    //Set PC slot to clear
-                                    boxBack.transform.FindChild("PokemonRegion").GetChild(boxChoice).
-                                        GetComponent<Image>().color = Color.clear;
-                                } //end else
+                                //Release
+                                case 5:
+                                {
+                                    //If party tab is open
+                                    if(partyTab.activeSelf && GameManager.instance.GetTrainer().Team.Count > 1)
+                                    {
+                                        //Get the pokemon
+                                        selectedPokemon = GameManager.instance.GetTrainer().Team[choiceNumber-1];
 
-                                choices.SetActive(false);
-                                selection.SetActive(false);
-                                GameManager.instance.DisplayText("You released " + selectedPokemon.Nickname, true);
-                                selectedPokemon = null;
-                                pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
-                                break;
-                            } //end case 5 (Release)
+                                        //Remove the pokemon from the party
+                                        GameManager.instance.GetTrainer().RemovePokemon(choiceNumber-1);
 
-                            //Cancel
-                            case 6:
+                                        //Fill in party tab
+                                        for(int i = 1; i < GameManager.instance.GetTrainer().Team.Count + 1; i++)
+                                        {
+                                            partyTab.transform.FindChild("Pokemon"+i).GetComponent<Image>().sprite =
+                                                GetCorrectIcon(GameManager.instance.GetTrainer().Team[i-1]);
+                                        } //end for
+                                        
+                                        //Deactivate any empty party spots
+                                        for(int i = 6; i > GameManager.instance.GetTrainer().Team.Count; i--)
+                                        {
+                                            partyTab.transform.FindChild("Pokemon" + (i)).gameObject.SetActive(false);
+                                        } //end for
+                                    } //end if
+                                    else
+                                    {
+                                        //Get the pokemon
+                                        selectedPokemon = GameManager.instance.GetTrainer().GetPC(
+                                            GameManager.instance.GetTrainer().GetPCBox(), boxChoice);
+
+                                        //Remove the pokemon from the PC
+                                        GameManager.instance.GetTrainer().RemoveFromPC(
+                                            GameManager.instance.GetTrainer().GetPCBox(), boxChoice);
+
+                                        //Set PC slot to clear
+                                        boxBack.transform.FindChild("PokemonRegion").GetChild(boxChoice).
+                                            GetComponent<Image>().color = Color.clear;
+                                    } //end else
+
+                                    choices.SetActive(false);
+                                    selection.SetActive(false);
+                                    GameManager.instance.DisplayText("You released " + selectedPokemon.Nickname, true);
+                                    selectedPokemon = null;
+                                    pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
+                                    break;
+                                } //end case 5 (Release)
+
+                                //Cancel
+                                case 6:
+                                {
+                                    choices.SetActive(false);
+                                    selection.SetActive(false);
+                                    pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
+                                    break;
+                                } //end case 6 (Cancel)
+                            } //end switch
+                        } //end if
+                        else
+                        {
+							//Apply appropriate action based on subMenuChoice
+                            switch(subMenuChoice)
                             {
-                                choices.SetActive(false);
-                                selection.SetActive(false);
-                                pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
-                                break;
-                            } //end case 6 (Cancel)
-                        } //end switch
+								//Jump To
+								case 0:
+								{
+									input.transform.GetChild(2).GetComponent<Text>().text = "What box do you want to jump to? (0-49)";
+									input.transform.GetChild(0).GetComponent<Text>().text = "Desired box:";
+									inputText.text = GameManager.instance.GetTrainer().GetPCBox().ToString();
+									choices.SetActive(false);
+									selection.SetActive(false);
+									input.SetActive(true);
+									pcState = PCGame.INPUTSCREEN;
+									break;
+								} //end case 0
+								//Change Name
+								case 1:
+								{
+									input.transform.GetChild(2).GetComponent<Text>().text = "Please enter box name.";
+									input.transform.GetChild(0).GetComponent<Text>().text = "Box name:";
+									inputText.text = GameManager.instance.GetTrainer().GetPCBoxName();
+									choices.SetActive(false);
+									selection.SetActive(false);
+									input.SetActive(true);
+									pcState = PCGame.INPUTSCREEN;
+									break;
+								} //end case 1
+								//Change Wallpaper
+								case 2:
+								{
+									input.transform.GetChild(2).GetComponent<Text>().text = "Choose a wallpaper. (0-24)";
+									input.transform.GetChild(0).GetComponent<Text>().text = "Wallpaper:";
+									inputText.text = GameManager.instance.GetTrainer().GetPCBoxWallpaper().ToString();
+									choices.SetActive(false);
+									selection.SetActive(false);
+									input.SetActive(true);
+									pcState = PCGame.INPUTSCREEN;
+									break;
+								} //end case 2
+								//Cancel
+								case 3:
+								{
+									choices.SetActive(false);
+									selection.SetActive(false);
+									pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
+									break;
+								} //end case 3
+                           } //end switch
+                        } //end else
                     } //end else if Pokemon Submenu on PC
 
                     //Pokemon Summary on PC -> Summary
@@ -5825,36 +6013,7 @@ public class SceneManager : MonoBehaviour
                         } //end if
                         else if(subMenuChoice == DataContents.markingCharacters.Length)
                         {
-                            //Turn menu off
-                            //Fill in choices box
-                            for (int i = choices.transform.childCount-1; i < 6; i++)
-                            {
-                                GameObject clone = Instantiate (choices.transform.GetChild (0).gameObject,
-                                                                choices.transform.GetChild (0).position,
-                                                                Quaternion.identity) as GameObject;
-                                clone.transform.SetParent (choices.transform);
-                            } //end for
-                            choices.transform.GetChild (0).GetComponent<Text> ().text = "Move";
-                            choices.transform.GetChild (1).GetComponent<Text> ().text = "Summary";
-                            choices.transform.GetChild (2).GetComponent<Text> ().text = "Item";
-                            choices.transform.GetChild (3).GetComponent<Text> ().text = "Ribbons";
-                            choices.transform.GetChild (4).GetComponent<Text> ().text = "Markings";
-                            choices.transform.GetChild (5).GetComponent<Text> ().text = "Release";
-                            choices.transform.GetChild (6).GetComponent<Text> ().text = "Cancel";
-                            choices.transform.GetChild (0).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (1).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (2).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (3).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (4).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (5).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (6).GetComponent<Text> ().color = Color.black;
-                            if (choices.transform.childCount > 7)
-                            {
-                                for (int i = 7; i < choices.transform.childCount; i++)
-                                {
-                                    Destroy (choices.transform.GetChild (i).gameObject);
-                                } //end for
-                            } //end if
+                            //Turn menu off                            
                             choices.SetActive(false);
                             selection.SetActive(false);
 
@@ -5891,35 +6050,7 @@ public class SceneManager : MonoBehaviour
                         else if(subMenuChoice == DataContents.markingCharacters.Length+1)
                         {
                             //Turn menu off
-                            //Fill in choices box
-                            for (int i = choices.transform.childCount-1; i < 6; i++)
-                            {
-                                GameObject clone = Instantiate (choices.transform.GetChild (0).gameObject,
-                                                                choices.transform.GetChild (0).position,
-                                                                Quaternion.identity) as GameObject;
-                                clone.transform.SetParent (choices.transform);
-                            } //end for
-                            choices.transform.GetChild (0).GetComponent<Text> ().text = "Move";
-                            choices.transform.GetChild (1).GetComponent<Text> ().text = "Summary";
-                            choices.transform.GetChild (2).GetComponent<Text> ().text = "Item";
-                            choices.transform.GetChild (3).GetComponent<Text> ().text = "Ribbons";
-                            choices.transform.GetChild (4).GetComponent<Text> ().text = "Markings";
-                            choices.transform.GetChild (5).GetComponent<Text> ().text = "Release";
-                            choices.transform.GetChild (6).GetComponent<Text> ().text = "Cancel";
-                            choices.transform.GetChild (0).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (1).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (2).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (3).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (4).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (5).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (6).GetComponent<Text> ().color = Color.black;
-                            if (choices.transform.childCount > 7)
-                            {
-                                for (int i = 7; i < choices.transform.childCount; i++)
-                                {
-                                    Destroy (choices.transform.GetChild (i).gameObject);
-                                } //end for
-                            } //end if
+                            FillInChoices();
                             choices.SetActive(false);
                             selection.SetActive(false);
 
@@ -5927,6 +6058,59 @@ public class SceneManager : MonoBehaviour
                             pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
                         } //end else if
                     } //end else if Pokemon Markings on PC -> Submenu
+
+					//Pokemon Input on PC -> Input
+					else if(pcState == PCGame.INPUTSCREEN)
+					{
+						//Handle according to subMenuChoice
+						switch(subMenuChoice)
+						{
+							//Jump to
+							case 0:
+							{
+								if (inputText.text.Length > 0)
+								{
+									int outputHolder = 0;
+									if (int.TryParse(inputText.text, out outputHolder))
+									{
+										outputHolder = ExtensionMethods.WithinIntRange(outputHolder, 0, 49);
+										GameManager.instance.GetTrainer().ChangeBox(outputHolder);
+									} //end if
+								} //end if
+								break;
+							} //end case 0
+							//Change name
+							case 1:
+							{
+								if (inputText.text.Length > 0)
+								{
+									GameManager.instance.GetTrainer().SetPCBoxName(inputText.text);
+								} //end if
+								break;
+							} //end case 1
+							//Change wallpaper
+							case 2:
+							{
+								if (inputText.text.Length > 0)
+								{
+									int outputHolder = 0;
+									if (int.TryParse(inputText.text, out outputHolder))
+									{
+										outputHolder = ExtensionMethods.WithinIntRange(outputHolder, 0, 24);
+										GameManager.instance.GetTrainer().SetPCBoxWallpaper(outputHolder);
+									} //end if
+								} //end if
+								break;
+							} //end case 2
+						} //end switch
+
+						//Turn input off
+						input.SetActive(false);
+
+						//Return to home
+						checkpoint = 1;
+						pcState = PCGame.HOME;
+					} //end else if Pokemon Input on PC -> Input
                     break;
                 } //end case OverallGame PC
             } //end scene switch
@@ -6118,35 +6302,7 @@ public class SceneManager : MonoBehaviour
                     else if(pcState == PCGame.POKEMONMARKINGS)
                     {
                         //Turn menu off
-                        //Fill in choices box
-                        for (int i = choices.transform.childCount-1; i < 6; i++)
-                        {
-                            GameObject clone = Instantiate (choices.transform.GetChild (0).gameObject,
-                                                            choices.transform.GetChild (0).position,
-                                                            Quaternion.identity) as GameObject;
-                            clone.transform.SetParent (choices.transform);
-                        } //end for
-                        choices.transform.GetChild (0).GetComponent<Text> ().text = "Move";
-                        choices.transform.GetChild (1).GetComponent<Text> ().text = "Summary";
-                        choices.transform.GetChild (2).GetComponent<Text> ().text = "Item";
-                        choices.transform.GetChild (3).GetComponent<Text> ().text = "Ribbons";
-                        choices.transform.GetChild (4).GetComponent<Text> ().text = "Markings";
-                        choices.transform.GetChild (5).GetComponent<Text> ().text = "Release";
-                        choices.transform.GetChild (6).GetComponent<Text> ().text = "Cancel";
-                        choices.transform.GetChild (0).GetComponent<Text> ().color = Color.black;
-                        choices.transform.GetChild (1).GetComponent<Text> ().color = Color.black;
-                        choices.transform.GetChild (2).GetComponent<Text> ().color = Color.black;
-                        choices.transform.GetChild (3).GetComponent<Text> ().color = Color.black;
-                        choices.transform.GetChild (4).GetComponent<Text> ().color = Color.black;
-                        choices.transform.GetChild (5).GetComponent<Text> ().color = Color.black;
-                        choices.transform.GetChild (6).GetComponent<Text> ().color = Color.black;
-                        if (choices.transform.childCount > 7)
-                        {
-                            for (int i = 7; i < choices.transform.childCount; i++)
-                            {
-                                Destroy (choices.transform.GetChild (i).gameObject);
-                            } //end for
-                        } //end if
+                        FillInChoices();
                         choices.SetActive(false);
                         selection.SetActive(false);
                         
@@ -6692,8 +6848,8 @@ public class SceneManager : MonoBehaviour
                     //PC Home
                     if(pcState == PCGame.HOME)
                     {
-                        //Open submenu as long as player is in pokemon region
-                        if(boxChoice > -1 && boxChoice < 30 && (selectedPokemon != null || heldPokemon != null))
+                        //Open submenu as long as player is in pokemon region or on title
+                        if((boxChoice > -1 && boxChoice < 30 && (selectedPokemon != null || heldPokemon != null)) || boxChoice == -2)
                         {
                             //Set submenu active
                             choices.SetActive(true);
@@ -6707,6 +6863,9 @@ public class SceneManager : MonoBehaviour
                                 StartCoroutine("WaitForResize");
                             } //end if
                             
+                            //Fill in choices
+                            FillInChoices();
+
                             //Reset position to top of menu
                             subMenuChoice = 0;
                             initialize = false;
@@ -6742,6 +6901,9 @@ public class SceneManager : MonoBehaviour
                                 StartCoroutine("WaitForResize");
                             } //end if
                             
+                            //Fill in choices
+                            FillInChoices();
+                            
                             //Reset position to top of menu
                             subMenuChoice = 0;
                             initialize = false;
@@ -6756,131 +6918,185 @@ public class SceneManager : MonoBehaviour
                     //Pokemon Submenu on PC
                     else if(pcState == PCGame.POKEMONSUBMENU)
                     {
-                        //Apply appropriate action based on submenu selection
-                        switch(subMenuChoice)
-                        {
-                            //Move
-                            case 0:
-                            {
-                                selection.SetActive(false);
-                                choices.SetActive(false);
-                                pcState = PCGame.POKEMONHELD;
-                                break;
-                            } //end case 0 (Move)
-                                
-                            //Summary
-                            case 1:
-                            {
-                                selection.SetActive(false);
-                                choices.SetActive(false);
-                                summaryScreen.SetActive(true);
-                                summaryChoice = 0;
-                                summaryScreen.transform.GetChild(0).gameObject.SetActive(false);
-                                summaryScreen.transform.GetChild(1).gameObject.SetActive(false);
-                                summaryScreen.transform.GetChild(2).gameObject.SetActive(false);
-                                summaryScreen.transform.GetChild(3).gameObject.SetActive(false);
-                                summaryScreen.transform.GetChild(4).gameObject.SetActive(false);
-                                summaryScreen.transform.GetChild(5).gameObject.SetActive(false);
-                                pcState = PCGame.POKEMONSUMMARY;
-                                break;
-                            } //end case 1 (Summary)
-                                
-                            //Item
-                            case 2:
-                            {
-                                selection.SetActive(false);
-                                choices.SetActive(false);
-                                if(selectedPokemon.Item == 0)
-                                {
-                                    selectedPokemon.Item = GameManager.instance.RandomInt(1, 500);
-                                } //end if
-                                else
-                                {
-                                    selectedPokemon.Item = 0;
-                                } //end else
-                                pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
-                                break;
-                            } //end case 2 (Item)
-                                
-                            //Ribbons
-                            case 3:
-                            {
-                                initialize = false;
-                                choices.SetActive(false);
-                                selection.SetActive(false);
-                                currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").
-                                    GetChild(0).gameObject;
-                                pcState = PCGame.POKEMONRIBBONS;
-                                break;
-                            } //end case 3 (Ribbons)
-                                
-                            //Markings
-                            case 4:
-                            {
-                                markingChoices = heldPokemon == null ? selectedPokemon.GetMarkings().ToList() :
-                                    heldPokemon.GetMarkings().ToList();
-                                initialize = false;
-                                pcState = PCGame.POKEMONMARKINGS;
-                                break;
-                            } //end case 4 (Markings)
+							if(boxChoice != -2)
+							{
+								//Apply appropriate action based on submenu selection
+								switch(subMenuChoice)
+								{
+									//Move
+									case 0:
+									{
+										selection.SetActive(false);
+										choices.SetActive(false);
+										pcState = PCGame.POKEMONHELD;
+										break;
+									} //end case 0 (Move)
 
-                            //Release
-                            case 5:
-                            {
-                                //If party tab is open
-                                if(partyTab.activeSelf && GameManager.instance.GetTrainer().Team.Count > 1)
-                                {
-                                    //Get the pokemon
-                                    selectedPokemon = GameManager.instance.GetTrainer().Team[choiceNumber-1];
+									//Summary
+									case 1:
+									{
+										selection.SetActive(false);
+										choices.SetActive(false);
+										summaryScreen.SetActive(true);
+										summaryChoice = 0;
+										summaryScreen.transform.GetChild(0).gameObject.SetActive(false);
+										summaryScreen.transform.GetChild(1).gameObject.SetActive(false);
+										summaryScreen.transform.GetChild(2).gameObject.SetActive(false);
+										summaryScreen.transform.GetChild(3).gameObject.SetActive(false);
+										summaryScreen.transform.GetChild(4).gameObject.SetActive(false);
+										summaryScreen.transform.GetChild(5).gameObject.SetActive(false);
+										pcState = PCGame.POKEMONSUMMARY;
+										break;
+									} //end case 1 (Summary)
 
-                                    //Remove the pokemon from the party
-                                    GameManager.instance.GetTrainer().RemovePokemon(choiceNumber-1);
-                                    
-                                    //Fill in party tab
-                                    for(int i = 1; i < GameManager.instance.GetTrainer().Team.Count + 1; i++)
-                                    {
-                                        partyTab.transform.FindChild("Pokemon"+i).GetComponent<Image>().sprite =
-                                            Resources.Load<Sprite>("Sprites/Icons/icon"+GameManager.instance.GetTrainer().
-                                                                   Team[i-1].NatSpecies.ToString("000"));
-                                    } //end for
-                                    
-                                    //Deactivate any empty party spots
-                                    for(int i = 6; i > GameManager.instance.GetTrainer().Team.Count; i--)
-                                    {
-                                        partyTab.transform.FindChild("Pokemon" + (i)).gameObject.SetActive(false);
-                                    } //end for
-                                } //end if
-                                else
-                                {
-                                    //Get the pokemon
-                                    selectedPokemon = GameManager.instance.GetTrainer().GetPC(
-                                        GameManager.instance.GetTrainer().GetPCBox(), boxChoice);
+									//Item
+									case 2:
+									{
+										selection.SetActive(false);
+										choices.SetActive(false);
+										if(selectedPokemon.Item == 0)
+										{
+											selectedPokemon.Item = GameManager.instance.RandomInt(1, 500);
+										} //end if
+										else
+										{
+											selectedPokemon.Item = 0;
+										} //end else
+										pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
+										break;
+									} //end case 2 (Item)
 
-                                    //Remove the pokemon from the PC
-                                    GameManager.instance.GetTrainer().RemoveFromPC(
-                                        GameManager.instance.GetTrainer().GetPCBox(), boxChoice);
-                                    
-                                    //Set PC slot to clear
-                                    boxBack.transform.FindChild("PokemonRegion").GetChild(boxChoice).
-                                        GetComponent<Image>().color = Color.clear;
-                                } //end else
-                                choices.SetActive(false);
-                                selection.SetActive(false);
-                                GameManager.instance.DisplayText("You released " + selectedPokemon.Nickname, true);
-                                selectedPokemon = null;
-                                pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
-                                break;
-                            } //end case 5 (Release)
+									//Ribbons
+									case 3:
+									{
+										initialize = false;
+										choices.SetActive(false);
+										selection.SetActive(false);
+										currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").
+										GetChild(0).gameObject;
+										pcState = PCGame.POKEMONRIBBONS;
+										break;
+									} //end case 3 (Ribbons)
 
-                            //Cancel
-                            case 6:
-                            {
-                                choices.SetActive(false);
-                                selection.SetActive(false);
-                                pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
-                                break;
-                            } //end case 6 (Cancel)
-                        } //end switch
+									//Markings
+									case 4:
+									{
+										markingChoices = heldPokemon == null ? selectedPokemon.GetMarkings().ToList() :
+											heldPokemon.GetMarkings().ToList();
+										initialize = false;
+										pcState = PCGame.POKEMONMARKINGS;
+										break;
+									} //end case 4 (Markings)
+
+									//Release
+									case 5:
+									{
+										//If party tab is open
+										if(partyTab.activeSelf && GameManager.instance.GetTrainer().Team.Count > 1)
+										{
+											//Get the pokemon
+											selectedPokemon = GameManager.instance.GetTrainer().Team[choiceNumber-1];
+											
+											//Remove the pokemon from the party
+											GameManager.instance.GetTrainer().RemovePokemon(choiceNumber-1);
+											
+											//Fill in party tab
+											for(int i = 1; i < GameManager.instance.GetTrainer().Team.Count + 1; i++)
+											{
+												partyTab.transform.FindChild("Pokemon"+i).GetComponent<Image>().sprite =
+													GetCorrectIcon(GameManager.instance.GetTrainer().Team[i-1]);
+											} //end for
+
+											//Deactivate any empty party spots
+											for(int i = 6; i > GameManager.instance.GetTrainer().Team.Count; i--)
+											{
+												partyTab.transform.FindChild("Pokemon" + (i)).gameObject.SetActive(false);
+											} //end for
+										} //end if
+										else
+										{
+											//Get the pokemon
+											selectedPokemon = GameManager.instance.GetTrainer().GetPC(
+												GameManager.instance.GetTrainer().GetPCBox(), boxChoice);
+
+											//Remove the pokemon from the PC
+											GameManager.instance.GetTrainer().RemoveFromPC(
+												GameManager.instance.GetTrainer().GetPCBox(), boxChoice);
+
+											//Set PC slot to clear
+											boxBack.transform.FindChild("PokemonRegion").GetChild(boxChoice).
+											GetComponent<Image>().color = Color.clear;
+										} //end else
+
+										choices.SetActive(false);
+										selection.SetActive(false);
+										GameManager.instance.DisplayText("You released " + selectedPokemon.Nickname, true);
+										selectedPokemon = null;
+										pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
+										break;
+									} //end case 5 (Release)
+
+									//Cancel
+									case 6:
+									{
+										choices.SetActive(false);
+										selection.SetActive(false);
+										pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
+										break;
+									} //end case 6 (Cancel)
+								} //end switch
+							} //end if
+							else
+							{
+								//Apply appropriate action based on subMenuChoice
+								switch(subMenuChoice)
+								{
+									//Jump To
+									case 0:
+									{
+										input.transform.GetChild(2).GetComponent<Text>().text = "What box do you want to jump to? (0-49)";
+										input.transform.GetChild(0).GetComponent<Text>().text = "Desired box:";
+											inputText.text = GameManager.instance.GetTrainer().GetPCBox().ToString();
+										choices.SetActive(false);
+										selection.SetActive(false);
+										input.SetActive(true);
+										pcState = PCGame.INPUTSCREEN;
+										break;
+									} //end case 0
+									//Change Name
+									case 1:
+									{
+										input.transform.GetChild(2).GetComponent<Text>().text = "Please enter box name.";
+										input.transform.GetChild(0).GetComponent<Text>().text = "Box name:";
+										inputText.text = GameManager.instance.GetTrainer().GetPCBoxName();
+										choices.SetActive(false);
+										selection.SetActive(false);
+										input.SetActive(true);
+										pcState = PCGame.INPUTSCREEN;
+										break;
+									} //end case 1
+									//Change Wallpaper
+									case 2:
+									{
+										input.transform.GetChild(2).GetComponent<Text>().text = "Choose a wallpaper. (0-24)";
+										input.transform.GetChild(0).GetComponent<Text>().text = "Wallpaper:";
+										inputText.text = GameManager.instance.GetTrainer().GetPCBoxWallpaper().ToString();
+										choices.SetActive(false);
+										selection.SetActive(false);
+										input.SetActive(true);
+										pcState = PCGame.INPUTSCREEN;
+										break;
+									} //end case 2
+									//Cancel
+									case 3:
+									{
+										choices.SetActive(false);
+										selection.SetActive(false);
+										pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
+										break;
+									} //end case 3
+								} //end switch
+							} //end else
                     } //end else if Pokemon Submenu on PC
 
                     //Pokemon Summary on PC -> Summary
@@ -6947,35 +7163,7 @@ public class SceneManager : MonoBehaviour
                         else if(subMenuChoice == DataContents.markingCharacters.Length)
                         {
                             //Turn menu off
-                            //Fill in choices box
-                            for (int i = choices.transform.childCount-1; i < 6; i++)
-                            {
-                                GameObject clone = Instantiate (choices.transform.GetChild (0).gameObject,
-                                                                choices.transform.GetChild (0).position,
-                                                                Quaternion.identity) as GameObject;
-                                clone.transform.SetParent (choices.transform);
-                            } //end for
-                            choices.transform.GetChild (0).GetComponent<Text> ().text = "Move";
-                            choices.transform.GetChild (1).GetComponent<Text> ().text = "Summary";
-                            choices.transform.GetChild (2).GetComponent<Text> ().text = "Item";
-                            choices.transform.GetChild (3).GetComponent<Text> ().text = "Ribbons";
-                            choices.transform.GetChild (4).GetComponent<Text> ().text = "Markings";
-                            choices.transform.GetChild (5).GetComponent<Text> ().text = "Release";
-                            choices.transform.GetChild (6).GetComponent<Text> ().text = "Cancel";
-                            choices.transform.GetChild (0).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (1).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (2).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (3).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (4).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (5).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (6).GetComponent<Text> ().color = Color.black;
-                            if (choices.transform.childCount > 7)
-                            {
-                                for (int i = 7; i < choices.transform.childCount; i++)
-                                {
-                                    Destroy (choices.transform.GetChild (i).gameObject);
-                                } //end for
-                            } //end if
+                            FillInChoices();
                             choices.SetActive(false);
                             selection.SetActive(false);
                             
@@ -7012,36 +7200,7 @@ public class SceneManager : MonoBehaviour
                         else if(subMenuChoice == DataContents.markingCharacters.Length+1)
                         {
                             //Turn menu off
-                            //Turn menu off
-                            //Fill in choices box
-                            for (int i = choices.transform.childCount-1; i < 6; i++)
-                            {
-                                GameObject clone = Instantiate (choices.transform.GetChild (0).gameObject,
-                                                                choices.transform.GetChild (0).position,
-                                                                Quaternion.identity) as GameObject;
-                                clone.transform.SetParent (choices.transform);
-                            } //end for
-                            choices.transform.GetChild (0).GetComponent<Text> ().text = "Move";
-                            choices.transform.GetChild (1).GetComponent<Text> ().text = "Summary";
-                            choices.transform.GetChild (2).GetComponent<Text> ().text = "Item";
-                            choices.transform.GetChild (3).GetComponent<Text> ().text = "Ribbons";
-                            choices.transform.GetChild (4).GetComponent<Text> ().text = "Markings";
-                            choices.transform.GetChild (5).GetComponent<Text> ().text = "Release";
-                            choices.transform.GetChild (6).GetComponent<Text> ().text = "Cancel";
-                            choices.transform.GetChild (0).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (1).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (2).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (3).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (4).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (5).GetComponent<Text> ().color = Color.black;
-                            choices.transform.GetChild (6).GetComponent<Text> ().color = Color.black;
-                            if (choices.transform.childCount > 7)
-                            {
-                                for (int i = 7; i < choices.transform.childCount; i++)
-                                {
-                                    Destroy (choices.transform.GetChild (i).gameObject);
-                                } //end for
-                            } //end if
+                            FillInChoices();
                             choices.SetActive(false);
                             selection.SetActive(false);
 
@@ -7049,6 +7208,59 @@ public class SceneManager : MonoBehaviour
                             pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
                         } //end else if
                     } //end else if Pokemon Markings on PC -> Submenu
+
+					//Pokemon Input on PC -> Input
+					else if(pcState == PCGame.INPUTSCREEN)
+					{
+						//Handle according to subMenuChoice
+						switch(subMenuChoice)
+						{
+							//Jump to
+							case 0:
+							{
+								if (inputText.text.Length > 0)
+								{
+									int outputHolder = 0;
+									if (int.TryParse(inputText.text, out outputHolder))
+									{
+										outputHolder = ExtensionMethods.WithinIntRange(outputHolder, 0, 49);
+										GameManager.instance.GetTrainer().ChangeBox(outputHolder);
+									} //end if
+								} //end if
+								break;
+							} //end case 0
+							//Change name
+							case 1:
+							{
+								if (inputText.text.Length > 0)
+								{
+									GameManager.instance.GetTrainer().SetPCBoxName(inputText.text);
+								} //end if
+								break;
+							} //end case 1
+							//Change wallpaper
+							case 2:
+							{
+								if (inputText.text.Length > 0)
+								{
+									int outputHolder = 0;
+									if (int.TryParse(inputText.text, out outputHolder))
+									{
+										outputHolder = ExtensionMethods.WithinIntRange(outputHolder, 0, 24);
+										GameManager.instance.GetTrainer().SetPCBoxWallpaper(outputHolder);
+									} //end if
+								} //end if
+								break;
+							} //end case 2
+						} //end switch
+
+						//Turn input off
+						input.SetActive(false);
+
+						//Return to home
+						checkpoint = 1;
+						pcState = PCGame.HOME;
+					} //end else if Pokemon Input on PC -> Input
                     break;
                 } //end OverallGame PC
 
@@ -7257,36 +7469,7 @@ public class SceneManager : MonoBehaviour
                     else if(pcState == PCGame.POKEMONMARKINGS)
                     {
                         //Turn menu off
-                        //Turn menu off
-                        //Fill in choices box
-                        for (int i = choices.transform.childCount-1; i < 6; i++)
-                        {
-                            GameObject clone = Instantiate (choices.transform.GetChild (0).gameObject,
-                                                            choices.transform.GetChild (0).position,
-                                                            Quaternion.identity) as GameObject;
-                            clone.transform.SetParent (choices.transform);
-                        } //end for
-                        choices.transform.GetChild (0).GetComponent<Text> ().text = "Move";
-                        choices.transform.GetChild (1).GetComponent<Text> ().text = "Summary";
-                        choices.transform.GetChild (2).GetComponent<Text> ().text = "Item";
-                        choices.transform.GetChild (3).GetComponent<Text> ().text = "Ribbons";
-                        choices.transform.GetChild (4).GetComponent<Text> ().text = "Markings";
-                        choices.transform.GetChild (5).GetComponent<Text> ().text = "Release";
-                        choices.transform.GetChild (6).GetComponent<Text> ().text = "Cancel";
-                        choices.transform.GetChild (0).GetComponent<Text> ().color = Color.black;
-                        choices.transform.GetChild (1).GetComponent<Text> ().color = Color.black;
-                        choices.transform.GetChild (2).GetComponent<Text> ().color = Color.black;
-                        choices.transform.GetChild (3).GetComponent<Text> ().color = Color.black;
-                        choices.transform.GetChild (4).GetComponent<Text> ().color = Color.black;
-                        choices.transform.GetChild (5).GetComponent<Text> ().color = Color.black;
-                        choices.transform.GetChild (6).GetComponent<Text> ().color = Color.black;
-                        if (choices.transform.childCount > 7)
-                        {
-                            for (int i = 7; i < choices.transform.childCount; i++)
-                            {
-                                Destroy (choices.transform.GetChild (i).gameObject);
-                            } //end for
-                        } //end if
+                        FillInChoices();
                         choices.SetActive(false);
                         selection.SetActive(false);
                         
@@ -7630,6 +7813,8 @@ public class SceneManager : MonoBehaviour
     {
         if (debugOptions.transform.GetChild (2).gameObject.activeSelf)
         {
+			GameManager.instance.GetTrainer().PlayerImage = trainerRightRegion.transform.FindChild("TrainerSprite").
+				GetComponent<Dropdown>().value;
             for(int i = 0; i < 8; i++)
             {
                 GameManager.instance.GetTrainer ().SetPlayerBadges (39 + i, trainerRightRegion.transform.FindChild ("Badges").
@@ -7648,7 +7833,8 @@ public class SceneManager : MonoBehaviour
                 pokemonRightRegion.transform.FindChild ("Ball").GetComponent<Dropdown> ().value,
                 5, 3,
                 pokemonRightRegion.transform.FindChild ("Ability").GetComponent<Dropdown> ().value + 1,
-                pokemonRightRegion.transform.FindChild ("Gender").GetComponent<Dropdown> ().value,
+                pokemonRightRegion.transform.FindChild ("Gender").GetComponent<Dropdown> ().value, 
+				int.Parse (pokemonRightRegion.transform.FindChild ("Form").GetComponent<InputField>().text),
                 pokemonRightRegion.transform.FindChild ("Nature").GetComponent<Dropdown> ().value,
                 int.Parse (pokemonRightRegion.transform.FindChild ("Happiness").GetComponent<InputField> ().text),
                 pokemonRightRegion.transform.FindChild ("Pokerus").GetComponent<Toggle> ().isOn,
@@ -7743,6 +7929,8 @@ public class SceneManager : MonoBehaviour
 	{		
         if (debugOptions.transform.GetChild (2).gameObject.activeSelf)
         {
+			trainerRightRegion.transform.FindChild("TrainerSprite").GetComponent<Dropdown>().value =
+				GameManager.instance.GetTrainer().PlayerImage;
             for(int i = 0; i < 8; i++)
             {
                 trainerRightRegion.transform.FindChild ("Badges").GetChild (i).GetComponent<Toggle> ().isOn = 
@@ -7767,6 +7955,7 @@ public class SceneManager : MonoBehaviour
     		pokemonRightRegion.transform.FindChild ("Ability").GetComponent<Dropdown> ().value = myPokemon.Ability-1;
     		pokemonRightRegion.transform.FindChild ("Ability").GetComponent<Dropdown> ().RefreshShownValue ();
     		pokemonRightRegion.transform.FindChild ("Happiness").GetComponent<InputField>().text = myPokemon.Happiness.ToString();
+			pokemonRightRegion.transform.FindChild ("Form").GetComponent<InputField>().text = myPokemon.FormNumber.ToString();
     		pokemonRightRegion.transform.FindChild ("Shiny").GetComponent<Toggle> ().isOn = myPokemon.IsShiny;
     		pokemonRightRegion.transform.FindChild ("Pokerus").GetComponent<Toggle> ().isOn = myPokemon.HasPokerus;
     		pokemonRightRegion.transform.FindChild ("IV").GetChild (0).GetComponent<InputField> ().text = myPokemon.GetIV (0).ToString();
