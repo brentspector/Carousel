@@ -24,13 +24,21 @@ public class GameManager : MonoBehaviour
 	//Singleton handle
 	public static GameManager instance = null;
 
+	//Delegates
+	public delegate void CheckpointDelegate(int checkpoint);
+	public CheckpointDelegate checkDel;
+
 	//SceneTools variables
 	public GameObject pTool;				//Prefab of SceneTools
 	public static GameObject tools = null;	//Canvas of SceneTools
 
+	//Scene scripts
+	public AnimationManager anim;			//Manages animations for scenes
+	public IntroScene intro;				//Introduction scene script
+	public MenuScene menu;					//Menu scene script
+
 	//Scene variables
     SystemManager sysm;                     //Manages system features
-	SceneManager scenes;					//Manages game scenes
     bool running = false;                   //Allows methods to run once
     bool textDisplayed = false;             //If text is displayed
     bool continueImmediate;                 //Continue as soon as able, don't wait for enter
@@ -63,6 +71,17 @@ public class GameManager : MonoBehaviour
 			tools = Instantiate(pTool);
 		} //end if
 
+		//Reset scene tools canvas' camera
+		tools.GetComponent<Canvas> ().worldCamera = Camera.main;
+
+		//Set all tools to inactive
+		tools.transform.GetChild(0).gameObject.SetActive(false);
+		tools.transform.GetChild(1).gameObject.SetActive(false);
+		tools.transform.GetChild(2).gameObject.SetActive(false);
+		tools.transform.GetChild(3).gameObject.SetActive(false);
+		tools.transform.GetChild(4).gameObject.SetActive(false);
+		tools.transform.GetChild(5).gameObject.SetActive(false);
+
 		//Keep SceneTools from destruction OnLoad
 		DontDestroyOnLoad (tools);
 
@@ -79,8 +98,10 @@ public class GameManager : MonoBehaviour
             Application.Quit();
         } //end if
 
-		//Get SceneManager component
-		scenes = GetComponent<SceneManager> ();
+		//Get scene scripts
+		anim = GetComponent<AnimationManager>();
+		intro = GetComponent<IntroScene>();
+		menu = GetComponent<MenuScene>();
 	} //end Awake
 	
     /***************************************
@@ -96,7 +117,7 @@ public class GameManager : MonoBehaviour
 			if(Input.GetKeyDown(KeyCode.F12))
 			{
                 textDisplayed = false;
-                scenes.Reset();
+                //scenes.Reset();
 				return;
 			} //end if
 
@@ -105,7 +126,6 @@ public class GameManager : MonoBehaviour
             {
                 textDisplayed = sysm.ManageTextbox(continueImmediate);
             } //end if textDisplayed
-
 			//Intro scene
             else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Intro")
 			{
@@ -127,39 +147,38 @@ public class GameManager : MonoBehaviour
                     #endif
                 } //end if !running
 
-
                 //Run the intro after completion of one off methods
-				scenes.Intro();
+				intro.RunIntro();
 			} //end else if Intro
 
 			//Start Menu scene
             else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "StartMenu")
 			{
-				scenes.Menu();
+				menu.RunMenu();
 			} //end else if	
 
 			//New Game scene
             else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "NewGame")
 			{
-				scenes.NewGame();
+				//scenes.NewGame();
 			} //end else if
 
             //Main Game scene
             else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainGame")
             {
-                scenes.ContinueGame();
+                //scenes.ContinueGame();
             } //end else if
 
             //PC scene
             else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "PC")
             {
-                scenes.PC();
+                //scenes.PC();
             } //end else if
 
             //Pokedex scene
             else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Pokedex")
             {
-                scenes.Pokedex();
+                //scenes.Pokedex();
             } //end else if
 		} //end try
 
@@ -181,6 +200,35 @@ public class GameManager : MonoBehaviour
 
 	//Scene functions
 	#region Scenes
+	/***************************************
+     * Name: LoadScene
+     * Loads the requested scene, and sets
+     * the appropriate overall state
+     ***************************************/ 
+	public void LoadScene(string levelName, bool fadeOut = false)
+	{
+		//If fade out is requested
+		if (fadeOut)
+		{
+			StartCoroutine(anim.FadeOutAnimation(levelName));
+		} //end if
+		else
+		{
+			//Move to next scene
+			UnityEngine.SceneManagement.SceneManager.LoadScene(levelName);
+		} //end else
+	} //end LoadScene(string levelName, bool fadeOut)
+
+	/***************************************
+     * Name: ChangeCheckpoint
+     * Changes the checkpoint of a scene script
+     ***************************************/ 
+	public void ChangeCheckpoint(int checkpoint)
+	{
+		checkDel(checkpoint);
+		checkDel = null;
+	} //end ChangeCheckpoint(int checkpoint)
+
     /***************************************
      * Name: ProcessSelection
      * Sets the appropriate checkpoint
@@ -190,28 +238,28 @@ public class GameManager : MonoBehaviour
     {
         if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "StartMenu")
         {
-            scenes.SetCheckpoint (5);
+            //scenes.SetCheckpoint (5);
         }  //end if
         else if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainGame")
         {
-            scenes.ReadRibbon();
+            //scenes.ReadRibbon();
         } //end else if
     } //end ProcessSelection
 
-    /***************************************
-     * Name: SetGameState
-     * Sets the main game to the state given
-     ***************************************/ 
-    public void SetGameState(SceneManager.MainGame newState)
-    {
-        //Disable text screen if active
-        if (tools.transform.GetChild (1).gameObject.activeSelf)
-        {
-            tools.transform.GetChild (1).gameObject.SetActive(false);
-        } //end if
-
-        StartCoroutine(scenes.SetGameState (newState));
-    } //end SetGameState(SceneManager.MainGame newState)
+//    /***************************************
+//     * Name: SetGameState
+//     * Sets the main game to the state given
+//     ***************************************/ 
+//    public void SetGameState(SceneManager.MainGame newState)
+//    {
+//        //Disable text screen if active
+//        if (tools.transform.GetChild (1).gameObject.activeSelf)
+//        {
+//            tools.transform.GetChild (1).gameObject.SetActive(false);
+//        } //end if
+//
+//        //StartCoroutine(scenes.SetGameState (newState));
+//    } //end SetGameState(SceneManager.MainGame newState)
    
     /***************************************
      * Name: SummaryChange
@@ -219,18 +267,8 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void SummaryChange(int summaryPage)
     {
-        StartCoroutine(scenes.SetSummaryPage (summaryPage));
+        //StartCoroutine(scenes.SetSummaryPage (summaryPage));
     } //end SummaryChange(int summaryPage)
-
-    /***************************************
-     * Name: LoadScene
-     * Loads the requested scene, and sets
-     * the appropriate overall state
-     ***************************************/ 
-    public void LoadScene(string levelName, SceneManager.OverallGame state, bool fadeOut = false)
-    {
-        StartCoroutine(scenes.LoadScene (levelName, state, fadeOut));
-    } //end LoadScene(string levelName, SceneManager.OverallGame state, bool fadeOut)
 
     /***************************************
      * Name: PartyState
@@ -238,7 +276,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void PartyState(bool state)
     {
-        StartCoroutine(scenes.PartyState(state));
+       // StartCoroutine(scenes.PartyState(state));
     } //end PartyState(bool state)
 
     /***************************************
@@ -247,8 +285,61 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void ToggleShown()
     {
-        scenes.ToggleShown ();
+        //scenes.ToggleShown ();
     } //end ToggleShown
+	//    /***************************************
+	//     * Name: LoadScene
+	//     * Resets checkpoint and loads scene
+	//     ***************************************/ 
+	//    public IEnumerator LoadScene(string sceneName, OverallGame state, bool fadeOut = false)
+	//    {        
+	//        //Process at end of frame
+	//        yield return new WaitForEndOfFrame ();
+	//
+	//        //If holding a pokemon
+	//        if (heldPokemon != null)
+	//        {
+	//            GameManager.instance.DisplayText ("You can't leave while holding a pokemon", true);
+	//            yield break;
+	//        } //end if
+	//
+	//        //Turn off scene tools 
+	//        selection.SetActive (false);
+	//        text.SetActive (false);
+	//        confirm.SetActive (false);
+	//        choices.SetActive (false);
+	//        input.SetActive (false);
+	//
+	//        //Load new scene when fade out is done
+	//        if (fadeOut)
+	//        {
+	//            //Fade out
+	//            playing = true;
+	//            StartCoroutine (FadeOutAnimation (0));
+	//
+	//            //Wait for fade out to finish
+	//            while(playing)
+	//            {
+	//                yield return null;
+	//            } //end while
+	//
+	//            //Move to next scene
+	//            processing = false;
+	//            initialize = false;
+	//            sceneState = state;
+	//            UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
+	//        } //end if
+	//
+	//        //Load new scene if fade out is false
+	//        else
+	//        {
+	//            checkpoint = 0;
+	//            processing = false;
+	//            initialize = false;
+	//            sceneState = state;
+	//            UnityEngine.SceneManagement.SceneManager.LoadScene (sceneName);
+	//        } //end else
+	//    } //end LoadScene(string sceneName, OverallGame state)
     #endregion
 
 	//System Manager functions
@@ -337,6 +428,28 @@ public class GameManager : MonoBehaviour
     } //end RestartFile(bool savePrevious = false)
 	#endregion
 
+	#region Animations
+	/***************************************
+	* Name: FadeInAnimation
+	* Fades scene in (must be manually called
+	* after a scene is loaded)
+	***************************************/ 
+	public void FadeInAnimation(int targetCheckpoint)
+	{
+		StartCoroutine(anim.FadeInAnimation(targetCheckpoint));
+	} //end FadeInAnimation(int targetCheckpoint)
+
+	/***************************************
+	 * Name: IsProcessing
+	 * Whether there is an animation in
+	 * progress
+	 ***************************************/
+	public bool IsProcessing()
+	{
+		return anim.IsProcessing();
+	} //end IsProcessing
+	#endregion
+
     #region Debug
     /***************************************
      * Name: EditPokemonMode
@@ -344,7 +457,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void EditPokemonMode()
     {
-        scenes.EditPokemonMode ();
+       // scenes.EditPokemonMode ();
     } //end EditPokemonMode
 
     /***************************************
@@ -353,7 +466,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void EditTrainerMode()
     {
-        scenes.EditTrainerMode ();
+        //scenes.EditTrainerMode ();
     } //end EditTrainerMode
 
     /***************************************
@@ -375,7 +488,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void RandomPokemon()
     {
-        scenes.RandomPokemon ();
+        //scenes.RandomPokemon ();
     } //end RandomPokemon
 
     /***************************************
@@ -385,7 +498,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void EditPokemon()
     {
-        scenes.EditPokemon ();
+        //scenes.EditPokemon ();
     } //end EditPokemon
 
 	/***************************************
@@ -394,7 +507,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
 	public void RemovePokemon()
 	{			
-		scenes.RemovePokemon ();
+		//scenes.RemovePokemon ();
 	} //end RemovePokemon
 
     /***************************************
@@ -403,7 +516,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void FinishEditing()
     {
-        scenes.FinishEditing ();
+       // scenes.FinishEditing ();
     } //end FinishEditing
 
     /***************************************
@@ -412,7 +525,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void UpdateSprite()
     {
-        scenes.UpdateSprite ();
+        //scenes.UpdateSprite ();
     } //end UpdateSprite
     #endregion
     #endregion

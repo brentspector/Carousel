@@ -1,7 +1,7 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{FA0F2708-C71B-C200-8612-3755A2B406A9}"
+# Visual Studio 2008
+
+Project("{225BF3D9-290B-5F53-6B2E-442259E78652}") = "Carousel", "Assembly-CSharp.csproj", "{FA0F2708-C71B-C200-8612-3755A2B406A9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +13,9 @@ Global
 		{FA0F2708-C71B-C200-8612-3755A2B406A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA0F2708-C71B-C200-8612-3755A2B406A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA0F2708-C71B-C200-8612-3755A2B406A9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0
@@ -179,8 +182,5 @@ Global
 		$26.IncludeStaticEntities = True
 		$0.VersionControlPolicy = $28
 		$28.inheritsSet = Mono
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal

@@ -25,18 +25,6 @@
 //			//Scene switch
 //			switch(sceneState)
 //			{
-//				//Intro
-//				case OverallGame.INTRO:
-//					{
-//						break;
-//					} //end case OverallGame INTRO
-//
-//					//Menu
-//				case OverallGame.MENU:
-//					{
-//						break;
-//					} //end case OverallGame MENU
-//
 //					//New Game
 //				case OverallGame.NEWGAME:
 //					{
@@ -259,18 +247,6 @@
 //			//Scene switch
 //			switch(sceneState)
 //			{
-//				//Intro
-//				case OverallGame.INTRO:
-//					{
-//						break;
-//					} //end case OverallGame INTRO
-//
-//					//Menu
-//				case OverallGame.MENU:
-//					{
-//						break;
-//					} //end case OverallGame MENU
-//
 //					//New Game
 //				case OverallGame.NEWGAME:
 //					{
@@ -499,57 +475,6 @@
 //			//Scene switch
 //			switch(sceneState)
 //			{
-//				//Intro
-//				case OverallGame.INTRO:
-//					{
-//						break;
-//					} //end case OverallGame INTRO
-//
-//					//Menu
-//				case OverallGame.MENU:
-//					{
-//						if(checkpoint == 2)
-//						{
-//							//Decrease choice to show previous option is highlighted
-//							choiceNumber--;
-//							//Loop to last choice if it's lower than zero
-//							if(choiceNumber < 0)
-//							{
-//								choiceNumber = mChoices.transform.childCount-1;
-//							} //end if
-//
-//							//Resize to choice width
-//							selection.GetComponent<RectTransform>().sizeDelta = 
-//								new Vector2(transforms[choiceNumber].sizeDelta.x, transforms[choiceNumber].sizeDelta.y/3);
-//
-//							//Reposition to choice location
-//							selection.transform.position = 
-//								new Vector3(mChoices.transform.GetChild(choiceNumber).transform.position.x, 
-//									mChoices.transform.GetChild(choiceNumber).transform.position.y-1,
-//									100);
-//						} //end if
-//						else if(checkpoint == 4)
-//						{
-//							//Decrease choice to show previous option is highlighted
-//							choiceNumber--;
-//							//Loop to last choice if it's lower than zero
-//							if(choiceNumber < 1)
-//							{
-//								choiceNumber = mChoices.transform.childCount-1;
-//							} //end if
-//
-//							//Resize to choice width
-//							selection.GetComponent<RectTransform>().sizeDelta = 
-//								new Vector2(transforms[choiceNumber].sizeDelta.x, transforms[choiceNumber].sizeDelta.y/3);
-//
-//							//Reposition to choice location
-//							selection.transform.position = 
-//								new Vector3(mChoices.transform.GetChild(choiceNumber).transform.position.x, 
-//									mChoices.transform.GetChild(choiceNumber).transform.position.y-2,
-//									100);
-//						} //end else if
-//						break;
-//					} //end case OverallGame MENU
 //
 //					//New Game
 //				case OverallGame.NEWGAME:
@@ -905,57 +830,6 @@
 //			//Scene switch
 //			switch(sceneState)
 //			{
-//				//Intro
-//				case OverallGame.INTRO:
-//					{
-//						break;
-//					} //end case OverallGame INTRO
-//
-//					//Menu
-//				case OverallGame.MENU:
-//					{
-//						if(checkpoint == 2)
-//						{
-//							//Increase choice to show next option is highlighted
-//							choiceNumber++;
-//							//Loop back to start if it's higher than the amount of choices
-//							if(choiceNumber >= mChoices.transform.childCount)
-//							{
-//								choiceNumber = 0;
-//							} //end if
-//
-//							//Resize to choice width
-//							selection.GetComponent<RectTransform>().sizeDelta = 
-//								new Vector2(transforms[choiceNumber].sizeDelta.x, transforms[choiceNumber].sizeDelta.y/3);
-//
-//							//Reposition to choice location
-//							selection.transform.position = 
-//								new Vector3(mChoices.transform.GetChild(choiceNumber).transform.position.x, 
-//									mChoices.transform.GetChild(choiceNumber).transform.position.y-1,
-//									100);
-//						} //end if
-//						else if(checkpoint == 4)
-//						{
-//							//Increase choice to show next option is highlighted
-//							choiceNumber++;
-//							//Loop back to start if it's higher than the amount of choices
-//							if(choiceNumber >= mChoices.transform.childCount)
-//							{
-//								choiceNumber = 1;
-//							} //end if
-//
-//							//Resize to choice width
-//							selection.GetComponent<RectTransform>().sizeDelta = 
-//								new Vector2(transforms[choiceNumber].sizeDelta.x, transforms[choiceNumber].sizeDelta.y/3);
-//
-//							//Reposition to choice location
-//							selection.transform.position = 
-//								new Vector3(mChoices.transform.GetChild(choiceNumber).transform.position.x, 
-//									mChoices.transform.GetChild(choiceNumber).transform.position.y-2,
-//									100);
-//						} //end else if
-//						break;
-//					} //end case OverallGame MENU
 //
 //					//New Game
 //				case OverallGame.NEWGAME:
@@ -1332,59 +1206,6 @@
 //			//Scene switch
 //			switch(sceneState)
 //			{
-//				//Intro
-//				case OverallGame.INTRO:
-//					{
-//						break;
-//					} //end case OverallGame INTRO
-//
-//					//Menu
-//				case OverallGame.MENU:
-//					{
-//						//If the mouse is lower than the selection box, and it moved, reposition to next choice
-//						if(checkpoint == 2  && Input.mousePosition.y < 
-//							Camera.main.WorldToScreenPoint(selection.transform.position).y-25)
-//						{
-//							//Make sure it's not on last choice
-//							if(choiceNumber < mChoices.transform.childCount-1)
-//							{
-//								//Update choiceNumber
-//								choiceNumber++;
-//								//Resize to choice width
-//
-//								selection.GetComponent<RectTransform>().sizeDelta = 
-//									new Vector2(transforms[choiceNumber].sizeDelta.x, transforms[choiceNumber].sizeDelta.y/3);
-//
-//								//Reposition to choice location
-//								selection.transform.position = 
-//									new Vector3(mChoices.transform.GetChild(choiceNumber).transform.position.x, 
-//										mChoices.transform.GetChild(choiceNumber).transform.position.y-1,
-//										100);
-//							} //end if
-//						} //end if
-//						//If the mouse is lower than the selection box, and it moved, reposition to next choice
-//						else if(checkpoint == 4 && Input.mousePosition.y <
-//							Camera.main.WorldToScreenPoint(selection.transform.position).y-25)
-//						{
-//							//Make sure it's not on last choice
-//							if(choiceNumber < mChoices.transform.childCount-1)
-//							{
-//								//Update choiceNumber
-//								choiceNumber++;
-//
-//								//Resize to choice width
-//								selection.GetComponent<RectTransform>().sizeDelta = 
-//									new Vector2(transforms[choiceNumber].sizeDelta.x, transforms[choiceNumber].sizeDelta.y/3);
-//
-//								//Reposition to choice location
-//								selection.transform.position = 
-//									new Vector3(mChoices.transform.GetChild(choiceNumber).transform.position.x, 
-//										mChoices.transform.GetChild(choiceNumber).transform.position.y-2,
-//										100);
-//							} //end if
-//						} //end else if
-//						break;
-//					} //end case OverallGame MENU
 //
 //					//New Game
 //				case OverallGame.NEWGAME:
@@ -1694,62 +1515,6 @@
 //			//Scene switch
 //			switch(sceneState)
 //			{
-//				//Intro
-//				case OverallGame.INTRO:
-//					{
-//						break;
-//					} //end case OverallGame INTRO
-//
-//					//Menu
-//				case OverallGame.MENU:
-//					{
-//						//If the mouse is higher than the selection box, and it moved, reposition to next choice
-//						if(checkpoint == 2 && Input.mousePosition.y > 
-//							Camera.main.WorldToScreenPoint(selection.transform.position).y+25)
-//						{
-//							//Make sure it's not on last choice
-//							if(choiceNumber > 0)
-//							{
-//								//Update choiceNumber
-//								choiceNumber--;
-//
-//								//Resize to choice width
-//								selection.GetComponent<RectTransform>().sizeDelta = 
-//									new Vector2(transforms[choiceNumber].sizeDelta.x, transforms[choiceNumber].sizeDelta.y/3);
-//
-//								//Reposition to choice location
-//								selection.transform.position = 
-//									new Vector3(mChoices.transform.GetChild(choiceNumber).transform.position.x, 
-//										mChoices.transform.GetChild(choiceNumber).transform.position.y-1,
-//										100);
-//							} //end if
-//						} //end if
-//						//If the mouse is higher than the selection box, and it moved, reposition to next choice
-//						else if(checkpoint == 4 && Input.mousePosition.y >
-//							Camera.main.WorldToScreenPoint(selection.transform.position).y+25)
-//						{
-//							//Make sure it's not on last choice
-//							if(choiceNumber > 1)
-//							{
-//								//Update choiceNumber
-//								choiceNumber--;
-//
-//								//Resize to choice width
-//								selection.GetComponent<RectTransform>().sizeDelta = 
-//									new Vector2(transforms[choiceNumber].sizeDelta.x, transforms[choiceNumber].sizeDelta.y/3);
-//
-//								//Reposition to choice location
-//								selection.transform.position = 
-//									new Vector3(mChoices.transform.GetChild(choiceNumber).transform.position.x, 
-//										mChoices.transform.GetChild(choiceNumber).transform.position.y-2,
-//										100);
-//							} //end if
-//
-//							//Menu finished this check
-//							processing = false;
-//						} //end else if
-//						break;
-//					} //end case OverallGame MENU
 //
 //					//New Game
 //				case OverallGame.NEWGAME:

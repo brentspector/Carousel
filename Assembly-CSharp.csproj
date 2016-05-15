@@ -3,8 +3,9 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
+    <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
+    <RootNamespace></RootNamespace>
     <ProjectGuid>{FA0F2708-C71B-C200-8612-3755A2B406A9}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -33,51 +34,53 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.XML" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="UnityEngine">
-      <HintPath>C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEditor">
-      <HintPath>C:\Program Files\Unity\Editor\Data\Managed\UnityEditor.dll</HintPath>
+      <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEditor.dll</HintPath>
     </Reference>
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\AI.cs" />
-    <Compile Include="Assets\Scripts\ButtonFunctions.cs" />
-    <Compile Include="Assets\Scripts\DataContents.cs" />
-    <Compile Include="Assets\Scripts\ExtensionMethods.cs" />
-    <Compile Include="Assets\Scripts\Field.cs" />
-    <Compile Include="Assets\Scripts\GameManager.cs" />
-    <Compile Include="Assets\Scripts\GatherInput.cs" />
-    <Compile Include="Assets\Scripts\IntroScene.cs" />
-    <Compile Include="Assets\Scripts\Loader.cs" />
-    <Compile Include="Assets\Scripts\PC.cs" />
-    <Compile Include="Assets\Scripts\Patch.cs" />
-    <Compile Include="Assets\Scripts\Pokemon.cs" />
-    <Compile Include="Assets\Scripts\SceneManager.cs" />
-    <Compile Include="Assets\Scripts\Shop.cs" />
-    <Compile Include="Assets\Scripts\SystemManager.cs" />
-    <Compile Include="Assets\Scripts\Trainer.cs" />
-    <Compile Include="Assets\Scripts\Utility\BatchSlice.cs" />
-    <Compile Include="Assets\Scripts\Utility\CodeWarehouse.cs" />
-    <Compile Include="Assets\Scripts\Utility\Test.cs" />
-    <Reference Include="UnityEngine.UI">
-      <HintPath>C:\Program Files\Unity\Editor\Data\UnityExtensions\Unity\GUISystem\UnityEngine.UI.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.Networking">
-      <HintPath>C:\Program Files\Unity\Editor\Data\UnityExtensions\Unity\Networking\UnityEngine.Networking.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Data.Sqlite">
-      <HintPath>C:\Users\Brent\Desktop\Programming\Unity\Pokemon Carousel\Carousel\Assets\Plugins\x86_64\Mono.Data.Sqlite.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Data.SqliteClient">
-      <HintPath>C:\Users\Brent\Desktop\Programming\Unity\Pokemon Carousel\Carousel\Assets\Plugins\x86_64\Mono.Data.SqliteClient.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data">
-      <HintPath>C:\Users\Brent\Desktop\Programming\Unity\Pokemon Carousel\Carousel\Assets\Plugins\x86_64\System.Data.dll</HintPath>
-    </Reference>
+     <Compile Include="Assets\Scripts\AI.cs" />
+     <Compile Include="Assets\Scripts\AnimationManager.cs" />
+     <Compile Include="Assets\Scripts\ButtonFunctions.cs" />
+     <Compile Include="Assets\Scripts\DataContents.cs" />
+     <Compile Include="Assets\Scripts\ExtensionMethods.cs" />
+     <Compile Include="Assets\Scripts\Field.cs" />
+     <Compile Include="Assets\Scripts\GameManager.cs" />
+     <Compile Include="Assets\Scripts\GatherInput.cs" />
+     <Compile Include="Assets\Scripts\IntroScene.cs" />
+     <Compile Include="Assets\Scripts\Loader.cs" />
+     <Compile Include="Assets\Scripts\MenuScene.cs" />
+     <Compile Include="Assets\Scripts\PC.cs" />
+     <Compile Include="Assets\Scripts\Patch.cs" />
+     <Compile Include="Assets\Scripts\Pokemon.cs" />
+     <Compile Include="Assets\Scripts\SceneManager.cs" />
+     <Compile Include="Assets\Scripts\Shop.cs" />
+     <Compile Include="Assets\Scripts\SystemManager.cs" />
+     <Compile Include="Assets\Scripts\Trainer.cs" />
+     <Compile Include="Assets\Scripts\Utility\BatchSlice.cs" />
+     <Compile Include="Assets\Scripts\Utility\CodeWarehouse.cs" />
+     <Compile Include="Assets\Scripts\Utility\Test.cs" />
+ <Reference Include="UnityEngine.UI">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.Networking">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
+ </Reference>
+ <Reference Include="Mono.Data.Sqlite">
+ <HintPath>C:/Users/Brent/Desktop/Programming/Unity/Pokemon Carousel/Carousel/Assets/Plugins/x86_64/Mono.Data.Sqlite.dll</HintPath>
+ </Reference>
+ <Reference Include="Mono.Data.SqliteClient">
+ <HintPath>C:/Users/Brent/Desktop/Programming/Unity/Pokemon Carousel/Carousel/Assets/Plugins/x86_64/Mono.Data.SqliteClient.dll</HintPath>
+ </Reference>
+ <Reference Include="System.Data">
+ <HintPath>C:/Users/Brent/Desktop/Programming/Unity/Pokemon Carousel/Carousel/Assets/Plugins/x86_64/System.Data.dll</HintPath>
+ </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -87,4 +90,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  
 </Project>

@@ -77,7 +77,7 @@ public class IntroScene : MonoBehaviour
 		else if(checkpoint == 4)
 		{
 			//Begin transition, and set checkpoint to bogus to avoid multiple calls
-			GameManager.instance.LoadScene("StartMenu", SceneManager.OverallGame.MENU, true);
+			GameManager.instance.LoadScene("StartMenu", true);
 			checkpoint = 5;
 		} //end else if
 	} //end RunIntro()
