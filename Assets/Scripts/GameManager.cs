@@ -33,9 +33,13 @@ public class GameManager : MonoBehaviour
 	public static GameObject tools = null;	//Canvas of SceneTools
 
 	//Scene scripts
-	public AnimationManager anim;			//Manages animations for scenes
-	public IntroScene intro;				//Introduction scene script
-	public MenuScene menu;					//Menu scene script
+	AnimationManager anim;					//Manages animations for scenes
+	IntroScene intro;						//Introduction scene script
+	MenuScene menu;							//Menu scene script
+	NewGameScene newgame;					//New game scene script
+	MainGameScene mainGame;					//Main game scene script
+	PCScene pc;								//PC scene script
+	PokedexScene pokedex;					//Pokedex scene script
 
 	//Scene variables
     SystemManager sysm;                     //Manages system features
@@ -98,10 +102,18 @@ public class GameManager : MonoBehaviour
             Application.Quit();
         } //end if
 
+		//Initialize textbox
+		sysm.GetText(tools.transform.FindChild("TextUnit").gameObject, 
+			tools.transform.FindChild("TextUnit").GetChild(1).gameObject);
+
 		//Get scene scripts
 		anim = GetComponent<AnimationManager>();
 		intro = GetComponent<IntroScene>();
 		menu = GetComponent<MenuScene>();
+		newgame = GetComponent<NewGameScene>();
+		mainGame = GetComponent<MainGameScene>();
+		pc = GetComponent<PCScene>();
+		pokedex = GetComponent<PokedexScene>();
 	} //end Awake
 	
     /***************************************
@@ -117,7 +129,7 @@ public class GameManager : MonoBehaviour
 			if(Input.GetKeyDown(KeyCode.F12))
 			{
                 textDisplayed = false;
-                //scenes.Reset();
+				Reset();
 				return;
 			} //end if
 
@@ -160,25 +172,25 @@ public class GameManager : MonoBehaviour
 			//New Game scene
             else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "NewGame")
 			{
-				//scenes.NewGame();
+				newgame.RunNewGame();
 			} //end else if
 
             //Main Game scene
             else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainGame")
             {
-                //scenes.ContinueGame();
+				mainGame.RunMainGame();
             } //end else if
 
             //PC scene
             else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "PC")
             {
-                //scenes.PC();
+				pc.RunPC();
             } //end else if
 
             //Pokedex scene
             else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Pokedex")
             {
-                //scenes.Pokedex();
+				pokedex.RunPokedex();                
             } //end else if
 		} //end try
 
@@ -225,26 +237,31 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
 	public void ChangeCheckpoint(int checkpoint)
 	{
+		Debug.Log("Changed checkpoint");
 		checkDel(checkpoint);
 		checkDel = null;
 	} //end ChangeCheckpoint(int checkpoint)
 
     /***************************************
-     * Name: ProcessSelection
-     * Sets the appropriate checkpoint
-     * depending on scene
+     * Name: Reset
+     * Soft Reset game to Intro
      ***************************************/
-    public void ProcessSelection()
+	public void Reset()
     {
-        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "StartMenu")
-        {
-            //scenes.SetCheckpoint (5);
-        }  //end if
-        else if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainGame")
-        {
-            //scenes.ReadRibbon();
-        } //end else if
-    } //end ProcessSelection
+		//Stop any processes
+		StopAllCoroutines();
+
+		//Set all tools to inactive
+		tools.transform.GetChild(0).gameObject.SetActive(false);
+		tools.transform.GetChild(1).gameObject.SetActive(false);
+		tools.transform.GetChild(2).gameObject.SetActive(false);
+		tools.transform.GetChild(3).gameObject.SetActive(false);
+		tools.transform.GetChild(4).gameObject.SetActive(false);
+		tools.transform.GetChild(5).gameObject.SetActive(false);
+
+		//Load intro
+		LoadScene("Intro");
+    } //end Reset
 
 //    /***************************************
 //     * Name: SetGameState
@@ -355,15 +372,6 @@ public class GameManager : MonoBehaviour
     } //end LogErrorMessage(string message)
 
     /***************************************
-     * Name: InitText
-     * Loads text box components in SceneManager
-     ***************************************/
-	public void InitText(Transform textArea, Transform endArrow)
-	{
-		sysm.GetText (textArea.gameObject, endArrow.gameObject);
-	} //end InitText(GameObject textArea, GameObject endArrow)
-
-    /***************************************
      * Name: DisplayText
      * Shows text in SceneManager text box
      ***************************************/
@@ -438,6 +446,15 @@ public class GameManager : MonoBehaviour
 	{
 		StartCoroutine(anim.FadeInAnimation(targetCheckpoint));
 	} //end FadeInAnimation(int targetCheckpoint)
+
+	/***************************************
+	* Name: FadeInObjects
+	* Fades in an array of objects
+	***************************************/ 
+	public void FadeInObjects(Image[] objects, int targetCheckpoint)
+	{
+		StartCoroutine(anim.FadeObjectIn(objects, targetCheckpoint));
+	} //end FadeInObjects(Image[] objects, int targetCheckpoint)
 
 	/***************************************
 	 * Name: IsProcessing

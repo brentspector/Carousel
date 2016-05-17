@@ -101,9 +101,11 @@ public class AnimationManager : MonoBehaviour
 			elapsedTime+= Time.deltaTime;
 			yield return null;
 		} //end while
-
-		//Move to next scene
-		UnityEngine.SceneManagement.SceneManager.LoadScene(levelName);
+			
+		//Move to next scene, return last scene to checkpoint 0
+		Debug.Log("Going to " + levelName);
+		GameManager.instance.ChangeCheckpoint(0);
+		GameManager.instance.LoadScene(levelName);
 
 		//Finished animation
 		processing = false;
@@ -144,6 +146,9 @@ public class AnimationManager : MonoBehaviour
 			elapsedTime+= Time.deltaTime;
 			yield return null;
 		} //end while
+
+		//Move to target checkpoint
+		GameManager.instance.ChangeCheckpoint(targetCheckpoint);
 
 		//End fade animation
 		processing = false;

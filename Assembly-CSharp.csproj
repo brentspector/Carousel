@@ -55,9 +55,13 @@
      <Compile Include="Assets\Scripts\GatherInput.cs" />
      <Compile Include="Assets\Scripts\IntroScene.cs" />
      <Compile Include="Assets\Scripts\Loader.cs" />
+     <Compile Include="Assets\Scripts\MainGameScene.cs" />
      <Compile Include="Assets\Scripts\MenuScene.cs" />
+     <Compile Include="Assets\Scripts\NewGameScene.cs" />
      <Compile Include="Assets\Scripts\PC.cs" />
+     <Compile Include="Assets\Scripts\PCScene.cs" />
      <Compile Include="Assets\Scripts\Patch.cs" />
+     <Compile Include="Assets\Scripts\PokedexScene.cs" />
      <Compile Include="Assets\Scripts\Pokemon.cs" />
      <Compile Include="Assets\Scripts\SceneManager.cs" />
      <Compile Include="Assets\Scripts\Shop.cs" />

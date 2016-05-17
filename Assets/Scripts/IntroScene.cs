@@ -33,7 +33,7 @@ public class IntroScene : MonoBehaviour
 	{
 		//Get title screen objects
 		if (checkpoint == 0)
-		{
+		{			
 			title = GameObject.Find("Title");
 			image = GameObject.Find("Image");
 			enter = GameObject.Find("PressEnter");
@@ -77,6 +77,7 @@ public class IntroScene : MonoBehaviour
 		else if(checkpoint == 4)
 		{
 			//Begin transition, and set checkpoint to bogus to avoid multiple calls
+			GameManager.instance.checkDel = ChangeCheckpoint;
 			GameManager.instance.LoadScene("StartMenu", true);
 			checkpoint = 5;
 		} //end else if
@@ -322,5 +323,15 @@ public class IntroScene : MonoBehaviour
 	{
 		return playing;
 	} //end FinishedAnimation
+
+	/***************************************
+	 * Name: ChangeCheckpoint
+	 * Changes the checkpoint
+	 ***************************************/
+	public void ChangeCheckpoint(int newCheckpoint)
+	{
+		Debug.Log("Changed intro checkpoint");
+		checkpoint = newCheckpoint;
+	} //end ChangeCheckpoint(int newCheckpoint)
 	#endregion
 } //end class IntroScene

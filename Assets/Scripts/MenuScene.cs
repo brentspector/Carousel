@@ -174,11 +174,15 @@ public class MenuScene : MonoBehaviour
 					break;
 				//Third choice - Options
 				case 2:
-					GameManager.instance.LoadScene("Intro", true);
+					GameManager.instance.Reset();
 					break;
 			} //end switch
+
+			//Begin transition, and set checkpoint to bogus to avoid multiple calls
+			GameManager.instance.checkDel = ChangeCheckpoint;
+			checkpoint = 6;
 		} //end else if
-	} //end RunMenu()
+	} //end RunMenu
 
 	/***************************************
 	 * Name: GetInput
@@ -462,6 +466,7 @@ public class MenuScene : MonoBehaviour
 	 ***************************************/
 	public void ChangeCheckpoint(int newCheckpoint)
 	{
+		Debug.Log("Changed menu checkpoint to " + newCheckpoint);
 		checkpoint = newCheckpoint;
 	} //end ChangeCheckpoint(int newCheckpoint)
 	#endregion

@@ -2089,39 +2089,7 @@
 //					//New Game
 //				case OverallGame.NEWGAME:
 //					{
-//						if (checkpoint == 6 && inputText.text.Length != 0)
-//						{
-//							//Convert input name to player's name
-//							playerName = inputText.text;
-//							input.SetActive(false);
-//							GameManager.instance.DisplayText("So your name is " + playerName + "?", false);
-//							checkpoint = 7;
-//						} //end if
-//						else if (checkpoint == 8)
-//						{
-//							// Yes selected
-//							if (choiceNumber == 0)
-//							{
-//								checkpoint = 9;
-//							} //end if
-//							// No selected
-//							else if (choiceNumber == 1)
-//							{
-//								GameManager.instance.DisplayText("Ok let's try again. What is your name?", true);
-//								checkpoint = 5;
-//							} //end else if
-//
-//							//Disable choice and selection
-//							selection.SetActive(false);
-//							confirm.SetActive(false);
-//						} //end else if
-//						else if (checkpoint == 11)
-//						{
-//							prevTrainer.SetActive(false);
-//							currTrainer.SetActive(false);
-//							nextTrainer.SetActive(false);
-//							checkpoint = 12;
-//						} //end else if
+
 //						break;
 //					} //end case OverallGame NEWGAME
 //
