@@ -227,6 +227,8 @@ public class GameManager : MonoBehaviour
 		else
 		{
 			//Move to next scene
+			ChangeCheckpoint(0);
+			checkDel = null;
 			UnityEngine.SceneManagement.SceneManager.LoadScene(levelName);
 		} //end else
 	} //end LoadScene(string levelName, bool fadeOut)
@@ -237,9 +239,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
 	public void ChangeCheckpoint(int checkpoint)
 	{
-		Debug.Log("Changed checkpoint");
 		checkDel(checkpoint);
-		checkDel = null;
 	} //end ChangeCheckpoint(int checkpoint)
 
     /***************************************

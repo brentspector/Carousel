@@ -44,6 +44,9 @@ public class NewGameScene : MonoBehaviour
 				return;
 			} //end if
 
+			//Set checkpoint delegate
+			GameManager.instance.checkDel = ChangeCheckpoint;
+
 			//Get references
 			profBase = GameObject.Find("Base").GetComponent<Image>();
 			professor = GameObject.Find("Professor").GetComponent<Image>();
@@ -64,7 +67,6 @@ public class NewGameScene : MonoBehaviour
 			nextTrainer.SetActive(false);
 
 			//Run fade in animation
-			GameManager.instance.checkDel = ChangeCheckpoint;
 			GameManager.instance.FadeInAnimation(1);
 		} //end if
 
@@ -78,7 +80,6 @@ public class NewGameScene : MonoBehaviour
 			} //end if
 				
 			//Run Fade In on Base and Professor objects
-			GameManager.instance.checkDel = ChangeCheckpoint;
 			GameManager.instance.FadeInObjects(new Image[] { profBase, professor }, 2);
 		} //end else if
 
@@ -238,8 +239,7 @@ public class NewGameScene : MonoBehaviour
 			GameManager.instance.Persist(false);
 			GameManager.instance.Reset();
 
-			//Begin transition, and set checkpoint to bogus to avoid multiple calls
-			GameManager.instance.checkDel = ChangeCheckpoint;
+			//Set checkpoint to dummy
 			checkpoint = 14;
 		} //end else if
 	} //end RunNewGame
@@ -557,7 +557,6 @@ public class NewGameScene : MonoBehaviour
 	 ***************************************/
 	public void ChangeCheckpoint(int newCheckpoint)
 	{
-		Debug.Log("Changed new game checkpoint");
 		checkpoint = newCheckpoint;
 	} //end ChangeCheckpoint(int newCheckpoint)
 	#endregion

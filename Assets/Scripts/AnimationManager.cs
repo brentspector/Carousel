@@ -15,7 +15,6 @@ public class AnimationManager : MonoBehaviour
 	bool processing;				//Currently performing task
 
 	//Scene tools variables
-	GameObject selection;			//The selection object
 	Image fade;						//The fade screen
 	#endregion
 
@@ -27,7 +26,6 @@ public class AnimationManager : MonoBehaviour
 	void Awake()
 	{
 		processing = false;
-		selection = GameManager.tools.transform.FindChild("Selection").gameObject;
 		fade = GameManager.tools.transform.FindChild("Fade").GetComponent<Image>();
 	} //end Awake
 
@@ -103,8 +101,6 @@ public class AnimationManager : MonoBehaviour
 		} //end while
 			
 		//Move to next scene, return last scene to checkpoint 0
-		Debug.Log("Going to " + levelName);
-		GameManager.instance.ChangeCheckpoint(0);
 		GameManager.instance.LoadScene(levelName);
 
 		//Finished animation

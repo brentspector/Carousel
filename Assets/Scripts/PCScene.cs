@@ -145,6 +145,117 @@ public class PCScene : MonoBehaviour
 		} //end else if X Key
 	} //end GetInput
 
+	//    /***************************************
+	//     * Name: FillInChoices
+	//     * Sets the choices for the choice menu
+	//     * depending on the scene
+	//     ***************************************/
+	//    void FillInChoices()
+	//    {
+	//        //If in PC in Pokemon Region
+	//        else if (sceneState == OverallGame.PC && boxChoice > -1)
+	//        {
+	//            //Fill in choices box
+	//            for (int i = choices.transform.childCount - 1; i < 6; i++)
+	//            {
+	//                GameObject clone = Instantiate (choices.transform.GetChild (0).gameObject,
+	//                                       choices.transform.GetChild (0).position,
+	//                                       Quaternion.identity) as GameObject;
+	//                clone.transform.SetParent (choices.transform);
+	//            } //end for
+	//            choices.transform.GetChild (0).GetComponent<Text> ().text = "Move";
+	//            choices.transform.GetChild (1).GetComponent<Text> ().text = "Summary";
+	//            choices.transform.GetChild (2).GetComponent<Text> ().text = "Item";
+	//            choices.transform.GetChild (3).GetComponent<Text> ().text = "Ribbons";
+	//            choices.transform.GetChild (4).GetComponent<Text> ().text = "Markings";
+	//            choices.transform.GetChild (5).GetComponent<Text> ().text = "Release";
+	//            choices.transform.GetChild (6).GetComponent<Text> ().text = "Cancel";
+	//            choices.transform.GetChild (0).GetComponent<Text> ().color = Color.black;
+	//            choices.transform.GetChild (1).GetComponent<Text> ().color = Color.black;
+	//            choices.transform.GetChild (2).GetComponent<Text> ().color = Color.black;
+	//            choices.transform.GetChild (3).GetComponent<Text> ().color = Color.black;
+	//            choices.transform.GetChild (4).GetComponent<Text> ().color = Color.black;
+	//            choices.transform.GetChild (5).GetComponent<Text> ().color = Color.black;
+	//            choices.transform.GetChild (6).GetComponent<Text> ().color = Color.black;
+	//            if (choices.transform.childCount > 7)
+	//            {
+	//                for (int i = 7; i < choices.transform.childCount; i++)
+	//                {
+	//                    Destroy (choices.transform.GetChild (i).gameObject);
+	//                } //end for
+	//            } //end if
+	//        } //end else if
+	//        //If in PC on Box Title
+	//        else if (sceneState == OverallGame.PC && boxChoice == -2)
+	//        {
+	//            //Fill in choices box
+	//            for (int i = choices.transform.childCount-1; i < 3; i++)
+	//            {
+	//                GameObject clone = Instantiate (choices.transform.GetChild (0).gameObject,
+	//                    choices.transform.GetChild (0).position,
+	//                    Quaternion.identity) as GameObject;
+	//                clone.transform.SetParent (choices.transform);
+	//            } //end for
+	//            choices.transform.GetChild (0).GetComponent<Text> ().text = "Jump To";
+	//            choices.transform.GetChild (1).GetComponent<Text> ().text = "Rename";
+	//            choices.transform.GetChild (2).GetComponent<Text> ().text = "Wallpaper";
+	//            choices.transform.GetChild (3).GetComponent<Text> ().text = "Cancel";
+	//            choices.transform.GetChild (0).GetComponent<Text> ().color = Color.black;
+	//            choices.transform.GetChild (1).GetComponent<Text> ().color = Color.black;
+	//            choices.transform.GetChild (2).GetComponent<Text> ().color = Color.black;
+	//            choices.transform.GetChild (3).GetComponent<Text> ().color = Color.black;
+	//            if (choices.transform.childCount > 4)
+	//            {
+	//                for (int i = 4; i < choices.transform.childCount; i++)
+	//                {
+	//                    Destroy (choices.transform.GetChild (i).gameObject);
+	//                } //end for
+	//            } //end if
+	//        }  //end else if
+	//        //If in PC Markings
+	//        else if (sceneState == OverallGame.PC && pcState == PCGame.POKEMONMARKINGS)
+	//        {
+	//            for (int i = choices.transform.childCount-1; i < DataContents.markingCharacters.Length+2; i++)
+	//            {
+	//                GameObject clone = Instantiate (choices.transform.GetChild (0).gameObject,
+	//                    choices.transform.GetChild (0).position, Quaternion.identity) as GameObject;
+	//                clone.transform.SetParent (choices.transform);
+	//            } //end for
+	//            for(int i = 0; i < DataContents.markingCharacters.Length+2; i++)
+	//            {
+	//                if(i == DataContents.markingCharacters.Length)
+	//                {
+	//                    choices.transform.GetChild(i).GetComponent<Text>().text = "OK";
+	//                } //end if
+	//                else if(i == DataContents.markingCharacters.Length+1)
+	//                {
+	//                    choices.transform.GetChild(i).GetComponent<Text>().text = "Cancel";
+	//                } //end else if
+	//                else
+	//                {                           
+	//                    choices.transform.GetChild(i).GetComponent<Text>().text =
+	//                        DataContents.markingCharacters[i].ToString(); 
+	//                } //end else
+	//            } //end for
+	//
+	//            //Destroy extra
+	//            if (choices.transform.childCount > DataContents.markingCharacters.Length+1)
+	//            {
+	//                for (int i = DataContents.markingCharacters.Length+2; i < choices.transform.childCount; i++)
+	//                {
+	//                    Destroy (choices.transform.GetChild (i).gameObject);
+	//                } //end for
+	//            } //end if
+	//
+	//            //Color in choices
+	//            for(int i = 0; i < markingChoices.Count; i++)
+	//            {
+	//                choices.transform.GetChild(i).GetComponent<Text>().color =
+	//                    markingChoices[i] ? Color.black : Color.gray;
+	//            } //end for           
+	//        } //end else if
+	//    } //end FillInChoices
+
 	/***************************************
 	 * Name: ChangeCheckpoint
 	 * Changes the checkpoint

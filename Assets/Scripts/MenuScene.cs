@@ -44,8 +44,11 @@ public class MenuScene : MonoBehaviour
 			//Begin processing
 			processing = true;
 
-			//Reset scene tools canvas' camera
-			GameManager.tools.GetComponent<Canvas> ().worldCamera = Camera.main;
+			//Set checkpoint delegate
+			GameManager.instance.checkDel = ChangeCheckpoint;
+
+			//Reset scene tools camera
+			GameManager.tools.GetComponent<Canvas>().worldCamera = Camera.main;
 
 			//Set reference for menu components
 			mChoices = GameObject.Find("ChoiceGrid");
@@ -79,6 +82,9 @@ public class MenuScene : MonoBehaviour
 			{
 				checkpoint = 1;
 			} //end else
+
+			//Disable processing
+			processing = false;
 		} //end if
 
 		//Initialize menu data (with continue option)
@@ -107,7 +113,6 @@ public class MenuScene : MonoBehaviour
 			GameManager.instance.GetTrainer().MinutesPlayed.ToString("00");
 
 			//Run fade in animation
-			GameManager.instance.checkDel = ChangeCheckpoint;
 			GameManager.instance.FadeInAnimation(2);
 		} //end else if
 
@@ -138,7 +143,6 @@ public class MenuScene : MonoBehaviour
 				100);
 
 			//Run fade in animation
-			GameManager.instance.checkDel = ChangeCheckpoint;
 			GameManager.instance.FadeInAnimation(4);
 		} //end else if
 
@@ -166,10 +170,14 @@ public class MenuScene : MonoBehaviour
 			{
 				//First choice - Continue Game
 				case 0:
+					//Set to dummy checkpoint
+					checkpoint = 6;
 					GameManager.instance.LoadScene("MainGame", true);
 					break;
 				//Second choice - New Game
 				case 1:
+					//Set to dummy checkpoint
+					checkpoint = 6;
 					GameManager.instance.LoadScene("NewGame", true);
 					break;
 				//Third choice - Options
@@ -177,10 +185,6 @@ public class MenuScene : MonoBehaviour
 					GameManager.instance.Reset();
 					break;
 			} //end switch
-
-			//Begin transition, and set checkpoint to bogus to avoid multiple calls
-			GameManager.instance.checkDel = ChangeCheckpoint;
-			checkpoint = 6;
 		} //end else if
 	} //end RunMenu
 
@@ -466,7 +470,6 @@ public class MenuScene : MonoBehaviour
 	 ***************************************/
 	public void ChangeCheckpoint(int newCheckpoint)
 	{
-		Debug.Log("Changed menu checkpoint to " + newCheckpoint);
 		checkpoint = newCheckpoint;
 	} //end ChangeCheckpoint(int newCheckpoint)
 	#endregion
