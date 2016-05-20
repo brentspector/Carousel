@@ -263,20 +263,20 @@ public class GameManager : MonoBehaviour
 		LoadScene("Intro");
     } //end Reset
 
-//    /***************************************
-//     * Name: SetGameState
-//     * Sets the main game to the state given
-//     ***************************************/ 
-//    public void SetGameState(SceneManager.MainGame newState)
-//    {
-//        //Disable text screen if active
-//        if (tools.transform.GetChild (1).gameObject.activeSelf)
-//        {
-//            tools.transform.GetChild (1).gameObject.SetActive(false);
-//        } //end if
-//
-//        //StartCoroutine(scenes.SetGameState (newState));
-//    } //end SetGameState(SceneManager.MainGame newState)
+    /***************************************
+     * Name: SetGameState
+     * Sets the main game to the state given
+     ***************************************/ 
+	public void SetGameState(MainGameScene.MainGame newState)
+    {
+        //Disable text screen if active
+        if (tools.transform.GetChild (1).gameObject.activeSelf)
+        {
+            tools.transform.GetChild (1).gameObject.SetActive(false);
+        } //end if
+
+		StartCoroutine(mainGame.SetGameState (newState));
+    } //end SetGameState(MainGameScene.MainGame newState)
    
     /***************************************
      * Name: SummaryChange
@@ -284,7 +284,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void SummaryChange(int summaryPage)
     {
-        //StartCoroutine(scenes.SetSummaryPage (summaryPage));
+		StartCoroutine(mainGame.SetSummaryPage (summaryPage));
     } //end SummaryChange(int summaryPage)
 
     /***************************************
@@ -304,59 +304,6 @@ public class GameManager : MonoBehaviour
     {
         //scenes.ToggleShown ();
     } //end ToggleShown
-	//    /***************************************
-	//     * Name: LoadScene
-	//     * Resets checkpoint and loads scene
-	//     ***************************************/ 
-	//    public IEnumerator LoadScene(string sceneName, OverallGame state, bool fadeOut = false)
-	//    {        
-	//        //Process at end of frame
-	//        yield return new WaitForEndOfFrame ();
-	//
-	//        //If holding a pokemon
-	//        if (heldPokemon != null)
-	//        {
-	//            GameManager.instance.DisplayText ("You can't leave while holding a pokemon", true);
-	//            yield break;
-	//        } //end if
-	//
-	//        //Turn off scene tools 
-	//        selection.SetActive (false);
-	//        text.SetActive (false);
-	//        confirm.SetActive (false);
-	//        choices.SetActive (false);
-	//        input.SetActive (false);
-	//
-	//        //Load new scene when fade out is done
-	//        if (fadeOut)
-	//        {
-	//            //Fade out
-	//            playing = true;
-	//            StartCoroutine (FadeOutAnimation (0));
-	//
-	//            //Wait for fade out to finish
-	//            while(playing)
-	//            {
-	//                yield return null;
-	//            } //end while
-	//
-	//            //Move to next scene
-	//            processing = false;
-	//            initialize = false;
-	//            sceneState = state;
-	//            UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
-	//        } //end if
-	//
-	//        //Load new scene if fade out is false
-	//        else
-	//        {
-	//            checkpoint = 0;
-	//            processing = false;
-	//            initialize = false;
-	//            sceneState = state;
-	//            UnityEngine.SceneManagement.SceneManager.LoadScene (sceneName);
-	//        } //end else
-	//    } //end LoadScene(string sceneName, OverallGame state)
     #endregion
 
 	//System Manager functions
@@ -474,7 +421,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void EditPokemonMode()
     {
-       // scenes.EditPokemonMode ();
+		mainGame.EditPokemonMode ();
     } //end EditPokemonMode
 
     /***************************************
@@ -483,7 +430,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void EditTrainerMode()
     {
-        //scenes.EditTrainerMode ();
+		mainGame.EditTrainerMode ();
     } //end EditTrainerMode
 
     /***************************************
@@ -505,7 +452,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void RandomPokemon()
     {
-        //scenes.RandomPokemon ();
+		mainGame.RandomPokemon ();
     } //end RandomPokemon
 
     /***************************************
@@ -515,7 +462,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void EditPokemon()
     {
-        //scenes.EditPokemon ();
+        mainGame.EditPokemon ();
     } //end EditPokemon
 
 	/***************************************
@@ -524,7 +471,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
 	public void RemovePokemon()
 	{			
-		//scenes.RemovePokemon ();
+		mainGame.RemovePokemon ();
 	} //end RemovePokemon
 
     /***************************************
@@ -533,7 +480,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void FinishEditing()
     {
-       // scenes.FinishEditing ();
+		mainGame.FinishEditing ();
     } //end FinishEditing
 
     /***************************************
@@ -542,7 +489,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void UpdateSprite()
     {
-        //scenes.UpdateSprite ();
+		mainGame.UpdateSprite ();
     } //end UpdateSprite
     #endregion
     #endregion

@@ -1221,65 +1221,6 @@
 //    } //end SetCheckpoint(int newCheckpoint)
 //
 //    /***************************************
-//     * Name: SetGameState
-//     * Sets gameState to parameter
-//     ***************************************/
-//    public IEnumerator SetGameState(MainGame newGameState)
-//    {
-//        //Process at end of frame
-//        yield return new WaitForEndOfFrame ();
-//
-//        //Set the new state
-//        EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
-//        gameState = newGameState; 
-//    } //end SetGameState(MainGame newGameState)
-//
-//    /***************************************
-//     * Name: SetSummaryPage
-//     * Sets summaryChoice to parameter
-//     ***************************************/
-//    public IEnumerator SetSummaryPage(int summaryPage)
-//    {
-//        //Process at end of frame
-//        yield return new WaitForEndOfFrame ();
-//
-//        //Change screen only if summary screen is active
-//        if (summaryScreen.activeSelf)
-//        {
-//            //If move switch is active
-//            if(gameState == MainGame.MOVESWITCH)
-//            {
-//                //Return to summary
-//                currentMoveSlot.GetComponent<Image>().color = Color.clear;
-//                summaryScreen.transform.GetChild(5).gameObject.SetActive(false);
-//                summaryScreen.transform.GetChild(4).gameObject.SetActive(false);
-//                selection.SetActive(false);
-//                
-//                //Change to new page
-//                summaryChoice = summaryPage;
-//                gameState = MainGame.POKEMONSUMMARY;
-//            } //end if
-//            else if(summaryChoice == 5)
-//            {
-//                summaryScreen.transform.GetChild(5).gameObject.SetActive(false);
-//                summaryScreen.transform.GetChild(4).gameObject.SetActive(false);
-//                selection.SetActive(false);
-//                summaryChoice = summaryPage;
-//            } //end else if
-//            else
-//            {
-//                //Deactivate current page
-//                summaryScreen.transform.GetChild(summaryChoice).gameObject.SetActive(false);
-//
-//                //Change to new page
-//                summaryChoice = summaryPage;
-//            } //end else
-//        } //end if
-//    } //end SetSummaryPage(int summaryPage)
-//
-
-//
-//    /***************************************
 //     * Name: PartyState
 //     * Opens/Closes the Party in PC box
 //     ***************************************/ 
@@ -1327,40 +1268,6 @@
 //	#endregion
 //
 //	#region Debug
-//    /***************************************
-//     * Name: EditPokemonMode
-//     * Activates the pokemon edit panel
-//     ***************************************/ 
-//    public void EditPokemonMode()
-//    {
-//        debugButtons.SetActive (false);
-//        debugOptions.transform.GetChild (1).gameObject.SetActive (true);
-//        debugOptions.transform.GetChild (2).gameObject.SetActive (false);
-//    } //end EditPokemonMode
-//
-//    /***************************************
-//     * Name: EditTrainerMode
-//     * Activates the trainer edit panel
-//     ***************************************/ 
-//    public void EditTrainerMode()
-//    {
-//        debugButtons.SetActive (false);
-//        debugOptions.transform.GetChild (1).gameObject.SetActive (false);
-//        debugOptions.transform.GetChild (2).gameObject.SetActive (true);
-//    } //end EditTrainerMode
-//
-//	/***************************************
-//     * Name: RandomPokemon
-//     * Adds a single random pokemon to the team
-//     ***************************************/ 
-//	public void RandomPokemon()
-//	{		
-//		//Generate random pokemon
-//		Pokemon randomPoke = new Pokemon();
-//
-//		//Update relevant portions
-//		UpdateDebug(randomPoke);
-//	} //end RandomPokemon
 //
 //	/***************************************
 //     * Name: EditPokemon
@@ -1573,75 +1480,6 @@
 //			} //end if
 //		} //end if
 //	} //end UpdateSprite
-//
-//	/***************************************
-//     * Name: UpdateDebug
-//     * Changes fields to represent pokemon
-//     ***************************************/ 
-//    void UpdateDebug(Pokemon myPokemon)
-//	{		
-//        if (debugOptions.transform.GetChild (2).gameObject.activeSelf)
-//        {
-//			trainerRightRegion.transform.FindChild("TrainerSprite").GetComponent<Dropdown>().value =
-//				GameManager.instance.GetTrainer().PlayerImage;
-//            for(int i = 0; i < 8; i++)
-//            {
-//                trainerRightRegion.transform.FindChild ("Badges").GetChild (i).GetComponent<Toggle> ().isOn = 
-//                    GameManager.instance.GetTrainer ().GetPlayerBadges (39 + i);
-//            } //end for
-//        } //end if
-//        else
-//        {
-//    		pokemonRightRegion.transform.FindChild ("Gender").GetComponent<Dropdown>().value = myPokemon.Gender;
-//    		pokemonRightRegion.transform.FindChild ("Gender").GetComponent<Dropdown> ().RefreshShownValue ();
-//    		pokemonRightRegion.transform.FindChild ("PokemonName").GetComponent<Dropdown> ().value = myPokemon.NatSpecies - 1;
-//    		pokemonRightRegion.transform.FindChild ("PokemonName").GetComponent<Dropdown> ().RefreshShownValue ();
-//    		pokemonRightRegion.transform.FindChild ("Level").GetComponent<InputField>().text = myPokemon.CurrentLevel.ToString();
-//    		pokemonRightRegion.transform.FindChild ("TrainerID").GetComponent<InputField>().text = myPokemon.TrainerID.ToString();
-//            pokemonRightRegion.transform.FindChild ("Nickname").GetComponent<InputField> ().text = myPokemon.Nickname;
-//    		pokemonRightRegion.transform.FindChild ("Nature").GetComponent<Dropdown> ().value = myPokemon.Nature;
-//    		pokemonRightRegion.transform.FindChild ("Nature").GetComponent<Dropdown> ().RefreshShownValue ();
-//    		pokemonRightRegion.transform.FindChild ("Item").GetComponent<Dropdown> ().value = myPokemon.Item-1;
-//    		pokemonRightRegion.transform.FindChild ("Item").GetComponent<Dropdown> ().RefreshShownValue ();
-//    		pokemonRightRegion.transform.FindChild ("Ball").GetComponent<Dropdown> ().value = myPokemon.BallUsed;
-//    		pokemonRightRegion.transform.FindChild ("Ball").GetComponent<Dropdown> ().RefreshShownValue ();
-//    		pokemonRightRegion.transform.FindChild ("Ability").GetComponent<Dropdown> ().value = myPokemon.Ability-1;
-//    		pokemonRightRegion.transform.FindChild ("Ability").GetComponent<Dropdown> ().RefreshShownValue ();
-//    		pokemonRightRegion.transform.FindChild ("Happiness").GetComponent<InputField>().text = myPokemon.Happiness.ToString();
-//			pokemonRightRegion.transform.FindChild ("Form").GetComponent<InputField>().text = myPokemon.FormNumber.ToString();
-//    		pokemonRightRegion.transform.FindChild ("Shiny").GetComponent<Toggle> ().isOn = myPokemon.IsShiny;
-//    		pokemonRightRegion.transform.FindChild ("Pokerus").GetComponent<Toggle> ().isOn = myPokemon.HasPokerus;
-//    		pokemonRightRegion.transform.FindChild ("IV").GetChild (0).GetComponent<InputField> ().text = myPokemon.GetIV (0).ToString();
-//    		pokemonRightRegion.transform.FindChild ("IV").GetChild (1).GetComponent<InputField> ().text = myPokemon.GetIV (1).ToString();
-//    		pokemonRightRegion.transform.FindChild ("IV").GetChild (2).GetComponent<InputField> ().text = myPokemon.GetIV (2).ToString();
-//    		pokemonRightRegion.transform.FindChild ("IV").GetChild (3).GetComponent<InputField> ().text = myPokemon.GetIV (3).ToString();
-//    		pokemonRightRegion.transform.FindChild ("IV").GetChild (4).GetComponent<InputField> ().text = myPokemon.GetIV (4).ToString();
-//    		pokemonRightRegion.transform.FindChild ("IV").GetChild (5).GetComponent<InputField> ().text = myPokemon.GetIV (5).ToString();
-//    		pokemonRightRegion.transform.FindChild ("EV").GetChild (0).GetComponent<InputField> ().text = myPokemon.GetEV (0).ToString();
-//    		pokemonRightRegion.transform.FindChild ("EV").GetChild (1).GetComponent<InputField> ().text = myPokemon.GetEV (1).ToString();
-//    		pokemonRightRegion.transform.FindChild ("EV").GetChild (2).GetComponent<InputField> ().text = myPokemon.GetEV (2).ToString();
-//    		pokemonRightRegion.transform.FindChild ("EV").GetChild (3).GetComponent<InputField> ().text = myPokemon.GetEV (3).ToString();
-//    		pokemonRightRegion.transform.FindChild ("EV").GetChild (4).GetComponent<InputField> ().text = myPokemon.GetEV (4).ToString();
-//    		pokemonRightRegion.transform.FindChild ("EV").GetChild (5).GetComponent<InputField> ().text = myPokemon.GetEV (5).ToString();
-//    		pokemonRightRegion.transform.FindChild ("Moves").GetChild (0).GetComponent<Dropdown> ().value = 
-//    			ExtensionMethods.BindToInt(myPokemon.GetMove (0), 0);
-//    		pokemonRightRegion.transform.FindChild ("Moves").GetChild (0).GetComponent<Dropdown> ().RefreshShownValue ();
-//    		pokemonRightRegion.transform.FindChild ("Moves").GetChild (1).GetComponent<Dropdown> ().value = 
-//    			ExtensionMethods.BindToInt(myPokemon.GetMove (1), 0);
-//    		pokemonRightRegion.transform.FindChild ("Moves").GetChild (1).GetComponent<Dropdown> ().RefreshShownValue ();
-//    		pokemonRightRegion.transform.FindChild ("Moves").GetChild (2).GetComponent<Dropdown> ().value = 
-//    			ExtensionMethods.BindToInt(myPokemon.GetMove (2), 0);
-//    		pokemonRightRegion.transform.FindChild ("Moves").GetChild (2).GetComponent<Dropdown> ().RefreshShownValue ();
-//    		pokemonRightRegion.transform.FindChild ("Moves").GetChild (3).GetComponent<Dropdown> ().value = 
-//    			ExtensionMethods.BindToInt(myPokemon.GetMove (3), 0);
-//            pokemonRightRegion.transform.FindChild ("Moves").GetChild (3).GetComponent<Dropdown> ().RefreshShownValue ();
-//    		for (int i = 0; i < myPokemon.GetRibbonCount(); i++)
-//    		{            
-//                pokemonRightRegion.transform.FindChild ("Ribbons").GetChild (0).GetChild (
-//    				myPokemon.GetRibbon(i)).GetComponent<Toggle> ().isOn = true;
-//    		} //end for
-//        } //end else
-//	} //end UpdateDebug(Pokemon myPokemon)
 //	#endregion
 //    #endregion
 //} //end SceneManager class

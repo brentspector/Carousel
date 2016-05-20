@@ -330,7 +330,6 @@ public class IntroScene : MonoBehaviour
 	 ***************************************/
 	public void ChangeCheckpoint(int newCheckpoint)
 	{
-		Debug.Log("Changed intro checkpoint");
 		checkpoint = newCheckpoint;
 	} //end ChangeCheckpoint(int newCheckpoint)
 	#endregion
