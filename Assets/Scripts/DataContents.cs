@@ -170,6 +170,7 @@ public static class DataContents : System.Object
     public static List<string> GenerateMoveList()
     {
         List<string> nameList = new List<string> ();
+		nameList.Add("---");
         for (int i = 1; i < moveCount+1; i++)
         {
             nameList.Add (ExecuteSQL<string> ("SELECT gameName FROM Moves WHERE rowid=" + i));
@@ -200,6 +201,7 @@ public static class DataContents : System.Object
     public static List<string> GenerateItemList()
     {
         List<string> nameList = new List<string> ();
+		nameList.Add("No Item");
         for (int i = 1; i < itemCount+1; i++)
         {
             nameList.Add (ExecuteSQL<string> ("SELECT gameName FROM Items WHERE rowid=" + i));

@@ -548,8 +548,6 @@ public class Pokemon
             //Fill in given values
             for (int i = 0; i < 6; i++)
             {
-                totalEV = 0;
-
                 //If the value is invalid
                 if(values[i] < 0)
                 {
@@ -788,7 +786,7 @@ public class Pokemon
         int nextLevelEXP = DataContents.experienceTable.GetNextValue (
             DataContents.ExecuteSQL<string>("SELECT growthRate FROM Pokemon WHERE rowid=" + natSpecies),
             level);
-        return nextLevelEXP - CurrentEXP;
+		return ExtensionMethods.BindToInt(nextLevelEXP - CurrentEXP, 0);
     } //end CalculateRemainingEXP(int level)
 
     /***************************************

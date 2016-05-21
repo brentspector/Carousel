@@ -67,7 +67,7 @@ public class PokedexScene : MonoBehaviour
 		/*********************************************
 		* Mouse Moves Left
 		**********************************************/
-		else if (Input.GetAxis("Mouse X") > 0)
+		else if (Input.GetAxis("Mouse X") < 0)
 		{
 
 		} //end else if Mouse Moves Left
@@ -75,7 +75,7 @@ public class PokedexScene : MonoBehaviour
 		/*********************************************
 		* Mouse Moves Right
 		**********************************************/
-		else if (Input.GetAxis("Mouse X") < 0)
+		else if (Input.GetAxis("Mouse X") > 0)
 		{
 
 		} //end else if Mouse Moves Right

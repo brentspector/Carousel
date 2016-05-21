@@ -329,7 +329,7 @@ public class MainGameScene : MonoBehaviour
 					} //end for
 
 					//Deactivate any empty party spots
-					for (int i = 6; i > GameManager.instance.GetTrainer().Team.Count; i--)
+					for (int i = 5; i > GameManager.instance.GetTrainer().Team.Count-1; i--)
 					{
 						playerTeam.transform.FindChild("Background").GetChild(i).gameObject.SetActive(false);
 						playerTeam.transform.FindChild("Pokemon" + (i+1)).gameObject.SetActive(false);
@@ -742,6 +742,7 @@ public class MainGameScene : MonoBehaviour
 					pokemonRightRegion.transform.FindChild("Ability").GetComponent<Dropdown>().RefreshShownValue();
 
 					//Fill in item dropdown list
+					pokemonRightRegion.transform.FindChild("Item").GetComponent<Dropdown>().ClearOptions();
 					pokemonRightRegion.transform.FindChild("Item").GetComponent<Dropdown>().
 					AddOptions(DataContents.GenerateItemList());
 					pokemonRightRegion.transform.FindChild("Item").GetComponent<Dropdown>().RefreshShownValue();
@@ -760,12 +761,15 @@ public class MainGameScene : MonoBehaviour
 					for (int i = 0; i < 4; i++)
 					{
 						pokemonRightRegion.transform.FindChild("Moves").GetChild(i).GetComponent<Dropdown>().
+						ClearOptions();
+						pokemonRightRegion.transform.FindChild("Moves").GetChild(i).GetComponent<Dropdown>().
 							AddOptions(DataContents.GenerateMoveList());
 						pokemonRightRegion.transform.FindChild("Moves").GetChild(i).GetComponent<Dropdown>().
 							RefreshShownValue();
 					} //end for
 
 					//Fill in player sprite
+					trainerRightRegion.transform.FindChild("TrainerSprite").GetComponent<Dropdown>().ClearOptions();
 					trainerRightRegion.transform.FindChild("TrainerSprite").GetComponent<Dropdown>().value =
 						GameManager.instance.GetTrainer().PlayerImage;
 					trainerRightRegion.transform.FindChild("TrainerSprite").GetComponent<Dropdown>().RefreshShownValue();
@@ -2784,6 +2788,193 @@ public class MainGameScene : MonoBehaviour
 	} //end RandomPokemon
 
 	/***************************************
+	 * Name: EditPokemon
+	 * Grab a pokemon from team or pc and
+	 * populate debug fields with it
+	 ***************************************/
+	public void EditPokemon()
+	{
+		//Get requested pokemon
+		if (GameObject.Find("LeftRegion").transform.FindChild("TeamToggle").GetComponent<Toggle>().isOn)
+		{
+			int outputHolder = 0;
+			string slot = GameObject.Find("LeftRegion").transform.FindChild("Slot").GetComponent<InputField>().text;
+			if (int.TryParse(slot, out outputHolder))
+			{
+				int bound = ExtensionMethods.WithinIntRange(outputHolder, 0, GameManager.instance.GetTrainer().Team.Count - 1);
+				UpdateDebug(GameManager.instance.GetTrainer().Team[bound]);
+			} //end if
+			else
+			{
+				UpdateDebug(GameManager.instance.GetTrainer().Team[0]);
+			} //end else
+		} //end if
+		else
+		{
+			int slotSpace = 0;
+			int boxSpace = 0;
+			string slot = GameObject.Find("LeftRegion").transform.FindChild("Slot").GetComponent<InputField>().text;
+			string box = GameObject.Find("LeftRegion").transform.FindChild("Box").GetComponent<InputField>().text;
+			if(!int.TryParse(slot, out slotSpace))
+			{
+				slotSpace = 0;
+			} //end if
+			if(!int.TryParse(box, out boxSpace))
+			{
+				boxSpace = GameManager.instance.GetTrainer().GetPCBox();
+			} //end if
+			Pokemon toUse = GameManager.instance.GetTrainer().GetPC(boxSpace, slotSpace);
+			if (toUse == null)
+			{
+				toUse = GameManager.instance.GetTrainer().GetFirstPokemon();	
+			} //end if
+			if (toUse != null)
+			{
+				UpdateDebug(toUse);
+			} //end if
+			else
+			{
+				GameManager.instance.DisplayText("No pokemon found in the current box. Edit Pokemon canceled.", true);
+			} //end else
+		} //end else 
+	} //end EditPokemon
+
+	/***************************************
+	 * Name: RemovePokemon
+	 * Remove a pokemon from PC or Team
+	 ***************************************/
+	public void RemovePokemon()
+	{
+		//Get requested pokemon
+		if (GameObject.Find("LeftRegion").transform.FindChild("TeamToggle").GetComponent<Toggle>().isOn)
+		{
+			int outputHolder = 0;
+			string slot = GameObject.Find("LeftRegion").transform.FindChild("Slot").GetComponent<InputField>().text;
+			if (int.TryParse(slot, out outputHolder))
+			{
+				if (outputHolder < GameManager.instance.GetTrainer().Team.Count)
+				{
+					GameManager.instance.GetTrainer().RemovePokemon(outputHolder);
+				} //end if
+			} //ed if
+			else
+			{
+				GameManager.instance.DisplayText("No pokemon found on team at requested slot. Remove Pokemon canceled.", true);
+			} //end else
+		} //end if
+		else
+		{
+			int slotSpace = 0;
+			int boxSpace = 0;
+			string slot = GameObject.Find("LeftRegion").transform.FindChild("Slot").GetComponent<InputField>().text;
+			string box = GameObject.Find("LeftRegion").transform.FindChild("Box").GetComponent<InputField>().text;
+			if (!int.TryParse(slot, out slotSpace))
+			{
+				if (!int.TryParse(box, out boxSpace))
+				{
+					GameManager.instance.GetTrainer().RemoveFromPC(boxSpace, slotSpace);
+				} //end if
+				else
+				{
+					GameManager.instance.DisplayText("Invalid Box given. Remove Pokemon canceled.", true);
+				} //end else
+			} //end if
+			else
+			{
+				GameManager.instance.DisplayText("Invalid Slot given. Remove Pokemon canceled.", true);
+			} //end else
+		} //end else
+	} //end RemovePokemon
+
+    /***************************************
+     * Name: FinishEditing
+     * Apply pokemon to requested spot
+     ***************************************/ 
+    public void FinishEditing()
+    {
+        if (debugOptions.transform.GetChild (2).gameObject.activeSelf)
+        {
+			GameManager.instance.GetTrainer().PlayerImage = trainerRightRegion.transform.FindChild("TrainerSprite").
+				GetComponent<Dropdown>().value;
+            for(int i = 0; i < 8; i++)
+            {
+                GameManager.instance.GetTrainer ().SetPlayerBadges (39 + i, trainerRightRegion.transform.FindChild ("Badges").
+                    GetChild (i).GetComponent<Toggle> ().isOn);
+            } //end for
+            GameManager.instance.DisplayText("Updated trainer.", true);
+        } //end if
+        else
+        {
+            Pokemon newPokemon = new Pokemon (
+                pokemonRightRegion.transform.FindChild ("PokemonName").GetComponent<Dropdown> ().value + 1,
+                int.Parse (pokemonRightRegion.transform.FindChild ("TrainerID").GetComponent<InputField> ().text),
+                ExtensionMethods.WithinIntRange (
+                    int.Parse(pokemonRightRegion.transform.FindChild ("Level").GetComponent<InputField> ().text), 1, 100),
+                pokemonRightRegion.transform.FindChild ("Item").GetComponent<Dropdown> ().value,
+                pokemonRightRegion.transform.FindChild ("Ball").GetComponent<Dropdown> ().value,
+                5, 3,
+                pokemonRightRegion.transform.FindChild ("Ability").GetComponent<Dropdown> ().value + 1,
+                pokemonRightRegion.transform.FindChild ("Gender").GetComponent<Dropdown> ().value, 
+				int.Parse (pokemonRightRegion.transform.FindChild ("Form").GetComponent<InputField>().text),
+                pokemonRightRegion.transform.FindChild ("Nature").GetComponent<Dropdown> ().value,
+                int.Parse (pokemonRightRegion.transform.FindChild ("Happiness").GetComponent<InputField> ().text),
+                pokemonRightRegion.transform.FindChild ("Pokerus").GetComponent<Toggle> ().isOn,
+                pokemonRightRegion.transform.FindChild ("Shiny").GetComponent<Toggle> ().isOn);
+
+            //Update nickname
+            newPokemon.Nickname = pokemonRightRegion.transform.FindChild("Nickname").GetComponent<InputField>().text;
+
+            //Update IV
+            int[] ivFields = new int[6];
+            for (int i = 0; i < 6; i++)
+            {
+                ivFields [i] = int.Parse (pokemonRightRegion.transform.FindChild ("IV").GetChild (i).GetComponent<InputField> ().text);
+            } //end for
+            newPokemon.ChangeIVs(ivFields);
+
+            //Update EV
+            int[] evFields = new int[6];
+            for (int i = 0; i < 6; i++)
+            {
+                evFields [i] = int.Parse (pokemonRightRegion.transform.FindChild ("EV").GetChild (i).GetComponent<InputField> ().text);
+            } //end for
+            newPokemon.ChangeEVs(evFields);
+            newPokemon.CalculateStats ();
+
+            //Update Ribbons
+            for (int i = 0; i < pokemonRightRegion.transform.FindChild ("Ribbons").GetChild(0).childCount; i++)
+            {
+                if (pokemonRightRegion.transform.FindChild ("Ribbons").GetChild (0).GetChild (i).
+                    GetComponent<Toggle> ().isOn)
+                {
+                    newPokemon.ChangeRibbons (i);
+                } //end if
+            } //end for
+
+            //Update Moves
+            int[] updateMoves = new int[4];
+            for (int i = 0; i < 4; i++)
+            {
+                int value = pokemonRightRegion.transform.FindChild ("Moves").GetChild (i).GetComponent<Dropdown> ().value;
+                updateMoves [i] = value > 0 ? value : -1;                
+            } //end for
+            newPokemon.GiveInitialMoves(updateMoves);
+
+            //Add to requested spot, or PC if not chosen
+            if (GameObject.Find ("LeftRegion").transform.FindChild ("TeamToggle").GetComponent<Toggle> ().isOn)
+            {
+                GameManager.instance.GetTrainer ().AddPokemon (newPokemon);
+                GameManager.instance.DisplayText ("Added " + newPokemon.Nickname + " to your team", true);
+            } //end if
+            else
+            {
+                GameManager.instance.GetTrainer ().AddToPC (GameManager.instance.GetTrainer ().GetPCBox (), 0, newPokemon);
+                GameManager.instance.DisplayText ("Added " + newPokemon.Nickname + " to your PC", true);
+            } //end else
+        } //end else
+    } //end FinishEditing
+
+	/***************************************
 	 * Name: UpdateDebug
 	 * Changes fields to represent trainer or
 	 * given Pokemon
@@ -2804,60 +2995,81 @@ public class MainGameScene : MonoBehaviour
 		//Else in Pokemon region
 		else
 		{
-
+			pokemonRightRegion.transform.FindChild("Gender").GetComponent<Dropdown>().value = myPokemon.Gender;
+			pokemonRightRegion.transform.FindChild("Gender").GetComponent<Dropdown>().RefreshShownValue();
+			pokemonRightRegion.transform.FindChild("PokemonName").GetComponent<Dropdown>().value = myPokemon.NatSpecies - 1;
+			pokemonRightRegion.transform.FindChild("PokemonName").GetComponent<Dropdown>().RefreshShownValue();
+			pokemonRightRegion.transform.FindChild("Level").GetComponent<InputField>().text = myPokemon.CurrentLevel.ToString();
+			pokemonRightRegion.transform.FindChild("TrainerID").GetComponent<InputField>().text = myPokemon.TrainerID.ToString();
+			pokemonRightRegion.transform.FindChild("Nickname").GetComponent<InputField>().text = myPokemon.Nickname;
+			pokemonRightRegion.transform.FindChild("Nature").GetComponent<Dropdown>().value = myPokemon.Nature;
+			pokemonRightRegion.transform.FindChild("Nature").GetComponent<Dropdown>().RefreshShownValue();
+			pokemonRightRegion.transform.FindChild("Item").GetComponent<Dropdown>().value = myPokemon.Item;
+			pokemonRightRegion.transform.FindChild("Item").GetComponent<Dropdown>().RefreshShownValue();
+			pokemonRightRegion.transform.FindChild("Ball").GetComponent<Dropdown>().value = myPokemon.BallUsed;
+			pokemonRightRegion.transform.FindChild("Ball").GetComponent<Dropdown>().RefreshShownValue();
+			pokemonRightRegion.transform.FindChild("Ability").GetComponent<Dropdown>().value = myPokemon.Ability-1;
+			pokemonRightRegion.transform.FindChild("Ability").GetComponent<Dropdown>().RefreshShownValue();
+			pokemonRightRegion.transform.FindChild("Happiness").GetComponent<InputField>().text = myPokemon.Happiness.ToString();
+			pokemonRightRegion.transform.FindChild("Form").GetComponent<InputField>().text = myPokemon.FormNumber.ToString();
+			pokemonRightRegion.transform.FindChild("Shiny").GetComponent<Toggle>().isOn = myPokemon.IsShiny;
+			pokemonRightRegion.transform.FindChild("Pokerus").GetComponent<Toggle>().isOn = myPokemon.HasPokerus;
+			pokemonRightRegion.transform.FindChild("IV").GetChild(0).GetComponent<InputField>().text = myPokemon.GetIV(0).ToString();
+			pokemonRightRegion.transform.FindChild("IV").GetChild(1).GetComponent<InputField>().text = myPokemon.GetIV(1).ToString();
+			pokemonRightRegion.transform.FindChild("IV").GetChild(2).GetComponent<InputField>().text = myPokemon.GetIV(2).ToString();
+			pokemonRightRegion.transform.FindChild("IV").GetChild(3).GetComponent<InputField>().text = myPokemon.GetIV(3).ToString();
+			pokemonRightRegion.transform.FindChild("IV").GetChild(4).GetComponent<InputField>().text = myPokemon.GetIV(4).ToString();
+			pokemonRightRegion.transform.FindChild("IV").GetChild(5).GetComponent<InputField>().text = myPokemon.GetIV(5).ToString();
+			pokemonRightRegion.transform.FindChild("EV").GetChild(0).GetComponent<InputField>().text = myPokemon.GetIV(0).ToString();
+			pokemonRightRegion.transform.FindChild("EV").GetChild(1).GetComponent<InputField>().text = myPokemon.GetIV(1).ToString();
+			pokemonRightRegion.transform.FindChild("EV").GetChild(2).GetComponent<InputField>().text = myPokemon.GetIV(2).ToString();
+			pokemonRightRegion.transform.FindChild("EV").GetChild(3).GetComponent<InputField>().text = myPokemon.GetIV(3).ToString();
+			pokemonRightRegion.transform.FindChild("EV").GetChild(4).GetComponent<InputField>().text = myPokemon.GetIV(4).ToString();
+			pokemonRightRegion.transform.FindChild("EV").GetChild(5).GetComponent<InputField>().text = myPokemon.GetIV(5).ToString();
+			pokemonRightRegion.transform.FindChild("Moves").GetChild(0).GetComponent<Dropdown>().value =
+				ExtensionMethods.BindToInt(myPokemon.GetMove(0), 0);
+			pokemonRightRegion.transform.FindChild("Moves").GetChild(1).GetComponent<Dropdown>().value =
+				ExtensionMethods.BindToInt(myPokemon.GetMove(1), 0);
+			pokemonRightRegion.transform.FindChild("Moves").GetChild(2).GetComponent<Dropdown>().value =
+				ExtensionMethods.BindToInt(myPokemon.GetMove(2), 0);
+			pokemonRightRegion.transform.FindChild("Moves").GetChild(3).GetComponent<Dropdown>().value =
+				ExtensionMethods.BindToInt(myPokemon.GetMove(3), 0);
+			for (int i = 0; i < myPokemon.GetRibbonCount(); i++)
+			{
+				pokemonRightRegion.transform.FindChild("Ribbons").GetChild(0).GetChild(
+					myPokemon.GetRibbon(i)).GetComponent<Toggle>().isOn = true;
+			} //end for
+			UpdateSprite();
 		} //end else
-		//        else
-		//        {
-		//    		pokemonRightRegion.transform.FindChild ("Gender").GetComponent<Dropdown>().value = myPokemon.Gender;
-		//    		pokemonRightRegion.transform.FindChild ("Gender").GetComponent<Dropdown> ().RefreshShownValue ();
-		//    		pokemonRightRegion.transform.FindChild ("PokemonName").GetComponent<Dropdown> ().value = myPokemon.NatSpecies - 1;
-		//    		pokemonRightRegion.transform.FindChild ("PokemonName").GetComponent<Dropdown> ().RefreshShownValue ();
-		//    		pokemonRightRegion.transform.FindChild ("Level").GetComponent<InputField>().text = myPokemon.CurrentLevel.ToString();
-		//    		pokemonRightRegion.transform.FindChild ("TrainerID").GetComponent<InputField>().text = myPokemon.TrainerID.ToString();
-		//            pokemonRightRegion.transform.FindChild ("Nickname").GetComponent<InputField> ().text = myPokemon.Nickname;
-		//    		pokemonRightRegion.transform.FindChild ("Nature").GetComponent<Dropdown> ().value = myPokemon.Nature;
-		//    		pokemonRightRegion.transform.FindChild ("Nature").GetComponent<Dropdown> ().RefreshShownValue ();
-		//    		pokemonRightRegion.transform.FindChild ("Item").GetComponent<Dropdown> ().value = myPokemon.Item-1;
-		//    		pokemonRightRegion.transform.FindChild ("Item").GetComponent<Dropdown> ().RefreshShownValue ();
-		//    		pokemonRightRegion.transform.FindChild ("Ball").GetComponent<Dropdown> ().value = myPokemon.BallUsed;
-		//    		pokemonRightRegion.transform.FindChild ("Ball").GetComponent<Dropdown> ().RefreshShownValue ();
-		//    		pokemonRightRegion.transform.FindChild ("Ability").GetComponent<Dropdown> ().value = myPokemon.Ability-1;
-		//    		pokemonRightRegion.transform.FindChild ("Ability").GetComponent<Dropdown> ().RefreshShownValue ();
-		//    		pokemonRightRegion.transform.FindChild ("Happiness").GetComponent<InputField>().text = myPokemon.Happiness.ToString();
-		//			pokemonRightRegion.transform.FindChild ("Form").GetComponent<InputField>().text = myPokemon.FormNumber.ToString();
-		//    		pokemonRightRegion.transform.FindChild ("Shiny").GetComponent<Toggle> ().isOn = myPokemon.IsShiny;
-		//    		pokemonRightRegion.transform.FindChild ("Pokerus").GetComponent<Toggle> ().isOn = myPokemon.HasPokerus;
-		//    		pokemonRightRegion.transform.FindChild ("IV").GetChild (0).GetComponent<InputField> ().text = myPokemon.GetIV (0).ToString();
-		//    		pokemonRightRegion.transform.FindChild ("IV").GetChild (1).GetComponent<InputField> ().text = myPokemon.GetIV (1).ToString();
-		//    		pokemonRightRegion.transform.FindChild ("IV").GetChild (2).GetComponent<InputField> ().text = myPokemon.GetIV (2).ToString();
-		//    		pokemonRightRegion.transform.FindChild ("IV").GetChild (3).GetComponent<InputField> ().text = myPokemon.GetIV (3).ToString();
-		//    		pokemonRightRegion.transform.FindChild ("IV").GetChild (4).GetComponent<InputField> ().text = myPokemon.GetIV (4).ToString();
-		//    		pokemonRightRegion.transform.FindChild ("IV").GetChild (5).GetComponent<InputField> ().text = myPokemon.GetIV (5).ToString();
-		//    		pokemonRightRegion.transform.FindChild ("EV").GetChild (0).GetComponent<InputField> ().text = myPokemon.GetEV (0).ToString();
-		//    		pokemonRightRegion.transform.FindChild ("EV").GetChild (1).GetComponent<InputField> ().text = myPokemon.GetEV (1).ToString();
-		//    		pokemonRightRegion.transform.FindChild ("EV").GetChild (2).GetComponent<InputField> ().text = myPokemon.GetEV (2).ToString();
-		//    		pokemonRightRegion.transform.FindChild ("EV").GetChild (3).GetComponent<InputField> ().text = myPokemon.GetEV (3).ToString();
-		//    		pokemonRightRegion.transform.FindChild ("EV").GetChild (4).GetComponent<InputField> ().text = myPokemon.GetEV (4).ToString();
-		//    		pokemonRightRegion.transform.FindChild ("EV").GetChild (5).GetComponent<InputField> ().text = myPokemon.GetEV (5).ToString();
-		//    		pokemonRightRegion.transform.FindChild ("Moves").GetChild (0).GetComponent<Dropdown> ().value = 
-		//    			ExtensionMethods.BindToInt(myPokemon.GetMove (0), 0);
-		//    		pokemonRightRegion.transform.FindChild ("Moves").GetChild (0).GetComponent<Dropdown> ().RefreshShownValue ();
-		//    		pokemonRightRegion.transform.FindChild ("Moves").GetChild (1).GetComponent<Dropdown> ().value = 
-		//    			ExtensionMethods.BindToInt(myPokemon.GetMove (1), 0);
-		//    		pokemonRightRegion.transform.FindChild ("Moves").GetChild (1).GetComponent<Dropdown> ().RefreshShownValue ();
-		//    		pokemonRightRegion.transform.FindChild ("Moves").GetChild (2).GetComponent<Dropdown> ().value = 
-		//    			ExtensionMethods.BindToInt(myPokemon.GetMove (2), 0);
-		//    		pokemonRightRegion.transform.FindChild ("Moves").GetChild (2).GetComponent<Dropdown> ().RefreshShownValue ();
-		//    		pokemonRightRegion.transform.FindChild ("Moves").GetChild (3).GetComponent<Dropdown> ().value = 
-		//    			ExtensionMethods.BindToInt(myPokemon.GetMove (3), 0);
-		//            pokemonRightRegion.transform.FindChild ("Moves").GetChild (3).GetComponent<Dropdown> ().RefreshShownValue ();
-		//    		for (int i = 0; i < myPokemon.GetRibbonCount(); i++)
-		//    		{            
-		//                pokemonRightRegion.transform.FindChild ("Ribbons").GetChild (0).GetChild (
-		//    				myPokemon.GetRibbon(i)).GetComponent<Toggle> ().isOn = true;
-		//    		} //end for
-		//        } //end else
 	} //end UpdateDebug(Pokemon myPokemon)
+
+	/***************************************
+     * Name: UpdateSprite
+     * Changes sprite to reflect name choice
+     ***************************************/ 
+	public void UpdateSprite()
+	{
+		//Develop string path to image
+		string chosenString = (pokemonRightRegion.transform.FindChild("PokemonName").GetComponent<Dropdown>().value + 1).
+			ToString ("000");
+		chosenString +=  pokemonRightRegion.transform.FindChild("Gender").GetComponent<Dropdown>().value == 1 ? "f" : "";
+		chosenString += pokemonRightRegion.transform.FindChild("Shiny").GetComponent<Toggle>().isOn ? "s" : "";
+
+		//Change sprite, and fix if sprite is null
+		pokemonRightRegion.transform.FindChild("Sprite").GetComponent<Image>().sprite = 
+			Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString);   
+		if( pokemonRightRegion.transform.FindChild("Sprite").GetComponent<Image>().sprite == null)
+		{
+			chosenString = chosenString.Replace("f", "");
+			pokemonRightRegion.transform.FindChild("Sprite").GetComponent<Image>().sprite = 
+				Resources.Load<Sprite>("Sprites/Pokemon/" + chosenString);
+			if( pokemonRightRegion.transform.FindChild("Sprite").GetComponent<Image>().sprite == null)
+			{
+				pokemonRightRegion.transform.FindChild("Sprite").GetComponent<Image>().sprite = 
+					Resources.Load<Sprite>("Sprites/Pokemon/0");
+			} //end if
+		} //end if
+	} //end UpdateSprite
 	#endregion
 	#endregion
 } //end class MainGameScene
