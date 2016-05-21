@@ -17,20 +17,32 @@ public class GameManager : MonoBehaviour
     #region Variables
 	//GLOBAL SETTING VARIABLES
     [System.NonSerialized]
-	public float VersionNumber = 0.2f;      //Version number for save file management
+	public float VersionNumber = 0.3f;      //Version number for save file management
     [System.NonSerialized]
     public int NumberOfWallpaper = 25;      //How many wallpapers are available
 
 	//Singleton handle
 	public static GameManager instance = null;
 
+	//Delegates
+	public delegate void CheckpointDelegate(int checkpoint);
+	public CheckpointDelegate checkDel;
+
 	//SceneTools variables
 	public GameObject pTool;				//Prefab of SceneTools
 	public static GameObject tools = null;	//Canvas of SceneTools
 
+	//Scene scripts
+	AnimationManager anim;					//Manages animations for scenes
+	IntroScene intro;						//Introduction scene script
+	MenuScene menu;							//Menu scene script
+	NewGameScene newgame;					//New game scene script
+	MainGameScene mainGame;					//Main game scene script
+	PCScene pc;								//PC scene script
+	PokedexScene pokedex;					//Pokedex scene script
+
 	//Scene variables
     SystemManager sysm;                     //Manages system features
-	SceneManager scenes;					//Manages game scenes
     bool running = false;                   //Allows methods to run once
     bool textDisplayed = false;             //If text is displayed
     bool continueImmediate;                 //Continue as soon as able, don't wait for enter
@@ -63,6 +75,17 @@ public class GameManager : MonoBehaviour
 			tools = Instantiate(pTool);
 		} //end if
 
+		//Reset scene tools canvas' camera
+		tools.GetComponent<Canvas> ().worldCamera = Camera.main;
+
+		//Set all tools to inactive
+		tools.transform.GetChild(0).gameObject.SetActive(false);
+		tools.transform.GetChild(1).gameObject.SetActive(false);
+		tools.transform.GetChild(2).gameObject.SetActive(false);
+		tools.transform.GetChild(3).gameObject.SetActive(false);
+		tools.transform.GetChild(4).gameObject.SetActive(false);
+		tools.transform.GetChild(5).gameObject.SetActive(false);
+
 		//Keep SceneTools from destruction OnLoad
 		DontDestroyOnLoad (tools);
 
@@ -79,8 +102,18 @@ public class GameManager : MonoBehaviour
             Application.Quit();
         } //end if
 
-		//Get SceneManager component
-		scenes = GetComponent<SceneManager> ();
+		//Initialize textbox
+		sysm.GetText(tools.transform.FindChild("TextUnit").gameObject, 
+			tools.transform.FindChild("TextUnit").GetChild(1).gameObject);
+
+		//Get scene scripts
+		anim = GetComponent<AnimationManager>();
+		intro = GetComponent<IntroScene>();
+		menu = GetComponent<MenuScene>();
+		newgame = GetComponent<NewGameScene>();
+		mainGame = GetComponent<MainGameScene>();
+		pc = GetComponent<PCScene>();
+		pokedex = GetComponent<PokedexScene>();
 	} //end Awake
 	
     /***************************************
@@ -95,8 +128,8 @@ public class GameManager : MonoBehaviour
 			//Reset when F12 is pressed
 			if(Input.GetKeyDown(KeyCode.F12))
 			{
-				scenes.Reset();
-				Application.LoadLevel("Intro");
+                textDisplayed = false;
+				Reset();
 				return;
 			} //end if
 
@@ -105,9 +138,8 @@ public class GameManager : MonoBehaviour
             {
                 textDisplayed = sysm.ManageTextbox(continueImmediate);
             } //end if textDisplayed
-
 			//Intro scene
-			else if(Application.loadedLevelName == "Intro")
+            else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Intro")
 			{
                 //Allows running, testing, and compiling while bypassing standard operation
                 //for one-off events.
@@ -116,43 +148,49 @@ public class GameManager : MonoBehaviour
                     //Prevent from running this section again
                     running = true;
 
-#if UNITY_EDITOR
+                    #if UNITY_EDITOR
                     //Debug mode (development in the editor) commands go here
                     //sysm.GetPersist();
                     //sysm.Persist();
-#else
+
+                    #else
                     //Stand-alone mode (user version) diagnostic commands go here
 
-#endif
+                    #endif
                 } //end if !running
 
-
                 //Run the intro after completion of one off methods
-				scenes.Intro();
+				intro.RunIntro();
 			} //end else if Intro
 
 			//Start Menu scene
-			else if(Application.loadedLevelName == "StartMenu")
+            else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "StartMenu")
 			{
-				scenes.Menu();
+				menu.RunMenu();
 			} //end else if	
 
 			//New Game scene
-			else if(Application.loadedLevelName == "NewGame")
+            else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "NewGame")
 			{
-				scenes.NewGame();
+				newgame.RunNewGame();
 			} //end else if
 
             //Main Game scene
-            else if(Application.loadedLevelName == "MainGame")
+            else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainGame")
             {
-                scenes.ContinueGame();
+				mainGame.RunMainGame();
             } //end else if
 
             //PC scene
-            else if(Application.loadedLevelName == "PC")
+            else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "PC")
             {
-                scenes.PC();
+				pc.RunPC();
+            } //end else if
+
+            //Pokedex scene
+            else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Pokedex")
+            {
+				pokedex.RunPokedex();                
             } //end else if
 		} //end try
 
@@ -174,28 +212,62 @@ public class GameManager : MonoBehaviour
 
 	//Scene functions
 	#region Scenes
+	/***************************************
+     * Name: LoadScene
+     * Loads the requested scene, and sets
+     * the appropriate overall state
+     ***************************************/ 
+	public void LoadScene(string levelName, bool fadeOut = false)
+	{
+		//If fade out is requested
+		if (fadeOut)
+		{
+			StartCoroutine(anim.FadeOutAnimation(levelName));
+		} //end if
+		else
+		{
+			//Move to next scene
+			ChangeCheckpoint(0);
+			checkDel = null;
+			UnityEngine.SceneManagement.SceneManager.LoadScene(levelName);
+		} //end else
+	} //end LoadScene(string levelName, bool fadeOut)
+
+	/***************************************
+     * Name: ChangeCheckpoint
+     * Changes the checkpoint of a scene script
+     ***************************************/ 
+	public void ChangeCheckpoint(int checkpoint)
+	{
+		checkDel(checkpoint);
+	} //end ChangeCheckpoint(int checkpoint)
+
     /***************************************
-     * Name: ProcessSelection
-     * Sets the appropriate checkpoint
-     * depending on scene
+     * Name: Reset
+     * Soft Reset game to Intro
      ***************************************/
-    public void ProcessSelection()
+	public void Reset()
     {
-        if (Application.loadedLevelName == "StartMenu")
-        {
-            scenes.SetCheckpoint (5);
-        }  //end if
-        else if (Application.loadedLevelName == "MainGame")
-        {
-            scenes.ReadRibbon();
-        } //end else if
-    } //end ProcessSelection
+		//Stop any processes
+		StopAllCoroutines();
+
+		//Set all tools to inactive
+		tools.transform.GetChild(0).gameObject.SetActive(false);
+		tools.transform.GetChild(1).gameObject.SetActive(false);
+		tools.transform.GetChild(2).gameObject.SetActive(false);
+		tools.transform.GetChild(3).gameObject.SetActive(false);
+		tools.transform.GetChild(4).gameObject.SetActive(false);
+		tools.transform.GetChild(5).gameObject.SetActive(false);
+
+		//Load intro
+		LoadScene("Intro");
+    } //end Reset
 
     /***************************************
      * Name: SetGameState
      * Sets the main game to the state given
      ***************************************/ 
-    public void SetGameState(SceneManager.MainGame newState)
+	public void SetGameState(MainGameScene.MainGame newState)
     {
         //Disable text screen if active
         if (tools.transform.GetChild (1).gameObject.activeSelf)
@@ -203,8 +275,8 @@ public class GameManager : MonoBehaviour
             tools.transform.GetChild (1).gameObject.SetActive(false);
         } //end if
 
-        StartCoroutine(scenes.SetGameState (newState));
-    } //end SetGameState(SceneManager.MainGame newState)
+		StartCoroutine(mainGame.SetGameState (newState));
+    } //end SetGameState(MainGameScene.MainGame newState)
    
     /***************************************
      * Name: SummaryChange
@@ -212,18 +284,8 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void SummaryChange(int summaryPage)
     {
-        StartCoroutine(scenes.SetSummaryPage (summaryPage));
+		StartCoroutine(mainGame.SetSummaryPage (summaryPage));
     } //end SummaryChange(int summaryPage)
-
-    /***************************************
-     * Name: LoadScene
-     * Loads the requested scene, and sets
-     * the appropriate overall state
-     ***************************************/ 
-    public void LoadScene(string levelName, SceneManager.OverallGame state, bool fadeOut = false)
-    {
-        StartCoroutine(scenes.LoadScene (levelName, state, fadeOut));
-    } //end LoadScene(string levelName, SceneManager.OverallGame state, bool fadeOut)
 
     /***************************************
      * Name: PartyState
@@ -231,8 +293,17 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void PartyState(bool state)
     {
-        StartCoroutine(scenes.PartyState(state));
+       // StartCoroutine(scenes.PartyState(state));
     } //end PartyState(bool state)
+
+    /***************************************
+     * Name: ToggleShown
+     * Toggles Weakness/Resistance in Pokedex
+     ***************************************/ 
+    public void ToggleShown()
+    {
+        //scenes.ToggleShown ();
+    } //end ToggleShown
     #endregion
 
 	//System Manager functions
@@ -246,15 +317,6 @@ public class GameManager : MonoBehaviour
     {
         sysm.LogErrorMessage (message);
     } //end LogErrorMessage(string message)
-
-    /***************************************
-     * Name: InitText
-     * Loads text box components in SceneManager
-     ***************************************/
-	public void InitText(Transform textArea, Transform endArrow)
-	{
-		sysm.GetText (textArea.gameObject, endArrow.gameObject);
-	} //end InitText(GameObject textArea, GameObject endArrow)
 
     /***************************************
      * Name: DisplayText
@@ -281,7 +343,7 @@ public class GameManager : MonoBehaviour
      * Returns a random integer
      ***************************************/
     public int RandomInt(int min, int max)
-    {
+    {		
         return sysm.RandomInt (min, max);
     } //end RandomInt(int min, int max)
 
@@ -310,9 +372,67 @@ public class GameManager : MonoBehaviour
 	{
 		return sysm.GetPersist ();
 	} //end GetPersist
+
+    /***************************************
+     * Name: RestartFile
+     * Clears data to create new game file
+     ***************************************/
+    public void RestartFile(bool savePrevious = false)
+    {
+        sysm.NewGameReset (savePrevious);
+    } //end RestartFile(bool savePrevious = false)
+	#endregion
+
+	#region Animations
+	/***************************************
+	* Name: FadeInAnimation
+	* Fades scene in (must be manually called
+	* after a scene is loaded)
+	***************************************/ 
+	public void FadeInAnimation(int targetCheckpoint)
+	{
+		StartCoroutine(anim.FadeInAnimation(targetCheckpoint));
+	} //end FadeInAnimation(int targetCheckpoint)
+
+	/***************************************
+	* Name: FadeInObjects
+	* Fades in an array of objects
+	***************************************/ 
+	public void FadeInObjects(Image[] objects, int targetCheckpoint)
+	{
+		StartCoroutine(anim.FadeObjectIn(objects, targetCheckpoint));
+	} //end FadeInObjects(Image[] objects, int targetCheckpoint)
+
+	/***************************************
+	 * Name: IsProcessing
+	 * Whether there is an animation in
+	 * progress
+	 ***************************************/
+	public bool IsProcessing()
+	{
+		return anim.IsProcessing();
+	} //end IsProcessing
 	#endregion
 
     #region Debug
+    /***************************************
+     * Name: EditPokemonMode
+     * Activates the pokemon edit panel
+     ***************************************/ 
+    public void EditPokemonMode()
+    {
+		mainGame.EditPokemonMode ();
+    } //end EditPokemonMode
+
+    /***************************************
+     * Name: EditTrainerMode
+     * Activates the trainer edit panel
+     ***************************************/ 
+    public void EditTrainerMode()
+    {
+		mainGame.EditTrainerMode ();
+    } //end EditTrainerMode
+
     /***************************************
      * Name: RandomTeam
      * Gives the player a random team
@@ -332,32 +452,45 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void RandomPokemon()
     {
-        //If the team isn't full, add a pokemon
-        if (sysm.PlayerTrainer.Team.Count < 6)
-        {
-            sysm.PlayerTrainer.AddPokemon(new Pokemon(oType: 5, oWhere: 3));
-        } //end if
-        //Otherwise replace first slot
-        else
-        {
-            sysm.PlayerTrainer.Team[0] = new Pokemon(oType: 5, oWhere: 3);
-        } //end else
+		mainGame.RandomPokemon ();
     } //end RandomPokemon
 
     /***************************************
-     * Name: AddRandomPokemonToPC
-     * Adds a single random pokemon to the pc
+     * Name: EditPokemon
+     * Grabs a pokemon out of team or pc
+     * and populates debug with it
      ***************************************/ 
-    public void AddRandomPokemonToPC(int box = -1, int slot = 0)
+    public void EditPokemon()
     {
-        //Assign box
-        if (box == -1)
-        {
-            box = sysm.PlayerTrainer.GetPCBox ();
-        } //end if
+        mainGame.EditPokemon ();
+    } //end EditPokemon
 
-        sysm.PlayerTrainer.AddToPC (box, slot, new Pokemon (oType: 5, oWhere: 3));
-    } //end AddRandomPokemonToPC
+	/***************************************
+     * Name: RemovePokemon
+     * Remove a pokemon from PC or team
+     ***************************************/ 
+	public void RemovePokemon()
+	{			
+		mainGame.RemovePokemon ();
+	} //end RemovePokemon
+
+    /***************************************
+     * Name: FinishEditing
+     * Apply pokemon to requested spot
+     ***************************************/ 
+    public void FinishEditing()
+    {
+		mainGame.FinishEditing ();
+    } //end FinishEditing
+
+    /***************************************
+     * Name: UpdateSprite
+     * Changes sprite to reflect name choice
+     ***************************************/ 
+    public void UpdateSprite()
+    {
+		mainGame.UpdateSprite ();
+    } //end UpdateSprite
     #endregion
     #endregion
 } //end GameManager class

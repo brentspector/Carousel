@@ -33,6 +33,8 @@ public class SystemManager : MonoBehaviour
 	//Persistent variables
     string dataLocation;    //Path to the save file
     Trainer pPlayer;        //The player's profile
+    float pStartVersion;    //The version the game was started on
+    float pPatchVersion;    //What is the most recent patch version
 	float sTime;			//Where the game is when persistent was called
 
 	//Text variables
@@ -374,6 +376,8 @@ public class SystemManager : MonoBehaviour
 			FileStream npf = File.Create (dataLocation + "gameT.dat");
 			PersistentSystem npfd = new PersistentSystem ();
             npfd.player = pPlayer;
+            npfd.startVersion = pStartVersion;
+            npfd.patchVersion = pPatchVersion;
 			bf.Serialize (npf, npfd);
 			npf.Close ();
 			File.Replace(dataLocation + "gameT.dat", dataLocation+ "game.dat", dataLocation + 
@@ -385,6 +389,8 @@ public class SystemManager : MonoBehaviour
 			FileStream pf = File.Create (dataLocation + "game.dat");
 			PersistentSystem pfd = new PersistentSystem ();
             pfd.player = pPlayer;
+            pfd.startVersion = pStartVersion;
+            pfd.patchVersion = pPatchVersion;
 			bf.Serialize (pf, pfd);
 			pf.Close ();
 		} //end else
@@ -406,15 +412,52 @@ public class SystemManager : MonoBehaviour
 			FileStream pf = File.Open (dataLocation + "game.dat", FileMode.Open);
 			PersistentSystem pfd = (PersistentSystem)bf.Deserialize(pf);
 			pf.Close();
-            pPlayer = pfd.player;
+            if(pfd.patchVersion != GameManager.instance.VersionNumber)
+            {
+                GameManager.instance.LogErrorMessage("File patch version doesn't match game version");
+                pPlayer = Patch.PatchFile(pfd.player, pfd.patchVersion);
+                GameManager.instance.LogErrorMessage("Updated trainer file");
+            } //end if
+            else
+            {
+                pPlayer = pfd.player;
+                pStartVersion = pfd.startVersion;
+                pPatchVersion = pfd.patchVersion;
+            } //end else
 			return true;
 		} //end if
 		else
 		{
-            pPlayer = new Trainer();            
+            NewGameReset();
 			return false;
 		} //end else
 	} //end GetPersist
+
+    /***************************************
+     * Name: NewGameReset
+     * Clears data to create new game file
+     ***************************************/
+    public void NewGameReset(bool savePrevious = false)
+    {
+        //Rename previous if requested to save
+        if (savePrevious)
+        {
+            BinaryFormatter bf = new BinaryFormatter ();
+            FileStream npf = File.Create (dataLocation + "gameT.dat");
+            PersistentSystem npfd = new PersistentSystem ();
+            npfd.player = pPlayer;
+            npfd.startVersion = pStartVersion;
+            npfd.patchVersion = pPatchVersion;
+            bf.Serialize (npf, npfd);
+            npf.Close ();
+            File.Replace(dataLocation + "gameT.dat", dataLocation + "game.dat", dataLocation + 
+                         pPlayer.PlayerName + pPlayer.HoursPlayed + "h" + pPlayer.MinutesPlayed + "m.dat");
+            File.Delete(dataLocation + "game.dat");
+        } //end if
+        pPlayer = new Trainer();
+        pStartVersion = GameManager.instance.VersionNumber;
+        pPatchVersion = GameManager.instance.VersionNumber;
+    } //end NewGameReset(bool savePrevious = false)
 
     /***************************************
      * Name: StartTime
@@ -473,5 +516,7 @@ public class SystemManager : MonoBehaviour
 [Serializable]
 class PersistentSystem
 {
+    public float startVersion;
+    public float patchVersion;
     public Trainer player;
 } //end PersistentSystem class

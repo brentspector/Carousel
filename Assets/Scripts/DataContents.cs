@@ -13,6 +13,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections.Generic;
 using System.Data;
 using System.Runtime.Serialization;
+using System.Linq;
 #endregion
 
 public static class DataContents : System.Object 
@@ -20,6 +21,7 @@ public static class DataContents : System.Object
     #region Variables
     public static ExperienceTable experienceTable;  //Holds experience values for growth rates
     public static RibbonData ribbonData;            //Holds names and description data for ribbons
+    public static TypeChart typeChart;              //Holds the type matchups
     public static char[] markingCharacters;         //Holds the characters you can mark with
     static int speciesCount;                        //Number of entries in Pokemon table
     static int moveCount;                           //Number of entries in Move table
@@ -32,6 +34,7 @@ public static class DataContents : System.Object
     public static Sprite[] categorySprites;         //Sprites for each category of move
     public static Sprite[] ribbonSprites;           //Sprites for each ribbon
     public static Sprite[] badgeSprites;            //Sprites for each badge
+    public static Sprite[] trainerCardSprites;      //Sprites for full trainer for trainer card
 
     //Shorthand for main data path
     static string dataLocation;                     
@@ -94,12 +97,17 @@ public static class DataContents : System.Object
         //Create ribbon data
         ribbonData = new RibbonData ();
 
+        //Create a type chart
+        typeChart = new TypeChart ();
+
         //Load sprites
-        statusSprites   = Resources.LoadAll<Sprite> ("Sprites/Icons/statuses");
-        typeSprites     = Resources.LoadAll<Sprite> ("Sprites/Icons/pokedexTypes");
-        categorySprites = Resources.LoadAll<Sprite> ("Sprites/Icons/category");
-        ribbonSprites   = Resources.LoadAll<Sprite> ("Sprites/Icons/ribbons");
-        badgeSprites    = Resources.LoadAll<Sprite> ("Sprites/Icons/Badges");
+        statusSprites       = Resources.LoadAll<Sprite> ("Sprites/Icons/statuses");
+        typeSprites         = Resources.LoadAll<Sprite> ("Sprites/Icons/pokedexTypes");
+        categorySprites     = Resources.LoadAll<Sprite> ("Sprites/Icons/category");
+        ribbonSprites       = Resources.LoadAll<Sprite> ("Sprites/Icons/ribbons");
+        badgeSprites        = Resources.LoadAll<Sprite> ("Sprites/Icons/Badges");
+        trainerCardSprites  = Resources.LoadAll<Sprite> ("Sprites/Menus/FullTrainers");
+
         return true;
     } //end InitDataContents()
 
@@ -138,6 +146,68 @@ public static class DataContents : System.Object
     {
         return experienceTable.GetLevel (growth, exp);
     } //end GetLevel(int exp, string growth)
+
+    /***************************************
+     * Name: GeneratePokemonList
+     * Returns a list of strings containing
+     * each name of the pokemon in the table
+     ***************************************/
+    public static List<string> GeneratePokemonList()
+    {
+        List<string> nameList = new List<string> ();
+        for (int i = 1; i < speciesCount+1; i++)
+        {
+            nameList.Add (ExecuteSQL<string> ("SELECT name FROM Pokemon WHERE rowid=" + i));
+        } //end for
+        return nameList;
+    } //end GeneratePokemonList()
+
+    /***************************************
+     * Name: GenerateMoveList
+     * Returns a list of strings containing
+     * each name of the moves in the table
+     ***************************************/
+    public static List<string> GenerateMoveList()
+    {
+        List<string> nameList = new List<string> ();
+		nameList.Add("---");
+        for (int i = 1; i < moveCount+1; i++)
+        {
+            nameList.Add (ExecuteSQL<string> ("SELECT gameName FROM Moves WHERE rowid=" + i));
+        } //end for
+        return nameList;
+    } //end GenerateMoveList()
+
+    /***************************************
+     * Name: GenerateAbilityList
+     * Returns a list of strings containing
+     * each name of the abilities in the table
+     ***************************************/
+    public static List<string> GenerateAbilityList()
+    {
+        List<string> nameList = new List<string> ();
+        for (int i = 1; i < abilityCount+1; i++)
+        {
+            nameList.Add (ExecuteSQL<string> ("SELECT gameName FROM Abilities WHERE rowid=" + i));
+        } //end for
+        return nameList;
+    } //end GenerateAbilityList()
+
+    /***************************************
+     * Name: GenerateItemList
+     * Returns a list of strings containing
+     * each name of the items in the table
+     ***************************************/
+    public static List<string> GenerateItemList()
+    {
+        List<string> nameList = new List<string> ();
+		nameList.Add("No Item");
+        for (int i = 1; i < itemCount+1; i++)
+        {
+            nameList.Add (ExecuteSQL<string> ("SELECT gameName FROM Items WHERE rowid=" + i));
+        } //end for
+        return nameList;
+    } //end GenerateItemList()
 
     /***************************************
      * Name: GetMoveID
@@ -386,10 +456,14 @@ public class ExperienceTable
      ***************************************/
     public int GetNextValue(string experienceRate, int level)
     {
-        if (experienceRate == "Medium")
+        if (level == 100)
+        {
+            return 0;
+        } //end if
+        else if (experienceRate == "Medium")
         {
             return Medium [level + 1];
-        } //end if
+        } //end else if
         else if (experienceRate == "Erratic")
         {
             return Erratic [level + 1];
@@ -562,6 +636,192 @@ public class ExperienceTable
         } //end else
         return level;
     } //end GetLevel(string experienceRate, int experience)
+} //end ExperienceTable class
+
+/***************************************************************************************** 
+ * Class: TypeChart
+ * Summary: Lists the type resistances and weaknesses
+ *****************************************************************************************/ 
+[Serializable]
+public class TypeChart
+{
+    //Array of type matchups
+    TypeMatch[] typeMatches;
+
+    /***************************************
+     * Name: TypeMatch
+     * A struct for the basic type matchups
+     ***************************************/
+    struct TypeMatch
+    {
+        public int[] weaknesses;
+        public int[] resistances;
+        public int[] immunities;
+    } //end struct TypeMatch
+        
+    /***************************************
+     * Name: TypeChart
+     * Initializes TypeMatch array when class
+     * is created
+     ***************************************/
+    public TypeChart()
+    {
+        //Initialize type array
+        typeMatches = new TypeMatch[19];
+
+        //Set each array element
+        //NORMAL  = 0
+        typeMatches[0].weaknesses = new int[]{1};
+        typeMatches[0].resistances = new int[]{};
+        typeMatches[0].immunities = new int[]{7};
+        //FIGHTING= 1
+        typeMatches[1].weaknesses = new int[]{2,14,18};
+        typeMatches[1].resistances = new int[]{5,6,17};
+        typeMatches[1].immunities = new int[]{};
+        //FLYING  = 2
+        typeMatches[2].weaknesses = new int[]{5,13,15};
+        typeMatches[2].resistances = new int[]{1,6,12};
+        typeMatches[2].immunities = new int[]{4};
+        //POISON  = 3
+        typeMatches[3].weaknesses = new int[]{4,14};
+        typeMatches[3].resistances = new int[]{1,3,6,12,18};
+        typeMatches[3].immunities = new int[]{};
+        //GROUND  = 4
+        typeMatches[4].weaknesses = new int[]{11,12,15};
+        typeMatches[4].resistances = new int[]{3,5};
+        typeMatches[4].immunities = new int[]{13};
+        //ROCK    = 5
+        typeMatches[5].weaknesses = new int[]{1,4,8,11,12};
+        typeMatches[5].resistances = new int[]{0,2,3,10};
+        typeMatches[5].immunities = new int[]{};
+        //BUG     = 6
+        typeMatches[6].weaknesses = new int[]{2,5,10};
+        typeMatches[6].resistances = new int[]{1,4,12};
+        typeMatches[6].immunities = new int[]{};
+        //GHOST   = 7
+        typeMatches[7].weaknesses = new int[]{7,17};
+        typeMatches[7].resistances = new int[]{3,6};
+        typeMatches[7].immunities = new int[]{0,1};
+        //STEEL   = 8
+        typeMatches[8].weaknesses = new int[]{1,4,10};
+        typeMatches[8].resistances = new int[]{0,2,5,6,8,12,14,15,16,18};
+        typeMatches[8].immunities = new int[]{3};
+        //UNKNOWN = 9
+        typeMatches[9].weaknesses = new int[]{};
+        typeMatches[9].resistances = new int[]{};
+        typeMatches[9].immunities = new int[]{};
+        //FIRE    = 10
+        typeMatches[10].weaknesses = new int[]{4,5,11};
+        typeMatches[10].resistances = new int[]{6,8,10,12,15,18};
+        typeMatches[10].immunities = new int[]{};
+        //WATER   = 11
+        typeMatches[11].weaknesses = new int[]{12,13};
+        typeMatches[11].resistances = new int[]{8,10,11,15};
+        typeMatches[11].immunities = new int[]{};
+        //GRASS   = 12
+        typeMatches[12].weaknesses = new int[]{2,3,6,10,15};
+        typeMatches[12].resistances = new int[]{4,11,12,13};
+        typeMatches[12].immunities = new int[]{};
+        //ELECTRIC= 13
+        typeMatches[13].weaknesses = new int[]{4};
+        typeMatches[13].resistances = new int[]{2,8,13};
+        typeMatches[13].immunities = new int[]{};
+        //PSYCHIC = 14
+        typeMatches[14].weaknesses = new int[]{6,7,17};
+        typeMatches[14].resistances = new int[]{1,14};
+        typeMatches[14].immunities = new int[]{};
+        //ICE     = 15
+        typeMatches[15].weaknesses = new int[]{1,5,8,10};
+        typeMatches[15].resistances = new int[]{15};
+        typeMatches[15].immunities = new int[]{};
+        //DRAGON  = 16
+        typeMatches[16].weaknesses = new int[]{16,18};
+        typeMatches[16].resistances = new int[]{10,11,12,13};
+        typeMatches[16].immunities = new int[]{};
+        //DARK    = 17
+        typeMatches[17].weaknesses = new int[]{1,6,18};
+        typeMatches[17].resistances = new int[]{7,17};
+        typeMatches[17].immunities = new int[]{14};
+        //FAIRY   = 18
+        typeMatches[18].weaknesses = new int[]{3,8};
+        typeMatches[18].resistances = new int[]{1,6,17};
+        typeMatches[18].immunities = new int[]{16};
+    } //end TypeChart()
+
+    /***************************************
+     * Name: DetermineWeaknesses
+     * Returns list of weaknesses for given 
+     * type(s)
+     ***************************************/
+    public List<int> DetermineWeaknesses(int type1, int type2=-1)
+    {
+        //Create list to store weaknesses in
+        List<int> weakList = new List<int> ();
+
+        //Add in all weaknesses of the first type
+        weakList.AddRange (typeMatches [type1].weaknesses);
+
+        //If a second type is given, remove resistances too
+        if (type2 > -1)
+        {
+            //First add weaknesses of second type
+            weakList.AddRange(typeMatches[type2].weaknesses);
+         
+            //Remove resistances of first type
+            weakList = ExtensionMethods.RemoveRange(weakList, typeMatches[type1].resistances.ToList());
+
+            //Remove resistances of the second type
+            weakList = ExtensionMethods.RemoveRange(weakList, typeMatches[type2].resistances.ToList());
+
+            //Remove immunities of the first type
+            weakList.RemoveAll(item => typeMatches[type1].immunities.Contains(item));
+
+            //Remove immunities of the second type
+            weakList.RemoveAll(item => typeMatches[type2].immunities.Contains(item));
+        } //end if
+
+        return weakList;
+    } //end DetermineWeaknesses(int type1, int type2=-1)
+
+    /***************************************
+     * Name: DetermineResistances
+     * Returns list of resistances for given 
+     * type(s)
+     ***************************************/
+    public List<int> DetermineResistances(int type1, int type2=-1)
+    {
+        //Create list to store resistances in
+        List<int> resistList = new List<int> ();
+        
+        //Add in all resistances of the first type
+        resistList.AddRange (typeMatches [type1].resistances);
+
+        //If a second type is given, remove weaknesses too
+        if (type2 > -1)
+        {        
+            //First add resistances of second type
+            resistList.AddRange (typeMatches [type2].resistances);
+            
+            //Remove weaknesses of first type
+            resistList = ExtensionMethods.RemoveRange (resistList, typeMatches [type1].weaknesses.ToList ());
+            
+            //Remove weaknesses of the second type
+            resistList = ExtensionMethods.RemoveRange (resistList, typeMatches [type2].weaknesses.ToList ());
+
+            //Add in all immunities of the first type
+            resistList.AddRange (typeMatches [type1].immunities);
+
+            //Add in all immunities of the second type
+            resistList.AddRange (typeMatches [type2].immunities);
+        } //end if
+        else
+        {
+            //Add in all immunities of the first type
+            resistList.AddRange (typeMatches [type1].immunities);
+        } //end else
+
+        return resistList;
+    } //end DetermineWeaknesses(int type1, int type2=-1)
 } //end ExperienceTable class
 
 /***************************************************************************************** 
@@ -796,7 +1056,7 @@ public enum ObtainFrom
     Shop         = 0,
     MysteryEvent = 1,
     RandomTeam   = 2,
-    AddPokemon   = 3,
+    Debug        = 3,
     UnknownSource= 4,
     COUNT        = 5
 } //end ObtainFrom enum

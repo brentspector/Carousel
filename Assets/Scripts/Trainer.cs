@@ -14,15 +14,19 @@ public class Trainer
 {
     #region Variables
     List<Pokemon> team;   //The player's current party
+    List<int> seen;       //What pokemon has the player encountered
+    List<int> owned;      //What pokemon does(has) the player own(ed)
     PC pPC;               //The PC for the player
-    float version;        //What version this save started on     
-    int bups;             //The number of backups made
     string pName;         //The player's name
     uint pID;             //The Trainer ID
+    int bups;             //The number of backups made
+    int pTrainer;         //What trainer image set the player wants
+    int pPoints;          //THe player's point count (for use in shop)
     int pBadges;          //The number of badges the player has
     int pHours;           //Total number of hours played
     int pMinutes;         //Total number of minutes played
     int pSeconds;         //Total number of seconds played
+    bool debugUnlocked;   //Whether the debug has been unlocked or not
     bool[] pEarnedBadges; //Which badges the player has obtained
 
     //Gym Battle count
@@ -78,14 +82,12 @@ public class Trainer
         //If the game manager exists
         if (GameManager.instance != null)
         {
+            //Initialize seen and owned
+            seen = new List<int>();
+            owned = new List<int>();
+
             //Initialize PC
             pPC = new PC ();
-
-            //Set version
-            if (GameManager.instance != null)
-            {
-                version = GameManager.instance.VersionNumber;
-            } //end if
 
             //No backups made yet
             bups = 0;
@@ -101,8 +103,15 @@ public class Trainer
             pID |= (uint)GameManager.instance.RandomInt (0, 255) << 8;
             pID |= (uint)GameManager.instance.RandomInt (0, 255) << 16;
 
+            //Player hasn't picked a trainer set yet
+            pTrainer = 0;
+
             //Player has no badges yet
             pBadges = 0;
+            pEarnedBadges = new bool[48];
+
+            //Player has not unlocked the debug menu
+            debugUnlocked = false;
 
             //Time played is zero
             pHours = 0;
@@ -128,7 +137,15 @@ public class Trainer
      ***************************************/
     public void AddPokemon(Pokemon newPokemon)
     {
-        team.Add (newPokemon);
+        if (team.Count < 6)
+        {
+            team.Add (newPokemon);
+        } //end if
+        else
+        {
+            AddToPC (GetPCBox (), 0, newPokemon);
+            GameManager.instance.DisplayText ("Team was full. Added to PC instead.", true);
+        } //end else
     } //end AddPokemon(Pokemon newPokemon)
 
     /***************************************
@@ -137,7 +154,14 @@ public class Trainer
      ***************************************/
     public void RemovePokemon(int spot)
     {
-        team.RemoveAt (spot);
+        if (team.Count > 1)
+        {
+            team.RemoveAt (spot);
+        } //end if
+        else
+        {
+            GameManager.instance.DisplayText ("Unable to remove from team as you only have 1 pokemon left", true);
+        } //end else
     } //end RemovePokemon(int spot)
 
     /***************************************
@@ -181,7 +205,17 @@ public class Trainer
     {
         return pPC.GetPC (box, spot);
     } //end GetPC(int box, int spot)
-    
+
+    /***************************************
+     * Name: UpdatePC
+     * Replaces a current pokemon with a 
+     * provided pokemon
+     ***************************************/
+    public void UpdatePC(int box, int spot, Pokemon newPokemon)
+    {
+        pPC.UpdatePC (box, spot, newPokemon);
+    } //end UpdatePC(int box, int spot, Pokemon newPokemon)
+
     /***************************************
      * Name: AddToPC
      * Adds the pokemon to the spot in the
@@ -229,6 +263,24 @@ public class Trainer
         return pPC.GetPCBoxWallpaper();
     } //end GetPCBoxWallpaper
 
+	/***************************************
+     * Name: SetPCBoxName
+     * Sets the current box name
+     ***************************************/
+	public void SetPCBoxName(string requestedName)
+	{
+		pPC.SetPCBoxName(requestedName);
+	} //end SetPCBoxName(string requestedName)
+
+	/***************************************
+     * Name: SetPCBoxWallpaper
+     * Set the current box wallpaper
+     ***************************************/
+	public void SetPCBoxWallpaper(int requestedWallpaper)
+	{
+		pPC.SetPCBoxWallpaper(requestedWallpaper);
+	} //end SetPCBoxWallpaper(int requestedWallpaper)
+
     /***************************************
      * Name: PreviousBox
      * Sets the PC to the previous box
@@ -246,7 +298,34 @@ public class Trainer
     {
         pPC.NextBox ();
     } //end NextBox
-    
+
+	/***************************************
+     * Name: ChangeBox
+     * Sets the PC to the requested box
+     ***************************************/
+	public void ChangeBox(int requestedBox)
+	{
+		pPC.ChangeBox (requestedBox);
+	} //end ChangeBox(int requestedBox)
+
+    /***************************************
+     * Name: GetLastPokemon
+     * Return the last non null pokemon in box
+     ***************************************/
+    public Pokemon GetLastPokemon()
+    {
+        return pPC.GetLastPokemon ();
+    } //end GetLastPokemon
+
+    /***************************************
+     * Name: GetFirstPokemon
+     * Return the first non null pokemon in box
+     ***************************************/
+    public Pokemon GetFirstPokemon()
+    {
+        return pPC.GetFirstPokemon ();
+    } //end GetFirstPokemon
+
     /***************************************
      * Name: GetPreviousPokemon
      * Return the index of the nearest non null 
@@ -266,6 +345,39 @@ public class Trainer
     {
         return pPC.GetNextPokemon (spot);
     } //end GetNextPokemon(int spot)
+
+    /***************************************
+     * Name: GetPlayerBadges
+     * Return whether player owns a badge or not 
+     ***************************************/
+    public bool GetPlayerBadges(int location)
+    {
+        return pEarnedBadges [location];
+    } //end GetPlayerBadges(int location)
+
+    /***************************************
+     * Name: SetPlayerBadges
+     * Set whether player owns a badge or not 
+     ***************************************/
+    public void SetPlayerBadges(int location, bool toSet)
+    {
+        //Check if anything changed
+        if (pEarnedBadges [location] != toSet)
+        {
+            //Set badge value
+            pEarnedBadges [location] = toSet;
+
+            //Update badge count
+            if (toSet)
+            {
+                pBadges++;
+            } //end if
+            else
+            {
+                pBadges--;
+            } //end else
+        } //end if
+    } //end GetPlayerBadges(int location)
     #region Properties
     /***************************************
      * Name: Team
@@ -283,19 +395,34 @@ public class Trainer
     } //end Team
 
     /***************************************
-     * Name: Version
+     * Name: Seen
      ***************************************/
-    public float Version
+    public List<int> Seen
     {
         get
         {
-            return version;
+            return seen;
         } //end get
         set
         {
-            version = value;
+            seen = value;
         } //end set
-    } //end Version
+    } //end Seen
+
+    /***************************************
+     * Name: Owned
+     ***************************************/
+    public List<int> Owned
+    {
+        get
+        {
+            return owned;
+        } //end get
+        set
+        {
+            owned = value;
+        } //end set
+    } //end Owned
 
     /***************************************
      * Name: BackUps
@@ -343,9 +470,39 @@ public class Trainer
     } //end PlayerID
 
     /***************************************
-     * Name: PlayerBadges
+     * Name: PlayerImage
      ***************************************/
-    public int PlayerBadges
+    public int PlayerImage
+    {
+        get
+        {
+            return pTrainer;
+        } //end get
+        set
+        {
+            pTrainer = value;
+        } //end set
+    } //end PlayerImage
+
+    /***************************************
+     * Name: PlayerPoints
+     ***************************************/
+    public int PlayerPoints
+    {
+        get
+        {
+            return pPoints;
+        } //end get
+        set
+        {
+            pPoints = value;
+        } //end set
+    } //end PlayerPoints
+
+    /***************************************
+     * Name: PlayerBadgeCount
+     ***************************************/
+    public int PlayerBadgeCount
     {
         get
         {
@@ -355,7 +512,7 @@ public class Trainer
         {
             pBadges = value;
         } //end set
-    } //end PlayerBadges
+    } //end PlayerBadgeCount
 
     /***************************************
      * Name: HoursPlayed
@@ -401,6 +558,21 @@ public class Trainer
             pSeconds = value;
         } //end set
     } //end SecondsPlayed
+
+    /***************************************
+     * Name: DebugUnlocked
+     ***************************************/
+    public bool DebugUnlocked
+    {
+        get
+        {
+            return debugUnlocked;
+        } //end get
+        set
+        {
+            debugUnlocked = value;
+        } //end set
+    } //end DebugUnlocked
     #endregion
     #endregion
 } //end Trainer class

@@ -15,22 +15,19 @@ public class ButtonFunctions : MonoBehaviour
 
     #region Methods
     /***************************************
-     * Name: ProcessSelection
-     * When selection rectangle is pressed,
-     * run the appropriate function
-     ***************************************/ 
-    public void ProcessSelection()
-    {
-        GameManager.instance.ProcessSelection ();
-    } //end ProcessSelection
-
-    /***************************************
      * Name: ReturnHome
      * Brings up the main game button menu
      ***************************************/ 
     public void ReturnHome()
     {
-        GameManager.instance.SetGameState(SceneManager.MainGame.HOME);
+        try
+        {
+			GameManager.instance.SetGameState(MainGameScene.MainGame.HOME);
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
     } //end ReturnHome
 
     /***************************************
@@ -39,7 +36,14 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void GymBattle()
     {
-        GameManager.instance.SetGameState(SceneManager.MainGame.GYMBATTLE);       
+        try
+        {
+			GameManager.instance.SetGameState(MainGameScene.MainGame.GYMBATTLE);       
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
     } //end GymBattle
 
     /***************************************
@@ -48,7 +52,14 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void TeamMenu()
     {
-        GameManager.instance.SetGameState(SceneManager.MainGame.TEAM);
+        try
+        {
+			GameManager.instance.SetGameState(MainGameScene.MainGame.TEAM);
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
     } //end TeamMenu
 
     /***************************************
@@ -57,7 +68,14 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void PlayerPC()
     {
-        GameManager.instance.LoadScene ("PC", SceneManager.OverallGame.PC);
+        try
+        {
+            GameManager.instance.LoadScene ("PC", true);
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
     } //end PlayerPC
 
     /***************************************
@@ -66,7 +84,14 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void Shop()
     {
-        GameManager.instance.LoadScene ("Shop", SceneManager.OverallGame.SHOP);
+        try
+        {
+            GameManager.instance.LoadScene ("Shop", true);
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
     } //end Shop
 
     /***************************************
@@ -75,7 +100,14 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void Pokedex()
     {
-        GameManager.instance.LoadScene ("Pokedex", SceneManager.OverallGame.POKEDEX);
+        try
+        {
+            GameManager.instance.LoadScene ("Pokedex", true);
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
     } //end Pokedex
 
     /***************************************
@@ -84,7 +116,14 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void ContinueGame()
     {
-        GameManager.instance.LoadScene ("MainGame", SceneManager.OverallGame.CONTINUE);
+        try
+        {
+            GameManager.instance.LoadScene ("MainGame", true);
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
     } //end ContinueGame
 
     /***************************************
@@ -93,7 +132,14 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void TrainerCard()
     {
-        GameManager.instance.SetGameState(SceneManager.MainGame.TRAINERCARD);
+        try
+        {
+			GameManager.instance.SetGameState(MainGameScene.MainGame.TRAINERCARD);
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
     } //end TrainerCard
 
     /***************************************
@@ -102,7 +148,14 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void Quit()
     {
-        Application.Quit ();       
+        try
+        {
+            Application.Quit (); 
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
     } //end Quit
 
     /***************************************
@@ -111,7 +164,14 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void Debug()
     {
-        GameManager.instance.SetGameState(SceneManager.MainGame.DEBUG);
+        try
+        {
+			GameManager.instance.SetGameState(MainGameScene.MainGame.DEBUG);
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
     } //end Debug
 
     /***************************************
@@ -120,7 +180,14 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void Info()
     {
-        GameManager.instance.SummaryChange(0);
+        try
+        {
+            GameManager.instance.SummaryChange(0);
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
     } //end Info
 
     /***************************************
@@ -129,7 +196,14 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void Memo()
     {
-        GameManager.instance.SummaryChange(1);
+        try
+        {
+            GameManager.instance.SummaryChange(1);
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
     } //end Memo
 
     /***************************************
@@ -138,7 +212,14 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void Stats()
     {
-        GameManager.instance.SummaryChange(2);
+        try
+        {
+            GameManager.instance.SummaryChange(2);
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
     } //end Stats
 
     /***************************************
@@ -147,7 +228,14 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void EVIV()
     {
-        GameManager.instance.SummaryChange(3);
+        try
+        {
+            GameManager.instance.SummaryChange(3);
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
     } //end EVIV
 
     /***************************************
@@ -156,7 +244,14 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void Moves()
     {
-        GameManager.instance.SummaryChange(4);
+        try
+        {
+            GameManager.instance.SummaryChange(4);
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
     } //end Moves
 
     /***************************************
@@ -165,7 +260,14 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void PartyOpen()
     {
-        GameManager.instance.PartyState(true);
+        try
+        {
+            GameManager.instance.PartyState(true);
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
     } //end PartyOpen
 
     /***************************************
@@ -174,45 +276,177 @@ public class ButtonFunctions : MonoBehaviour
      ***************************************/ 
     public void PartyClose()
     {
-        GameManager.instance.PartyState(false);
+        try
+        {
+            GameManager.instance.PartyState(false);
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
     } //end PartyClose
+
+    /***************************************
+     * Name: ToggleShown
+     * Toggles Weakness/Resistance in Pokedex
+     ***************************************/ 
+    public void ToggleShown()
+    {
+        try
+        {
+            GameManager.instance.ToggleShown ();
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
+    } //end ToggleShown
 
     /***************************************
      * Name: Persist
      * Persists the game
      ***************************************/ 
     public void Persist()
-    {
-        GameManager.instance.Persist ();
+    {	
+        try
+        {
+            GameManager.instance.Persist ();
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
     } //end Persist
 
     #region Debug
     /***************************************
-     * Name: GiveRandomTeam
-     * Gives the player a random team
+     * Name: EditPokemonMode
+     * Activates the pokemon edit panel
      ***************************************/ 
-    public void GiveRandomTeam()
-    {
-        GameManager.instance.RandomTeam ();
-    } //end GiveRandomTeam
+    public void EditPokemonMode()
+    {  
+        try
+        {
+            GameManager.instance.EditPokemonMode();
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
+    } //end EditPokemonMode
 
     /***************************************
-     * Name: GiveRandomPokemon
-     * Adds a single random pokemon to the team
+     * Name: EditTrainerMode
+     * Activates the trainer edit panel
      ***************************************/ 
-    public void GiveRandomPokemon()
-    {
-        GameManager.instance.RandomPokemon ();
-    } //end GiveRandomPokemon
+    public void EditTrainerMode()
+    {  
+        try
+        {
+            GameManager.instance.EditTrainerMode();
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
+    } //end EditTrainerMode
 
     /***************************************
-     * Name: AddRandomPokemonToPC
-     * Adds a single random pokemon to the pc
+     * Name: UpdateSprite
+     * Changes sprite to reflect choice change
      ***************************************/ 
-    public void AddRandomPokemonToPC()
+    public void UpdateSprite()
+    {	
+        try
+        {
+            GameManager.instance.UpdateSprite();
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
+    } //end UpdateSprite
+
+    /***************************************
+     * Name: RandomTeam
+     * Gives player a random team
+     ***************************************/ 
+    public void RandomTeam()
     {
-        GameManager.instance.AddRandomPokemonToPC ();
-    } //end AddRandomPokemonToPC
+        try
+        {
+            GameManager.instance.RandomTeam ();
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
+    } //end RandomTeam
+
+    /***************************************
+     * Name: RandomPokemon
+     * Gives player a random pokemon
+     ***************************************/ 
+    public void RandomPokemon()
+    {
+        try
+        {
+            GameManager.instance.RandomPokemon ();
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
+    } //end RandomPokemon
+
+	/***************************************
+     * Name: EditPokemon
+     * Grabs a pokemon out of team or pc
+     * and populates debug with it
+     ***************************************/ 
+	public void EditPokemon()
+    {	
+        try
+        {
+		    GameManager.instance.EditPokemon ();
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
+	} //end EditPokemon
+
+	/***************************************
+     * Name: RemovePokemon
+     * Remove a pokemon from PC or team
+     ***************************************/ 
+	public void RemovePokemon()
+	{	
+        try
+        {
+		    GameManager.instance.RemovePokemon ();
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
+	} //end RemovePokemon
+
+    /***************************************
+     * Name: FinishEditing
+     * Apply pokemon to requested spot
+     ***************************************/ 
+    public void FinishEditing()
+    {
+        try
+        {
+            GameManager.instance.FinishEditing ();
+        } //end try
+        catch(System.Exception e)
+        {
+            GameManager.instance.LogErrorMessage (e.ToString());
+        } //end catch
+    } //end FinishEditing
     #endregion
     #endregion
 } //end ButtonFunctions class
