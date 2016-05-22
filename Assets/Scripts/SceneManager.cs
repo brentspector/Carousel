@@ -558,49 +558,6 @@
 //
 //	//Miscellaneous functions
 //	#region Misc
-//    /***************************************
-//     * Name: Reset
-//     * Soft resets the game to intro screen
-//     ***************************************/
-//	public void Reset()
-//    {
-//		StopAllCoroutines ();
-//        StartCoroutine (LoadScene ("Intro", OverallGame.INTRO));
-//	} //end Reset
-//
-//    /***************************************
-//     * Name: SetCheckpoint
-//     * Sets checkpoint to parameter
-//     ***************************************/
-//    public void SetCheckpoint(int newCheckpoint)
-//    {
-//        checkpoint = newCheckpoint; 
-//    } //end SetCheckpoint(int newCheckpoint)
-//
-//    /***************************************
-//     * Name: PartyState
-//     * Opens/Closes the Party in PC box
-//     ***************************************/ 
-//    public IEnumerator PartyState(bool state)
-//    {
-//        //Process at end of frame
-//        yield return new WaitForEndOfFrame ();
-//
-//        //Party to be opened
-//        if (state)
-//        {
-//            partyTab.SetActive(true);
-//            choiceNumber = 1;
-//            currentTeamSlot = partyTab.transform.FindChild("Pokemon1").gameObject;
-//            pcState = PCGame.PARTY;
-//        } //end if
-//        //Party to be closed
-//        else
-//        {
-//            partyTab.SetActive(false);
-//            pcState = PCGame.HOME;
-//        } //end else
-//    } //end PartyState(bool state)
 //
 //    /***************************************
 //     * Name: ToggleShown
