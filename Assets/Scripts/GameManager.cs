@@ -43,6 +43,7 @@ public class GameManager : MonoBehaviour
 
 	//Scene variables
     SystemManager sysm;                     //Manages system features
+	bool loadingLevel = false;				//If a level is loading, disable update
     bool running = false;                   //Allows methods to run once
     bool textDisplayed = false;             //If text is displayed
     bool continueImmediate;                 //Continue as soon as able, don't wait for enter
@@ -138,6 +139,13 @@ public class GameManager : MonoBehaviour
             {
                 textDisplayed = sysm.ManageTextbox(continueImmediate);
             } //end if textDisplayed
+
+			//Don't update game while a scene is loading
+			if(loadingLevel)
+			{
+				return;
+			} //end if
+
 			//Intro scene
             else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Intro")
 			{
@@ -222,14 +230,17 @@ public class GameManager : MonoBehaviour
 		//If fade out is requested
 		if (fadeOut)
 		{
+			loadingLevel = true;
 			StartCoroutine(anim.FadeOutAnimation(levelName));
 		} //end if
 		else
 		{
 			//Move to next scene
+			loadingLevel = true;
 			ChangeCheckpoint(0);
 			checkDel = null;
 			UnityEngine.SceneManagement.SceneManager.LoadScene(levelName);
+			loadingLevel = false;
 		} //end else
 	} //end LoadScene(string levelName, bool fadeOut)
 
@@ -284,7 +295,14 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void SummaryChange(int summaryPage)
     {
-		StartCoroutine(mainGame.SetSummaryPage (summaryPage));
+		if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainGame")
+		{
+			StartCoroutine(mainGame.SetSummaryPage(summaryPage));
+		} //end if
+		else if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "PC")
+		{
+			StartCoroutine(pc.SetSummaryPage(summaryPage));
+		} //end else if
     } //end SummaryChange(int summaryPage)
 
     /***************************************
@@ -293,7 +311,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void PartyState(bool state)
     {
-       // StartCoroutine(scenes.PartyState(state));
+		StartCoroutine(pc.PartyState(state));
     } //end PartyState(bool state)
 
     /***************************************
@@ -302,7 +320,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
     public void ToggleShown()
     {
-        //scenes.ToggleShown ();
+		pokedex.ToggleShown ();
     } //end ToggleShown
     #endregion
 
