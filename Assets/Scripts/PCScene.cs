@@ -404,12 +404,12 @@ public class PCScene : MonoBehaviour
 					//Pokemon Region of box
 					else
 					{
-						Debug.Log("held: " + heldPokemon + ", selected: " + selectedPokemon);
 						heldPokemon = selectedPokemon;
 						selectedPokemon = null;
 						GameManager.instance.GetTrainer().RemoveFromPC(
 							GameManager.instance.GetTrainer().GetPCBox(), boxChoice);
 						choiceHand.GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/boxfist");
+						heldImage.GetComponent<Image>().color = Color.white;
 						heldImage.GetComponent<Image>().sprite = GetCorrectIcon(heldPokemon);
 						boxBack.transform.FindChild("PokemonRegion").GetChild(boxChoice).GetComponent<Image>().color = Color.clear;
 					} //end else
@@ -566,7 +566,7 @@ public class PCScene : MonoBehaviour
 			{
 				//Initialize
         	    if(!initialize)
-        	    {                              
+        	    {
         	        //Fill in choices box
         	        FillInChoices();
 			
@@ -574,7 +574,7 @@ public class PCScene : MonoBehaviour
         	        subMenuChoice = 0;
 			
         	        //Reposition choices menu and selection rectangle
-        	        StartCoroutine("WaitForResize");
+					StartCoroutine(WaitForResize());
 			
         	        //Initialize finished
         	        initialize = true;
@@ -584,7 +584,7 @@ public class PCScene : MonoBehaviour
         	    selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
 			
         	    //Get player input
-        	    //GatherInput ();
+				GetInput();
 			} //end else if
 			
 			//Box name, wallpaper, and jump to
@@ -1717,20 +1717,16 @@ public class PCScene : MonoBehaviour
 				//Open submenu as long as player is in pokemon region or on title
 				if((boxChoice > -1 && boxChoice < 30) || boxChoice == -2)
 				{
-					//Set submenu active
-					choices.SetActive(true);
-					selection.SetActive(true);
+					//Fill in choices
+					FillInChoices();
 
 					//Set up selection box at end of frame if it doesn't fit
 					if(selection.GetComponent<RectTransform>().sizeDelta != 
 						choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
 					{
 						selection.SetActive(false);
-						StartCoroutine("WaitForResize");
+						StartCoroutine(WaitForResize());
 					} //end if
-
-					//Fill in choices
-					FillInChoices();
 
 					//Reset position to top of menu
 					subMenuChoice = 0;
@@ -1745,20 +1741,16 @@ public class PCScene : MonoBehaviour
 				//Open submenu as long as player is in party
 				if(choiceNumber > 0)
 				{
-					//Set submenu active
-					choices.SetActive(true);
-					selection.SetActive(true);
+					//Fill in choices
+					FillInChoices(); 
 
 					//Set up selection box at end of frame if it doesn't fit
 					if(selection.GetComponent<RectTransform>().sizeDelta != 
 						choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
 					{
 						selection.SetActive(false);
-						StartCoroutine("WaitForResize");
+						StartCoroutine(WaitForResize());
 					} //end if
-
-					//Fill in choices
-					FillInChoices(); 
 
 					//Reset position to top of menu
 					subMenuChoice = 0;
@@ -2213,20 +2205,16 @@ public class PCScene : MonoBehaviour
 				//Open submenu as long as player is in pokemon region or on title
 				if((boxChoice > -1 && boxChoice < 30 && (selectedPokemon != null || heldPokemon != null)) || boxChoice == -2)
 				{
-					//Set submenu active
-					choices.SetActive(true);
-					selection.SetActive(true);
+					//Fill in choices
+					FillInChoices();
 
 					//Set up selection box at end of frame if it doesn't fit
 					if(selection.GetComponent<RectTransform>().sizeDelta != 
 						choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
 					{
 						selection.SetActive(false);
-						StartCoroutine("WaitForResize");
+						StartCoroutine(WaitForResize());
 					} //end if
-
-					//Fill in choices
-					FillInChoices();
 
 					//Reset position to top of menu
 					subMenuChoice = 0;
@@ -2251,20 +2239,16 @@ public class PCScene : MonoBehaviour
 				//Open submenu as long as player is in party
 				if(choiceNumber > 0 && (selectedPokemon != null || heldPokemon != null))
 				{
-					//Set submenu active
-					choices.SetActive(true);
-					selection.SetActive(true);
+					//Fill in choices
+					FillInChoices();
 
 					//Set up selection box at end of frame if it doesn't fit
 					if(selection.GetComponent<RectTransform>().sizeDelta != 
 						choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
 					{
 						selection.SetActive(false);
-						StartCoroutine("WaitForResize");
+						StartCoroutine(WaitForResize());
 					} //end if
-
-					//Fill in choices
-					FillInChoices();
 
 					//Reset position to top of menu
 					subMenuChoice = 0;
@@ -2714,7 +2698,7 @@ public class PCScene : MonoBehaviour
     void FillInChoices()
     {
         //If in PC in Pokemon Region
-        if (boxChoice > -1)
+		if ((pcState == PCGame.HOME && boxChoice > -1) || pcState == PCGame.PARTY)
         {
             //Fill in choices box
             for (int i = choices.transform.childCount - 1; i < 6; i++)
@@ -2747,7 +2731,7 @@ public class PCScene : MonoBehaviour
             } //end if
         } //end else if
         //If in PC on Box Title
-        else if (boxChoice == -2)
+		else if (pcState == PCGame.HOME && boxChoice == -2)
         {
             //Fill in choices box
             for (int i = choices.transform.childCount-1; i < 3; i++)
@@ -2813,8 +2797,12 @@ public class PCScene : MonoBehaviour
             {
                 choices.transform.GetChild(i).GetComponent<Text>().color =
                     markingChoices[i] ? Color.black : Color.gray;
-            } //end for           
+            } //end for 
         } //end else if
+
+		//Set submenu active
+		choices.SetActive(true);
+		selection.SetActive(true);
     } //end FillInChoices
 
 	/***************************************
@@ -3143,10 +3131,11 @@ public class PCScene : MonoBehaviour
 	IEnumerator WaitForResize()
 	{
 		//Process at end of frame
+		StartCoroutine(PositionChoices());
 		yield return new WaitForEndOfFrame();
 
 		//Team Submenu
-		if (pcState == PCGame.POKEMONSUBMENU)
+		if (pcState == PCGame.POKEMONSUBMENU || pcState == PCGame.POKEMONMARKINGS)
 		{
 			Vector3 scale = new Vector3(choices.GetComponent<RectTransform>().rect.width,
 				choices.GetComponent<RectTransform>().rect.height /
@@ -3371,6 +3360,49 @@ public class PCScene : MonoBehaviour
 				break;
 		} //end switch
 	} //end PokemonSummary(Pokemon pokemonChoice)
+
+	/***************************************
+     * Name: SetSummaryPage
+     * Sets summaryChoice to parameter
+     ***************************************/
+	public IEnumerator SetSummaryPage(int summaryPage)
+	{
+		//Process at end of frame
+		yield return new WaitForEndOfFrame ();
+
+		//Change screen only if summary screen is active
+		if (summaryScreen.activeSelf)
+		{
+			//If move switch is active
+			if(pcState == PCGame.MOVESWITCH)
+			{
+				//Return to summary
+				currentMoveSlot.GetComponent<Image>().color = Color.clear;
+				summaryScreen.transform.GetChild(5).gameObject.SetActive(false);
+				summaryScreen.transform.GetChild(4).gameObject.SetActive(false);
+				selection.SetActive(false);
+
+				//Change to new page
+				summaryChoice = summaryPage;
+				pcState = PCGame.POKEMONSUMMARY;
+			} //end if
+			else if(summaryChoice == 5)
+			{
+				summaryScreen.transform.GetChild(5).gameObject.SetActive(false);
+				summaryScreen.transform.GetChild(4).gameObject.SetActive(false);
+				selection.SetActive(false);
+				summaryChoice = summaryPage;
+			} //end else if
+			else
+			{
+				//Deactivate current page
+				summaryScreen.transform.GetChild(summaryChoice).gameObject.SetActive(false);
+
+				//Change to new page
+				summaryChoice = summaryPage;
+			} //end else
+		} //end if
+	} //end SetSummaryPage(int summaryPage)
 
     /***************************************
      * Name: PartyState
