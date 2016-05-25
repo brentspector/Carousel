@@ -154,6 +154,7 @@ public class SystemManager : MonoBehaviour
         } //end else
 
 		//Send a starting line
+		LogErrorMessage("- - - - - -");
 		LogErrorMessage (DateTime.Now.ToString () + " - Game was started - Version " + 
                          GameManager.instance.VersionNumber);
        
@@ -191,6 +192,7 @@ public class SystemManager : MonoBehaviour
     {
         if (output != null)
         {
+			LogErrorMessage("- - - - - -");
             output.Close();
             output = null;
         } //end if
@@ -414,9 +416,30 @@ public class SystemManager : MonoBehaviour
 			pf.Close();
             if(pfd.patchVersion != GameManager.instance.VersionNumber)
             {
-                GameManager.instance.LogErrorMessage("File patch version doesn't match game version");
-                pPlayer = Patch.PatchFile(pfd.player, pfd.patchVersion);
-                GameManager.instance.LogErrorMessage("Updated trainer file");
+				//Create copy of original file
+                GameManager.instance.LogErrorMessage("File patch version doesn't match game version, making backup.");
+				int counter = 0;
+				if (!File.Exists(dataLocation + pfd.player.PlayerName + "-" + pfd.patchVersion + ".dat"))
+				{
+					counter++;
+					while (File.Exists(dataLocation + pfd.player.PlayerName + "-" + pfd.patchVersion + "-" + counter.ToString() + ".dat"))
+					{
+						counter++;
+					} //end while
+				} //end if
+				string fileName = counter == 0 ? dataLocation + pfd.player.PlayerName + "-" + pfd.patchVersion + ".dat" :
+					dataLocation + pfd.player.PlayerName + "-" + pfd.patchVersion + "-" + counter.ToString() + ".dat";
+				File.Copy(dataLocation + "game.dat", fileName);
+				pPlayer = Patch.PatchFile(pfd.player, ref pfd.patchVersion);
+				if (pfd.patchVersion == GameManager.instance.VersionNumber)
+				{
+					GameManager.instance.LogErrorMessage("Updated trainer file to " + pfd.patchVersion);
+					pPatchVersion = pfd.patchVersion;
+				} //end if
+				else
+				{
+					GameManager.instance.LogErrorMessage("File not updated to latest patch.");
+				} //end else
             } //end if
             else
             {

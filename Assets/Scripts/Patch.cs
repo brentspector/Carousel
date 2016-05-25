@@ -13,28 +13,43 @@ public static class Patch
     #endregion
 
     #region Methods
-    public static Trainer PatchFile(Trainer fTrainer, float patchVersion)
+	//TODO:http://www.diranieh.com/NETSerialization/BinarySerialization.htm
+    public static Trainer PatchFile(Trainer fTrainer, ref float patchVersion)
     {
+		Trainer fixedTrainer = null;
         //Try to apply appropriate patches
         try
         {
-            if (patchVersion >= GameManager.instance.VersionNumber)
-            {
-                GameManager.instance.LogErrorMessage ("You encountered an error loading the save file and your patch " +
-                    "matches the current version. Please notify creator of this problem.");
-            } //end if
-            else
-            {
-                GameManager.instance.LogErrorMessage ("Your file is old, please notify creator so they can fix it");
-            } //end else
+			if(patchVersion > GameManager.instance.VersionNumber)
+			{
+				GameManager.instance.LogErrorMessage("Your file is from a newer version. Attempting to " +
+					"apply your new data to the old format.");
+				fixedTrainer = fTrainer;
+				patchVersion = GameManager.instance.VersionNumber;
+			} //end if
+			else if(patchVersion < 0.3f)
+			{
+				GameManager.instance.LogErrorMessage ("Your file is older than patches are available for. Your patch version is " + 
+					patchVersion + ".");
+			} //end else if
+			/***********************************
+			 * Patch Notes   0.3 - 0.4
+			 * - 
+			 ***********************************/
+			else if(patchVersion == 0.3f)
+			{
+				fixedTrainer = fTrainer;
+				patchVersion = 0.4f;
+			} //end else if
         } //end try
         catch(System.Exception e)
         {
-            GameManager.instance.LogErrorMessage("Attempted to patch file, but an error occured: " + e.ToString() +
-                                                 ". Please notify creator so they can fix it.");
+			GameManager.instance.LogErrorMessage("Attempted to patch file, but an error occured:");
+			GameManager.instance.LogErrorMessage(e.ToString());
+			GameManager.instance.LogErrorMessage("Please notify creator so they can fix it.");
         } //end catch
 
-        return new Trainer();
-    } //end PatchFile(Trainer fTrainer, float patchVersion)
+		return fixedTrainer != null ? fixedTrainer : new Trainer();
+    } //end PatchFile(Trainer fTrainer, ref float patchVersion)
     #endregion
 } //end class Patch

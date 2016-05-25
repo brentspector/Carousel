@@ -7,6 +7,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 #endregion
 
 [Serializable]
@@ -111,7 +112,7 @@ public class Trainer
             pEarnedBadges = new bool[48];
 
             //Player has not unlocked the debug menu
-            debugUnlocked = false;
+            debugUnlocked = true;
 
             //Time played is zero
             pHours = 0;

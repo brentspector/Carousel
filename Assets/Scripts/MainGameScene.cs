@@ -242,56 +242,8 @@ public class MainGameScene : MonoBehaviour
 						} //end else
 
 						//Set status
-						switch (GameManager.instance.GetTrainer().Team[i].Status)
-						{
-						//Healthy
-							case 0:
-								playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Status").
-								GetComponent<Image>().color = Color.clear;
-								break;
-						//Faint
-							case 1:
-								playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Status").
-								GetComponent<Image>().color = Color.white;
-								playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Status").
-								GetComponent<Image>().sprite = DataContents.statusSprites[5];
-								break;
-						//Sleep
-							case 2:
-								playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Status").
-								GetComponent<Image>().color = Color.white;
-								playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Status").
-								GetComponent<Image>().sprite = DataContents.statusSprites[0];
-								break;
-						//Poison
-							case 3:
-								playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Status").
-								GetComponent<Image>().color = Color.white;
-								playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Status").
-								GetComponent<Image>().sprite = DataContents.statusSprites[1];
-								break;
-						//Burn
-							case 4:
-								playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Status").
-								GetComponent<Image>().color = Color.white;
-								playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Status").
-								GetComponent<Image>().sprite = DataContents.statusSprites[2];
-								break;
-						//Paralyze
-							case 5:
-								playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Status").
-								GetComponent<Image>().color = Color.white;
-								playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Status").
-								GetComponent<Image>().sprite = DataContents.statusSprites[3];
-								break;
-						//Freeze
-							case 6:
-								playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Status").
-								GetComponent<Image>().color = Color.white;
-								playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Status").
-								GetComponent<Image>().sprite = DataContents.statusSprites[4];
-								break;
-						} //end switch
+						SetStatusIcon(playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Status").
+							GetComponent<Image>(), GameManager.instance.GetTrainer().Team[i]);
 
 						//Set sprite
 						playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Sprite").GetComponent<Image>()
@@ -2235,6 +2187,53 @@ public class MainGameScene : MonoBehaviour
 	} //end GetCorrectIcon(Pokemon myPokemon)
 
 	/***************************************
+	 * Name: SetStatusIcon
+	 * Sets status icon based on pokemon 
+	 * status
+	 ***************************************/
+	void SetStatusIcon(Image statusImage, Pokemon myPokemon)
+	{
+		//Set status
+		switch (myPokemon.Status)
+		{
+			//Healthy
+			case 0:
+				statusImage.color = Color.clear;
+				break;
+			//Faint
+			case 1:
+				statusImage.color = Color.white;
+				statusImage.sprite = DataContents.statusSprites[5];
+				break;
+			//Sleep
+			case 2:
+				statusImage.color = Color.white;
+				statusImage.sprite = DataContents.statusSprites[0];
+				break;
+			//Poison
+			case 3:
+				statusImage.color = Color.white;
+				statusImage.sprite = DataContents.statusSprites[1];
+				break;
+			//Burn
+			case 4:
+				statusImage.color = Color.white;
+				statusImage.sprite = DataContents.statusSprites[2];
+				break;
+			//Paralyze
+			case 5:
+				statusImage.color = Color.white;
+				statusImage.sprite = DataContents.statusSprites[3];
+				break;
+			//Freeze
+			case 6:
+				statusImage.color = Color.white;
+				statusImage.sprite = DataContents.statusSprites[4];
+				break;
+		} //end switch
+	} //end SetStatusIcon(Image statusImage, Pokemon myPokemon)
+
+	/***************************************
 	 * Name: SetTypeSprites
 	 * Sets the correct sprite, or disables
 	 * if a type isn't found
@@ -2433,6 +2432,7 @@ public class MainGameScene : MonoBehaviour
 				SetTypeSprites(summaryScreen.transform.GetChild(0).FindChild("Types").GetChild(0).GetComponent<Image>(),
 					summaryScreen.transform.GetChild(0).FindChild("Types").GetChild(1).GetComponent<Image>(), 
 					pokemonChoice.NatSpecies);
+				SetStatusIcon(summaryScreen.transform.GetChild(0).FindChild("Status").GetComponent<Image>(), pokemonChoice);
 				break;
 			//Memo screen
 			case 1:
@@ -2461,6 +2461,7 @@ public class MainGameScene : MonoBehaviour
 					ToString();
 				summaryScreen.transform.GetChild(1).FindChild("CaughtLevel").GetComponent<Text>().text =
 					"Found at level " + pokemonChoice.ObtainLevel;
+				SetStatusIcon(summaryScreen.transform.GetChild(1).FindChild("Status").GetComponent<Image>(), pokemonChoice);
 				break;
 			//Stats
 			case 2:
@@ -2499,6 +2500,7 @@ public class MainGameScene : MonoBehaviour
 				summaryScreen.transform.GetChild(2).FindChild("AbilityDescription").GetComponent<Text>().text = 
 					pokemonChoice.GetAbilityDescription();
 				SetStatColor(pokemonChoice);
+				SetStatusIcon(summaryScreen.transform.GetChild(2).FindChild("Status").GetComponent<Image>(), pokemonChoice);
 				break;
 			//EV-IV
 			case 3:
@@ -2536,6 +2538,7 @@ public class MainGameScene : MonoBehaviour
 					pokemonChoice.GetAbilityName();
 				summaryScreen.transform.GetChild(3).FindChild("AbilityDescription").GetComponent<Text>().text = 
 					pokemonChoice.GetAbilityDescription();
+				SetStatusIcon(summaryScreen.transform.GetChild(3).FindChild("Status").GetComponent<Image>(), pokemonChoice);
 				break;
 			//Moves
 			case 4:
@@ -2556,6 +2559,7 @@ public class MainGameScene : MonoBehaviour
 				summaryScreen.transform.GetChild(4).FindChild("Item").GetComponent<Text>().text =
 					DataContents.GetItemGameName(pokemonChoice.Item);
 				SetMoveSprites(pokemonChoice, summaryScreen.transform.GetChild(4));
+				SetStatusIcon(summaryScreen.transform.GetChild(4).FindChild("Status").GetComponent<Image>(), pokemonChoice);
 				break;
 			//Move Details
 			case 5:
@@ -2922,6 +2926,9 @@ public class MainGameScene : MonoBehaviour
             //Update nickname
             newPokemon.Nickname = pokemonRightRegion.transform.FindChild("Nickname").GetComponent<InputField>().text;
 
+			//Update status
+			newPokemon.Status = pokemonRightRegion.transform.FindChild("Status").GetComponent<Dropdown>().value;
+
             //Update IV
             int[] ivFields = new int[6];
             for (int i = 0; i < 6; i++)
@@ -2995,6 +3002,8 @@ public class MainGameScene : MonoBehaviour
 		pokemonRightRegion.transform.FindChild("Ball").GetComponent<Dropdown>().RefreshShownValue();
 		pokemonRightRegion.transform.FindChild("Ability").GetComponent<Dropdown>().value = myPokemon.Ability-1;
 		pokemonRightRegion.transform.FindChild("Ability").GetComponent<Dropdown>().RefreshShownValue();
+		pokemonRightRegion.transform.FindChild("Status").GetComponent<Dropdown>().value = myPokemon.Status;
+		pokemonRightRegion.transform.FindChild("Status").GetComponent<Dropdown>().RefreshShownValue();
 		pokemonRightRegion.transform.FindChild("Happiness").GetComponent<InputField>().text = myPokemon.Happiness.ToString();
 		pokemonRightRegion.transform.FindChild("Form").GetComponent<InputField>().text = myPokemon.FormNumber.ToString();
 		pokemonRightRegion.transform.FindChild("Shiny").GetComponent<Toggle>().isOn = myPokemon.IsShiny;

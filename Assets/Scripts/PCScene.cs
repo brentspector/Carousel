@@ -38,7 +38,6 @@ public class PCScene : MonoBehaviour
 	int switchChoice;               //The move chosen to switch with the selected
 	int ribbonChoice;               //The ribbon currently shown
 	int previousRibbonChoice;       //The ribbon last highlighted for reading
-	bool processing = false;		//Whether a function is already processing something
 	bool initialize;				//Initialize each state once per access
     PCGame pcState;                 //Current state of the PC
     Pokemon selectedPokemon;        //The currently selected pokemon
@@ -104,14 +103,11 @@ public class PCScene : MonoBehaviour
 		//Initialize starting state
 		else if (checkpoint == 1)
 		{
-			//Return if processing
-			if (processing)
+			//Return if processing animation
+			if (GameManager.instance.IsProcessing())
 			{
 				return;
 			} //end if
-
-			//Begin processing
-			processing = true;
 
 			//Nothing has been initialized
 			initialize = false;
@@ -206,7 +202,6 @@ public class PCScene : MonoBehaviour
 
 						//Reset scene
 						checkpoint = 1;
-						processing = false;
 						break;
 					//Box title
 					case -2:
@@ -225,7 +220,6 @@ public class PCScene : MonoBehaviour
 
 						//Reset scene
 						checkpoint = 1;
-						processing = false;
 						break;
 					//Party button
 					case 30:
@@ -2108,7 +2102,6 @@ public class PCScene : MonoBehaviour
 
 				//Return to home
 				checkpoint = 1;
-				processing = false;
 				pcState = PCGame.HOME;
 			} //end else if Pokemon Input on PC -> Input
 		} //end else if Left Mouse Button
@@ -2605,7 +2598,6 @@ public class PCScene : MonoBehaviour
 
 				//Return to home
 				checkpoint = 1;
-				processing = false;
 				pcState = PCGame.HOME;
 			} //end else if Pokemon Input on PC -> Input
 		} //end else if Enter/Return Key
@@ -2911,6 +2903,53 @@ public class PCScene : MonoBehaviour
     } //end FillDetails
 
 	/***************************************
+	 * Name: SetStatusIcon
+	 * Sets status icon based on pokemon 
+	 * status
+	 ***************************************/
+	void SetStatusIcon(Image statusImage, Pokemon myPokemon)
+	{
+		//Set status
+		switch (myPokemon.Status)
+		{
+			//Healthy
+			case 0:
+				statusImage.color = Color.clear;
+				break;
+				//Faint
+			case 1:
+				statusImage.color = Color.white;
+				statusImage.sprite = DataContents.statusSprites[5];
+				break;
+				//Sleep
+			case 2:
+				statusImage.color = Color.white;
+				statusImage.sprite = DataContents.statusSprites[0];
+				break;
+				//Poison
+			case 3:
+				statusImage.color = Color.white;
+				statusImage.sprite = DataContents.statusSprites[1];
+				break;
+				//Burn
+			case 4:
+				statusImage.color = Color.white;
+				statusImage.sprite = DataContents.statusSprites[2];
+				break;
+				//Paralyze
+			case 5:
+				statusImage.color = Color.white;
+				statusImage.sprite = DataContents.statusSprites[3];
+				break;
+				//Freeze
+			case 6:
+				statusImage.color = Color.white;
+				statusImage.sprite = DataContents.statusSprites[4];
+				break;
+		} //end switch
+	} //end SetStatusIcon(Image statusImage, Pokemon myPokemon)
+
+	/***************************************
 	 * Name: SetTypeSprites
 	 * Sets the correct sprite, or disables
 	 * if a type isn't found
@@ -3179,7 +3218,6 @@ public class PCScene : MonoBehaviour
 				myPokemon.GetMove(moveChoice));
 	} //end WaitForFontResize(Transform moveScreen, Pokemon myPokemon)
 
-
 	/***************************************
 	 * Name: PokemonSummary
 	 * Sets summary screen details for each
@@ -3223,6 +3261,7 @@ public class PCScene : MonoBehaviour
 				SetTypeSprites(summaryScreen.transform.GetChild(0).FindChild("Types").GetChild(0).GetComponent<Image>(),
 					summaryScreen.transform.GetChild(0).FindChild("Types").GetChild(1).GetComponent<Image>(), 
 					pokemonChoice.NatSpecies);
+				SetStatusIcon(summaryScreen.transform.GetChild(0).FindChild("Status").GetComponent<Image>(), pokemonChoice);
 				break;
 				//Memo screen
 			case 1:
@@ -3251,6 +3290,7 @@ public class PCScene : MonoBehaviour
 					ToString();
 				summaryScreen.transform.GetChild(1).FindChild("CaughtLevel").GetComponent<Text>().text =
 					"Found at level " + pokemonChoice.ObtainLevel;
+				SetStatusIcon(summaryScreen.transform.GetChild(1).FindChild("Status").GetComponent<Image>(), pokemonChoice);
 				break;
 				//Stats
 			case 2:
@@ -3289,6 +3329,7 @@ public class PCScene : MonoBehaviour
 				summaryScreen.transform.GetChild(2).FindChild("AbilityDescription").GetComponent<Text>().text = 
 					pokemonChoice.GetAbilityDescription();
 				SetStatColor(pokemonChoice);
+				SetStatusIcon(summaryScreen.transform.GetChild(2).FindChild("Status").GetComponent<Image>(), pokemonChoice);
 				break;
 				//EV-IV
 			case 3:
@@ -3326,6 +3367,7 @@ public class PCScene : MonoBehaviour
 					pokemonChoice.GetAbilityName();
 				summaryScreen.transform.GetChild(3).FindChild("AbilityDescription").GetComponent<Text>().text = 
 					pokemonChoice.GetAbilityDescription();
+				SetStatusIcon(summaryScreen.transform.GetChild(3).FindChild("Status").GetComponent<Image>(), pokemonChoice);
 				break;
 				//Moves
 			case 4:
@@ -3346,6 +3388,7 @@ public class PCScene : MonoBehaviour
 				summaryScreen.transform.GetChild(4).FindChild("Item").GetComponent<Text>().text =
 					DataContents.GetItemGameName(pokemonChoice.Item);
 				SetMoveSprites(pokemonChoice, summaryScreen.transform.GetChild(4));
+				SetStatusIcon(summaryScreen.transform.GetChild(4).FindChild("Status").GetComponent<Image>(), pokemonChoice);
 				break;
 				//Move Details
 			case 5:
@@ -3436,7 +3479,6 @@ public class PCScene : MonoBehaviour
 	public void ChangeCheckpoint(int newCheckpoint)
 	{
 		checkpoint = newCheckpoint;
-		processing = false;
 	} //end ChangeCheckpoint(int newCheckpoint)
 	#endregion
 } //end class PCScene

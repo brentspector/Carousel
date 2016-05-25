@@ -1,10 +1,12 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\PokedexScene.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\SystemManager.cs">
     <Files>
-      <File FileName="Assets\Scripts\PokedexScene.cs" Line="582" Column="29" />
-      <File FileName="Assets\Scripts\GameManager.cs" Line="323" Column="10" />
-      <File FileName="Assets\Scripts\MainGameScene.cs" Line="84" Column="1" />
+      <File FileName="Assets\Scripts\SystemManager.cs" Line="432" Column="52" />
+      <File FileName="Assets\Scripts\DataContents.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\GameManager.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Patch.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Trainer.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
