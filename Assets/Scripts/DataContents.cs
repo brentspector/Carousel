@@ -264,7 +264,8 @@ public static class DataContents : System.Object
     
     /***************************************
      * Name: GetItemGameName
-     * Returns string name of given numeric location
+     * Returns string name of given numeric 
+     * location
      ***************************************/
     public static string GetItemGameName(int itemNumber)
     {
@@ -280,6 +281,25 @@ public static class DataContents : System.Object
             return itemName;
         } //end else
     } //end GetItemGameName(int itemNumber)
+
+	/***************************************
+     * Name: GetItemBagSlot
+     * Returns item's bag spot
+     ***************************************/
+	public static int GetItemBagSpot(int itemNumber)
+	{
+		//Return NULL if a number goes beyond list boundaries
+		if (itemNumber < 1 || itemNumber > itemCount)
+		{
+			return 0;
+		} //end if
+		//Return item bag spot 
+		else
+		{
+			int itemLocation = ExecuteSQL<int>("SELECT bagNumber FROM Items WHERE rowid=" + itemNumber);
+			return itemLocation;
+		} //end else
+	} //end GetItemBagSpot(int itemNumber)
     #endregion
 } //end DataContents class
 

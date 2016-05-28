@@ -34,11 +34,12 @@ public static class Patch
 			} //end else if
 			/***********************************
 			 * Patch Notes   0.3 - 0.4
-			 * - 
+			 * - Added Inventory
 			 ***********************************/
 			else if(patchVersion == 0.3f)
 			{
 				fixedTrainer = fTrainer;
+				fixedTrainer.Bag = new Inventory();
 				patchVersion = 0.4f;
 			} //end else if
         } //end try

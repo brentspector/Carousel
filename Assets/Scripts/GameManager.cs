@@ -159,7 +159,7 @@ public class GameManager : MonoBehaviour
                     #if UNITY_EDITOR
                     //Debug mode (development in the editor) commands go here
                     //sysm.GetPersist();
-                    //sysm.Persist();
+					//sysm.Persist();
 
                     #else
                     //Stand-alone mode (user version) diagnostic commands go here

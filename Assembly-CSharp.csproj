@@ -53,6 +53,7 @@
      <Compile Include="Assets\Scripts\Field.cs" />
      <Compile Include="Assets\Scripts\GameManager.cs" />
      <Compile Include="Assets\Scripts\IntroScene.cs" />
+     <Compile Include="Assets\Scripts\Inventory.cs" />
      <Compile Include="Assets\Scripts\Loader.cs" />
      <Compile Include="Assets\Scripts\MainGameScene.cs" />
      <Compile Include="Assets\Scripts\MenuScene.cs" />

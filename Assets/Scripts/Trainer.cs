@@ -30,6 +30,9 @@ public class Trainer
     bool debugUnlocked;   //Whether the debug has been unlocked or not
     bool[] pEarnedBadges; //Which badges the player has obtained
 
+	[OptionalField(VersionAdded=2)]
+	Inventory bag;		  //The player's item bag
+
     //Gym Battle count
     //Kalos
     int violaNormal = 0;
@@ -89,6 +92,9 @@ public class Trainer
 
             //Initialize PC
             pPC = new PC ();
+
+			//Initialize Bag
+			bag = new Inventory();
 
             //No backups made yet
             bups = 0;
@@ -347,6 +353,70 @@ public class Trainer
         return pPC.GetNextPokemon (spot);
     } //end GetNextPokemon(int spot)
 
+	/***************************************
+     * Name: AddItem
+     * Adds an item to the inventory
+     ***************************************/
+	public void AddItem(int item, int quantity, int bagSpot = -1)
+	{		
+		bag.AddItem(item, quantity, bagSpot);
+	} //end AddItem(int item, int quantity, int bagSpot = -1)
+
+	/***************************************
+     * Name: RemoveItem
+     * Remove an item from the inventory
+     ***************************************/
+	public void RemoveItem(int item, int quantity, int bagSpot = -1)
+	{
+		bag.RemoveItem(item, quantity, bagSpot);
+	} //end RemoveItem(int item, int quantity, int bagSpot = -1)
+
+	/***************************************
+     * Name: ItemCount
+     * How many of the item are in the inventory
+     ***************************************/
+	public int ItemCount(int item, int bagSpot = -1)
+	{
+		return bag.ItemCount(item, bagSpot);
+	} //end ItemCount(int item, int bagSpot = -1)
+
+	/***************************************
+     * Name: MoveItemPocket
+     * Move an item to a different bag slot
+     ***************************************/
+	public void MoveItemPocket(int item, int bagPocketFrom, int bagPocketTo)
+	{
+		bag.MoveItemPocket(item, bagPocketFrom, bagPocketTo);
+	} //end MoveItemPocket(int item, int bagPocketFrom, int bagPocketTo)
+
+	/***************************************
+     * Name: MoveItemLocation
+     * Move an item to a different position 
+     * in bag pocket
+     ***************************************/
+	public void MoveItemLocation(int bagSpotFrom, int bagSpotTo)
+	{
+		bag.MoveItemLocation(bagSpotFrom, bagSpotTo);
+	} //end MoveItemLocation(int bagSpotFrom, int bagSpotTo)
+
+	/***************************************
+     * Name: NextPocket
+     * Move to next bag pocket
+     ***************************************/
+	public void NextPocket()
+	{
+		bag.NextPocket();
+	} //end NextPocket
+
+	/***************************************
+     * Name: PreviousPocket
+     * Move to previous bag pocket
+     ***************************************/
+	public void PreviousPocket()
+	{
+		bag.PreviousPocket();
+	} //end PreviousPocket
+
     /***************************************
      * Name: GetPlayerBadges
      * Return whether player owns a badge or not 
@@ -394,6 +464,17 @@ public class Trainer
             team = value;
         } //end set
     } //end Team
+
+	/***************************************
+     * Name: Bag
+     ***************************************/
+	public Inventory Bag
+	{
+		set
+		{
+			bag = value;
+		} //end set
+	} //end Bag
 
     /***************************************
      * Name: Seen
