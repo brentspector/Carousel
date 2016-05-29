@@ -40,6 +40,8 @@ public class GameManager : MonoBehaviour
 	MainGameScene mainGame;					//Main game scene script
 	PCScene pc;								//PC scene script
 	PokedexScene pokedex;					//Pokedex scene script
+	InventoryScene inventory;				//Inventory scene script
+	ShopScene shop;							//Shop scene script
 
 	//Scene variables
     SystemManager sysm;                     //Manages system features
@@ -115,6 +117,8 @@ public class GameManager : MonoBehaviour
 		mainGame = GetComponent<MainGameScene>();
 		pc = GetComponent<PCScene>();
 		pokedex = GetComponent<PokedexScene>();
+		inventory = GetComponent<InventoryScene>();
+		shop = GetComponent<ShopScene>();
 	} //end Awake
 	
     /***************************************
@@ -200,6 +204,18 @@ public class GameManager : MonoBehaviour
             {
 				pokedex.RunPokedex();                
             } //end else if
+
+			//Inventory scene
+			else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Inventory")
+			{
+				inventory.RunInventory();
+			} //end else if
+
+			//Shop scene
+			else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Shop")
+			{
+				shop.RunShop();
+			} //end else if
 		} //end try
 
 		//Log error otherwise

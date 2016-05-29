@@ -20,9 +20,8 @@ public class Inventory
 	 * 3: Pokeballs
 	 * 4: TMs&HMs
 	 * 5: Berries
-	 * 6: Mail
-	 * 7: Battle Items
-	 * 8: Key Items
+	 * 6: Battle Items
+	 * 7: Key Items
 	 ********************/
 	List<List<List<int>>> inventory;
 
@@ -38,11 +37,14 @@ public class Inventory
 	{
 		//Initialize inventory
 		inventory = new List<List<List<int>>>();
+
 		//Initialize pockets
-		for (int i = 0; i < 9; i++)
+		for (int i = 0; i < 8; i++)
 		{
 			inventory.Add(new List<List<int>>());
 		} //end for
+
+		//Start at pocket 0
 	} //end Inventory
 
 	/***************************************
@@ -86,6 +88,32 @@ public class Inventory
 		} //end else
 
 	} //end RemoveItem(int item, int quantity, int bagSpot = -1)
+
+	/***************************************
+     * Name: GetItem
+     * Get an item from a spot in inventory
+     ***************************************/
+	public List<int> GetItem(int spot, int bagSpot = -1)
+	{
+		//Get item slot
+		int slot = bagSpot > -1 ? bagSpot : currentPocket;
+
+		//Return item in spot
+		return inventory[slot][spot];
+	} //end GetItem(int spot, int bagSpot = -1)
+
+	/***************************************
+     * Name: SlotCount
+     * How many items are in the inventory
+     * slot
+     ***************************************/
+	public int SlotCount(int bagSpot = -1)
+	{
+		//Get item slot
+		int slot = bagSpot > -1 ? bagSpot : currentPocket;
+
+		return inventory[slot].Count;
+	} //end SlotCount(int bagSpot = -1)
 
 	/***************************************
      * Name: ItemCount

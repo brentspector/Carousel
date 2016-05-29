@@ -372,6 +372,15 @@ public class Trainer
 	} //end RemoveItem(int item, int quantity, int bagSpot = -1)
 
 	/***************************************
+     * Name: GetItem
+     * Get an item from a spot in inventory
+     ***************************************/
+	public List<int> GetItem(int spot, int bagSpot = -1)
+	{
+		return bag.GetItem(spot, bagSpot);
+	} //end GetItem(int spot, int bagSpot = -1)
+
+	/***************************************
      * Name: ItemCount
      * How many of the item are in the inventory
      ***************************************/
@@ -379,6 +388,16 @@ public class Trainer
 	{
 		return bag.ItemCount(item, bagSpot);
 	} //end ItemCount(int item, int bagSpot = -1)
+
+	/***************************************
+     * Name: SlotCount
+     * How many items are in the inventory
+     * slot
+     ***************************************/
+	public int SlotCount(int bagSpot = -1)
+	{
+		return bag.SlotCount(bagSpot);
+	} //end SlotCount(int bagSpot = -1)
 
 	/***************************************
      * Name: MoveItemPocket
@@ -416,6 +435,15 @@ public class Trainer
 	{
 		bag.PreviousPocket();
 	} //end PreviousPocket
+
+	/***************************************
+     * Name: GetCurrentBagPocket
+     * Returns the active pocket
+     ***************************************/
+	public int GetCurrentBagPocket()
+	{
+		return bag.GetCurrentBagPocket();
+	} //end GetCurrentBagPocket
 
     /***************************************
      * Name: GetPlayerBadges

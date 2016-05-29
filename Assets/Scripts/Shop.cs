@@ -7,20 +7,12 @@ using UnityEngine;
 using System.Collections;
 #endregion
 
-public class Shop : MonoBehaviour 
+public class Shop 
 {
     #region Variables
     #endregion
 
     #region Methods
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+
     #endregion
 } //end Shop class

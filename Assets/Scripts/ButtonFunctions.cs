@@ -78,6 +78,22 @@ public class ButtonFunctions : MonoBehaviour
         } //end catch
     } //end PlayerPC
 
+	/***************************************
+     * Name: Inventory
+     * Switches to Inventory scene
+     ***************************************/ 
+	public void Inventory()
+	{
+		try
+		{
+			GameManager.instance.LoadScene ("Inventory", true);
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end Inventory
+
     /***************************************
      * Name: Shop
      * Switches to Shop scene
