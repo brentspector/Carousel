@@ -54,7 +54,7 @@ public class Inventory
 	public void AddItem(int item, int quantity, int bagSpot = -1)
 	{
 		//Get item slot
-		int slot = bagSpot > -1 ? bagSpot : DataContents.GetItemBagSpot(item);
+		int slot = bagSpot > -1 ? bagSpot : ExtensionMethods.CapAtInt(DataContents.GetItemBagSpot(item), 7);
 
 		//Add item
 		List<int> newItem = new List<int>();
@@ -176,7 +176,7 @@ public class Inventory
 		currentPocket++;
 
 		//Loop to free space if beyond key items
-		if(currentPocket > 8)
+		if(currentPocket > 7)
 		{
 			currentPocket = 0;
 		} //end if
@@ -193,7 +193,7 @@ public class Inventory
 		//Loop to key items if lower than free space
 		if(currentPocket < 0)
 		{
-			currentPocket = 8;
+			currentPocket = 7;
 		} //end if
 	} //end PreviousPocketPocket
 
