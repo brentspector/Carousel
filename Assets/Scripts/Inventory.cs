@@ -195,7 +195,16 @@ public class Inventory
 		{
 			currentPocket = 7;
 		} //end if
-	} //end PreviousPocketPocket
+	} //end PreviousPocket
+
+	/***************************************
+     * Name: ChangePocket
+     * Moves to requested pocket
+     ***************************************/
+	public void ChangePocket(int requested)
+	{
+		currentPocket = ExtensionMethods.WithinIntRange(requested, 0, 7);
+	} //end ChangePocket(int requested)
 
 	/***************************************
      * Name: GetCurrentBagPocket

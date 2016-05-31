@@ -18,17 +18,15 @@ public class InventoryScene : MonoBehaviour
 	int inventorySpot;			//What slot in pocket the player is on
 	int topShown;				//The top slot displayed in the inventory
 	int bottomShown;			//The bottom slot displayed in the inventory
+	int subMenuChoice;          //What choice is highlighted in the pokemon submenu
 	float jumpAmount;			//How much the scrollbar should move for movement
 	bool processing = false;	//Whether a function is already processing something
 	GameObject choices;			//Choices box from scene tools
 	GameObject selection;		//Selection rectangle from scene tools
-	GameObject container;		//Contains entire list of items in bag
-	ScrollRect viewport;		//Shows a few items in the bag
+	GameObject viewport;		//The items shown to the player
 	Image background;			//Background bag image
 	Image sprite;				//Item currently highlighted
 	Text description;			//The item's description
-	Text quantity;				//How many of the item there are
-	Text itemName;				//The name of the item
 	#endregion
 
 	#region Methods
@@ -46,14 +44,14 @@ public class InventoryScene : MonoBehaviour
 
 			//Initialize references
 			selection = GameManager.tools.transform.FindChild("Selection").gameObject;
-		 	choices = GameManager.tools.transform.FindChild("ChoiceUnit").gameObject;
-			container = GameObject.Find("InventoryContainer").gameObject;
-			viewport = GameObject.Find("InventoryRegion").GetComponent<ScrollRect>();
+			choices = GameManager.tools.transform.FindChild("ChoiceUnit").gameObject;
+			viewport = GameObject.Find("InventoryRegion").gameObject;
 			background = GameObject.Find("Background").GetComponent<Image>();
 			sprite = GameObject.Find("Sprite").GetComponent<Image>();
 			description = GameObject.Find("Description").GetComponent<Text>();
-			quantity = GameObject.Find("Quantity").GetComponent<Text>();
-			itemName = GameObject.Find("ItemName").GetComponent<Text>();
+
+			//Populate choices menu
+			FillInChoices();
 
 			//Move to next checkpoint
 			checkpoint = 1;
@@ -76,30 +74,45 @@ public class InventoryScene : MonoBehaviour
 			background.sprite = Resources.Load<Sprite>("Sprites/Menus/bag" + currentPocket);
 			inventorySpot = 0;
 			topShown = 0;
-			bottomShown = 8;
-			if (GameManager.instance.GetTrainer().SlotCount() > 0)
-			{			
-				List<int> item = GameManager.instance.GetTrainer().GetItem(inventorySpot);
-				string itemIcon = "Sprites/Icons/item" + item[0].ToString("000");
-				sprite.sprite = Resources.Load<Sprite>(itemIcon);
-				description.text = DataContents.ExecuteSQL<string>("SELECT description FROM Items WHERE rowid=" + item[0]);
-
-				//Fill inventory
-				quantity.text = "<color=red>" + item[1] + "</color>\n";
-				itemName.text = "<color=red>" + DataContents.GetItemGameName(item[0]) + "</color>\n";
-				for (int i = 1; i < GameManager.instance.GetTrainer().SlotCount() - 1; i++)
-				{
-					item = GameManager.instance.GetTrainer().GetItem(i);
-					quantity.text += item[1] + "\n";
-					itemName.text += DataContents.GetItemGameName(item[0]) + "\n";
-				} //end for
-				item = GameManager.instance.GetTrainer().GetItem(GameManager.instance.GetTrainer().SlotCount() - 1);
-				quantity.text += item[1];
-				itemName.text += DataContents.GetItemGameName(item[0]);
+			bottomShown = 9;
+			List<int> item = GameManager.instance.GetTrainer().GetItem(0);
+			//Fill in first slot
+			if (GameManager.instance.GetTrainer().SlotCount() - 1 < 0)
+			{
+				viewport.transform.GetChild(0).GetComponent<Text>().text = "";
 			} //end if
+			else
+			{
+				viewport.transform.GetChild(0).GetComponent<Text>().text = "<color=red>" +
+				item[1]	+ " - " + DataContents.GetItemGameName(item[0]) + "</color>";
+			} //end else
 
-			//Set viewport size
-			StartCoroutine(ResizeContainer());
+			//Fill in sprite and description
+			if (GameManager.instance.GetTrainer().SlotCount() != 0)
+			{				
+				sprite.color = Color.white;
+				sprite.sprite = Resources.Load<Sprite>("Sprites/Icons/item" + item[0].ToString("000"));
+				description.text = DataContents.ExecuteSQL<string>("SELECT description FROM Items WHERE rowid=" + item[0]);
+			} //end if
+			else
+			{
+				sprite.color = Color.clear;
+				description.text = "";
+			} //end else
+
+			//Fill in remaining slots
+			for (int i = 1; i < 10; i++)
+			{
+				if (GameManager.instance.GetTrainer().SlotCount() - 1 < i)
+				{
+					viewport.transform.GetChild(i).GetComponent<Text>().text = "";
+				} //end if
+				else
+				{
+					viewport.transform.GetChild(i).GetComponent<Text>().text = GameManager.instance.GetTrainer().GetItem(inventorySpot + i)[1]
+					+ " - " + DataContents.GetItemGameName(GameManager.instance.GetTrainer().GetItem(inventorySpot + i)[0]);
+				} //end else
+			} //end for
 
 			//Move to next checkpoint
 			GameManager.instance.FadeInAnimation(2);
@@ -109,31 +122,47 @@ public class InventoryScene : MonoBehaviour
 			//Get player input
 			GetInput();
 
-			//Update scene
-			if (GameManager.instance.GetTrainer().SlotCount() > 0)
+			//Fill in slots
+			for (int i = 0; i < 10; i++)
+			{
+				if (GameManager.instance.GetTrainer().SlotCount() - 1 < topShown + i)
+				{
+					viewport.transform.GetChild(i).GetComponent<Text>().text = "";
+				} //end if
+				else
+				{
+					if (topShown + i == inventorySpot)
+					{
+						viewport.transform.GetChild(i).GetComponent<Text>().text = "<color=red>" +
+						GameManager.instance.GetTrainer().GetItem(topShown + i)[1] + " - " +
+						DataContents.GetItemGameName(GameManager.instance.GetTrainer().GetItem(topShown + i)[0]) + "</color>";
+					} //end if
+					else
+					{
+						viewport.transform.GetChild(i).GetComponent<Text>().text = GameManager.instance.GetTrainer().GetItem(topShown + i)[1]
+						+ " - " + DataContents.GetItemGameName(GameManager.instance.GetTrainer().GetItem(topShown + i)[0]);
+					} //end else
+				} //end else
+			} //end for
+
+			//Fill in sprite and description
+			if (GameManager.instance.GetTrainer().SlotCount() != 0)
 			{
 				List<int> item = GameManager.instance.GetTrainer().GetItem(inventorySpot);
-				string itemIcon = "Sprites/Icons/item" + item[0].ToString("000");
-				sprite.sprite = Resources.Load<Sprite>(itemIcon);
+				sprite.color = Color.white;
+				sprite.sprite = Resources.Load<Sprite>("Sprites/Icons/item" + item[0].ToString("000"));
 				description.text = DataContents.ExecuteSQL<string>("SELECT description FROM Items WHERE rowid=" + item[0]);
-
-				//Fill inventory
-				quantity.text = "";
-				itemName.text = "";
-				for (int i = 0; i < GameManager.instance.GetTrainer().SlotCount() - 1; i++)
-				{
-					item = GameManager.instance.GetTrainer().GetItem(i);
-					quantity.text += inventorySpot == i ? "<color=red>" + item[1] + "</color>\n" :
-						item[1] + "\n";
-					itemName.text += inventorySpot == i ? "<color=red>" + DataContents.GetItemGameName(item[0]) + "</color>\n": 
-						DataContents.GetItemGameName(item[0]) + "\n";
-				} //end for
-				item = GameManager.instance.GetTrainer().GetItem(GameManager.instance.GetTrainer().SlotCount() - 1);
-				quantity.text += inventorySpot == GameManager.instance.GetTrainer().SlotCount() - 1 ? 
-					"<color=red>" + item[1].ToString() + "</color>" : item[1].ToString();
-				itemName.text += inventorySpot == GameManager.instance.GetTrainer().SlotCount() - 1 ? 
-					"<color=red>" + DataContents.GetItemGameName(item[0]) + "</color>": DataContents.GetItemGameName(item[0]);
 			} //end if
+			else
+			{
+				sprite.color = Color.clear;
+				description.text = "";
+			} //end else
+		} //end else if
+		else if (checkpoint == 3)
+		{
+			//Get player input for submenu
+			GetInput();
 		} //end else if
 	} //end RunInventory
 
@@ -175,28 +204,32 @@ public class InventoryScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetKeyDown(KeyCode.UpArrow))
 		{
-			inventorySpot = ExtensionMethods.BindToInt(inventorySpot - 1, 0);
-			if (inventorySpot < topShown)
+			//Normal Processing
+			if (checkpoint == 2)
 			{
-				topShown = inventorySpot;
-				bottomShown = inventorySpot + 8;
-				if (inventorySpot == 0)
+				inventorySpot = ExtensionMethods.BindToInt(inventorySpot - 1, 0);
+				if (inventorySpot < topShown)
 				{
-					viewport.verticalScrollbar.value = 1;
+					topShown = inventorySpot;
+					bottomShown--;
 				} //end if
-				else if (inventorySpot == GameManager.instance.GetTrainer().SlotCount() - 10)
-				{					
-					float num = 1;
-					float den = GameManager.instance.GetTrainer().SlotCount() - 8;
-					float constant = quantity.lineSpacing * 0.015f;
-					viewport.verticalScrollbar.value = num / den - constant;
-				} //end else if
-				else
-				{	
-					viewport.verticalScrollbar.value -= jumpAmount;
-					Debug.Log(viewport.verticalScrollbar.value);
-				} //end else
 			} //end if
+
+			//Submenu Processing
+			else if (checkpoint == 3)
+			{
+				//Decrease choice (higher slots are on lower children)
+				subMenuChoice--;
+
+				//If on first option, loop to end
+				if (subMenuChoice < 0)
+				{
+					subMenuChoice = choices.transform.childCount - 1;
+				} //end if
+
+				//Reposition selection
+				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+			} //end else if
 		} //end else if Up Arrow
 
 		/*********************************************
@@ -204,27 +237,32 @@ public class InventoryScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetKeyDown(KeyCode.DownArrow))
 		{
-			inventorySpot = ExtensionMethods.CapAtInt(inventorySpot + 1, GameManager.instance.GetTrainer().SlotCount() - 1);
-			if (inventorySpot > bottomShown)
+			//Normal Processing
+			if (checkpoint == 2)
 			{
-				bottomShown = inventorySpot;
-				topShown = inventorySpot - 8;
-				if (inventorySpot == GameManager.instance.GetTrainer().SlotCount() - 1)
+				inventorySpot = ExtensionMethods.CapAtInt(inventorySpot + 1, GameManager.instance.GetTrainer().SlotCount() - 1);
+				if (inventorySpot > bottomShown)
 				{
-					viewport.verticalScrollbar.value = 0;
+					bottomShown = inventorySpot;
+					topShown++;
 				} //end if
-				else if (inventorySpot == GameManager.instance.GetTrainer().SlotCount() - 10)
-				{
-					float num = GameManager.instance.GetTrainer().SlotCount() - inventorySpot;
-					float den = GameManager.instance.GetTrainer().SlotCount() - 8;
-					float constant = quantity.lineSpacing * 0.015f;
-					viewport.verticalScrollbar.value = num / den + constant;
-				} //end else if
-				else
-				{
-					viewport.verticalScrollbar.value += jumpAmount;
-				} //end else
 			} //end if
+
+			//Submenu Processing
+			else if (checkpoint == 3)
+			{
+				//Increase choice (lower slots are on higher children)
+				subMenuChoice++;
+
+				//If on last option, loop to first
+				if (subMenuChoice > choices.transform.childCount - 1)
+				{
+					subMenuChoice = 0;
+				} //end if
+
+				//Reposition selection
+				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+			} //end else if
 		} //end else if Down Arrow
 
 		/*********************************************
@@ -248,11 +286,18 @@ public class InventoryScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetAxis("Mouse Y") > 0)
 		{
-			//Normal Processing
-			if (checkpoint == 2 && Input.mousePosition.y > selection.transform.position.y +
-				selection.GetComponent<RectTransform>().rect.height/2)
+			//Submenu Processing
+			if(checkpoint == 3 && Input.mousePosition.y > selection.transform.position.y +
+				selection.GetComponent<RectTransform>().rect.height / 2)
 			{
+				//If not on last option, decrease (higher slots are on lower children)
+				if (subMenuChoice > 0)
+				{
+					subMenuChoice--;
+				} //end if
 
+				//Reposition selection
+				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
 			} //end if
 		} //end else if Mouse Moves Up
 
@@ -261,11 +306,18 @@ public class InventoryScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetAxis("Mouse Y") < 0)
 		{
-			//Normal Processing
-			if (checkpoint == 2 && Input.mousePosition.y < selection.transform.position.y -
-				selection.GetComponent<RectTransform>().rect.height/2)
+			//Submenu Processing
+			if(checkpoint == 3 && Input.mousePosition.y < selection.transform.position.y -
+				selection.GetComponent<RectTransform>().rect.height / 2)
 			{
+				//If not on last option, increase (lower slots are on higher children)
+				if (subMenuChoice < choices.transform.childCount - 1)
+				{
+					subMenuChoice++;
+				} //end if
 
+				//Reposition selection
+				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
 			} //end if
 		} //end else if Mouse Moves Down
 
@@ -274,7 +326,16 @@ public class InventoryScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetAxis("Mouse ScrollWheel") > 0)
 		{
-
+			//Normal Processing
+			if (checkpoint == 2)
+			{
+				inventorySpot = ExtensionMethods.BindToInt(inventorySpot - 1, 0);
+				if (inventorySpot < topShown)
+				{
+					topShown = inventorySpot;
+					bottomShown--;
+				} //end if
+			} //end if
 		} //end else if Mouse Wheel Up
 
 		/*********************************************
@@ -282,7 +343,16 @@ public class InventoryScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetAxis("Mouse ScrollWheel") < 0)
 		{
-
+			//Normal Processing
+			if (checkpoint == 2)
+			{
+				inventorySpot = ExtensionMethods.CapAtInt(inventorySpot + 1, GameManager.instance.GetTrainer().SlotCount() - 1);
+				if (inventorySpot > bottomShown)
+				{
+					bottomShown = inventorySpot;
+					topShown++;
+				} //end if
+			} //end if
 		} //end else if Mouse Wheel Down
 
 		/*********************************************
@@ -290,7 +360,50 @@ public class InventoryScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetMouseButtonUp(0))
 		{
+			//Normal Processing
+			if (checkpoint == 2)
+			{
+				//Turn on submenu
+				selection.SetActive(true);
+				choices.SetActive(true);
 
+				//Set up selection box at end of frame if it doesn't fit
+				if(selection.GetComponent<RectTransform>().sizeDelta != 
+					choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
+				{
+					selection.SetActive(false);
+					StartCoroutine(WaitForResize());
+				} //end if
+
+				checkpoint = 3;
+			} //end if
+
+			//Submenu Processing
+			else if (checkpoint == 3)
+			{
+				//Apply appropriate action
+				switch (subMenuChoice)
+				{
+					//Use
+					case 0:
+						break;
+					//Give
+					case 1:
+						break;
+					//Toss
+					case 2:
+						break;
+					//Switch
+					case 3:
+						break;
+					//Cancel
+					case 4:
+						selection.SetActive(false);
+						choices.SetActive(false);
+						checkpoint = 2;
+						break;
+				} //end switch
+			} //end else if
 		} //end else if Left Mouse Button
 
 		/*********************************************
@@ -298,7 +411,19 @@ public class InventoryScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetMouseButtonUp(1))
 		{
+			//Normal Processing
+			if(checkpoint == 2)
+			{
+				GameManager.instance.LoadScene("MainGame", true);
+			} //end if
 
+			//Submenu Processing
+			else if (checkpoint == 3)
+			{
+				selection.SetActive(false);
+				choices.SetActive(false);
+				checkpoint = 2;
+			} //end else if
 		} //end else if Right Mouse Button
 
 		/*********************************************
@@ -306,7 +431,50 @@ public class InventoryScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetKeyDown(KeyCode.Return))
 		{
+			//Normal Processing
+			if (checkpoint == 2)
+			{
+				//Turn on submenu
+				selection.SetActive(true);
+				choices.SetActive(true);
 
+				//Set up selection box at end of frame if it doesn't fit
+				if(selection.GetComponent<RectTransform>().sizeDelta != 
+					choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
+				{
+					selection.SetActive(false);
+					StartCoroutine(WaitForResize());
+				} //end if
+
+				checkpoint = 3;
+			} //end if
+
+			//Submenu Processing
+			else if (checkpoint == 3)
+			{
+				//Apply appropriate action
+				switch (subMenuChoice)
+				{
+					//Use
+					case 0:
+						break;
+					//Give
+					case 1:
+						break;
+					//Toss
+					case 2:
+						break;
+					//Switch
+					case 3:
+						break;
+					//Cancel
+					case 4:
+						selection.SetActive(false);
+						choices.SetActive(false);
+						checkpoint = 2;
+						break;
+				} //end switch
+			} //end else if
 		} //end else if Enter/Return Key
 
 		/*********************************************
@@ -314,30 +482,88 @@ public class InventoryScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetKeyDown(KeyCode.X))
 		{
+			//Normal Processing
+			if(checkpoint == 2)
+			{
+				GameManager.instance.LoadScene("MainGame", true);
+			} //end if
 
+			//Submenu Processing
+			else if (checkpoint == 3)
+			{
+				selection.SetActive(false);
+				choices.SetActive(false);
+				checkpoint = 2;
+			} //end else if
 		} //end else if X Key
 	} //end GetInput
 
 	/***************************************
-	 * Name: ResizeContainer
-	 * Sets container size to size of contents
+	 * Name: FillInChoices
+	 * Sets the choices for the choice menu
 	 ***************************************/
-	IEnumerator ResizeContainer()
+	void FillInChoices()
+	{
+		//Add to choice menu if necessary
+		for (int i = choices.transform.childCount; i < 5; i++)
+		{
+			GameObject clone = Instantiate(choices.transform.GetChild(0).gameObject,
+				choices.transform.GetChild(0).position,
+				Quaternion.identity) as GameObject;
+			clone.transform.SetParent(choices.transform);
+		} //end for
+
+		//Destroy extra chocies
+		for (int i = choices.transform.childCount; i > 5; i--)
+		{
+			Destroy(choices.transform.GetChild(i - 1).gameObject);
+		} //end for
+
+		//Set text for each choice
+		choices.transform.GetChild(0).GetComponent<Text>().text = "Use";
+		choices.transform.GetChild(1).GetComponent<Text>().text = "Give";
+		choices.transform.GetChild(2).GetComponent<Text>().text = "Toss";
+		choices.transform.GetChild(3).GetComponent<Text>().text = "Switch";
+		choices.transform.GetChild(4).GetComponent<Text>().text = "Cancel";
+	} //end FillInChoices
+
+	/***************************************
+	 * Name: PositionChoices
+	 * Places choices in bottom right of screen
+	 ***************************************/
+	IEnumerator PositionChoices()
 	{
 		//Process at end of frame
 		yield return new WaitForEndOfFrame();
 
-		container.GetComponent<RectTransform>().sizeDelta = new Vector2(0, quantity.rectTransform.rect.height-300);
-		viewport.verticalNormalizedPosition = 1f;
+		//Reposition choices to bottom right
+		choices.GetComponent<RectTransform>().position = new Vector3(
+			choices.GetComponent<RectTransform>().position.x,
+			choices.GetComponent<RectTransform>().rect.height / 2);
 
-		float num = ExtensionMethods.BindToInt(GameManager.instance.GetTrainer().SlotCount() - 9 - 10, 0);
-		float den = GameManager.instance.GetTrainer().SlotCount() - 8;
-		float constant = quantity.lineSpacing * 0.001f;
-		float valueOne = num / den;
-		num = ExtensionMethods.BindToInt(GameManager.instance.GetTrainer().SlotCount() - 9 - 11, 0);
-		float valueTwo = num / den;
-		jumpAmount = valueTwo - valueOne - constant;
-	} //end ResizeContainer
+		//Reposition selection to top menu choicec
+		selection.transform.position = choices.transform.GetChild(0).position;
+	} //end PositionChoices
+
+	/***************************************
+	 * Name: WaitForResize
+	 * Waits for choice menu to resize before
+	 * setting selection dimensions
+	 ***************************************/
+	IEnumerator WaitForResize()
+	{
+		//Process at end of frame
+		StartCoroutine(PositionChoices());
+		yield return new WaitForEndOfFrame();
+
+		Vector3 scale = new Vector3(choices.GetComponent<RectTransform>().rect.width,
+			choices.GetComponent<RectTransform>().rect.height /
+			choices.transform.childCount, 0);
+		selection.GetComponent<RectTransform>().sizeDelta = scale;
+		selection.transform.position = choices.transform.GetChild(0).
+			GetComponent<RectTransform>().position;
+		selection.SetActive(true);
+	} //end WaitForResize
 
 	/***************************************
 	 * Name: ChangeCheckpoint

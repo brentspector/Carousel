@@ -437,6 +437,15 @@ public class Trainer
 	} //end PreviousPocket
 
 	/***************************************
+     * Name: ChangePocket
+     * Moves to requested pocket
+     ***************************************/
+	public void ChangePocket(int requested)
+	{
+		bag.ChangePocket(requested);
+	} //end ChangePocket(int requested)
+
+	/***************************************
      * Name: GetCurrentBagPocket
      * Returns the active pocket
      ***************************************/

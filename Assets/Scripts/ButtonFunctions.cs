@@ -318,6 +318,22 @@ public class ButtonFunctions : MonoBehaviour
         } //end catch
     } //end ToggleShown
 
+	/***************************************
+     * Name: ChangePocket
+     * Changes pocket to requested
+     ***************************************/ 
+	public void ChangePocket(int requested)
+	{
+		try
+		{
+			GameManager.instance.ChangePocket(requested);
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end ChangePocket(int requested)
+
     /***************************************
      * Name: Persist
      * Persists the game

@@ -338,6 +338,16 @@ public class GameManager : MonoBehaviour
     {
 		pokedex.ToggleShown ();
     } //end ToggleShown
+
+	/***************************************
+     * Name: ChangePocket
+     * Moves to requested pocket
+     ***************************************/
+	public void ChangePocket(int requested)
+	{
+		sysm.PlayerTrainer.ChangePocket(requested);
+		ChangeCheckpoint(1);
+	} //end ChangePocket(int requested)
     #endregion
 
 	//System Manager functions
