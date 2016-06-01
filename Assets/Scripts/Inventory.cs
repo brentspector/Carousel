@@ -134,15 +134,27 @@ public class Inventory
      * Name: MoveItemPocket
      * Move an item to a different bag slot
      ***************************************/
-	public void MoveItemPocket(int item, int bagPocketFrom, int bagPocketTo)
+	public void MoveItemPocket(int item, int bagPocketTo = -1)
 	{
 		//Get the item
-		List<int> theItem = inventory[bagPocketFrom].Find(stored => stored[0] == item);
+		List<int> theItem = inventory[currentPocket].Find(stored => stored[0] == item);
 
 		//Remove the item then add it
-		RemoveItem(item, theItem[1], bagPocketFrom);
+		RemoveItem(item, theItem[1], currentPocket);
 		AddItem(item, theItem[1], bagPocketTo);
-	} //end MoveItemPocket(int item, int bagPocketFrom, int bagPocketTo)
+
+		//Display success
+		if (bagPocketTo == -1)
+		{
+			GameManager.instance.DisplayText("Moved " + DataContents.GetItemGameName(item) +
+			" to regular pocket.", true);
+		} //end if
+		else
+		{
+			GameManager.instance.DisplayText("Moved " + DataContents.GetItemGameName(item) +
+				" to free space.", true);
+		} //end else
+	} //end MoveItemPocket(int item, int bagPocketFrom = -1, int bagPocketTo = -1)
 
 	/***************************************
      * Name: MoveItemLocation

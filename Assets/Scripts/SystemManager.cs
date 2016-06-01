@@ -179,8 +179,7 @@ public class SystemManager : MonoBehaviour
 		if(output != null)
 		{
 			output.WriteLine(message);
-			output.Flush();
-			
+			output.Flush();			
 		} //end if
 	} //end LogErrorMessage(string message)
 

@@ -252,7 +252,7 @@ public static class DataContents : System.Object
     public static int GetItemID(string itemName)
     {
         //No move found yet
-        dbCommand.CommandText = "SELECT rowid FROM Items WHERE internalName=@nm";
+        dbCommand.CommandText = "SELECT rowid FROM Items WHERE gameName=@nm";
         dbCommand.Parameters.Add(new SqliteParameter("@nm", itemName));
         dbCommand.Prepare ();
         int itemID = ExecuteSQL<int> (dbCommand.CommandText);

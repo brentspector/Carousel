@@ -383,6 +383,22 @@ public class ButtonFunctions : MonoBehaviour
         } //end catch
     } //end EditTrainerMode
 
+	/***************************************
+     * Name: FillInventory
+     * Fills inventory with one of each item
+     ***************************************/ 
+	public void FillInventory()
+	{	
+		try
+		{
+			GameManager.instance.FillInventory();
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end FillInventory
+
     /***************************************
      * Name: UpdateSprite
      * Changes sprite to reflect choice change

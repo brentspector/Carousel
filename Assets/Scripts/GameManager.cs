@@ -535,6 +535,15 @@ public class GameManager : MonoBehaviour
     {
 		mainGame.UpdateSprite ();
     } //end UpdateSprite
+
+	/***************************************
+     * Name: FillInventory
+     * Fills inventory with one of each item
+     ***************************************/ 
+	public void FillInventory()
+	{	
+		mainGame.FillInventory();
+	} //end FillInventory
     #endregion
     #endregion
 } //end GameManager class

@@ -304,27 +304,38 @@ public class CodeWarehouse : MonoBehaviour
             dbCommand.ExecuteNonQuery();
             dbCommand.Parameters.Clear();
         } //end for
-        //Items
-        sysm.GetContents (dataLocation + "items.txt");
-        for (int i = 0; i < 525; i++)
-        {
-            string[] contents = sysm.ReadCSV(i);
-            dbCommand.CommandText = "UPDATE Items SET internalName=@in,gameName=@gn,bagNumber=@bg,cost=@cs,battleUse=@bu,description=@desc WHERE rowid=" + (i+1);
-            dbCommand.Parameters.Add(new SqliteParameter("@in", contents[1]));
-            dbCommand.Parameters.Add(new SqliteParameter("@gn", contents[2]));
-            dbCommand.Parameters.Add(new SqliteParameter("@bg", contents[3]));
-            dbCommand.Parameters.Add(new SqliteParameter("@cs", contents[4]));
-            string temp = contents[5].Replace("\"", "");
-            for(int j = 6; j < contents.Length-3; j++)
-            {
-                temp += "," + contents[j].Replace("\"", "");
-            } //end for
-            dbCommand.Parameters.Add(new SqliteParameter("@desc", temp));
-            dbCommand.Parameters.Add(new SqliteParameter("@bu", contents[contents.Length-2]));
-            dbCommand.Prepare();
-            dbCommand.ExecuteNonQuery();
-            dbCommand.Parameters.Clear();
-        } //end for
+        
+		//Items
+		SystemManager sysm = new SystemManager();
+		sysm.GetContents (dataLocation + "items.txt");
+		dbCommand.CommandText = "DROP TABLE Items";
+		dbCommand.ExecuteNonQuery();
+		dbCommand.CommandText = "CREATE TABLE Items(id int,internalName text,gameName text,bagNumber int,cost int,outsideUse int,battleUse int,description text)";
+		dbCommand.ExecuteNonQuery();
+		for (int i = 0; i < 438; i++)
+		{
+			string[] contents = sysm.ReadCSV(i);
+			dbCommand.CommandText = "INSERT INTO Items(id,internalName,gameName,bagNumber,cost,outsideUse,battleUse,description) VALUES " +
+				"(@id,@in,@gn,@bg,@cs,@ou,@bu,@desc)";
+			dbCommand.Parameters.Add(new SqliteParameter("@id", contents[0]));
+			dbCommand.Parameters.Add(new SqliteParameter("@in", contents[1]));
+			dbCommand.Parameters.Add(new SqliteParameter("@gn", contents[2]));
+			dbCommand.Parameters.Add(new SqliteParameter("@bg", contents[3]));
+			dbCommand.Parameters.Add(new SqliteParameter("@cs", contents[4]));
+			dbCommand.Parameters.Add(new SqliteParameter("@ou", contents[5]));
+			dbCommand.Parameters.Add(new SqliteParameter("@bu", contents[6]));
+			string temp = contents[7].Replace("\"", "");
+			for(int j = 8; j < contents.Length-1; j++)
+			{
+				temp += "," + contents[j].Replace("\"", "");
+			} //end for
+			dbCommand.Parameters.Add(new SqliteParameter("@desc", temp));
+			Debug.Log(temp);
+			dbCommand.Prepare();
+			dbCommand.ExecuteNonQuery();
+			dbCommand.Parameters.Clear();
+		} //end for
+		
         //Moves
         sysm.GetContents (dataLocation + "moves.txt");
         for (int i = 0; i < 633; i++)

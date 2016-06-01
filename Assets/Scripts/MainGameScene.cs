@@ -3063,6 +3063,20 @@ public class MainGameScene : MonoBehaviour
 			} //end if
 		} //end if
 	} //end UpdateSprite
+
+	/***************************************
+     * Name: FillInventory
+     * Fills inventory with one of each item
+     ***************************************/ 
+	public void FillInventory()
+	{	
+		List<string> list = DataContents.GenerateItemList();	
+		for (int i = 1; i < list.Count; i++)
+		{
+			GameManager.instance.GetTrainer().AddItem(DataContents.GetItemID(list[i]), 1);
+		} //end for
+		GameManager.instance.DisplayText("Filled inventory", true);
+	} //end FillInventory
 	#endregion
 	#endregion
 } //end class MainGameScene

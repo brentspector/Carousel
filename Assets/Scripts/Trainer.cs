@@ -403,10 +403,10 @@ public class Trainer
      * Name: MoveItemPocket
      * Move an item to a different bag slot
      ***************************************/
-	public void MoveItemPocket(int item, int bagPocketFrom, int bagPocketTo)
+	public void MoveItemPocket(int item, int bagPocketTo = -1)
 	{
-		bag.MoveItemPocket(item, bagPocketFrom, bagPocketTo);
-	} //end MoveItemPocket(int item, int bagPocketFrom, int bagPocketTo)
+		bag.MoveItemPocket(item, bagPocketTo);
+	} //end MoveItemPocket(int item, int bagPocketTo =-1)
 
 	/***************************************
      * Name: MoveItemLocation
