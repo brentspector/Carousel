@@ -27,6 +27,8 @@ public class GameManager : MonoBehaviour
 	//Delegates
 	public delegate void CheckpointDelegate(int checkpoint);
 	public CheckpointDelegate checkDel;
+	public delegate void ConfirmDelegate(ConfirmChoice e);
+	public ConfirmDelegate confirmDel;
 
 	//SceneTools variables
 	public GameObject pTool;				//Prefab of SceneTools
@@ -48,6 +50,7 @@ public class GameManager : MonoBehaviour
 	bool loadingLevel = false;				//If a level is loading, disable update
     bool running = false;                   //Allows methods to run once
     bool textDisplayed = false;             //If text is displayed
+	bool confirmDisplayed = false;			//If confirm is displayed
     bool continueImmediate;                 //Continue as soon as able, don't wait for enter
     #endregion
 
@@ -109,6 +112,9 @@ public class GameManager : MonoBehaviour
 		sysm.GetText(tools.transform.FindChild("TextUnit").gameObject, 
 			tools.transform.FindChild("TextUnit").GetChild(1).gameObject);
 
+		//Initialize confirm
+		sysm.GetConfirm();
+
 		//Get scene scripts
 		anim = GetComponent<AnimationManager>();
 		intro = GetComponent<IntroScene>();
@@ -144,11 +150,17 @@ public class GameManager : MonoBehaviour
                 textDisplayed = sysm.ManageTextbox(continueImmediate);
             } //end if textDisplayed
 
+			//Don't continue updating game until confirm box is gone
+			else if(confirmDisplayed)
+			{
+				confirmDisplayed = sysm.ManageConfirm();
+			} //end else if confirmDisplayed
+
 			//Don't update game while a scene is loading
 			else if(loadingLevel)
 			{
 				return;
-			} //end if
+			} //end else if loadingLevel
 
 			//Intro scene
             else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Intro")
@@ -255,6 +267,7 @@ public class GameManager : MonoBehaviour
 			loadingLevel = true;
 			ChangeCheckpoint(0);
 			checkDel = null;
+			confirmDel = null;
 			UnityEngine.SceneManagement.SceneManager.LoadScene(levelName);
 			loadingLevel = false;
 		} //end else
@@ -372,6 +385,17 @@ public class GameManager : MonoBehaviour
         textDisplayed = true;
         continueImmediate = immediate;
 	} //end DisplayText(string text, bool closeAfter, bool immediate)
+
+	/***************************************
+     * Name: DisplayConfirm
+     * Shows confirm box for player confirmation
+     ***************************************/
+	public void DisplayConfirm(string message, int start, bool close)
+	{
+		sysm.DisplayConfirm(message,start,close);
+		sysm.confirm += confirmDel;
+		confirmDisplayed = true;
+	} //end DisplayConfirm(string message,int start,bool close)
 
     /***************************************
      * Name: GetTrainer

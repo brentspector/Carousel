@@ -166,17 +166,8 @@ public class Inventory
 		//Get the reuqested item
 		List<int> theItem = inventory[currentPocket][bagSpotFrom];
 
-		//Remove then insert depending on which is greater
-		if(bagSpotFrom > bagSpotTo)
-		{
-			inventory[currentPocket].RemoveAt(bagSpotFrom);
-			inventory[currentPocket].Insert(bagSpotTo, theItem);
-		} //end if
-		else
-		{
-			inventory[currentPocket].Insert(bagSpotTo, theItem);
-			inventory[currentPocket].RemoveAt(bagSpotFrom);
-		} //end else
+		inventory[currentPocket].RemoveAt(bagSpotFrom);
+		inventory[currentPocket].Insert(bagSpotTo, theItem);
 	} //end MoveItemLocation(int bagSpotFrom, int bagSpotTo)
 
 	/***************************************

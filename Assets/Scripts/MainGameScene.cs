@@ -84,6 +84,9 @@ public class MainGameScene : MonoBehaviour
 			//Set checkpoint delegate
 			GameManager.instance.checkDel = ChangeCheckpoint;
 
+			//Set confirm delegate
+			GameManager.instance.confirmDel = ApplyConfirm;
+
 			//Initialize references and states
 			gameState = MainGame.HOME;
 			initialize = false;
@@ -2742,6 +2745,25 @@ public class MainGameScene : MonoBehaviour
             } //end else
         } //end if
     } //end SetSummaryPage(int summaryPage)
+
+	/***************************************
+	 * Name: ApplyConfirm
+	 * Appliees the confirm choice
+	 ***************************************/
+	public void ApplyConfirm(ConfirmChoice e)
+	{
+		//Yes selected
+		if (e.Choice == 0)
+		{
+
+		} //end if
+
+		//No selected
+		else if(e.Choice== 1)
+		{
+
+		} //end else			
+	} //end ApplyConfirm(ConfirmChoice e)
 
 	/***************************************
 	 * Name: ChangeCheckpoint

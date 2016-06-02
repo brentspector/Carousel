@@ -46,19 +46,86 @@ public class InventoryScene : MonoBehaviour
 			//Set checkpoint delegate
 			GameManager.instance.checkDel = ChangeCheckpoint;
 
+			//Set confirm delegate
+			GameManager.instance.confirmDel = ApplyConfirm;
+
 			//Initialize references
 			selection = GameManager.tools.transform.FindChild("Selection").gameObject;
 			choices = GameManager.tools.transform.FindChild("ChoiceUnit").gameObject;
 			playerTeam = GameObject.Find("Team").gameObject;
 			viewport = GameObject.Find("InventoryRegion").gameObject;
 			background = GameObject.Find("Background").GetComponent<Image>();
-			sprite = GameObject.Find("Sprite").GetComponent<Image>();
+			sprite = GameObject.Find("Canvas").transform.FindChild("Sprite").GetComponent<Image>();
 			description = GameObject.Find("Description").GetComponent<Text>();
+
+			//Move to next checkpoint
+			checkpoint = 1;
+		} //end if
+
+		//Set up start of scene
+		else if (checkpoint == 1)
+		{
+			//Return if processing
+			if (processing)
+			{
+				return;
+			} //end if
+
+			//Begin processing
+			processing = true;
 
 			//Populate choices menu
 			FillInChoices();
 
-			//Fill in team
+			//Intialize scene to starting state
+			playerTeam.transform.FindChild("PartyInstructions").GetChild(0).GetComponent<Text>().text = 
+				"These are your pokemon.";
+			int currentPocket = GameManager.instance.GetTrainer().GetCurrentBagPocket();
+			background.sprite = Resources.Load<Sprite>("Sprites/Menus/bag" + currentPocket);
+			inventorySpot = 0;
+			topShown = 0;
+			bottomShown = 9;
+
+			//Fill in first slot
+			List<int> item = new List<int>();
+			if (GameManager.instance.GetTrainer().SlotCount() - 1 < 0)
+			{
+				viewport.transform.GetChild(0).GetComponent<Text>().text = "";
+			} //end if
+			else
+			{
+				item = GameManager.instance.GetTrainer().GetItem(0);
+				viewport.transform.GetChild(0).GetComponent<Text>().text = "<color=red>" +
+				item[1]	+ " - " + DataContents.GetItemGameName(item[0]) + "</color>";
+			} //end else
+
+			//Fill in sprite and description
+			if (GameManager.instance.GetTrainer().SlotCount() != 0)
+			{			
+				sprite.color = Color.white;
+				sprite.sprite = Resources.Load<Sprite>("Sprites/Icons/item" + item[0].ToString("000"));
+				description.text = DataContents.ExecuteSQL<string>("SELECT description FROM Items WHERE rowid=" + item[0]);
+			} //end if
+			else
+			{		
+				sprite.color = Color.clear;
+				description.text = "";
+			} //end else
+
+			//Fill in remaining slots
+			for (int i = 1; i < 10; i++)
+			{
+				if (GameManager.instance.GetTrainer().SlotCount() - 1 < i)
+				{
+					viewport.transform.GetChild(i).GetComponent<Text>().text = "";
+				} //end if
+				else
+				{
+					viewport.transform.GetChild(i).GetComponent<Text>().text = GameManager.instance.GetTrainer().GetItem(inventorySpot + i)[1]
+					+ " - " + DataContents.GetItemGameName(GameManager.instance.GetTrainer().GetItem(inventorySpot + i)[0]);
+				} //end else
+			} //end for
+
 			//Fill in all team data
 			for (int i = 0; i < GameManager.instance.GetTrainer().Team.Count; i++)
 			{
@@ -157,70 +224,6 @@ public class InventoryScene : MonoBehaviour
 
 			//Turn off team
 			playerTeam.SetActive(false);
-
-			//Move to next checkpoint
-			checkpoint = 1;
-		} //end if
-
-		//Set up start of scene
-		else if (checkpoint == 1)
-		{
-			//Return if processing
-			if (processing)
-			{
-				return;
-			} //end if
-
-			//Begin processing
-			processing = true;
-
-			//Intialize scene to starting state
-			playerTeam.transform.FindChild("PartyInstructions").GetChild(0).GetComponent<Text>().text = 
-				"These are your pokemon.";
-			int currentPocket = GameManager.instance.GetTrainer().GetCurrentBagPocket();
-			background.sprite = Resources.Load<Sprite>("Sprites/Menus/bag" + currentPocket);
-			inventorySpot = 0;
-			topShown = 0;
-			bottomShown = 9;
-			List<int> item = new List<int>();
-			//Fill in first slot
-			if (GameManager.instance.GetTrainer().SlotCount() - 1 < 0)
-			{
-				viewport.transform.GetChild(0).GetComponent<Text>().text = "";
-			} //end if
-			else
-			{
-				item = GameManager.instance.GetTrainer().GetItem(0);
-				viewport.transform.GetChild(0).GetComponent<Text>().text = "<color=red>" +
-				item[1]	+ " - " + DataContents.GetItemGameName(item[0]) + "</color>";
-			} //end else
-
-			//Fill in sprite and description
-			if (GameManager.instance.GetTrainer().SlotCount() != 0)
-			{				
-				sprite.color = Color.white;
-				sprite.sprite = Resources.Load<Sprite>("Sprites/Icons/item" + item[0].ToString("000"));
-				description.text = DataContents.ExecuteSQL<string>("SELECT description FROM Items WHERE rowid=" + item[0]);
-			} //end if
-			else
-			{
-				sprite.color = Color.clear;
-				description.text = "";
-			} //end else
-
-			//Fill in remaining slots
-			for (int i = 1; i < 10; i++)
-			{
-				if (GameManager.instance.GetTrainer().SlotCount() - 1 < i)
-				{
-					viewport.transform.GetChild(i).GetComponent<Text>().text = "";
-				} //end if
-				else
-				{
-					viewport.transform.GetChild(i).GetComponent<Text>().text = GameManager.instance.GetTrainer().GetItem(inventorySpot + i)[1]
-					+ " - " + DataContents.GetItemGameName(GameManager.instance.GetTrainer().GetItem(inventorySpot + i)[0]);
-				} //end else
-			} //end for
 
 			//Move to next checkpoint
 			GameManager.instance.FadeInAnimation(2);
@@ -751,7 +754,7 @@ public class InventoryScene : MonoBehaviour
 				} //end else
 			} //end else if
 
-			//Item Switch Processing
+			//Item Move Processing
 			else if(checkpoint == 6)
 			{
 				switchSpot = ExtensionMethods.BindToInt(switchSpot - 1, 0);
@@ -843,7 +846,7 @@ public class InventoryScene : MonoBehaviour
 				} //end else
 			} //end else if
 
-			//Item Switch Processing
+			//Item Move Processing
 			else if(checkpoint == 6)
 			{
 				switchSpot = ExtensionMethods.CapAtInt(switchSpot + 1, GameManager.instance.GetTrainer().SlotCount() - 1);
@@ -858,7 +861,7 @@ public class InventoryScene : MonoBehaviour
 		/*********************************************
 		* Mouse Moves Left
 		**********************************************/
-		else if (Input.GetAxis("Mouse X") < 0)
+		if (Input.GetAxis("Mouse X") < 0)
 		{
 			//Use Processing
 			if (checkpoint == 4 && Input.mousePosition.x < Camera.main.WorldToScreenPoint(
@@ -918,7 +921,7 @@ public class InventoryScene : MonoBehaviour
 		/*********************************************
 		* Mouse Moves Up
 		**********************************************/
-		else if (Input.GetAxis("Mouse Y") > 0)
+		if (Input.GetAxis("Mouse Y") > 0)
 		{
 			//Submenu Processing
 			if(checkpoint == 3 && Input.mousePosition.y > selection.transform.position.y +
@@ -1015,7 +1018,6 @@ public class InventoryScene : MonoBehaviour
 				else if (teamSlot == 0)
 				{
 					teamSlot = 0;
-					currentTeamSlot = playerTeam.transform.FindChild("Pokemon1").gameObject;
 				} //end else if
 				//Go down vertically
 				else
@@ -1040,7 +1042,6 @@ public class InventoryScene : MonoBehaviour
 				else if (teamSlot == 0)
 				{
 					teamSlot = 0;
-					currentTeamSlot = playerTeam.transform.FindChild("Pokemon1").gameObject;
 				} //end else if
 				//Go down vertically
 				else
@@ -1067,7 +1068,7 @@ public class InventoryScene : MonoBehaviour
 				} //end if
 			} //end if
 
-			//Item Switch Processing
+			//Item Move Processing
 			else if(checkpoint == 6)
 			{
 				switchSpot = ExtensionMethods.BindToInt(switchSpot - 1, 0);
@@ -1095,7 +1096,7 @@ public class InventoryScene : MonoBehaviour
 				} //end if
 			} //end if
 
-			//Item Switch Processing
+			//Item Move Processing
 			else if(checkpoint == 6)
 			{
 				switchSpot = ExtensionMethods.CapAtInt(switchSpot + 1, GameManager.instance.GetTrainer().SlotCount() - 1);
@@ -1115,19 +1116,22 @@ public class InventoryScene : MonoBehaviour
 			//Normal Processing
 			if (checkpoint == 2)
 			{
-				//Turn on submenu
-				selection.SetActive(true);
-				choices.SetActive(true);
-
-				//Set up selection box at end of frame if it doesn't fit
-				if (selection.GetComponent<RectTransform>().sizeDelta !=
-				   choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
+				//Turn on submenu if there is an item
+				if (GameManager.instance.GetTrainer().SlotCount() != 0)
 				{
-					selection.SetActive(false);
-					StartCoroutine(WaitForResize());
-				} //end if
+					selection.SetActive(true);
+					choices.SetActive(true);
 
-				checkpoint = 3;
+					//Set up selection box at end of frame if it doesn't fit
+					if (selection.GetComponent<RectTransform>().sizeDelta !=
+						choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
+					{
+						selection.SetActive(false);
+						StartCoroutine(WaitForResize());
+					} //end if
+
+					checkpoint = 3;
+				} //end if
 			} //end if
 
 			//Submenu Processing
@@ -1148,6 +1152,7 @@ public class InventoryScene : MonoBehaviour
 							playerTeam.SetActive(true);
 							selection.SetActive(false);
 							choices.SetActive(false);
+							currentTeamSlot = playerTeam.transform.FindChild("Pokemon1").gameObject;
 							playerTeam.transform.FindChild("PartyInstructions").GetChild(0).GetComponent<Text>().text = 
 								"Use on who?";
 							teamSlot = 1;
@@ -1165,6 +1170,7 @@ public class InventoryScene : MonoBehaviour
 							playerTeam.SetActive(true);
 							selection.SetActive(false);
 							choices.SetActive(false);
+							currentTeamSlot = playerTeam.transform.FindChild("Pokemon1").gameObject;
 							playerTeam.transform.FindChild("PartyInstructions").GetChild(0).GetComponent<Text>().text = 
 								"Give to who?";
 							teamSlot = 1;
@@ -1173,12 +1179,12 @@ public class InventoryScene : MonoBehaviour
 						break;
 					//Toss
 					case 2:
-						GameManager.instance.GetTrainer().RemoveItem(itemNumber, GameManager.instance.GetTrainer().
-							ItemCount(itemNumber));
-						GameManager.instance.DisplayText("Threw out " + DataContents.GetItemGameName(itemNumber), true);
-						checkpoint = 2;
+						choices.SetActive(false);
+						selection.SetActive(false);
+						GameManager.instance.DisplayConfirm("Do you really want to throw out " +
+							DataContents.GetItemGameName(itemNumber) + "?", 1, true);
 						break;
-					//Switch
+					//Move
 					case 3:
 						selection.SetActive(false);
 						choices.SetActive(false);
@@ -1195,6 +1201,8 @@ public class InventoryScene : MonoBehaviour
 						{
 							GameManager.instance.GetTrainer().MoveItemPocket(itemNumber, 0);
 						} //end else
+						selection.SetActive(false);
+						choices.SetActive(false);
 						checkpoint = 2;
 						break;
 					//Cancel
@@ -1209,8 +1217,13 @@ public class InventoryScene : MonoBehaviour
 			//Use Processing
 			else if (checkpoint == 4)
 			{
-				ItemEffects.UseOnPokemon(GameManager.instance.GetTrainer().Team[teamSlot - 1], 
-					GameManager.instance.GetTrainer().GetItem(inventorySpot)[0]);
+				if (ItemEffects.UseOnPokemon(GameManager.instance.GetTrainer().Team[teamSlot - 1], 
+					   GameManager.instance.GetTrainer().GetItem(inventorySpot)[0]))
+				{
+					SetStatusIcon(playerTeam.transform.FindChild("Pokemon" + (teamSlot)).FindChild("Status").
+						GetComponent<Image>(), GameManager.instance.GetTrainer().Team[teamSlot - 1]);
+					GameManager.instance.GetTrainer().RemoveItem(GameManager.instance.GetTrainer().GetItem(inventorySpot)[0], 1);
+				} //end if
 				checkpoint = 1;
 			} //end else if
 
@@ -1223,21 +1236,20 @@ public class InventoryScene : MonoBehaviour
 					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
 					GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 					GameManager.instance.GetTrainer().Team[teamSlot - 1].Item = itemNumber;
-					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber), true);
+					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " to " + 
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].Nickname,true);
+					checkpoint = 1;
 				} //end if
 				else
 				{
 					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
-					GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
-					GameManager.instance.GetTrainer().AddItem(GameManager.instance.GetTrainer().Team[teamSlot - 1].
-						Item , 1);
-					GameManager.instance.GetTrainer().Team[teamSlot - 1].Item = itemNumber;
-					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " and " +
-						"put other item in bag.",true);
+					GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].Item) + " for " + DataContents.GetItemGameName(
+							itemNumber) + "?", 0, false);
 				} //end else
 			} //end else if
 
-			//Item Switch Processing
+			//Item Move Processing
 			else if(checkpoint == 6)
 			{
 				GameManager.instance.GetTrainer().MoveItemLocation(inventorySpot, switchSpot);
@@ -1278,7 +1290,7 @@ public class InventoryScene : MonoBehaviour
 				checkpoint = 2;
 			} //end else if
 
-			//Item Switch Processing
+			//Item Move Processing
 			else if(checkpoint == 6)
 			{
 				checkpoint = 2;
@@ -1293,19 +1305,22 @@ public class InventoryScene : MonoBehaviour
 			//Normal Processing
 			if (checkpoint == 2)
 			{
-				//Turn on submenu
-				selection.SetActive(true);
-				choices.SetActive(true);
-
-				//Set up selection box at end of frame if it doesn't fit
-				if(selection.GetComponent<RectTransform>().sizeDelta != 
-					choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
+				//Turn on submenu if there is an item
+				if (GameManager.instance.GetTrainer().SlotCount() != 0)
 				{
-					selection.SetActive(false);
-					StartCoroutine(WaitForResize());
-				} //end if
+					selection.SetActive(true);
+					choices.SetActive(true);
 
-				checkpoint = 3;
+					//Set up selection box at end of frame if it doesn't fit
+					if (selection.GetComponent<RectTransform>().sizeDelta !=
+					  choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
+					{
+						selection.SetActive(false);
+						StartCoroutine(WaitForResize());
+					} //end if
+
+					checkpoint = 3;
+				} //end if
 			} //end if
 
 			//Submenu Processing
@@ -1326,8 +1341,10 @@ public class InventoryScene : MonoBehaviour
 							playerTeam.SetActive(true);
 							selection.SetActive(false);
 							choices.SetActive(false);
+							currentTeamSlot = playerTeam.transform.FindChild("Pokemon1").gameObject;
 							playerTeam.transform.FindChild("PartyInstructions").GetChild(0).GetComponent<Text>().text = 
 								"Use on who?";
+							teamSlot = 1;
 							checkpoint = 4;
 						} //end if
 						else
@@ -1342,19 +1359,21 @@ public class InventoryScene : MonoBehaviour
 							playerTeam.SetActive(true);
 							selection.SetActive(false);
 							choices.SetActive(false);
+							currentTeamSlot = playerTeam.transform.FindChild("Pokemon1").gameObject;
 							playerTeam.transform.FindChild("PartyInstructions").GetChild(0).GetComponent<Text>().text = 
 								"Give to who?";
+							teamSlot = 1;
 							checkpoint = 5;
 						} //end if
 						break;
 					//Toss
 					case 2:
-						GameManager.instance.GetTrainer().RemoveItem(itemNumber, GameManager.instance.GetTrainer().
-							ItemCount(itemNumber));
-						GameManager.instance.DisplayText("Threw out " + DataContents.GetItemGameName(itemNumber), true);
-						checkpoint = 2;
+						choices.SetActive(false);
+						selection.SetActive(false);
+						GameManager.instance.DisplayConfirm("Do you really want to throw out " +
+						DataContents.GetItemGameName(itemNumber) + "?", 1, true);
 						break;
-					//Switch
+					//Move
 					case 3:
 						selection.SetActive(false);
 						choices.SetActive(false);
@@ -1371,6 +1390,8 @@ public class InventoryScene : MonoBehaviour
 						{
 							GameManager.instance.GetTrainer().MoveItemPocket(itemNumber, 0);
 						} //end else
+						selection.SetActive(false);
+						choices.SetActive(false);
 						checkpoint = 2;
 						break;
 					//Cancel
@@ -1385,8 +1406,13 @@ public class InventoryScene : MonoBehaviour
 			//Use Processing
 			else if (checkpoint == 4)
 			{
-				ItemEffects.UseOnPokemon(GameManager.instance.GetTrainer().Team[teamSlot - 1], 
-					GameManager.instance.GetTrainer().GetItem(inventorySpot)[0]);
+				if (ItemEffects.UseOnPokemon(GameManager.instance.GetTrainer().Team[teamSlot - 1], 
+					GameManager.instance.GetTrainer().GetItem(inventorySpot)[0]))
+				{
+					SetStatusIcon(playerTeam.transform.FindChild("Pokemon" + (teamSlot)).FindChild("Status").
+						GetComponent<Image>(), GameManager.instance.GetTrainer().Team[teamSlot - 1]);
+					GameManager.instance.GetTrainer().RemoveItem(GameManager.instance.GetTrainer().GetItem(inventorySpot)[0], 1);
+				} //end if
 				checkpoint = 1;
 			} //end else if
 
@@ -1399,21 +1425,20 @@ public class InventoryScene : MonoBehaviour
 					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
 					GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 					GameManager.instance.GetTrainer().Team[teamSlot - 1].Item = itemNumber;
-					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber), true);
+					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " to " + 
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].Nickname,true);
+					checkpoint = 1;
 				} //end if
 				else
 				{
 					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
-					GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
-					GameManager.instance.GetTrainer().AddItem(GameManager.instance.GetTrainer().Team[teamSlot - 1].
-						Item , 1);
-					GameManager.instance.GetTrainer().Team[teamSlot - 1].Item = itemNumber;
-					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " and " +
-						"put other item in bag.",true);
+					GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].Item) + " for " + DataContents.GetItemGameName(
+						itemNumber) + "?", 0, false);
 				} //end else
 			} //end else if
 
-			//Item Switch Processing
+			//Item Move Processing
 			else if(checkpoint == 6)
 			{
 				GameManager.instance.GetTrainer().MoveItemLocation(inventorySpot, switchSpot);
@@ -1454,7 +1479,7 @@ public class InventoryScene : MonoBehaviour
 				checkpoint = 2;
 			} //end else if
 
-			//Item Switch Processing
+			//Item Move Processing
 			else if(checkpoint == 6)
 			{
 				checkpoint = 2;
@@ -1471,7 +1496,7 @@ public class InventoryScene : MonoBehaviour
 		if (GameManager.instance.GetTrainer().GetCurrentBagPocket() != 0)
 		{
 			//Add to choice menu if necessary
-			for (int i = choices.transform.childCount; i < 5; i++)
+			for (int i = choices.transform.childCount; i < 6; i++)
 			{
 				GameObject clone = Instantiate(choices.transform.GetChild(0).gameObject,
 					                   choices.transform.GetChild(0).position,
@@ -1480,7 +1505,7 @@ public class InventoryScene : MonoBehaviour
 			} //end for
 
 			//Destroy extra chocies
-			for (int i = choices.transform.childCount; i > 5; i--)
+			for (int i = choices.transform.childCount; i > 6; i--)
 			{
 				Destroy(choices.transform.GetChild(i - 1).gameObject);
 			} //end for
@@ -1489,14 +1514,14 @@ public class InventoryScene : MonoBehaviour
 			choices.transform.GetChild(0).GetComponent<Text>().text = "Use";
 			choices.transform.GetChild(1).GetComponent<Text>().text = "Give";
 			choices.transform.GetChild(2).GetComponent<Text>().text = "Toss";
-			choices.transform.GetChild(3).GetComponent<Text>().text = "Switch";
+			choices.transform.GetChild(3).GetComponent<Text>().text = "Move";
 			choices.transform.GetChild(4).GetComponent<Text>().text = "To Free Space";
 			choices.transform.GetChild(5).GetComponent<Text>().text = "Cancel";
 		} //end if
 		else
 		{
 			//Add to choice menu if necessary
-			for (int i = choices.transform.childCount; i < 5; i++)
+			for (int i = choices.transform.childCount; i < 6; i++)
 			{
 				GameObject clone = Instantiate(choices.transform.GetChild(0).gameObject,
 					choices.transform.GetChild(0).position,
@@ -1505,7 +1530,7 @@ public class InventoryScene : MonoBehaviour
 			} //end for
 
 			//Destroy extra chocies
-			for (int i = choices.transform.childCount; i > 5; i--)
+			for (int i = choices.transform.childCount; i > 6; i--)
 			{
 				Destroy(choices.transform.GetChild(i - 1).gameObject);
 			} //end for
@@ -1514,7 +1539,7 @@ public class InventoryScene : MonoBehaviour
 			choices.transform.GetChild(0).GetComponent<Text>().text = "Use";
 			choices.transform.GetChild(1).GetComponent<Text>().text = "Give";
 			choices.transform.GetChild(2).GetComponent<Text>().text = "Toss";
-			choices.transform.GetChild(3).GetComponent<Text>().text = "Switch";
+			choices.transform.GetChild(3).GetComponent<Text>().text = "Move";
 			choices.transform.GetChild(4).GetComponent<Text>().text = "To Regular";
 			choices.transform.GetChild(5).GetComponent<Text>().text = "Cancel";
 		} //end else
@@ -1610,7 +1635,8 @@ public class InventoryScene : MonoBehaviour
 			choices.GetComponent<RectTransform>().position.x,
 			choices.GetComponent<RectTransform>().rect.height / 2);
 
-		//Reposition selection to top menu choicec
+		//Reposition selection to top menu choice
+		subMenuChoice = 0;
 		selection.transform.position = choices.transform.GetChild(0).position;
 	} //end PositionChoices
 
@@ -1633,6 +1659,57 @@ public class InventoryScene : MonoBehaviour
 			GetComponent<RectTransform>().position;
 		selection.SetActive(true);
 	} //end WaitForResize
+
+	/***************************************
+	 * Name: ApplyConfirm
+	 * Appliees the confirm choice
+	 ***************************************/
+	public void ApplyConfirm(ConfirmChoice e)
+	{
+		//Get item
+		int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+
+		//Yes selected
+		if (e.Choice == 0)
+		{
+			Debug.Log("Yes of inventory, checkpoint is " + checkpoint);
+			//Toss from Submenu
+			if (checkpoint == 3)
+			{
+				GameManager.instance.GetTrainer().RemoveItem(itemNumber, GameManager.instance.GetTrainer().
+					ItemCount(itemNumber));
+				GameManager.instance.DisplayText("Threw out " + DataContents.GetItemGameName(itemNumber), true);
+				selection.SetActive(false);
+				choices.SetActive(false);
+				checkpoint = 2;
+			} //end if
+
+			//Give
+			else if (checkpoint == 5)
+			{
+				Debug.Log("Checkpoint 5");
+				GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
+				GameManager.instance.GetTrainer().AddItem(GameManager.instance.GetTrainer().Team[teamSlot - 1].
+					Item , 1);
+				GameManager.instance.GetTrainer().Team[teamSlot - 1].Item = itemNumber;
+				GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " to " + 
+					GameManager.instance.GetTrainer().Team[teamSlot - 1].Nickname + " and " +
+					"put other item in bag.",true);
+				checkpoint = 1;
+			} //end else if
+		} //end if
+
+		//No selected
+		else if(e.Choice== 1)
+		{
+			//Give
+			if (checkpoint == 5)
+			{
+				GameManager.instance.DisplayText("Did not switch items.", true);
+				checkpoint = 1;
+			} //end if
+		} //end else			
+	} //end ApplyConfirm(ConfirmChoice e)
 
 	/***************************************
 	 * Name: ChangeCheckpoint

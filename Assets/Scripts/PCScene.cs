@@ -74,6 +74,9 @@ public class PCScene : MonoBehaviour
 			//Set checkpoint delegate
 			GameManager.instance.checkDel = ChangeCheckpoint;
 
+			//Set confirm delegate
+			GameManager.instance.confirmDel = ApplyConfirm;
+
 			//Get references
 			choices = GameManager.tools.transform.FindChild("ChoiceUnit").gameObject;
 			selection = GameManager.tools.transform.FindChild("Selection").gameObject;
@@ -3471,6 +3474,25 @@ public class PCScene : MonoBehaviour
             pcState = PCGame.HOME;
         } //end else
     } //end PartyState(bool state)
+
+	/***************************************
+	 * Name: ApplyConfirm
+	 * Appliees the confirm choice
+	 ***************************************/
+	public void ApplyConfirm(ConfirmChoice e)
+	{
+		//Yes selected
+		if (e.Choice == 0)
+		{
+
+		} //end if
+
+		//No selected
+		else if(e.Choice== 1)
+		{
+
+		} //end else			
+	} //end ApplyConfirm(ConfirmChoice e)
 
 	/***************************************
 	 * Name: ChangeCheckpoint
