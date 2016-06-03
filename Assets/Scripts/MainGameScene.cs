@@ -25,6 +25,8 @@ public class MainGameScene : MonoBehaviour
 	    MOVESWITCH,
 	    POKEMONSWITCH,
 	    POKEMONRIBBONS,
+		ITEMCHOICE,
+		ITEMGIVE,
 	    TRAINERCARD,
 	    DEBUG
 	} //end MainGame
@@ -42,6 +44,9 @@ public class MainGameScene : MonoBehaviour
 	int previousSwitchSlot;         //The slot last highlighted for switching to
 	int ribbonChoice;               //The ribbon currently shown
 	int previousRibbonChoice;       //The ribbon last highlighted for reading
+	int inventorySpot;				//What slot in pocket the player is on
+	int topShown;					//The top slot displayed in the inventory
+	int bottomShown;				//The bottom slot displayed in the inventory
 	bool initialize;                //Initialize each state only once per access
 	bool processing = false;		//Whether a function is already processing something
 	GameObject choices;				//Choices box from scene tools
@@ -52,6 +57,7 @@ public class MainGameScene : MonoBehaviour
 	GameObject summaryScreen;       //Screen showing summary of data for pokemon
 	GameObject ribbonScreen;        //Screen showing ribbons for pokemon
 	GameObject trainerCard;         //Screen of the trainer card
+	GameObject playerBag;			//Screen of the player's bag
 	GameObject debugOptions;        //Screen of the debug options
 	GameObject debugButtons;        //Screen containing debug areas
 	GameObject pokemonRightRegion;  //The right region of Pokemon Edit options
@@ -60,6 +66,10 @@ public class MainGameScene : MonoBehaviour
 	GameObject currentSwitchSlot;   //The object that is currently highlighted for switching to
 	GameObject currentMoveSlot;     //The object that is currently highlighted for reading/moving
 	GameObject currentRibbonSlot;   //The object that is currently highlighted for reading
+	GameObject viewport;			//The items shown to the player
+	Image bagBack;					//Background bag image
+	Image bagSprite;				//Item currently highlighted
+	Text bagDescription;			//The item's description
 	#endregion
 
 	#region Methods
@@ -102,6 +112,11 @@ public class MainGameScene : MonoBehaviour
 			debugButtons = debugOptions.transform.FindChild("Buttons").gameObject;
 			pokemonRightRegion = debugOptions.transform.FindChild("Pokemon").FindChild("RightRegion").gameObject;
 			trainerRightRegion = debugOptions.transform.FindChild("Trainer").FindChild("RightRegion").gameObject;
+			playerBag = GameObject.Find("PlayerBag");
+			viewport = playerBag.transform.FindChild("InventoryRegion").gameObject;
+			bagBack = playerBag.transform.FindChild("BagBack").GetComponent<Image>();
+			bagSprite = playerBag.transform.FindChild("BagSprite").GetComponent<Image>();
+			bagDescription = playerBag.transform.FindChild("BagDescription").GetComponent<Text>();
 			EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
 
 			//Enable debug button if allowed
@@ -117,6 +132,7 @@ public class MainGameScene : MonoBehaviour
 			summaryScreen.SetActive(false);
 			ribbonScreen.SetActive(false);
 			trainerCard.SetActive(false);
+			playerBag.SetActive(false);
 			debugOptions.SetActive(false);
 			debugOptions.transform.GetChild(1).gameObject.SetActive(false);
 			debugOptions.transform.GetChild(2).gameObject.SetActive(false);
@@ -284,10 +300,10 @@ public class MainGameScene : MonoBehaviour
 					} //end for
 
 					//Deactivate any empty party spots
-					for (int i = 5; i > GameManager.instance.GetTrainer().Team.Count-1; i--)
+					for (int i = 5; i > GameManager.instance.GetTrainer().Team.Count - 1; i--)
 					{
 						playerTeam.transform.FindChild("Background").GetChild(i).gameObject.SetActive(false);
-						playerTeam.transform.FindChild("Pokemon" + (i+1)).gameObject.SetActive(false);
+						playerTeam.transform.FindChild("Pokemon" + (i + 1)).gameObject.SetActive(false);
 					} //end for
 
 					//Set choice number to 1 for first slot
@@ -630,6 +646,82 @@ public class MainGameScene : MonoBehaviour
 				selection.transform.position = Camera.main.WorldToScreenPoint(currentSwitchSlot.transform.position);
 			} //end else if
 
+			//Pokemon Item Give/Take
+			else if (gameState == MainGame.ITEMCHOICE)
+			{
+				//Initialize
+				if (!initialize)
+				{
+					//Initialized
+					initialize = true;
+
+					//Set up choices
+					StartCoroutine(PositionChoices());
+				} //end if !initialize
+
+				//Get player input
+				GetInput();
+			} //end else if
+
+			//Pokemon Item Give From Bag
+			else if (gameState == MainGame.ITEMGIVE)
+			{
+				//Initialize
+				if (!initialize)
+				{
+					//Initialized
+					initialize = true;
+
+					playerTeam.transform.FindChild("PartyInstructions").GetChild(0).GetComponent<Text>().text = 
+						"These are your pokemon.";
+					int currentPocket = GameManager.instance.GetTrainer().GetCurrentBagPocket();
+					bagBack.sprite = Resources.Load<Sprite>("Sprites/Menus/bag" + currentPocket);
+					inventorySpot = 0;
+					topShown = 0;
+					bottomShown = 9;
+				} //end if !initialize
+
+				//Get player input
+				GetInput();
+
+				//Fill in slots
+				for (int i = 0; i < 10; i++)
+				{
+					if (GameManager.instance.GetTrainer().SlotCount() - 1 < topShown + i)
+					{
+						viewport.transform.GetChild(i).GetComponent<Text>().text = "";
+					} //end if
+					else
+					{
+						if (topShown + i == inventorySpot)
+						{
+							viewport.transform.GetChild(i).GetComponent<Text>().text = "<color=red>" +
+								GameManager.instance.GetTrainer().GetItem(topShown + i)[1] + " - " +
+								DataContents.GetItemGameName(GameManager.instance.GetTrainer().GetItem(topShown + i)[0]) + "</color>";
+						} //end if
+						else
+						{
+							viewport.transform.GetChild(i).GetComponent<Text>().text = GameManager.instance.GetTrainer().GetItem(topShown + i)[1]
+								+ " - " + DataContents.GetItemGameName(GameManager.instance.GetTrainer().GetItem(topShown + i)[0]);
+						} //end else
+					} //end else
+				} //end for
+
+				//Fill in sprite and description
+				if (GameManager.instance.GetTrainer().SlotCount() != 0)
+				{
+					List<int> item = GameManager.instance.GetTrainer().GetItem(inventorySpot);
+					bagSprite.color = Color.white;
+					bagSprite.sprite = Resources.Load<Sprite>("Sprites/Icons/item" + item[0].ToString("000"));
+					bagDescription.text = DataContents.ExecuteSQL<string>("SELECT description FROM Items WHERE rowid=" + item[0]);
+				} //end if
+				else
+				{
+					bagSprite.color = Color.clear;
+					bagDescription.text = "";
+				} //end else
+			} //end else if
+
 			//Player's trainer card
 			else if (gameState == MainGame.TRAINERCARD)
 			{
@@ -841,6 +933,13 @@ public class MainGameScene : MonoBehaviour
 				//Read ribbon
 				ReadRibbon();
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
+
+			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
+			else if (gameState == MainGame.ITEMGIVE)
+			{
+				GameManager.instance.GetTrainer().PreviousPocket();
+				initialize = false;
+			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end if Left Arrow
 
 		/*********************************************
@@ -933,6 +1032,13 @@ public class MainGameScene : MonoBehaviour
 				//Read ribbon
 				ReadRibbon();
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
+
+			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
+			else if (gameState == MainGame.ITEMGIVE)
+			{
+				GameManager.instance.GetTrainer().NextPocket();
+				initialize = false;
+			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Right Arrow
 
 		/*********************************************
@@ -1065,6 +1171,33 @@ public class MainGameScene : MonoBehaviour
 				//Reload ribbons
 				initialize = false;
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
+
+			//Pokemon Take/Give on Continue Game -> Team -> Item
+			else if (gameState == MainGame.ITEMCHOICE)
+			{
+				//Decrease choice (higher slots are on lower children)
+				subMenuChoice--;
+
+				//If on first option, loop to end
+				if (subMenuChoice < 0)
+				{
+					subMenuChoice = choices.transform.childCount - 1;
+				} //end if
+
+				//Reposition selection
+				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
+
+			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
+			else if (gameState == MainGame.ITEMGIVE)
+			{
+				inventorySpot = ExtensionMethods.BindToInt(inventorySpot - 1, 0);
+				if (inventorySpot < topShown)
+				{
+					topShown = inventorySpot;
+					bottomShown--;
+				} //end if
+			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Up Arrow
 
 		/*********************************************
@@ -1198,6 +1331,33 @@ public class MainGameScene : MonoBehaviour
 				//Reload ribbons
 				initialize = false;
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
+
+			//Pokemon Take/Give on Continue Game -> Team -> Item
+			else if (gameState == MainGame.ITEMCHOICE)
+			{
+				//Increase choice (lower slots are on higher children)
+				subMenuChoice++;
+
+				//If on last option, loop to first
+				if (subMenuChoice > choices.transform.childCount - 1)
+				{
+					subMenuChoice = 0;
+				} //end if
+
+				//Reposition selection
+				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
+
+			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
+			else if (gameState == MainGame.ITEMGIVE)
+			{
+				inventorySpot = ExtensionMethods.CapAtInt(inventorySpot + 1, GameManager.instance.GetTrainer().SlotCount() - 1);
+				if (inventorySpot > bottomShown)
+				{
+					bottomShown = inventorySpot;
+					topShown++;
+				} //end if
+			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Down Arrow
 
 		/*********************************************
@@ -1411,6 +1571,20 @@ public class MainGameScene : MonoBehaviour
 					currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").GetChild(ribbonChoice).gameObject;
 				} //end if
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
+
+			//Pokemon Take/Give on Continue Game -> Team -> Item
+			else if (gameState == MainGame.ITEMCHOICE && Input.mousePosition.y > selection.transform.position.y +
+				selection.GetComponent<RectTransform>().rect.height / 2)
+			{
+				//If not on last option, decrease (higher slots are on lower children)
+				if (subMenuChoice > 0)
+				{
+					subMenuChoice--;
+				} //end if
+
+				//Reposition selection
+				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
 		} //end else if Mouse Moves Up
 
 		/*********************************************
@@ -1522,6 +1696,20 @@ public class MainGameScene : MonoBehaviour
 					currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").GetChild(ribbonChoice).gameObject;
 				} //end if
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
+
+			//Pokemon Take/Give on Continue Game -> Team -> Item
+			else if (gameState == MainGame.ITEMCHOICE && Input.mousePosition.y < selection.transform.position.y -
+				selection.GetComponent<RectTransform>().rect.height / 2)
+			{
+				//If not on last option, increase (lower slots are on higher children)
+				if (subMenuChoice < choices.transform.childCount - 1)
+				{
+					subMenuChoice++;
+				} //end if
+
+				//Reposition selection
+				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
 		} //end else if Mouse Moves Down
 
 		/*********************************************
@@ -1561,6 +1749,17 @@ public class MainGameScene : MonoBehaviour
 				//Reload ribbons
 				initialize = false;
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
+
+			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
+			else if (gameState == MainGame.ITEMGIVE)
+			{
+				inventorySpot = ExtensionMethods.BindToInt(inventorySpot - 1, 0);
+				if (inventorySpot < topShown)
+				{
+					topShown = inventorySpot;
+					bottomShown--;
+				} //end if
+			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Mouse Wheel Up
 
 		/*********************************************
@@ -1600,6 +1799,17 @@ public class MainGameScene : MonoBehaviour
 				//Reload ribbons
 				initialize = false;
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
+
+			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
+			else if (gameState == MainGame.ITEMGIVE)
+			{
+				inventorySpot = ExtensionMethods.CapAtInt(inventorySpot + 1, GameManager.instance.GetTrainer().SlotCount() - 1);
+				if (inventorySpot > bottomShown)
+				{
+					bottomShown = inventorySpot;
+					topShown++;
+				} //end if
+			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Mouse Wheel Down
 
 		/*********************************************
@@ -1638,19 +1848,10 @@ public class MainGameScene : MonoBehaviour
 						break;
 				//Item
 					case 2:
-						selection.SetActive(false);
-						choices.SetActive(false);
 						initialize = false;
-						if (GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item == 0)
-						{
-							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = 
-								GameManager.instance.RandomInt(1, 500);
-						} //end if
-						else
-						{
-							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = 0;
-						} //end else
-						gameState = MainGame.TEAM;
+						subMenuChoice = 0;
+						FillInChoices();
+						gameState = MainGame.ITEMCHOICE;
 						break;
 				//Ribbons
 					case 3:
@@ -1750,6 +1951,65 @@ public class MainGameScene : MonoBehaviour
 					ReadRibbon();
 				} //end if
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
+
+			//Pokemon Take/Give on Continue Game -> Team -> Item
+			else if (gameState == MainGame.ITEMCHOICE)
+			{
+				//Apply appropriate action based on selection
+				switch (subMenuChoice)
+				{
+					//Give
+					case 0:
+						playerBag.SetActive(true);
+						choices.SetActive(false);
+						selection.SetActive(false);
+						gameState = MainGame.ITEMGIVE;
+						initialize = false;
+						break;
+					//Take
+					case 1:
+						int itemNumber = GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item;
+						GameManager.instance.GetTrainer().AddItem(itemNumber, 1);
+						GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = 0;
+						GameManager.instance.DisplayText("Took " + DataContents.GetItemGameName(itemNumber) + " and " +
+						"added it to bag.", true);
+						gameState = MainGame.TEAM;
+						choices.SetActive(false);
+						selection.SetActive(false);
+						initialize = false;
+						break;
+					//Cancel
+					case 2:
+						choices.SetActive(false);
+						selection.SetActive(false);
+						gameState = MainGame.TEAM;
+						break;
+				} //end switch
+			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
+
+			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
+			else if (gameState == MainGame.ITEMGIVE)
+			{
+				//Make sure pokemon isn't holding another item
+				if (GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item == 0)
+				{
+					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+					GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
+					GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
+					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " to " + 
+						GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname,true);
+					playerBag.SetActive(false);
+					initialize = false;
+					gameState = MainGame.TEAM;
+				} //end if
+				else
+				{
+					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+					GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
+						GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item) + " for " + DataContents.GetItemGameName(
+							itemNumber) + "?", 0, false);
+				} //end else
+			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Left Mouse Button
 
 		/*********************************************
@@ -1821,6 +2081,21 @@ public class MainGameScene : MonoBehaviour
 				gameState = MainGame.POKEMONSUMMARY;
 			} //end else if Move Switch on Continue Game -> Team -> Summary -> Move Details
 
+			//Pokemon Take/Give on Continue Game -> Team -> Item
+			else if (gameState == MainGame.ITEMCHOICE)
+			{
+				choices.SetActive(false);
+				selection.SetActive(false);
+				gameState = MainGame.TEAM;
+			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
+
+			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
+			else if (gameState == MainGame.ITEMGIVE)
+			{
+				playerBag.SetActive(false);
+				gameState = MainGame.TEAM;
+			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
+
 			//Gym Battles
 			else if (gameState == MainGame.GYMBATTLE)
 			{
@@ -1868,7 +2143,7 @@ public class MainGameScene : MonoBehaviour
 						summaryScreen.transform.GetChild(5).gameObject.SetActive(false);
 						gameState = MainGame.POKEMONSUMMARY;
 						break;
-						//Switch
+					//Switch
 					case 1:
 						selection.SetActive(false);
 						choices.SetActive(false);
@@ -1877,23 +2152,14 @@ public class MainGameScene : MonoBehaviour
 						currentSwitchSlot = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 						gameState = MainGame.POKEMONSWITCH;
 						break;
-						//Item
+					//Item
 					case 2:
-						selection.SetActive(false);
-						choices.SetActive(false);
 						initialize = false;
-						if (GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item == 0)
-						{
-							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = 
-								GameManager.instance.RandomInt(1, 500);
-						} //end if
-						else
-						{
-							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = 0;
-						} //end else
-						gameState = MainGame.TEAM;
+						subMenuChoice = 0;
+						FillInChoices();
+						gameState = MainGame.ITEMCHOICE;
 						break;
-						//Ribbons
+					//Ribbons
 					case 3:
 						selection.SetActive(false);
 						choices.SetActive(false);
@@ -1901,7 +2167,7 @@ public class MainGameScene : MonoBehaviour
 						currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").GetChild(0).gameObject;
 						gameState = MainGame.POKEMONRIBBONS;
 						break;
-						//Cancel
+					//Cancel
 					case 4:
 						selection.SetActive(false);
 						choices.SetActive(false);
@@ -2006,6 +2272,65 @@ public class MainGameScene : MonoBehaviour
 					ReadRibbon();
 				} //end if
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
+
+			//Pokemon Take/Give on Continue Game -> Team -> Item
+			else if (gameState == MainGame.ITEMCHOICE)
+			{
+				//Apply appropriate action based on selection
+				switch (subMenuChoice)
+				{
+					//Give
+					case 0:
+						playerBag.SetActive(true);
+						choices.SetActive(false);
+						selection.SetActive(false);
+						gameState = MainGame.ITEMGIVE;
+						initialize = false;
+						break;
+					//Take
+					case 1:
+						int itemNumber = GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item;
+						GameManager.instance.GetTrainer().AddItem(itemNumber, 1);
+						GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = 0;
+						GameManager.instance.DisplayText("Took " + DataContents.GetItemGameName(itemNumber) + " and " +
+							"added it to bag.", true);
+						choices.SetActive(false);
+						selection.SetActive(false);
+						initialize = false;
+						gameState = MainGame.TEAM;
+						break;
+						//Cancel
+					case 2:
+						choices.SetActive(false);
+						selection.SetActive(false);
+						gameState = MainGame.TEAM;
+						break;
+				} //end switch
+			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
+
+			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
+			else if (gameState == MainGame.ITEMGIVE)
+			{
+				//Make sure pokemon isn't holding another item
+				if (GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item == 0)
+				{
+					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+					GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
+					GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
+					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " to " + 
+						GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname,true);
+					playerBag.SetActive(false);
+					initialize = false;
+					gameState = MainGame.TEAM;
+				} //end if
+				else
+				{
+					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+					GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
+						GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item) + " for " + DataContents.GetItemGameName(
+							itemNumber) + "?", 0, false);
+				} //end else
+			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Enter/Return Key
 
 		/*********************************************
@@ -2077,6 +2402,21 @@ public class MainGameScene : MonoBehaviour
 				gameState = MainGame.POKEMONSUMMARY;
 			} //end else if Move Switch on Continue Game -> Team -> Summary -> Move Details
 
+			//Pokemon Take/Give on Continue Game -> Team -> Item
+			else if (gameState == MainGame.ITEMCHOICE)
+			{
+				choices.SetActive(false);
+				selection.SetActive(false);
+				gameState = MainGame.TEAM;
+			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
+
+			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
+			else if (gameState == MainGame.ITEMGIVE)
+			{
+				playerBag.SetActive(false);
+				gameState = MainGame.TEAM;
+			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
+
 			//Gym Battles
 			else if (gameState == MainGame.GYMBATTLE)
 			{
@@ -2106,27 +2446,52 @@ public class MainGameScene : MonoBehaviour
 	 ***************************************/
 	void FillInChoices()
 	{
-		//Add to choice menu if necessary
-		for (int i = choices.transform.childCount; i < 5; i++)
+		if (gameState == MainGame.TEAM)
 		{
-			GameObject clone = Instantiate(choices.transform.GetChild(0).gameObject,
-				                   choices.transform.GetChild(0).position,
-				                   Quaternion.identity) as GameObject;
-			clone.transform.SetParent(choices.transform);
-		} //end for
+			//Add to choice menu if necessary
+			for (int i = choices.transform.childCount; i < 5; i++)
+			{
+				GameObject clone = Instantiate(choices.transform.GetChild(0).gameObject,
+					                   choices.transform.GetChild(0).position,
+					                   Quaternion.identity) as GameObject;
+				clone.transform.SetParent(choices.transform);
+			} //end for
 
-		//Destroy extra chocies
-		for (int i = choices.transform.childCount; i > 5; i--)
+			//Destroy extra chocies
+			for (int i = choices.transform.childCount; i > 5; i--)
+			{
+				Destroy(choices.transform.GetChild(i - 1).gameObject);
+			} //end for
+
+			//Set text for each choice
+			choices.transform.GetChild(0).GetComponent<Text>().text = "Summary";
+			choices.transform.GetChild(1).GetComponent<Text>().text = "Switch";
+			choices.transform.GetChild(2).GetComponent<Text>().text = "Item";
+			choices.transform.GetChild(3).GetComponent<Text>().text = "Ribbons";
+			choices.transform.GetChild(4).GetComponent<Text>().text = "Cancel";
+		} //end if
+		else if (gameState == MainGame.POKEMONSUBMENU)
 		{
-			Destroy(choices.transform.GetChild(i - 1).gameObject);
-		} //end for
+			//Add to choice menu if necessary
+			for (int i = choices.transform.childCount; i < 3; i++)
+			{
+				GameObject clone = Instantiate(choices.transform.GetChild(0).gameObject,
+					choices.transform.GetChild(0).position,
+					Quaternion.identity) as GameObject;
+				clone.transform.SetParent(choices.transform);
+			} //end for
 
-		//Set text for each choice
-		choices.transform.GetChild(0).GetComponent<Text>().text = "Summary";
-		choices.transform.GetChild(1).GetComponent<Text>().text = "Switch";
-		choices.transform.GetChild(2).GetComponent<Text>().text = "Item";
-		choices.transform.GetChild(3).GetComponent<Text>().text = "Ribbons";
-		choices.transform.GetChild(4).GetComponent<Text>().text = "Cancel";
+			//Destroy extra chocies
+			for (int i = choices.transform.childCount; i > 3; i--)
+			{
+				Destroy(choices.transform.GetChild(i - 1).gameObject);
+			} //end for
+
+			//Set text for each choice
+			choices.transform.GetChild(0).GetComponent<Text>().text = "Give";
+			choices.transform.GetChild(1).GetComponent<Text>().text = "Take";
+			choices.transform.GetChild(2).GetComponent<Text>().text = "Cancel";
+		} //end else if
 	} //end FillInChoices
 
 	/***************************************
@@ -2755,13 +3120,29 @@ public class MainGameScene : MonoBehaviour
 		//Yes selected
 		if (e.Choice == 0)
 		{
+			//Get item
+			int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
 
+			//Swap items
+			GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
+			GameManager.instance.GetTrainer().AddItem(GameManager.instance.GetTrainer().Team[choiceNumber - 1].
+				Item , 1);
+			GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
+			GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " to " + 
+				GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname + " and " +
+				"put other item in bag.",true);
+			playerBag.SetActive(false);
+			initialize = false;
+			gameState = MainGame.TEAM;
 		} //end if
 
 		//No selected
 		else if(e.Choice== 1)
 		{
-
+			GameManager.instance.DisplayText("Did not switch items.", true);
+			playerBag.SetActive(false);
+			initialize = false;
+			gameState = MainGame.TEAM;
 		} //end else			
 	} //end ApplyConfirm(ConfirmChoice e)
 

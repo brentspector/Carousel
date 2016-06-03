@@ -1672,7 +1672,6 @@ public class InventoryScene : MonoBehaviour
 		//Yes selected
 		if (e.Choice == 0)
 		{
-			Debug.Log("Yes of inventory, checkpoint is " + checkpoint);
 			//Toss from Submenu
 			if (checkpoint == 3)
 			{
@@ -1687,7 +1686,6 @@ public class InventoryScene : MonoBehaviour
 			//Give
 			else if (checkpoint == 5)
 			{
-				Debug.Log("Checkpoint 5");
 				GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 				GameManager.instance.GetTrainer().AddItem(GameManager.instance.GetTrainer().Team[teamSlot - 1].
 					Item , 1);
