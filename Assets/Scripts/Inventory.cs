@@ -56,11 +56,22 @@ public class Inventory
 		//Get item slot
 		int slot = bagSpot > -1 ? bagSpot : ExtensionMethods.CapAtInt(DataContents.GetItemBagSpot(item), 7);
 
-		//Add item
-		List<int> newItem = new List<int>();
-		newItem.Add(item);
-		newItem.Add(quantity);
-		inventory[slot].Add(newItem);
+		//Check is item already exists in bag
+		int index = -1;
+		index = inventory[slot].FindIndex(searchItem => searchItem[0] == item);
+
+		if (index < 0)
+		{
+			//Add item
+			List<int> newItem = new List<int>();
+			newItem.Add(item);
+			newItem.Add(quantity);
+			inventory[slot].Add(newItem);
+		} //end if
+		else
+		{
+			inventory[slot][index][1] += quantity;
+		} //end else
 	} //end AddItem(int item, int quantity, int bagSpot = -1)
 
 	/***************************************
@@ -140,8 +151,8 @@ public class Inventory
 		List<int> theItem = inventory[currentPocket].Find(stored => stored[0] == item);
 
 		//Remove the item then add it
-		RemoveItem(item, theItem[1], currentPocket);
-		AddItem(item, theItem[1], bagPocketTo);
+		RemoveItem(theItem[0], theItem[1], currentPocket);
+		AddItem(theItem[0], theItem[1], bagPocketTo);
 
 		//Display success
 		if (bagPocketTo == -1)

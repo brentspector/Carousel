@@ -334,6 +334,87 @@ public class ButtonFunctions : MonoBehaviour
 		} //end catch
 	} //end ChangePocket(int requested)
 
+	/***************************************
+     * Name: ChangeFilter
+     * Changes shop to display only items
+     * within the filter
+     ***************************************/ 
+	public void ChangeFilter(int requested)
+	{
+		try
+		{
+			GameManager.instance.ChangeFilter(requested);
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end ChangeFilter(int requested)
+
+	/***************************************
+     * Name: ItemsMode
+     * Changes shop between buy and sell mode
+     ***************************************/ 
+	public void ItemMode()
+	{
+		try
+		{
+			GameManager.instance.ItemMode();
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end ItemMode
+
+	/***************************************
+     * Name: PreviousPage
+     * Changes shop's display to previous page
+     ***************************************/ 
+	public void PreviousPage()
+	{
+		try
+		{
+			GameManager.instance.PreviousPage();
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end PreviousPage
+
+	/***************************************
+     * Name: NextPage
+     * Changes shop's display to next page
+     ***************************************/ 
+	public void NextPage()
+	{
+		try
+		{
+			GameManager.instance.NextPage();
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end NextPage
+
+	/***************************************
+     * Name: Codes
+     * Allows player to input codes
+     ***************************************/ 
+	public void Codes()
+	{
+		try
+		{
+			GameManager.instance.Codes();
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end Codes
+
     /***************************************
      * Name: Persist
      * Persists the game

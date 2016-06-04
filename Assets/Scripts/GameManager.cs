@@ -361,6 +361,52 @@ public class GameManager : MonoBehaviour
 		sysm.PlayerTrainer.ChangePocket(requested);
 		ChangeCheckpoint(1);
 	} //end ChangePocket(int requested)
+
+	/***************************************
+     * Name: ChangeFilter
+     * Changes shop to display only items
+     * within the filter
+     ***************************************/ 
+	public void ChangeFilter(int requested)
+	{
+
+	} //end ChangeFilter(int requested)
+
+	/***************************************
+     * Name: ItemsMode
+     * Changes shop between buy and sell mode
+     ***************************************/ 
+	public void ItemMode()
+	{
+
+	} //end ItemMode
+
+	/***************************************
+     * Name: PreviousPage
+     * Changes shop's display to previous page
+     ***************************************/ 
+	public void PreviousPage()
+	{
+
+	} //end PreviousPage
+
+	/***************************************
+     * Name: NextPage
+     * Changes shop's display to next page
+     ***************************************/ 
+	public void NextPage()
+	{
+
+	} //end NextPage
+
+	/***************************************
+     * Name: Codes
+     * Allows player to input codes
+     ***************************************/ 
+	public void Codes()
+	{
+
+	} //end Codes
     #endregion
 
 	//System Manager functions

@@ -251,7 +251,7 @@ public static class DataContents : System.Object
      ***************************************/
     public static int GetItemID(string itemName)
     {
-        //No move found yet
+        //No item found yet
         dbCommand.CommandText = "SELECT rowid FROM Items WHERE gameName=@nm";
         dbCommand.Parameters.Add(new SqliteParameter("@nm", itemName));
         dbCommand.Prepare ();
@@ -300,6 +300,26 @@ public static class DataContents : System.Object
 			return itemLocation;
 		} //end else
 	} //end GetItemBagSpot(int itemNumber)
+
+	/***************************************
+     * Name: GetPokemonID
+     * Returns numeric location of Pokemon
+     ***************************************/
+	public static int GetPokemonID(string pokemonName)
+	{
+		//No pokemon found yet
+		pokemonName = pokemonName.ToLower();
+		char[] letters = pokemonName.ToCharArray();
+		pokemonName = letters[0].ToString().ToUpper() + pokemonName.Remove(0, 1);
+		dbCommand.CommandText = "SELECT rowid FROM Pokemon WHERE name=@nm";
+		dbCommand.Parameters.Add(new SqliteParameter("@nm", pokemonName));
+		dbCommand.Prepare ();
+		int pokemonID = ExecuteSQL<int> (dbCommand.CommandText);
+		dbCommand.Parameters.Clear ();
+
+		//Return location of pokemon, or -1 if not found
+		return pokemonID;
+	} //end GetPokemonID(string pokemonName)
     #endregion
 } //end DataContents class
 

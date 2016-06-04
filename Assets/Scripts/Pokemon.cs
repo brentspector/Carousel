@@ -7,6 +7,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Linq;
 using Random = UnityEngine.Random;
 #endregion
@@ -41,7 +42,7 @@ public class Pokemon
 	int obtainType;			//How this pokemon was obtained
     int obtainFrom;         //Where this pokemon was obtained from
 	int obtainLevel;		//What level the pokemon was obtained at
-	int ability;			//What ability this pokemon is currently on
+	int ability;			//What ability this pokemon has
 	int gender;				//What gender the pokemon is
 	int nature;				//What nature the pokemon has
 	int happiness;			//Happiness level of pokemon
@@ -56,6 +57,11 @@ public class Pokemon
 	string nickname;		//Nickname of pokemon
 	string OtName;			//Name of the original trainer
     DateTime obtainTime;    //When this pokemon was obtained at
+
+	[OptionalField(VersionAdded=2)]
+	int abilityOn;			//What ability this pokemon is currently on
+	[OptionalField(VersionAdded=2)]
+	int[] vitamins;			//How many of each vitamin were added
     #endregion
 
     #region Methods
@@ -240,11 +246,13 @@ public class Pokemon
         ppReamaining = new int[4];
 		markings = new bool[DataContents.markingCharacters.Length];
 		ribbons = new List<int>();
+		vitamins = new int[6];
 
 		for(int i = 0; i < 6; i++)
 		{
             IV[i] = 0;
 			EV[i] = 0;
+			vitamins[i] = 0;
 		} //end for
 
 		for(int i = 0; i < 4; i++)
@@ -901,6 +909,7 @@ public class Pokemon
         {
             abilityName = DataContents.ExecuteSQL<string>
                 ("SELECT ability1 FROM Pokemon WHERE rowid=" + natSpecies);
+			abilityOn = 0;
         } //end if
         //Check if pokemon has a second ability
         else if(newAbility == 1)
@@ -914,6 +923,7 @@ public class Pokemon
             {
                 abilityName = DataContents.ExecuteSQL<string>
                     ("SELECT ability2 FROM Pokemon WHERE rowid=" + natSpecies);
+				abilityOn = 1;
             } //end else
         } //end if
         
@@ -929,6 +939,7 @@ public class Pokemon
             {
                 abilityName = DataContents.ExecuteSQL<string>
                     ("SELECT hiddenAbility FROM Pokemon WHERE rowid=" + natSpecies);
+				abilityOn = 2;
             } //end else
         } //end else if
 
@@ -975,6 +986,129 @@ public class Pokemon
         } //end for
         return coloredMarkings;
     } //end GetMarkingsString
+
+	/***************************************
+     * Name: CheckEvolution
+     * Check if pokemon can evolve, and return
+     * what it evolves into
+     ***************************************/
+	public int CheckEvolution(int usedItem = 0)
+	{
+		//Get evolved forms
+		string evolveList = DataContents.ExecuteSQL<string>("SELECT evolutions FROM Pokemon WHERE rowid=" + natSpecies);
+
+		//End function if there are no evolutions
+		if (string.IsNullOrEmpty(evolveList))
+		{
+			return -1;
+		} //end if
+
+		//Divide evolutions up
+		string[] arrayList = evolveList.Split(',');
+
+		//Non Item-based evolution
+		if (usedItem == 0)
+		{
+			return -1;
+		} //end if
+	
+		//Item-based evolution
+		else
+		{
+			//Trade based evolution
+			if (usedItem == 64)
+			{
+				//Check if any forms evolve by trade
+				for (int i = 1; i < arrayList.Length; i+=3)
+				{
+					//A Trade evolution was found
+					if (arrayList[i] == "Trade")
+					{
+						return DataContents.GetPokemonID(arrayList[i - 1]);
+					} //end if
+
+					//An Item Trade evolution was found
+					else if (arrayList[i] == "TradeItem")
+					{
+						//Check if holding the necessary item
+						if (DataContents.ExecuteSQL<int>("SELECT rowid FROM Items WHERE internalName='" +
+						   arrayList[i + 1] + "'") == item)
+						{
+							return DataContents.GetPokemonID(arrayList[i - 1]);
+							item = 0;
+						} //end if
+					} //end else if
+				} //end for
+			} //end if
+
+			//No evolution found
+			return -1;
+		} //end else
+	} //end CheckEvolution(int item = 0)
+
+	/***************************************
+     * Name: EvolvePokemon
+     * Evolves the pokemon into requested
+     ***************************************/
+	public void EvolvePokemon(int newPokemon)
+	{
+		//Make sure a valid value was passed
+		if (newPokemon < 0 || newPokemon > 721)
+		{
+			return;
+		} //end if
+
+		//Update national species
+		natSpecies = newPokemon;
+
+		//Update ability
+		CheckAbility(abilityOn);
+
+		//Update stats
+		CalculateStats();
+	} //end EvolvePokemon(int newPokemon)
+
+	/***************************************
+     * Name: UpdateAbilityOn
+     * Legacy file fix
+     ***************************************/
+	public void UpdateAbilityOn()
+	{
+		string abilityName = DataContents.ExecuteSQL<string>("SELECT internalName FROM Abilities WHERE rowid=" + ability);
+		//Check if first ability
+		if (abilityName == DataContents.ExecuteSQL<string>
+			("SELECT ability1 FROM Pokemon WHERE rowid=" + natSpecies))
+		{
+			abilityOn = 0;
+		} //end if
+
+		//Check if second ability
+		else if(abilityName == DataContents.ExecuteSQL<string>
+			("SELECT ability2 FROM Pokemon WHERE rowid=" + natSpecies))
+		{
+			abilityOn = 1;
+		}
+
+		//Hidden or custom ability
+		else
+		{
+			abilityOn = 2;
+		} //end else
+	} //end UpdateAbilityOn
+
+	/***************************************
+     * Name: UpdateVitamins
+     * Legacy file fix
+     ***************************************/
+	public void UpdateVitamins()
+	{
+		vitamins = new int[6];
+
+		for(int i = 0; i < 6; i++)
+		{
+			vitamins[i] = 0;
+		} //end for
+	} //end UpdateVitamins
 	#region Accessors
 	//Stats
     /***************************************
@@ -1127,7 +1261,7 @@ public class Pokemon
 	public void SetEV(int index, int value)
 	{
 		EV [index] = value;
-	} //end SetIV(int index, int value)
+	} //end SetEV(int index, int value)
 
 	//Information
     /***************************************
@@ -1265,6 +1399,22 @@ public class Pokemon
 		} //end set
 	} //end StatusCount
 
+	/***************************************
+     * Name: GetVitamin
+     ***************************************/
+	public int GetVitamin(int index)
+	{
+		return vitamins [index];
+	} //end GetVitamin(int index)
+
+	/***************************************
+     * Name: SetVitamin
+     ***************************************/
+	public void SetVitamin(int index, int value)
+	{
+		vitamins [index] = value;
+	} //end SetVitamin(int index, int value)
+
     /***************************************
      * Name: BallUsed
      ***************************************/
@@ -1339,6 +1489,21 @@ public class Pokemon
 			ability = value;
 		} //end set
 	} //end Ability 
+
+	/***************************************
+     * Name: AbilityOn
+     ***************************************/
+	public int AbilityOn
+	{
+		get
+		{
+			return abilityOn;
+		} //end get
+		set
+		{
+			abilityOn = value;
+		} //end set
+	} //end AbilityOn 
 
     /***************************************
      * Name: Gender

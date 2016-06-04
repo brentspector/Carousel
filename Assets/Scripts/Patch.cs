@@ -35,11 +35,34 @@ public static class Patch
 			/***********************************
 			 * Patch Notes   0.3 - 0.4
 			 * - Added Inventory
+			 * - Added Shop
+			 * - Added abilityOn to provide effect
+			 * 	 for ability capsule
+			 * - Added vitamins to track use of
+			 * 	 vitamins
 			 ***********************************/
 			else if(patchVersion == 0.3f)
 			{
 				fixedTrainer = fTrainer;
 				fixedTrainer.Bag = new Inventory();
+				fixedTrainer.PShop = new Shop();
+				for(int i = 0; i < fixedTrainer.Team.Count; i++)
+				{
+					fixedTrainer.Team[i].UpdateAbilityOn();
+					fixedTrainer.Team[i].UpdateVitamins();
+				} //end for
+				//Loop through pc boxes
+				for(int i = 0; i < 50; i++)
+				{
+					//Loop through pokemon in box
+					for(int j = 0; j < 30; j++)
+					{
+						if(fixedTrainer.GetPC(i, j) != null)
+						{
+							fixedTrainer.GetPC(i, j).UpdateAbilityOn();
+						} //end  if
+					} //end for
+				} //end for
 				patchVersion = 0.4f;
 			} //end else if
         } //end try

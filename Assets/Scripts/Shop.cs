@@ -4,9 +4,11 @@
  *****************************************************************************************/ 
 #region Using
 using UnityEngine;
+using System;
 using System.Collections;
 #endregion
 
+[Serializable]
 public class Shop 
 {
     #region Variables

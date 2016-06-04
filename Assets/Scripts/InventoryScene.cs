@@ -1146,7 +1146,7 @@ public class InventoryScene : MonoBehaviour
 					//Use
 					case 0:
 						int itemType = DataContents.ExecuteSQL<int>("SELECT outsideUse FROM Items WHERE id=" + itemNumber);
-						//One time use
+						//One time use or infinite use
 						if (itemType == 1 || itemType == 2)
 						{
 							playerTeam.SetActive(true);
@@ -1203,12 +1203,18 @@ public class InventoryScene : MonoBehaviour
 						} //end else
 						selection.SetActive(false);
 						choices.SetActive(false);
+						inventorySpot = 0;
+						topShown = 0;
+						bottomShown = 9;
 						checkpoint = 2;
 						break;
 					//Cancel
 					case 5:
 						selection.SetActive(false);
 						choices.SetActive(false);
+						inventorySpot = 0;
+						topShown = 0;
+						bottomShown = 9;
 						checkpoint = 2;
 						break;
 				} //end switch
@@ -1217,12 +1223,16 @@ public class InventoryScene : MonoBehaviour
 			//Use Processing
 			else if (checkpoint == 4)
 			{
-				if (ItemEffects.UseOnPokemon(GameManager.instance.GetTrainer().Team[teamSlot - 1], 
-					   GameManager.instance.GetTrainer().GetItem(inventorySpot)[0]))
+				int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+				if (ItemEffects.UseOnPokemon(GameManager.instance.GetTrainer().Team[teamSlot - 1], itemNumber))
 				{
 					SetStatusIcon(playerTeam.transform.FindChild("Pokemon" + (teamSlot)).FindChild("Status").
 						GetComponent<Image>(), GameManager.instance.GetTrainer().Team[teamSlot - 1]);
-					GameManager.instance.GetTrainer().RemoveItem(GameManager.instance.GetTrainer().GetItem(inventorySpot)[0], 1);
+
+					if (DataContents.ExecuteSQL<int>("SELECT outsideUse FROM Items WHERE id=" + itemNumber) == 1)
+					{
+						GameManager.instance.GetTrainer().RemoveItem(GameManager.instance.GetTrainer().GetItem(inventorySpot)[0], 1);
+					} //end if
 				} //end if
 				checkpoint = 1;
 			} //end else if
@@ -1253,6 +1263,9 @@ public class InventoryScene : MonoBehaviour
 			else if(checkpoint == 6)
 			{
 				GameManager.instance.GetTrainer().MoveItemLocation(inventorySpot, switchSpot);
+				inventorySpot = 0;
+				topShown = 0;
+				bottomShown = 9;
 				checkpoint = 2;
 			} //end else if
 		} //end else if Left Mouse Button
@@ -1293,6 +1306,9 @@ public class InventoryScene : MonoBehaviour
 			//Item Move Processing
 			else if(checkpoint == 6)
 			{
+				inventorySpot = 0;
+				topShown = 0;
+				bottomShown = 9;
 				checkpoint = 2;
 			} //end else if
 		} //end else if Right Mouse Button
@@ -1335,7 +1351,7 @@ public class InventoryScene : MonoBehaviour
 					//Use
 					case 0:
 						int itemType = DataContents.ExecuteSQL<int>("SELECT outsideUse FROM Items WHERE id=" + itemNumber);
-						//One time use
+						//One time use or infinite use
 						if (itemType == 1 || itemType == 2)
 						{
 							playerTeam.SetActive(true);
@@ -1406,12 +1422,16 @@ public class InventoryScene : MonoBehaviour
 			//Use Processing
 			else if (checkpoint == 4)
 			{
-				if (ItemEffects.UseOnPokemon(GameManager.instance.GetTrainer().Team[teamSlot - 1], 
-					GameManager.instance.GetTrainer().GetItem(inventorySpot)[0]))
+				int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+				if (ItemEffects.UseOnPokemon(GameManager.instance.GetTrainer().Team[teamSlot - 1], itemNumber))
 				{
 					SetStatusIcon(playerTeam.transform.FindChild("Pokemon" + (teamSlot)).FindChild("Status").
 						GetComponent<Image>(), GameManager.instance.GetTrainer().Team[teamSlot - 1]);
-					GameManager.instance.GetTrainer().RemoveItem(GameManager.instance.GetTrainer().GetItem(inventorySpot)[0], 1);
+
+					if (DataContents.ExecuteSQL<int>("SELECT outsideUse FROM Items WHERE id=" + itemNumber) == 1)
+					{
+						GameManager.instance.GetTrainer().RemoveItem(GameManager.instance.GetTrainer().GetItem(inventorySpot)[0], 1);
+					} //end if
 				} //end if
 				checkpoint = 1;
 			} //end else if
@@ -1442,6 +1462,9 @@ public class InventoryScene : MonoBehaviour
 			else if(checkpoint == 6)
 			{
 				GameManager.instance.GetTrainer().MoveItemLocation(inventorySpot, switchSpot);
+				inventorySpot = 0;
+				topShown = 0;
+				bottomShown = 9;
 				checkpoint = 2;
 			} //end else if
 		} //end else if Enter/Return Key
@@ -1482,6 +1505,9 @@ public class InventoryScene : MonoBehaviour
 			//Item Move Processing
 			else if(checkpoint == 6)
 			{
+				inventorySpot = 0;
+				topShown = 0;
+				bottomShown = 9;
 				checkpoint = 2;
 			} //end else if
 		} //end else if X Key

@@ -32,6 +32,8 @@ public class Trainer
 
 	[OptionalField(VersionAdded=2)]
 	Inventory bag;		  //The player's item bag
+	[OptionalField(VersionAdded=2)]
+	Shop shop;			  //The status of the shop for the player
 
     //Gym Battle count
     //Kalos
@@ -95,6 +97,9 @@ public class Trainer
 
 			//Initialize Bag
 			bag = new Inventory();
+
+			//Initialize Shop
+			shop = new Shop();
 
             //No backups made yet
             bups = 0;
@@ -512,6 +517,17 @@ public class Trainer
 			bag = value;
 		} //end set
 	} //end Bag
+
+	/***************************************
+     * Name: PShop
+     ***************************************/
+	public Shop PShop
+	{
+		set
+		{
+			shop = value;
+		} //end set
+	} //end PShop
 
     /***************************************
      * Name: Seen
