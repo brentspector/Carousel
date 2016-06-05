@@ -40,6 +40,8 @@ public static class Patch
 			 * 	 for ability capsule
 			 * - Added vitamins to track use of
 			 * 	 vitamins
+			 * - Added ppMax and ppUp to track
+			 *   how many total uses a move has
 			 ***********************************/
 			else if(patchVersion == 0.3f)
 			{
@@ -50,6 +52,7 @@ public static class Patch
 				{
 					fixedTrainer.Team[i].UpdateAbilityOn();
 					fixedTrainer.Team[i].UpdateVitamins();
+					fixedTrainer.Team[i].UpdatePP();
 				} //end for
 				//Loop through pc boxes
 				for(int i = 0; i < 50; i++)
@@ -60,6 +63,8 @@ public static class Patch
 						if(fixedTrainer.GetPC(i, j) != null)
 						{
 							fixedTrainer.GetPC(i, j).UpdateAbilityOn();
+							fixedTrainer.GetPC(i,j).UpdateVitamins();
+							fixedTrainer.GetPC(i,j).UpdatePP();
 						} //end  if
 					} //end for
 				} //end for

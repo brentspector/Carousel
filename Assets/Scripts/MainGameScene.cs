@@ -148,6 +148,7 @@ public class MainGameScene : MonoBehaviour
 		else if (checkpoint == 1)
 		{
 			processing = false;
+			initialize = false;
 			checkpoint = 2;
 		} //end else if
 
@@ -1990,25 +1991,29 @@ public class MainGameScene : MonoBehaviour
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 			else if (gameState == MainGame.ITEMGIVE)
 			{
-				//Make sure pokemon isn't holding another item
-				if (GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item == 0)
+				//Verify a item is highlighted
+				if(inventorySpot < GameManager.instance.GetTrainer().SlotCount())
 				{
-					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
-					GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
-					GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
-					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " to " + 
-						GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname,true);
-					playerBag.SetActive(false);
-					initialize = false;
-					gameState = MainGame.TEAM;
+					//Make sure pokemon isn't holding another item
+					if (GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item == 0)
+					{
+						int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+						GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
+						GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
+						GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " to " + 
+							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname,true);
+						playerBag.SetActive(false);
+						initialize = false;
+						gameState = MainGame.TEAM;
+					} //end if
+					else
+					{
+						int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+						GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
+							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item) + " for " + DataContents.GetItemGameName(
+								itemNumber) + "?", 0, false);
+					} //end else
 				} //end if
-				else
-				{
-					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
-					GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
-						GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item) + " for " + DataContents.GetItemGameName(
-							itemNumber) + "?", 0, false);
-				} //end else
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Left Mouse Button
 
@@ -2311,25 +2316,29 @@ public class MainGameScene : MonoBehaviour
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 			else if (gameState == MainGame.ITEMGIVE)
 			{
-				//Make sure pokemon isn't holding another item
-				if (GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item == 0)
+				//Verify a item is highlighted
+				if(inventorySpot < GameManager.instance.GetTrainer().SlotCount())
 				{
-					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
-					GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
-					GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
-					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " to " + 
-						GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname,true);
-					playerBag.SetActive(false);
-					initialize = false;
-					gameState = MainGame.TEAM;
+					//Make sure pokemon isn't holding another item
+					if (GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item == 0)
+					{
+						int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+						GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
+						GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
+						GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " to " + 
+							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname,true);
+						playerBag.SetActive(false);
+						initialize = false;
+						gameState = MainGame.TEAM;
+					} //end if
+					else
+					{
+						int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+						GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
+							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item) + " for " + DataContents.GetItemGameName(
+								itemNumber) + "?", 0, false);
+					} //end else
 				} //end if
-				else
-				{
-					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
-					GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
-						GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item) + " for " + DataContents.GetItemGameName(
-							itemNumber) + "?", 0, false);
-				} //end else
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Enter/Return Key
 

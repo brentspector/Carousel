@@ -2398,64 +2398,68 @@ public class PCScene : MonoBehaviour
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 			else if (pcState == PCGame.ITEMGIVE)
-			{				
-				//If in party
-				if (partyTab.activeSelf)
+			{	
+				//Verify an item is highlighted
+				if(inventorySpot > GameManager.instance.GetTrainer().SlotCount())
 				{
-					//Make sure pokemon isn't holding another item
-					if (GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item == 0)
+					//If in party
+					if (partyTab.activeSelf)
 					{
-						int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
-						GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
-						GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
-						GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
-						GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname, true);
-						playerBag.SetActive(false);
-						initialize = false;
+						//Make sure pokemon isn't holding another item
+						if (GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item == 0)
+						{
+							int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+							GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
+							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
+							GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
+							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname, true);
+							playerBag.SetActive(false);
+							initialize = false;
 
-						//Enable party close button
-						partyTab.transform.FindChild("Close").GetComponent<Button>().interactable = true;
+							//Enable party close button
+							partyTab.transform.FindChild("Close").GetComponent<Button>().interactable = true;
 
-						//Return to party
-						pcState = PCGame.PARTY;
+							//Return to party
+							pcState = PCGame.PARTY;
+						} //end if
+						else
+						{
+							int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+							GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
+								GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item) + " for " + DataContents.GetItemGameName(
+								itemNumber) + "?", 0, false);
+						} //end else
 					} //end if
+
+					//If in pc box
 					else
 					{
-						int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
-						GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
-							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item) + " for " + DataContents.GetItemGameName(
-							itemNumber) + "?", 0, false);
+						//Make sure pokemon isn't holding another item
+						if (GameManager.instance.GetTrainer().GetPC(
+							GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Item == 0)
+						{
+							int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+							GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
+							GameManager.instance.GetTrainer().GetPC(
+								GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Item = itemNumber;
+							GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
+								GameManager.instance.GetTrainer().GetPC(
+									GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Nickname, true);
+							playerBag.SetActive(false);
+							initialize = false;
+							//Return to home
+							pcState = PCGame.HOME;
+						} //end if
+						else
+						{
+							int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+							GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
+								GameManager.instance.GetTrainer().GetPC(
+									GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Item) + " for " + DataContents.GetItemGameName(
+									itemNumber) + "?", 0, false);
+						} //end else
 					} //end else
 				} //end if
-
-				//If in pc box
-				else
-				{
-					//Make sure pokemon isn't holding another item
-					if (GameManager.instance.GetTrainer().GetPC(
-						GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Item == 0)
-					{
-						int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
-						GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
-						GameManager.instance.GetTrainer().GetPC(
-							GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Item = itemNumber;
-						GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
-							GameManager.instance.GetTrainer().GetPC(
-								GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Nickname, true);
-						playerBag.SetActive(false);
-						initialize = false;
-						//Return to home
-						pcState = PCGame.HOME;
-					} //end if
-					else
-					{
-						int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
-						GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
-							GameManager.instance.GetTrainer().GetPC(
-								GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Item) + " for " + DataContents.GetItemGameName(
-								itemNumber) + "?", 0, false);
-					} //end else
-				} //end else
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Left Mouse Button
 
@@ -3067,63 +3071,67 @@ public class PCScene : MonoBehaviour
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 			else if (pcState == PCGame.ITEMGIVE)
 			{				
-				//If in party
-				if (partyTab.activeSelf)
+				//Verify an item is highlighted
+				if(inventorySpot > GameManager.instance.GetTrainer().SlotCount())
 				{
-					//Make sure pokemon isn't holding another item
-					if (GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item == 0)
+					//If in party
+					if (partyTab.activeSelf)
 					{
-						int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
-						GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
-						GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
-						GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
-							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname, true);
-						playerBag.SetActive(false);
-						initialize = false;
+						//Make sure pokemon isn't holding another item
+						if (GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item == 0)
+						{
+							int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+							GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
+							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
+							GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
+								GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname, true);
+							playerBag.SetActive(false);
+							initialize = false;
 
-						//Enable party close button
-						partyTab.transform.FindChild("Close").GetComponent<Button>().interactable = true;
+							//Enable party close button
+							partyTab.transform.FindChild("Close").GetComponent<Button>().interactable = true;
 
-						//Return to party
-						pcState = PCGame.PARTY;
+							//Return to party
+							pcState = PCGame.PARTY;
+						} //end if
+						else
+						{
+							int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+							GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
+								GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item) + " for " + DataContents.GetItemGameName(
+									itemNumber) + "?", 0, false);
+						} //end else
 					} //end if
+
+					//If in pc box
 					else
 					{
-						int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
-						GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
-							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item) + " for " + DataContents.GetItemGameName(
-								itemNumber) + "?", 0, false);
+						//Make sure pokemon isn't holding another item
+						if (GameManager.instance.GetTrainer().GetPC(
+							GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Item == 0)
+						{
+							int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+							GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
+							GameManager.instance.GetTrainer().GetPC(
+								GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Item = itemNumber;
+							GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
+								GameManager.instance.GetTrainer().GetPC(
+									GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Nickname, true);
+							playerBag.SetActive(false);
+							initialize = false;
+							//Return to home
+							pcState = PCGame.HOME;
+						} //end if
+						else
+						{
+							int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+							GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
+								GameManager.instance.GetTrainer().GetPC(
+									GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Item) + " for " + DataContents.GetItemGameName(
+										itemNumber) + "?", 0, false);
+						} //end else
 					} //end else
 				} //end if
-
-				//If in pc box
-				else
-				{
-					//Make sure pokemon isn't holding another item
-					if (GameManager.instance.GetTrainer().GetPC(
-						GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Item == 0)
-					{
-						int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
-						GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
-						GameManager.instance.GetTrainer().GetPC(
-							GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Item = itemNumber;
-						GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
-							GameManager.instance.GetTrainer().GetPC(
-								GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Nickname, true);
-						playerBag.SetActive(false);
-						initialize = false;
-						//Return to home
-						pcState = PCGame.HOME;
-					} //end if
-					else
-					{
-						int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
-						GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
-							GameManager.instance.GetTrainer().GetPC(
-								GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Item) + " for " + DataContents.GetItemGameName(
-									itemNumber) + "?", 0, false);
-					} //end else
-				} //end else
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Enter/Return Key
 

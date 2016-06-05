@@ -62,6 +62,10 @@ public class Pokemon
 	int abilityOn;			//What ability this pokemon is currently on
 	[OptionalField(VersionAdded=2)]
 	int[] vitamins;			//How many of each vitamin were added
+	[OptionalField(VersionAdded=2)]
+	int[] ppMax;			//The amount of uses each move has total
+	[OptionalField(VersionAdded=2)]
+	int[] ppUps;			//How many PP Ups and Maxes have been used
     #endregion
 
     #region Methods
@@ -247,6 +251,8 @@ public class Pokemon
 		markings = new bool[DataContents.markingCharacters.Length];
 		ribbons = new List<int>();
 		vitamins = new int[6];
+		ppMax = new int[4];
+		ppUps = new int[4];
 
 		for(int i = 0; i < 6; i++)
 		{
@@ -655,6 +661,8 @@ public class Pokemon
             moves[index] = values[0];
             ppReamaining[index] = DataContents.ExecuteSQL<int> 
                 ("SELECT totalPP FROM Moves WHERE rowid=" + moves[index]);
+			ppMax[index] = ppReamaining[index];
+			ppUps[index] = 0;
         } //end if
         //No valid index given
         else
@@ -664,6 +672,8 @@ public class Pokemon
                 moves[i] = values[i];
                 ppReamaining[i] = DataContents.ExecuteSQL<int> 
                     ("SELECT totalPP FROM Moves WHERE rowid=" + moves[i]);
+				ppMax[i] = ppReamaining[i];
+				ppUps[i] = 0;
             } //end for
         } //end else
     } //end ChangeMoves(int[] values, int index = -1)
@@ -1015,8 +1025,67 @@ public class Pokemon
 		//Item-based evolution
 		else
 		{
+			//Magetic field based evolution
+			if (usedItem == 43)
+			{
+				//Check if any forms evolve by magnetic radiation
+				for (int i = 1; i < arrayList.Length; i += 3)
+				{
+					//A magnetic field based evolution was found
+					if (arrayList[i] == "Location" && int.Parse(arrayList[i + 1]) == 281)
+					{
+						return DataContents.GetPokemonID(arrayList[i - 1]);
+					} //end if
+				} //end for
+			} //end if
+
+			//Dawn, Dusk, Fire, Leaf Stone evolution
+			else if (usedItem == 60 || usedItem == 75 || usedItem == 89 || usedItem == 145)
+			{
+				//Check if any forms evolve by stone
+				for (int i = 1; i < arrayList.Length; i += 3)
+				{
+					//A stone evolution was found
+					if (arrayList[i] == "Item" && DataContents.ExecuteSQL<int>("SELECT rowid FROM Items WHERE internalName='" +
+					    arrayList[i + 1] + "'") == usedItem)
+					{
+						return DataContents.GetPokemonID(arrayList[i - 1]);
+					} //end if
+
+					//A male only stone evolution was found
+					else if (arrayList[i] == "ItemMale" && DataContents.ExecuteSQL<int>("SELECT rowid FROM Items WHERE internalName='" +
+						arrayList[i + 1] + "'") == usedItem)
+					{
+						if (gender == 0)
+						{
+							return DataContents.GetPokemonID(arrayList[i - 1]);
+						} //end if
+						else
+						{
+							GameManager.instance.DisplayText(string.Format("{0} must be male to evolve with a {1}.", nickname, 
+								DataContents.GetItemGameName(usedItem)), true);
+						} //end else
+					} //end else if
+
+					//A female only stone evolution was found
+					else if (arrayList[i] == "ItemFemale" && DataContents.ExecuteSQL<int>("SELECT rowid FROM Items WHERE internalName='" +
+						arrayList[i + 1] + "'") == usedItem)
+					{
+						if (gender == 1)
+						{
+							return DataContents.GetPokemonID(arrayList[i - 1]);
+						} //end if
+						else
+						{
+							GameManager.instance.DisplayText(string.Format("{0} must be female to evolve with a {1}.", nickname, 
+								DataContents.GetItemGameName(usedItem)), true);
+						} //end else
+					} //end else if
+				} //end for
+			} //end else if
+
 			//Trade based evolution
-			if (usedItem == 64)
+			else if (usedItem == 64)
 			{
 				//Check if any forms evolve by trade
 				for (int i = 1; i < arrayList.Length; i+=3)
@@ -1032,14 +1101,19 @@ public class Pokemon
 					{
 						//Check if holding the necessary item
 						if (DataContents.ExecuteSQL<int>("SELECT rowid FROM Items WHERE internalName='" +
-						   arrayList[i + 1] + "'") == item)
+						    arrayList[i + 1] + "'") == item)
 						{
-							return DataContents.GetPokemonID(arrayList[i - 1]);
 							item = 0;
+							return DataContents.GetPokemonID(arrayList[i - 1]);
 						} //end if
+						else
+						{
+							GameManager.instance.DisplayText(nickname + " is not holding the required " +
+							arrayList[i + 1] + " to evolve by trade.", true);
+						} //end else
 					} //end else if
 				} //end for
-			} //end if
+			} //end else if
 
 			//No evolution found
 			return -1;
@@ -1107,6 +1181,22 @@ public class Pokemon
 		for(int i = 0; i < 6; i++)
 		{
 			vitamins[i] = 0;
+		} //end for
+	} //end UpdateVitamins
+
+	/***************************************
+     * Name: UpdatePP
+     * Legacy file fix
+     ***************************************/
+	public void UpdatePP()
+	{
+		ppMax = new int[4];
+		ppUps = new int[4];
+
+		for(int i = 0; i < 4; i++)
+		{
+			ppMax[i] = ppReamaining[i];
+			ppUps[i] = 0;
 		} //end for
 	} //end UpdateVitamins
 	#region Accessors
@@ -1546,7 +1636,7 @@ public class Pokemon
 		} //end get
 		set
 		{
-			happiness = value;
+			happiness = ExtensionMethods.WithinIntRange(value, 0, 255);
 		} //end set
 	} //end Happiness
 
@@ -1612,6 +1702,38 @@ public class Pokemon
     {
         ppReamaining [index] = value;
     } //end SetMovePP(int index, int value)
+
+	/***************************************
+     * Name: GetMovePPMax
+     ***************************************/
+	public int GetMovePPMax(int index)
+	{
+		return ppMax [index];
+	} //end GetMovePPMax(int index)
+
+	/***************************************
+     * Name: SetMovePPMax
+     ***************************************/
+	public void SetMovePPMax(int index, int value)
+	{
+		ppMax [index] = value;
+	} //end SetMovePPMax(int index, int value)
+
+	/***************************************
+     * Name: GetMovePPUps
+     ***************************************/
+	public int GetMovePPUps(int index)
+	{
+		return ppUps [index];
+	} //end GetMovePPUps(int index)
+
+	/***************************************
+     * Name: SetMovePPUps
+     ***************************************/
+	public void SetMovePPUps(int index, int value)
+	{
+		ppUps [index] = value;
+	} //end SetMovePPUps(int index, int value)
 
     /***************************************
      * Name: HasPokerus
