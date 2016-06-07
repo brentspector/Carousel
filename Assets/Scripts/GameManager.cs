@@ -363,6 +363,16 @@ public class GameManager : MonoBehaviour
 	} //end ChangePocket(int requested)
 
 	/***************************************
+	 * Name: SetupPickMove
+	 * Sets up screen for player to pick a
+	 * move to use
+	 ***************************************/
+	public void SetupPickMove()
+	{
+		inventory.SetupPickMove();
+	} //end SetupPickMove
+
+	/***************************************
      * Name: ChangeFilter
      * Changes shop to display only items
      * within the filter

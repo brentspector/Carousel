@@ -893,17 +893,40 @@ public class Pokemon
         temp = ppReamaining [move1];
         ppReamaining [move1] = ppReamaining [move2];
         ppReamaining [move2] = temp;
+		temp = ppMax[move1];
+		ppMax[move1] = ppMax[move2];
+		ppMax[move2] = temp;
+		temp = ppUps[move1];
+		ppUps[move1] = ppUps[move2];
+		ppUps[move2] = temp;
     } //end SwitchMoves(int move1, int move2)
 
     /***************************************
-     * Name: FaintPokemon
-     * Sets HP to 0 and status to Faint
+     * Name: CheckPokemonFaint
+     * Checks if Pokemon is fainted
      ***************************************/
-    public void FaintPokemon()
+	public bool CheckPokemonFaint()
     {
-        currentHP = 0;
-        status = 1;
-    } //end FaintPokemon
+		if (currentHP < 1)
+		{
+			currentHP = 0;
+			status = 1;
+			return true;
+		} //end if
+		return false;
+	} //end CheckPokemonFaint
+
+	/***************************************
+     * Name: RevivePokemon
+     * Sets status to healthy and HP to 
+     * parameter
+     ***************************************/
+	public void RevivePokemon(int amountRestored)
+	{		
+		currentHP = ExtensionMethods.BindToInt(amountRestored, 1);
+		status = 0;
+		statusCount = 0;
+	} //end RevivePokemon(int amountRestored)
 
     /***************************************
      * Name: CheckAbility
@@ -1039,8 +1062,9 @@ public class Pokemon
 				} //end for
 			} //end if
 
-			//Dawn, Dusk, Fire, Leaf Stone evolution
-			else if (usedItem == 60 || usedItem == 75 || usedItem == 89 || usedItem == 145)
+			//Dawn, Dusk, Fire, Leaf, Moon, Shiny, Sun, Thunder,Water Stone evolution
+			else if (usedItem == 60 || usedItem == 75 || usedItem == 89 || usedItem == 145 || item == 186 || item== 258 || item == 280
+				|| item == 288 || item == 402)
 			{
 				//Check if any forms evolve by stone
 				for (int i = 1; i < arrayList.Length; i += 3)

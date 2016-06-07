@@ -2707,8 +2707,7 @@ public class MainGameScene : MonoBehaviour
 
 				//Set the move PP
 				moveScreen.FindChild("Move" + (i + 1)).GetChild(2).GetComponent<Text>().text = "PP " +
-					myPokemon.GetMovePP(i).ToString() + "/" + DataContents.ExecuteSQL<string>(
-					"SELECT totalPP FROM Moves WHERE rowid=" + myPokemon.GetMove(i));
+					myPokemon.GetMovePP(i).ToString() + "/" + myPokemon.GetMovePPMax(i);
 			} //end if
 			else
 			{

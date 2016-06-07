@@ -23,6 +23,7 @@ public class InventoryScene : MonoBehaviour
 	int previousTeamSlot;       //The slot last highlighted
 	int switchSpot;				//The spot selected for switching to
 	bool processing = false;	//Whether a function is already processing something
+	bool pickMove = false;		//Whether the player must pick a move to use an item on
 	GameObject playerTeam;		//Team screen for using an item on
 	GameObject choices;			//Choices box from scene tools
 	GameObject selection;		//Selection rectangle from scene tools
@@ -68,6 +69,14 @@ public class InventoryScene : MonoBehaviour
 			//Return if processing
 			if (processing)
 			{
+				return;
+			} //end if
+
+			//Move to checkpoint 7 if picking a move
+			if (pickMove)
+			{
+				choices.SetActive(true);
+				checkpoint = 7;
 				return;
 			} //end if
 
@@ -207,7 +216,7 @@ public class InventoryScene : MonoBehaviour
 
 				//Set level
 				playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Level").GetComponent<Text>().text = "Lv." +
-					GameManager.instance.GetTrainer().Team[i].CurrentLevel.ToString();
+				GameManager.instance.GetTrainer().Team[i].CurrentLevel.ToString();
 
 				//Set HP text
 				playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("CurrentHP").GetComponent<Text>().text =
@@ -216,10 +225,10 @@ public class InventoryScene : MonoBehaviour
 			} //end for
 
 			//Deactivate any empty party spots
-			for (int i = 5; i > GameManager.instance.GetTrainer().Team.Count-1; i--)
+			for (int i = 5; i > GameManager.instance.GetTrainer().Team.Count - 1; i--)
 			{
 				playerTeam.transform.FindChild("Background").GetChild(i).gameObject.SetActive(false);
-				playerTeam.transform.FindChild("Pokemon" + (i+1)).gameObject.SetActive(false);
+				playerTeam.transform.FindChild("Pokemon" + (i + 1)).gameObject.SetActive(false);
 			} //end for
 
 			//Turn off team
@@ -512,19 +521,19 @@ public class InventoryScene : MonoBehaviour
 					if (topShown + i == inventorySpot)
 					{
 						viewport.transform.GetChild(i).GetComponent<Text>().text = "<color=red>" +
-							GameManager.instance.GetTrainer().GetItem(topShown + i)[1] + " - " +
-							DataContents.GetItemGameName(GameManager.instance.GetTrainer().GetItem(topShown + i)[0]) + "</color>";
+						GameManager.instance.GetTrainer().GetItem(topShown + i)[1] + " - " +
+						DataContents.GetItemGameName(GameManager.instance.GetTrainer().GetItem(topShown + i)[0]) + "</color>";
 					} //end if
 					else if (topShown + i == switchSpot)
 					{
 						viewport.transform.GetChild(i).GetComponent<Text>().text = "<color=blue>" +
-							GameManager.instance.GetTrainer().GetItem(topShown + i)[1] + " - " +
-							DataContents.GetItemGameName(GameManager.instance.GetTrainer().GetItem(topShown + i)[0]) + "</color>";
+						GameManager.instance.GetTrainer().GetItem(topShown + i)[1] + " - " +
+						DataContents.GetItemGameName(GameManager.instance.GetTrainer().GetItem(topShown + i)[0]) + "</color>";
 					} //end else if
 					else
 					{
 						viewport.transform.GetChild(i).GetComponent<Text>().text = GameManager.instance.GetTrainer().GetItem(topShown + i)[1]
-							+ " - " + DataContents.GetItemGameName(GameManager.instance.GetTrainer().GetItem(topShown + i)[0]);
+						+ " - " + DataContents.GetItemGameName(GameManager.instance.GetTrainer().GetItem(topShown + i)[0]);
 					} //end else
 				} //end else
 			} //end for
@@ -542,6 +551,11 @@ public class InventoryScene : MonoBehaviour
 				sprite.color = Color.clear;
 				description.text = "";
 			} //end else
+		} //end else if
+		else if (checkpoint == 7)
+		{
+			//Get player input
+			GetInput();
 		} //end else if
 	} //end RunInventory
 
@@ -764,6 +778,22 @@ public class InventoryScene : MonoBehaviour
 					bottomShown--;
 				} //end if
 			} //end else if
+
+			//Pick Move Processing
+			else if (checkpoint == 7)
+			{
+				//Decrease choice (higher slots are on lower children)
+				subMenuChoice--;
+
+				//If on first option, loop to end
+				if (subMenuChoice < 0)
+				{
+					subMenuChoice = choices.transform.childCount - 1;
+				} //end if
+
+				//Reposition selection
+				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+			} //end else if
 		} //end else if Up Arrow
 
 		/*********************************************
@@ -855,6 +885,22 @@ public class InventoryScene : MonoBehaviour
 					bottomShown = switchSpot;
 					topShown++;
 				} //end if
+			} //end else if
+
+			//Pick Move Processing
+			else if (checkpoint == 7)
+			{
+				//Increase choice (lower slots are on higher children)
+				subMenuChoice++;
+
+				//If on last option, loop to first
+				if (subMenuChoice > choices.transform.childCount - 1)
+				{
+					subMenuChoice = 0;
+				} //end if
+
+				//Reposition selection
+				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
 			} //end else if
 		} //end else if Down Arrow
 
@@ -982,6 +1028,20 @@ public class InventoryScene : MonoBehaviour
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + teamSlot).gameObject;
 				} //end else
 			} //end else if
+
+			//Pick Move Processing
+			else if(checkpoint == 7 && Input.mousePosition.y > selection.transform.position.y +
+				selection.GetComponent<RectTransform>().rect.height / 2)
+			{
+				//If not on last option, decrease (higher slots are on lower children)
+				if (subMenuChoice > 0)
+				{
+					subMenuChoice--;
+				} //end if
+
+				//Reposition selection
+				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+			} //end else if
 		} //end else if Mouse Moves Up
 
 		/*********************************************
@@ -1050,6 +1110,20 @@ public class InventoryScene : MonoBehaviour
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + teamSlot).gameObject;
 				} //end else
 			} //end else if
+
+			//Pick Move Processing
+			else if(checkpoint == 7 && Input.mousePosition.y < selection.transform.position.y -
+				selection.GetComponent<RectTransform>().rect.height / 2)
+			{
+				//If not on last option, increase (lower slots are on higher children)
+				if (subMenuChoice < choices.transform.childCount - 1)
+				{
+					subMenuChoice++;
+				} //end if
+
+				//Reposition selection
+				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+			} //end if
 		} //end else if Mouse Moves Down
 
 		/*********************************************
@@ -1124,7 +1198,7 @@ public class InventoryScene : MonoBehaviour
 
 					//Set up selection box at end of frame if it doesn't fit
 					if (selection.GetComponent<RectTransform>().sizeDelta !=
-						choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
+					    choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
 					{
 						selection.SetActive(false);
 						StartCoroutine(WaitForResize());
@@ -1143,11 +1217,11 @@ public class InventoryScene : MonoBehaviour
 				//Apply appropriate action
 				switch (subMenuChoice)
 				{
-					//Use
+				//Use
 					case 0:
 						int itemType = DataContents.ExecuteSQL<int>("SELECT outsideUse FROM Items WHERE id=" + itemNumber);
 						//One time use or infinite use
-						if (itemType == 1 || itemType == 2)
+						if (itemType == 1 || itemType == 2 || itemType == 3)
 						{
 							playerTeam.SetActive(true);
 							selection.SetActive(false);
@@ -1163,7 +1237,7 @@ public class InventoryScene : MonoBehaviour
 							GameManager.instance.DisplayText("Can't be used outside of battle.", true);
 						} //end else
 						break;
-					//Give
+				//Give
 					case 1:
 						if (GameManager.instance.GetTrainer().GetCurrentBagPocket() != 7)
 						{
@@ -1177,21 +1251,21 @@ public class InventoryScene : MonoBehaviour
 							checkpoint = 5;
 						} //end if
 						break;
-					//Toss
+				//Toss
 					case 2:
 						choices.SetActive(false);
 						selection.SetActive(false);
 						GameManager.instance.DisplayConfirm("Do you really want to throw out " +
-							DataContents.GetItemGameName(itemNumber) + "?", 1, true);
+						DataContents.GetItemGameName(itemNumber) + "?", 1, true);
 						break;
-					//Move
+				//Move
 					case 3:
 						selection.SetActive(false);
 						choices.SetActive(false);
 						switchSpot = inventorySpot;
 						checkpoint = 6;
 						break;
-					//To Free Space/Pocket
+				//To Free Space/Pocket
 					case 4:
 						if (GameManager.instance.GetTrainer().GetCurrentBagPocket() == 0)
 						{
@@ -1208,7 +1282,7 @@ public class InventoryScene : MonoBehaviour
 						bottomShown = 9;
 						checkpoint = 2;
 						break;
-					//Cancel
+				//Cancel
 					case 5:
 						selection.SetActive(false);
 						choices.SetActive(false);
@@ -1246,8 +1320,8 @@ public class InventoryScene : MonoBehaviour
 					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
 					GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 					GameManager.instance.GetTrainer().Team[teamSlot - 1].Item = itemNumber;
-					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " to " + 
-						GameManager.instance.GetTrainer().Team[teamSlot - 1].Nickname,true);
+					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
+					GameManager.instance.GetTrainer().Team[teamSlot - 1].Nickname, true);
 					checkpoint = 1;
 				} //end if
 				else
@@ -1255,18 +1329,166 @@ public class InventoryScene : MonoBehaviour
 					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
 					GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
 						GameManager.instance.GetTrainer().Team[teamSlot - 1].Item) + " for " + DataContents.GetItemGameName(
-							itemNumber) + "?", 0, false);
+						itemNumber) + "?", 0, false);
 				} //end else
 			} //end else if
 
 			//Item Move Processing
-			else if(checkpoint == 6)
+			else if (checkpoint == 6)
 			{
 				GameManager.instance.GetTrainer().MoveItemLocation(inventorySpot, switchSpot);
 				inventorySpot = 0;
 				topShown = 0;
 				bottomShown = 9;
 				checkpoint = 2;
+			} //end else if
+
+			//Pick Move Processing
+			else if (checkpoint == 7)
+			{
+				//Get item
+				int item = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+
+				//Ether, Leppa Berry
+				if (item == 83 || item == 148)
+				{
+					//Get current move pp and max
+					int currentPP = GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMovePP(subMenuChoice);
+					int maxPP = GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMovePPMax(subMenuChoice);
+					//Check if Move PP is not full
+					if (currentPP < maxPP)
+					{
+						int result = ExtensionMethods.CapAtInt(currentPP + 10, maxPP);
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].SetMovePP(subMenuChoice, 
+							result);
+						GameManager.instance.DisplayText(string.Format("{0} was restored by {1}!", 
+							DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice)),
+							result), true);
+						GameManager.instance.GetTrainer().RemoveItem(GameManager.instance.GetTrainer().GetItem(inventorySpot)[0], 1);
+					} //end if
+					else
+					{
+						GameManager.instance.DisplayText(string.Format("{0} is already at full PP. It won't have any effect.", 
+							DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice))), 
+							true);
+					} //end else
+
+					//Return to inventory
+					checkpoint = 1;
+				} //end if
+
+				//Max Ether
+				else if (item == 169)
+				{
+					//Get current move pp and max
+					int currentPP = GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMovePP(subMenuChoice);
+					int maxPP = GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMovePPMax(subMenuChoice);
+					//Check if Move PP is not full
+					if (currentPP < maxPP)
+					{
+						int result = maxPP - currentPP;
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].SetMovePP(subMenuChoice, 
+							maxPP);
+						GameManager.instance.DisplayText(string.Format("{0} was restored by {1}!", 
+							DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice)),
+							result), true);
+						GameManager.instance.GetTrainer().RemoveItem(GameManager.instance.GetTrainer().GetItem(inventorySpot)[0], 1);
+					} //end if
+					else
+					{
+						GameManager.instance.DisplayText(string.Format("{0} is already at full PP. It won't have any effect.", 
+							DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice))), 
+							true);
+					} //end else
+
+					//Return to inventory
+					checkpoint = 1;
+				} //end else if
+
+				//PP Max
+				else if (item == 215)
+				{
+					int PPUsed = GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMovePPUps(subMenuChoice);
+					if (PPUsed < 3)
+					{
+						//Get base pp
+						int basePP = DataContents.ExecuteSQL<int>("SELECT totalPP FROM Moves WHERE rowid=" +
+						             GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice));
+						int changedPP = ((basePP * 3) / 5) + basePP;
+						int currentPPUpdate = GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMovePP(subMenuChoice) +
+							((basePP * (3-PPUsed))/ 5);
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].SetMovePP(subMenuChoice, currentPPUpdate);
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].SetMovePPMax(subMenuChoice, changedPP);
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].SetMovePPUps(subMenuChoice, 3);
+						GameManager.instance.DisplayText(string.Format("{0} now has a maximum PP of {1}!", 
+							DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice)),
+							changedPP), true);
+						GameManager.instance.GetTrainer().RemoveItem(GameManager.instance.GetTrainer().GetItem(inventorySpot)[0], 1);
+					} //end if
+					else
+					{
+						GameManager.instance.DisplayText(string.Format("{0} is already at maximum total PP. It won't have any effect.", 
+							DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice))), 
+							true);
+					} //end else
+
+					//Return to inventory
+					checkpoint = 1;
+				} //end else if
+
+				//PP Up
+				else if (item == 216)
+				{
+					int PPUsed = GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMovePPUps(subMenuChoice);
+					if (PPUsed < 3)
+					{
+						//Get base pp
+						int basePP = DataContents.ExecuteSQL<int>("SELECT totalPP FROM Moves WHERE rowid=" +
+							GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice));
+						int changedPP = ((basePP * (PPUsed + 1)) / 5) + basePP;
+						int currentPPUpdate = GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMovePP(subMenuChoice) +
+						                      (basePP / 5);
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].SetMovePP(subMenuChoice, currentPPUpdate);
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].SetMovePPMax(subMenuChoice, changedPP);
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].SetMovePPUps(subMenuChoice, (PPUsed + 1));
+						GameManager.instance.DisplayText(string.Format("{0} now has a maximum PP of {1}!", 
+							DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice)),
+							changedPP), true);
+						GameManager.instance.GetTrainer().RemoveItem(GameManager.instance.GetTrainer().GetItem(inventorySpot)[0], 1);
+					} //end if
+					else
+					{
+						GameManager.instance.DisplayText(string.Format("{0} is already at maximum total PP. It won't have any effect.", 
+							DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice))), 
+							true);
+					} //end else
+
+					//Return to inventory
+					checkpoint = 1;
+				} //end else if
+
+				//TMs
+				else if (item > 288 && item < 395)
+				{
+					string[] contents = DataContents.ExecuteSQL<string>("SELECT description FROM Items WHERE rowid=" + item).Split(',');
+					GameManager.instance.DisplayConfirm(string.Format("Are you sure you want to forget {0} and learn {1}?",
+						DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice)),
+						contents[0]), 0, false);
+				} //end else if
+
+				//Anything else. This is what occurs when an item has no effect but is listed as usable
+				else
+				{
+					GameManager.instance.DisplayText(DataContents.GetItemGameName(item) + " has no listed effect yet.", true);
+
+					//Return to inventory
+					checkpoint = 1;
+				} //end else
+
+				//Done picking a move
+				selection.SetActive(false);
+				choices.SetActive(false);
+				pickMove = false;
 			} //end else if
 		} //end else if Left Mouse Button
 
@@ -1352,7 +1574,7 @@ public class InventoryScene : MonoBehaviour
 					case 0:
 						int itemType = DataContents.ExecuteSQL<int>("SELECT outsideUse FROM Items WHERE id=" + itemNumber);
 						//One time use or infinite use
-						if (itemType == 1 || itemType == 2)
+						if (itemType == 1 || itemType == 2 || itemType == 3)
 						{
 							playerTeam.SetActive(true);
 							selection.SetActive(false);
@@ -1519,7 +1741,33 @@ public class InventoryScene : MonoBehaviour
 	 ***************************************/
 	void FillInChoices()
 	{
-		if (GameManager.instance.GetTrainer().GetCurrentBagPocket() != 0)
+		if (pickMove)
+		{
+			//Add to choice menu if necessary
+			for (int i = choices.transform.childCount; i < 4; i++)
+			{
+				GameObject clone = Instantiate(choices.transform.GetChild(0).gameObject,
+					choices.transform.GetChild(0).position,
+					Quaternion.identity) as GameObject;
+				clone.transform.SetParent(choices.transform);
+			} //end for
+
+			//Destroy extra chocies
+			for (int i = choices.transform.childCount; i > 4; i--)
+			{
+				Destroy(choices.transform.GetChild(i - 1).gameObject);
+			} //end for
+
+			//Set text for each choice
+			for (int i = 0; i < 4; i++)
+			{
+				choices.transform.GetChild(i).GetComponent<Text>().text = string.Format("{0} PP {1}/{2}",
+					DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot-1].GetMove(i)),
+					GameManager.instance.GetTrainer().Team[teamSlot-1].GetMovePP(i),
+					GameManager.instance.GetTrainer().Team[teamSlot-1].GetMovePPMax(i));
+			} //end for
+		} //end if
+		else if (GameManager.instance.GetTrainer().GetCurrentBagPocket() != 0)
 		{
 			//Add to choice menu if necessary
 			for (int i = choices.transform.childCount; i < 6; i++)
@@ -1543,7 +1791,7 @@ public class InventoryScene : MonoBehaviour
 			choices.transform.GetChild(3).GetComponent<Text>().text = "Move";
 			choices.transform.GetChild(4).GetComponent<Text>().text = "To Free Space";
 			choices.transform.GetChild(5).GetComponent<Text>().text = "Cancel";
-		} //end if
+		} //end else if
 		else
 		{
 			//Add to choice menu if necessary
@@ -1687,6 +1935,18 @@ public class InventoryScene : MonoBehaviour
 	} //end WaitForResize
 
 	/***************************************
+	 * Name: SetupPickMove
+	 * Sets up screen for player to pick a
+	 * move to use
+	 ***************************************/
+	public void SetupPickMove()
+	{
+		pickMove = true;
+		FillInChoices();
+		StartCoroutine(WaitForResize());
+	} //end SetupPickMove
+
+	/***************************************
 	 * Name: ApplyConfirm
 	 * Appliees the confirm choice
 	 ***************************************/
@@ -1714,12 +1974,25 @@ public class InventoryScene : MonoBehaviour
 			{
 				GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 				GameManager.instance.GetTrainer().AddItem(GameManager.instance.GetTrainer().Team[teamSlot - 1].
-					Item , 1);
+					Item, 1);
 				GameManager.instance.GetTrainer().Team[teamSlot - 1].Item = itemNumber;
-				GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " to " + 
-					GameManager.instance.GetTrainer().Team[teamSlot - 1].Nickname + " and " +
-					"put other item in bag.",true);
+				GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
+				GameManager.instance.GetTrainer().Team[teamSlot - 1].Nickname + " and " +
+				"put other item in bag.", true);
 				checkpoint = 1;
+			} //end else if
+
+			//TM
+			else if (checkpoint == 7)
+			{
+				//Get item
+				int item = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+				string[] contents = DataContents.ExecuteSQL<string>("SELECT description FROM Items WHERE rowid=" + item).Split(',');
+				int TMMoveNumber = DataContents.ExecuteSQL<int>("SELECT rowid FROM Moves WHERE gameName='" + contents[0] + "'");
+				GameManager.instance.GetTrainer().Team[teamSlot - 1].ChangeMoves(new int[]{ TMMoveNumber }, subMenuChoice);
+				GameManager.instance.DisplayText(string.Format("{0} learned {1}!", GameManager.instance.GetTrainer().Team[teamSlot - 1].
+					Nickname, contents[0]), true);
+				checkpoint = 1;					
 			} //end else if
 		} //end if
 
