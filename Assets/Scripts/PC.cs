@@ -98,6 +98,8 @@ public class PC
         if (pokemonStorage [box][spot] == null)
         {
             pokemonStorage [box][spot] = newPokemon;
+			ExtensionMethods.AddUnique(GameManager.instance.GetTrainer().Seen, newPokemon.NatSpecies);
+			ExtensionMethods.AddUnique(GameManager.instance.GetTrainer().Owned, newPokemon.NatSpecies);
         } //end if
         
         //Otherwise look for the first unfilled spot
@@ -110,6 +112,8 @@ public class PC
                 if(pokemonStorage[box][i]  == null)
                 {
                     pokemonStorage[box][i] = newPokemon;
+					ExtensionMethods.AddUnique(GameManager.instance.GetTrainer().Seen, newPokemon.NatSpecies);
+					ExtensionMethods.AddUnique(GameManager.instance.GetTrainer().Owned, newPokemon.NatSpecies);
                     return;
                 } //end if
             } //end for
@@ -126,6 +130,8 @@ public class PC
                            "Placed in box \"" + boxNames[i] + "\" instead.", true);
                         pokemonStorage [i][j] = newPokemon;
                         currentBox = i;
+						ExtensionMethods.AddUnique(GameManager.instance.GetTrainer().Seen, newPokemon.NatSpecies);
+						ExtensionMethods.AddUnique(GameManager.instance.GetTrainer().Owned, newPokemon.NatSpecies);
                         return;
                     } //end if
                 } //end for

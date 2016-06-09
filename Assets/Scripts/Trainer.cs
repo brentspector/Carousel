@@ -152,6 +152,8 @@ public class Trainer
         if (team.Count < 6)
         {
             team.Add (newPokemon);
+			ExtensionMethods.AddUnique(seen, newPokemon.NatSpecies);
+			ExtensionMethods.AddUnique(owned, newPokemon.NatSpecies);
         } //end if
         else
         {
@@ -491,6 +493,42 @@ public class Trainer
             } //end else
         } //end if
     } //end GetPlayerBadges(int location)
+
+	/***************************************
+     * Name: PopulateStock
+     * Adds items into stock
+     ***************************************/
+	public void PopulateStock(int region)
+	{
+		shop.PopulateStock(region);
+	} //end PopulateStock(int region)
+
+	/***************************************
+     * Name: GetShopStockList
+     * Get list of items from stock list
+     ***************************************/
+	public List<int> GetShopStockList(int stock)
+	{
+		return shop.GetShopStockList(stock);
+	} //end GetShopStockList(int stock)
+
+	/***************************************
+     * Name: GetShopStockCost
+     * Returns cost list for displayed pokemon 
+     ***************************************/
+	public List<int> GetShopStockCost(int filter)
+	{
+		return shop.GetShopStockCost(filter);
+	} //end GetShopStockCost(int filter)
+
+	/***************************************
+     * Name: GetPokemonTotal
+     * Returns total amount of pokemon 
+     ***************************************/
+	public int GetPokemonTotal()
+	{
+		return shop.GetPokemonTotal();
+	} //end GetPokemonTotal
     #region Properties
     /***************************************
      * Name: Team

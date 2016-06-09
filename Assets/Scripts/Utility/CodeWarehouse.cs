@@ -395,4 +395,33 @@ public class CodeWarehouse : MonoBehaviour
         Debug.Log(arrayList[pos[i]+1]);
     }*/
     #endregion
+
+	#region Shop
+	/*dbCommand.CommandText = "CREATE TABLE Shop(region text,tier1 text,tier2 text,tier3 text,tier4 text,tier5 text,held text," +
+		"megastones text,evolution text,medicine text,tms text,berries text,battle text,key text)";
+	dbCommand.ExecuteNonQuery();
+			SystemManager sysm = new SystemManager();
+		sysm.GetContents(dataLocation + "KalosShop.txt");
+		dbCommand.CommandText = "DELETE FROM Shop";
+		dbCommand.ExecuteNonQuery();
+		dbCommand.CommandText = "INSERT INTO Shop(region,tier1,tier2,tier3,tier4,tier5,held,megastones,evolution,medicine,tms,berries," +
+			"battle,key) VALUES " +
+			"(@rg,@t1,@t2,@t3,@t4,@t5,@hd,@ms,@ev,@md,@tm,@br,@bt,@key)";
+		dbCommand.Parameters.Add(new SqliteParameter("@rg", string.Join(",",sysm.ReadCSV(0))));
+		dbCommand.Parameters.Add(new SqliteParameter("@t1", string.Join(",",sysm.ReadCSV(1))));
+		dbCommand.Parameters.Add(new SqliteParameter("@t2", string.Join(",",sysm.ReadCSV(2))));
+		dbCommand.Parameters.Add(new SqliteParameter("@t3", string.Join(",",sysm.ReadCSV(3))));
+		dbCommand.Parameters.Add(new SqliteParameter("@t4", string.Join(",",sysm.ReadCSV(4))));
+		dbCommand.Parameters.Add(new SqliteParameter("@t5", string.Join(",",sysm.ReadCSV(5))));
+		dbCommand.Parameters.Add(new SqliteParameter("@hd", string.Join(",",sysm.ReadCSV(6))));
+		dbCommand.Parameters.Add(new SqliteParameter("@ms", string.Join(",",sysm.ReadCSV(7))));
+		dbCommand.Parameters.Add(new SqliteParameter("@ev", string.Join(",",sysm.ReadCSV(8))));
+		dbCommand.Parameters.Add(new SqliteParameter("@md", string.Join(",",sysm.ReadCSV(9))));
+		dbCommand.Parameters.Add(new SqliteParameter("@tm", string.Join(",",sysm.ReadCSV(10))));
+		dbCommand.Parameters.Add(new SqliteParameter("@br", string.Join(",",sysm.ReadCSV(11))));
+		dbCommand.Parameters.Add(new SqliteParameter("@bt", string.Join(",",sysm.ReadCSV(12))));
+		dbCommand.Parameters.Add(new SqliteParameter("@key", string.Join(",",sysm.ReadCSV(13))));
+		dbCommand.Prepare();
+		dbCommand.ExecuteNonQuery();*/
+	#endregion
 } //end CodeWarehose class

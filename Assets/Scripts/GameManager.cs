@@ -259,6 +259,7 @@ public class GameManager : MonoBehaviour
 		if (fadeOut)
 		{
 			loadingLevel = true;
+			tools.transform.FindChild("Selection").gameObject.SetActive(false);
 			StartCoroutine(anim.FadeOutAnimation(levelName));
 		} //end if
 		else
@@ -397,7 +398,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
 	public void PreviousPage()
 	{
-
+		shop.PreviousPage();
 	} //end PreviousPage
 
 	/***************************************
@@ -406,7 +407,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
 	public void NextPage()
 	{
-
+		shop.NextPage();
 	} //end NextPage
 
 	/***************************************

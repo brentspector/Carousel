@@ -217,6 +217,7 @@ public class NewGameScene : MonoBehaviour
 			GameManager.instance.GetTrainer().PlayerName = playerName;
 			GameManager.instance.GetTrainer().PlayerImage = playerChoice;
 			GameManager.instance.GetTrainer().RandomTeam();
+			GameManager.instance.GetTrainer().PopulateStock(5);
 			GameManager.instance.Persist(false);
 			GameManager.instance.Reset();
 

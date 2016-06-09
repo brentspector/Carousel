@@ -48,6 +48,7 @@ public static class Patch
 				fixedTrainer = fTrainer;
 				fixedTrainer.Bag = new Inventory();
 				fixedTrainer.PShop = new Shop();
+				fixedTrainer.PopulateStock(5);
 				for(int i = 0; i < fixedTrainer.Team.Count; i++)
 				{
 					fixedTrainer.Team[i].UpdateAbilityOn();

@@ -1533,6 +1533,13 @@ public class InventoryScene : MonoBehaviour
 				bottomShown = 9;
 				checkpoint = 2;
 			} //end else if
+
+			//Pick Move Processing
+			else if (checkpoint == 7)
+			{
+				playerTeam.SetActive(false);
+				checkpoint = 2;
+			} //end else if
 		} //end else if Right Mouse Button
 
 		/*********************************************
@@ -1697,7 +1704,7 @@ public class InventoryScene : MonoBehaviour
 		else if (Input.GetKeyDown(KeyCode.X))
 		{
 			//Normal Processing
-			if(checkpoint == 2)
+			if (checkpoint == 2)
 			{
 				GameManager.instance.LoadScene("MainGame", true);
 			} //end if
@@ -1718,18 +1725,25 @@ public class InventoryScene : MonoBehaviour
 			} //end else if
 
 			//Team Give Processing
-			else if(checkpoint == 5)
+			else if (checkpoint == 5)
 			{
 				playerTeam.SetActive(false);
 				checkpoint = 2;
 			} //end else if
 
 			//Item Move Processing
-			else if(checkpoint == 6)
+			else if (checkpoint == 6)
 			{
 				inventorySpot = 0;
 				topShown = 0;
 				bottomShown = 9;
+				checkpoint = 2;
+			} //end else if
+
+			//Pick Move Processing
+			else if (checkpoint == 7)
+			{
+				playerTeam.SetActive(false);
 				checkpoint = 2;
 			} //end else if
 		} //end else if X Key
