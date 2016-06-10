@@ -418,6 +418,26 @@ public class GameManager : MonoBehaviour
 	{
 
 	} //end Codes
+
+	/***************************************
+	 * Name: ConfirmPurchase
+	 * Allows purchase and returns to 
+	 * shop
+	 ***************************************/
+	public void ConfirmPurchase()
+	{
+		shop.ConfirmPurchase();
+	} //end ConfirmPurchase
+
+	/***************************************
+	 * Name: CancelPurchase
+	 * Cancels purchase and returns to 
+	 * shop
+	 ***************************************/
+	public void CancelPurchase()
+	{
+		shop.CancelPurchase();
+	} //end CancelPurchase
     #endregion
 
 	//System Manager functions

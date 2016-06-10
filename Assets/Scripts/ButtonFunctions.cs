@@ -415,6 +415,40 @@ public class ButtonFunctions : MonoBehaviour
 		} //end catch
 	} //end Codes
 
+	/***************************************
+	 * Name: ConfirmPurchase
+	 * Allows purchase and returns to 
+	 * shop
+	 ***************************************/
+	public void ConfirmPurchase()
+	{
+		try
+		{
+			GameManager.instance.ConfirmPurchase();
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end ConfirmPurchase
+
+	/***************************************
+	 * Name: CancelPurchase
+	 * Cancels purchase and returns to 
+	 * shop
+	 ***************************************/
+	public void CancelPurchase()
+	{
+		try
+		{
+			GameManager.instance.CancelPurchase();
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end CancelPurchase
+
     /***************************************
      * Name: Persist
      * Persists the game

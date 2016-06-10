@@ -167,6 +167,13 @@ public class MainGameScene : MonoBehaviour
 			//If on home screen
 			if (gameState == MainGame.HOME)
 			{
+				PointerEventData eventData = new PointerEventData(EventSystem.current);
+				eventData.position = Input.mousePosition;
+				List<RaycastResult> results = new List<RaycastResult>();
+				EventSystem.current.RaycastAll(eventData, results);
+				BaseEventData bEvent = new BaseEventData(EventSystem.current);
+				bEvent.selectedObject = EventSystem.current.currentSelectedGameObject;
+				EventSystem.current.SetSelectedGameObject(results[0].gameObject, bEvent);
 				buttonMenu.SetActive(true);
 				gymBattle.SetActive(false);
 				playerTeam.SetActive(false);
