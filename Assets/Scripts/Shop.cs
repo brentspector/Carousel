@@ -250,13 +250,16 @@ public class Shop
 				return TMStock;
 				break;
 			case 12:
-				return battleItemStock;
+				return berryStock;
 				break;
 			case 13:
+				return battleItemStock;
+				break;
+			case 14:
 				return keyItemStock;
 				break;
 			//All items
-			case 14:
+			case 15:
 				return heldItemStock.Concat(megaStoneStock).Concat(evolutionItemStock).Concat(medicineStock).
 					Concat(TMStock).Concat(battleItemStock).Concat(keyItemStock).ToList();
 				break;

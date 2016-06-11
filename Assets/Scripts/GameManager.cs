@@ -380,7 +380,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
 	public void ChangeFilter(int requested)
 	{
-
+		StartCoroutine(shop.ChangeFilter(requested));
 	} //end ChangeFilter(int requested)
 
 	/***************************************
@@ -420,6 +420,24 @@ public class GameManager : MonoBehaviour
 	} //end Codes
 
 	/***************************************
+	 * Name: IncreaseQuantity
+	 * Adds one to the purchase quantity
+	 ***************************************/
+	public void IncreaseQuantity()
+	{
+		shop.IncreaseQuantity();
+	} //end IncreaseQuantity
+
+	/***************************************
+	 * Name: DecreaseQuantity
+	 * Subtracts one from the purchase quantity
+	 ***************************************/
+	public void DecreaseQuantity()
+	{
+		shop.DecreaseQuantity();
+	} //end DecreaseQuantity
+
+	/***************************************
 	 * Name: ConfirmPurchase
 	 * Allows purchase and returns to 
 	 * shop
@@ -436,7 +454,7 @@ public class GameManager : MonoBehaviour
 	 ***************************************/
 	public void CancelPurchase()
 	{
-		shop.CancelPurchase();
+		StartCoroutine(shop.CancelPurchase());
 	} //end CancelPurchase
     #endregion
 

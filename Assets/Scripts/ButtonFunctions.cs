@@ -416,6 +416,38 @@ public class ButtonFunctions : MonoBehaviour
 	} //end Codes
 
 	/***************************************
+	 * Name: IncreaseQuantity
+	 * Adds one to the purchase quantity
+	 ***************************************/
+	public void IncreaseQuantity()
+	{
+		try
+		{
+			GameManager.instance.IncreaseQuantity();
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end IncreaseQuantity
+
+	/***************************************
+	 * Name: DecreaseQuantity
+	 * Subtracts one from the purchase quantity
+	 ***************************************/
+	public void DecreaseQuantity()
+	{
+		try
+		{
+			GameManager.instance.DecreaseQuantity();
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end DecreaseQuantity
+
+	/***************************************
 	 * Name: ConfirmPurchase
 	 * Allows purchase and returns to 
 	 * shop

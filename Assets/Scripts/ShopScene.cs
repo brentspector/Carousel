@@ -28,7 +28,6 @@ public class ShopScene : MonoBehaviour
 	GameObject selection;		//Selection rectangle from scene tools
 	GameObject itemRegion;		//Area where items are displayed
 	GameObject purchaseRegion;	//Area for a purchase or sale to be conducted
-	GameObject purchaseObject;	//The highlighted object for keyboard use
 	Text description;			//The description of the item
 	#endregion
 
@@ -97,11 +96,20 @@ public class ShopScene : MonoBehaviour
 				//Loop through and set sprite, name, and cost for each
 				for (int i = 0; i < 15; i++)
 				{
-					itemRegion.transform.GetChild(i).FindChild("ItemIcon").GetComponent<Image>().sprite =
+					if (i < toDisplay.Count)
+					{
+						itemRegion.transform.GetChild(i).FindChild("ItemIcon").GetComponent<Image>().sprite =
 						Resources.Load<Sprite>("Sprites/Icons/icon" + toDisplay[i].ToString("000"));
-					itemRegion.transform.GetChild(i).FindChild("ItemName").GetComponent<Text>().text =
+						itemRegion.transform.GetChild(i).FindChild("ItemName").GetComponent<Text>().text =
 						DataContents.ExecuteSQL<string>("SELECT name FROM Pokemon WHERE rowid=" + toDisplay[i]);
-					itemRegion.transform.GetChild(i).FindChild("Cost").GetComponent<Text>().text = pokemonCost[i].ToString();
+						itemRegion.transform.GetChild(i).FindChild("Cost").GetComponent<Text>().text = pokemonCost[i].ToString();
+					} //end if
+					else
+					{
+						itemRegion.transform.GetChild(i).FindChild("ItemIcon").GetComponent<Image>().color = Color.clear;
+						itemRegion.transform.GetChild(i).FindChild("ItemName").GetComponent<Text>().text = "";
+						itemRegion.transform.GetChild(i).FindChild("Cost").GetComponent<Text>().text = "";
+					} //end else
 				} //end for
 			} //end if
 			else
@@ -109,12 +117,21 @@ public class ShopScene : MonoBehaviour
 				//Loop through and set sprite, name, and cost for each
 				for (int i = 0; i < 15; i++)
 				{
-					itemRegion.transform.GetChild(i).FindChild("ItemIcon").GetComponent<Image>().sprite =
+					if (i < toDisplay.Count)
+					{
+						itemRegion.transform.GetChild(i).FindChild("ItemIcon").GetComponent<Image>().sprite =
 						Resources.Load<Sprite>("Sprites/Icons/item" + toDisplay[i].ToString("000"));
-					itemRegion.transform.GetChild(i).FindChild("ItemName").GetComponent<Text>().text =
+						itemRegion.transform.GetChild(i).FindChild("ItemName").GetComponent<Text>().text =
 						DataContents.ExecuteSQL<string>("SELECT gameName FROM Items WHERE rowid=" + toDisplay[i]);
-					itemRegion.transform.GetChild(i).FindChild("Cost").GetComponent<Text>().text =
+						itemRegion.transform.GetChild(i).FindChild("Cost").GetComponent<Text>().text =
 						DataContents.ExecuteSQL<string>("SELECT cost FROM Items WHERE rowid=" + toDisplay[i]);
+					} //end if
+					else
+					{
+						itemRegion.transform.GetChild(i).FindChild("ItemIcon").GetComponent<Image>().color = Color.clear;
+						itemRegion.transform.GetChild(i).FindChild("ItemName").GetComponent<Text>().text = "";
+						itemRegion.transform.GetChild(i).FindChild("Cost").GetComponent<Text>().text = "";
+					} //end else
 				} //end for
 			} //end else
 
@@ -139,10 +156,68 @@ public class ShopScene : MonoBehaviour
 			//Loop through and set sprite, name, and cost for each
 			for (int i = 0; i < 15; i++)
 			{
-				//Read from Pokemon or Items table
-				if (displayPokemon)
+				//If displaying all items
+				if (filter == 0)
 				{
-					if (i + location < endPokemon)
+					//Read from Pokemon or Items table
+					if (displayPokemon)
+					{
+						if (i + location < endPokemon)
+						{
+							itemRegion.transform.GetChild(i).FindChild("ItemIcon").GetComponent<Image>().color = Color.white;
+							itemRegion.transform.GetChild(i).FindChild("ItemIcon").GetComponent<Image>().sprite =
+								Resources.Load<Sprite>("Sprites/Icons/icon" + toDisplay[i + location].ToString("000"));
+							itemRegion.transform.GetChild(i).FindChild("ItemName").GetComponent<Text>().text =
+								DataContents.ExecuteSQL<string>("SELECT name FROM Pokemon WHERE rowid=" + toDisplay[i + location]);
+							itemRegion.transform.GetChild(i).FindChild("Cost").GetComponent<Text>().text = pokemonCost[i + location].ToString();
+
+							//Update description text
+							if (EventSystem.current.currentSelectedGameObject == itemRegion.transform.GetChild(i).gameObject)
+							{
+								description.text = DataContents.ExecuteSQL<string>("SELECT pokedex FROM Pokemon WHERE rowid=" +
+								toDisplay[i + location]);
+								selectedItem = i + location;
+							} //end if
+						} //end if
+						else
+						{
+							displayPokemon = false;
+							i--;
+						} //end else
+					} //end if
+					else
+					{
+						if (i + location < toDisplay.Count)
+						{
+							itemRegion.transform.GetChild(i).FindChild("ItemIcon").GetComponent<Image>().color = Color.white;
+							itemRegion.transform.GetChild(i).FindChild("ItemIcon").GetComponent<Image>().sprite =
+								Resources.Load<Sprite>("Sprites/Icons/item" + toDisplay[i + location].ToString("000"));
+							itemRegion.transform.GetChild(i).FindChild("ItemName").GetComponent<Text>().text =
+								DataContents.ExecuteSQL<string>("SELECT gameName FROM Items WHERE rowid=" + toDisplay[i + location]);
+							itemRegion.transform.GetChild(i).FindChild("Cost").GetComponent<Text>().text =
+								DataContents.ExecuteSQL<string>("SELECT cost FROM Items WHERE rowid=" + toDisplay[i + location]);
+							
+							//Update description text
+							if (EventSystem.current.currentSelectedGameObject == itemRegion.transform.GetChild(i).gameObject)
+							{
+								description.text = DataContents.ExecuteSQL<string>("SELECT description FROM Items WHERE rowid=" +
+								toDisplay[i + location]);
+								selectedItem = i + location;
+							} //end if
+						} //end if
+						else
+						{
+							itemRegion.transform.GetChild(i).FindChild("ItemIcon").GetComponent<Image>().color = Color.clear;
+							itemRegion.transform.GetChild(i).FindChild("ItemName").GetComponent<Text>().text = "";
+							itemRegion.transform.GetChild(i).FindChild("Cost").GetComponent<Text>().text = "";
+						} //end else
+					} //end else
+				} //end if
+
+				//Pokemon filter
+				else if (filter < 7)
+				{
+					if (i + location < toDisplay.Count)
 					{
 						itemRegion.transform.GetChild(i).FindChild("ItemIcon").GetComponent<Image>().color = Color.white;
 						itemRegion.transform.GetChild(i).FindChild("ItemIcon").GetComponent<Image>().sprite =
@@ -155,16 +230,19 @@ public class ShopScene : MonoBehaviour
 						if (EventSystem.current.currentSelectedGameObject == itemRegion.transform.GetChild(i).gameObject)
 						{
 							description.text = DataContents.ExecuteSQL<string>("SELECT pokedex FROM Pokemon WHERE rowid=" +
-							toDisplay[i + location]);
+								toDisplay[i + location]);
 							selectedItem = i + location;
 						} //end if
 					} //end if
 					else
 					{
-						displayPokemon = false;
-						i--;
+						itemRegion.transform.GetChild(i).FindChild("ItemIcon").GetComponent<Image>().color = Color.clear;
+						itemRegion.transform.GetChild(i).FindChild("ItemName").GetComponent<Text>().text = "";
+						itemRegion.transform.GetChild(i).FindChild("Cost").GetComponent<Text>().text = "";
 					} //end else
-				} //end if
+				} //end else if
+
+				//Item filter
 				else
 				{
 					if (i + location < toDisplay.Count)
@@ -176,12 +254,12 @@ public class ShopScene : MonoBehaviour
 							DataContents.ExecuteSQL<string>("SELECT gameName FROM Items WHERE rowid=" + toDisplay[i + location]);
 						itemRegion.transform.GetChild(i).FindChild("Cost").GetComponent<Text>().text =
 							DataContents.ExecuteSQL<string>("SELECT cost FROM Items WHERE rowid=" + toDisplay[i + location]);
-						
+
 						//Update description text
 						if (EventSystem.current.currentSelectedGameObject == itemRegion.transform.GetChild(i).gameObject)
 						{
 							description.text = DataContents.ExecuteSQL<string>("SELECT description FROM Items WHERE rowid=" +
-							toDisplay[i + location]);
+								toDisplay[i + location]);
 							selectedItem = i + location;
 						} //end if
 					} //end if
@@ -195,8 +273,8 @@ public class ShopScene : MonoBehaviour
 			} //end for
 
 			//Blank out description if not on an item
-			if (!EventSystem.current.currentSelectedGameObject.transform.IsChildOf(itemRegion.transform) ||
-				selectedItem < 0)
+			if (EventSystem.current.currentSelectedGameObject != null && !EventSystem.current.currentSelectedGameObject.transform.
+				IsChildOf(itemRegion.transform) || selectedItem < 0)
 			{
 				description.text = "";
 			} //end if
@@ -205,6 +283,9 @@ public class ShopScene : MonoBehaviour
 		{
 			//Get player input
 			GetInput();
+
+			//Reposition selection rectangle
+			StartCoroutine(WaitForResize());
 		} //end else if
 	} //end RunShop
 
@@ -264,6 +345,19 @@ public class ShopScene : MonoBehaviour
 					EventSystem.current.SetSelectedGameObject(results[0].gameObject.transform.parent.gameObject);
 				} //end if
 			} //end if
+
+			//Purchase Processing
+			else if (checkpoint == 3)
+			{
+				PointerEventData eventData = new PointerEventData(EventSystem.current);
+				eventData.position = Input.mousePosition;
+				List<RaycastResult> results = new List<RaycastResult>();
+				EventSystem.current.RaycastAll(eventData, results);
+				if (results.Any() && results[0].gameObject.transform.IsChildOf(purchaseRegion.transform.FindChild("Buttons")))
+				{
+					EventSystem.current.SetSelectedGameObject(results[0].gameObject);
+				} //end if
+			} //end else if
 		} //end else if Mouse Moves Left
 
 		/*********************************************
@@ -283,6 +377,19 @@ public class ShopScene : MonoBehaviour
 					EventSystem.current.SetSelectedGameObject(results[0].gameObject.transform.parent.gameObject);
 				} //end if
 			} //end if
+
+			//Purchase Processing
+			else if (checkpoint == 3)
+			{
+				PointerEventData eventData = new PointerEventData(EventSystem.current);
+				eventData.position = Input.mousePosition;
+				List<RaycastResult> results = new List<RaycastResult>();
+				EventSystem.current.RaycastAll(eventData, results);
+				if (results.Any() && results[0].gameObject.transform.IsChildOf(purchaseRegion.transform.FindChild("Buttons")))
+				{
+					EventSystem.current.SetSelectedGameObject(results[0].gameObject);
+				} //end if
+			} //end else if
 		} //end else if Mouse Moves Right
 
 		/*********************************************
@@ -302,6 +409,19 @@ public class ShopScene : MonoBehaviour
 					EventSystem.current.SetSelectedGameObject(results[0].gameObject.transform.parent.gameObject);
 				} //end if
 			} //end if
+
+			//Purchase Processing
+			else if (checkpoint == 3)
+			{
+				PointerEventData eventData = new PointerEventData(EventSystem.current);
+				eventData.position = Input.mousePosition;
+				List<RaycastResult> results = new List<RaycastResult>();
+				EventSystem.current.RaycastAll(eventData, results);
+				if (results.Any() && results[0].gameObject.transform.IsChildOf(purchaseRegion.transform.FindChild("Buttons")))
+				{
+					EventSystem.current.SetSelectedGameObject(results[0].gameObject);
+				} //end if
+			} //end else if
 		} //end else if Mouse Moves Up
 
 		/*********************************************
@@ -321,6 +441,19 @@ public class ShopScene : MonoBehaviour
 					EventSystem.current.SetSelectedGameObject(results[0].gameObject.transform.parent.gameObject);
 				} //end if
 			} //end if
+
+			//Purchase Processing
+			else if (checkpoint == 3)
+			{
+				PointerEventData eventData = new PointerEventData(EventSystem.current);
+				eventData.position = Input.mousePosition;
+				List<RaycastResult> results = new List<RaycastResult>();
+				EventSystem.current.RaycastAll(eventData, results);
+				if (results.Any() && results[0].gameObject.transform.IsChildOf(purchaseRegion.transform.FindChild("Buttons")))
+				{
+					EventSystem.current.SetSelectedGameObject(results[0].gameObject);
+				} //end if
+			} //end else if
 		} //end else if Mouse Moves Down
 
 		/*********************************************
@@ -344,21 +477,12 @@ public class ShopScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetMouseButtonUp(0))
 		{
+			//Normal Processing
 			if (checkpoint == 2)
 			{
 				if (selectedItem != -1)
 				{
-					purchaseRegion.SetActive(true);
-					purchaseRegion.transform.FindChild("Sprite").GetComponent<Image>().sprite = selectedItem <= endPokemon ?
-						Resources.Load<Sprite>("Sprites/Icons/icon" + toDisplay[selectedItem].ToString("000")) : 
-						Resources.Load<Sprite>("Sprites/Icons/item" + toDisplay[selectedItem].ToString("000"));
-					purchaseRegion.transform.FindChild("Quantity").GetComponent<InputField>().text = "1";
-					purchaseRegion.transform.FindChild("Total").GetComponent<Text>().text = selectedItem <= endPokemon ?
-						pokemonCost[selectedItem].ToString() : DataContents.ExecuteSQL<string>("SELECT cost FROM Items WHERE rowid=" +
-					toDisplay[selectedItem]);
-					selection.SetActive(false);
-					StartCoroutine(WaitForResize());
-					checkpoint = 3;
+					StartCoroutine(SetupPurchase());
 				} //end if
 			} //end if
 		} //end else if Left Mouse Button
@@ -376,7 +500,14 @@ public class ShopScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetKeyDown(KeyCode.Return))
 		{
-
+			//Normal Processing
+			if (checkpoint == 2)
+			{
+				if (selectedItem != -1)
+				{
+					StartCoroutine(SetupPurchase());
+				} //end if
+			} //end if
 		} //end else if Enter/Return Key
 
 		/*********************************************
@@ -394,10 +525,14 @@ public class ShopScene : MonoBehaviour
 	 ***************************************/
 	public void NextPage()
 	{
-		page++;
-		if (page > toDisplay.Count / 15)
+		if(checkpoint == 2)
 		{
-			page = 0;
+			page++;
+			int count = toDisplay.Count / 15;
+			if (page > count || (toDisplay.Count % 15 == 0 && page == count))
+			{
+				page = 0;
+			} //end if
 		} //end if
 	} //end NextPage
 
@@ -407,12 +542,52 @@ public class ShopScene : MonoBehaviour
 	 ***************************************/
 	public void PreviousPage()
 	{
-		page--;
-		if (page < 0)
+		if(checkpoint == 2)
 		{
-			page = toDisplay.Count / 15;
+			page--;
+			if (page < 0)
+			{
+				if (toDisplay.Count % 15 != 0)
+				{
+					page = toDisplay.Count / 15;
+				}//end if
+				else
+				{
+					page = toDisplay.Count / 15 - 1;
+				} //end else
+			} //end if
 		} //end if
 	} //end PreviousPage
+
+	/***************************************
+	 * Name: IncreaseQuantity
+	 * Adds one to the purchase quantity
+	 ***************************************/
+	public void IncreaseQuantity()
+	{
+		int quantity = int.Parse(purchaseRegion.transform.FindChild("Quantity").GetComponent<InputField>().text);
+		quantity++;
+		purchaseRegion.transform.FindChild("Quantity").GetComponent<InputField>().text = quantity.ToString();
+		int cost = selectedItem <= endPokemon ? pokemonCost[selectedItem] : 
+			DataContents.ExecuteSQL<int>("SELECT cost FROM Items WHERE rowid=" + toDisplay[selectedItem]);
+		cost *= quantity;
+		purchaseRegion.transform.FindChild("Total").GetComponent<Text>().text = cost.ToString();
+	} //end IncreaseQuantity
+
+	/***************************************
+	 * Name: DecreaseQuantity
+	 * Subtracts one from the purchase quantity
+	 ***************************************/
+	public void DecreaseQuantity()
+	{
+		int quantity = int.Parse(purchaseRegion.transform.FindChild("Quantity").GetComponent<InputField>().text);
+		quantity -= quantity > 0 ? 1 : 0; 
+		purchaseRegion.transform.FindChild("Quantity").GetComponent<InputField>().text = quantity.ToString();
+		int cost = selectedItem <= endPokemon ? pokemonCost[selectedItem] : 
+			DataContents.ExecuteSQL<int>("SELECT cost FROM Items WHERE rowid=" + toDisplay[selectedItem]);
+		cost *= quantity;
+		purchaseRegion.transform.FindChild("Total").GetComponent<Text>().text = cost.ToString();
+	} //end DecreaseQuantity
 
 	/***************************************
 	 * Name: ConfirmPurchase
@@ -437,20 +612,72 @@ public class ShopScene : MonoBehaviour
 		} //end else
 		purchaseRegion.SetActive(false);
 		selection.SetActive(false);
+		EventSystem.current.SetSelectedGameObject(itemRegion.transform.GetChild(selectedItem - (page * 15)).gameObject);
 		checkpoint = 2;
 	} //end ConfirmPurchase
+
+
+	/***************************************
+     * Name: ChangeFilter
+     * Changes shop to display only items
+     * within the filter
+     ***************************************/ 
+	public IEnumerator ChangeFilter(int requested)
+	{		
+		//Process at end of frame
+		yield return new WaitForEndOfFrame();
+
+		//Update filter
+		if (checkpoint == 2)
+		{
+			filter = requested;
+			displayPokemon = filter < 7 ? true : false;
+			checkpoint = 1;
+		} //end if
+		else
+		{
+			GameObject.Find("Filters").GetComponent<Dropdown>().value = filter;
+		} //end if
+	} //end ChangeFilter(int requested)
 
 	/***************************************
 	 * Name: CancelPurchase
 	 * Cancels purchase and returns to 
 	 * shop
 	 ***************************************/
-	public void CancelPurchase()
+	public IEnumerator CancelPurchase()
 	{
+		//Process at end of frame
+		yield return new WaitForEndOfFrame();
+
+		//Turn off purchase and move to main processing
 		purchaseRegion.SetActive(false);
 		selection.SetActive(false);
+		EventSystem.current.SetSelectedGameObject(itemRegion.transform.GetChild(selectedItem - (page * 15)).gameObject);
 		checkpoint = 2;
 	} //end CancelPurchase
+
+	/***************************************
+	 * Name: SetupPurchase
+	 * Displays purchase box
+	 ***************************************/
+	IEnumerator SetupPurchase()
+	{
+		//Process at end of frame
+		yield return new WaitForEndOfFrame();
+
+		purchaseRegion.SetActive(true);
+		purchaseRegion.transform.FindChild("Sprite").GetComponent<Image>().sprite = selectedItem <= endPokemon ?
+			Resources.Load<Sprite>("Sprites/Icons/icon" + toDisplay[selectedItem].ToString("000")) : 
+			Resources.Load<Sprite>("Sprites/Icons/item" + toDisplay[selectedItem].ToString("000"));
+		purchaseRegion.transform.FindChild("Quantity").GetComponent<InputField>().text = "1";
+		purchaseRegion.transform.FindChild("Total").GetComponent<Text>().text = selectedItem <= endPokemon ?
+			pokemonCost[selectedItem].ToString() : DataContents.ExecuteSQL<string>("SELECT cost FROM Items WHERE rowid=" +
+				toDisplay[selectedItem]);
+		EventSystem.current.SetSelectedGameObject(purchaseRegion.transform.FindChild("Buttons").GetChild(0).gameObject);
+		selection.SetActive(false);
+		checkpoint = 3;
+	} //end SetupPurchase
 
 	/***************************************
 	 * Name: WaitForResize
@@ -462,24 +689,17 @@ public class ShopScene : MonoBehaviour
 		//Process at end of frame
 		yield return new WaitForEndOfFrame();
 
-		if (checkpoint == 2)
+		//Make sure event system object isn't null
+		if (EventSystem.current.currentSelectedGameObject != null &&
+			EventSystem.current.currentSelectedGameObject.name != "Blocker")
 		{
 			//Resize to highlighted navigation object
 			Vector3 scale = new Vector3(EventSystem.current.currentSelectedGameObject.GetComponent<RectTransform>().rect.width,
-				                EventSystem.current.currentSelectedGameObject.GetComponent<RectTransform>().rect.height, 0);
+				               EventSystem.current.currentSelectedGameObject.GetComponent<RectTransform>().rect.height, 0);
 			selection.GetComponent<RectTransform>().sizeDelta = scale;
 			selection.transform.position = Camera.main.WorldToScreenPoint(EventSystem.current.currentSelectedGameObject.transform.position);
 			selection.SetActive(true);
 		} //end if
-		else if (checkpoint == 3)
-		{
-			purchaseObject = purchaseRegion.transform.FindChild("Buttons").GetChild(0).gameObject;
-			Vector3 scale = new Vector3(purchaseObject.GetComponent<RectTransform>().rect.width,
-				purchaseObject.GetComponent<RectTransform>().rect.height, 0);
-			selection.GetComponent<RectTransform>().sizeDelta = scale;
-			selection.transform.position = Camera.main.WorldToScreenPoint(purchaseObject.transform.position);
-			selection.SetActive(true);
-		} //end else if
 	} //end WaitForResize
 
 	/***************************************

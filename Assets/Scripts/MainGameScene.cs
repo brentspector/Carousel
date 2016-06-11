@@ -9,6 +9,7 @@ using UnityEngine.EventSystems;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 #endregion
 
 public class MainGameScene : MonoBehaviour
@@ -167,13 +168,6 @@ public class MainGameScene : MonoBehaviour
 			//If on home screen
 			if (gameState == MainGame.HOME)
 			{
-				PointerEventData eventData = new PointerEventData(EventSystem.current);
-				eventData.position = Input.mousePosition;
-				List<RaycastResult> results = new List<RaycastResult>();
-				EventSystem.current.RaycastAll(eventData, results);
-				BaseEventData bEvent = new BaseEventData(EventSystem.current);
-				bEvent.selectedObject = EventSystem.current.currentSelectedGameObject;
-				EventSystem.current.SetSelectedGameObject(results[0].gameObject, bEvent);
 				buttonMenu.SetActive(true);
 				gymBattle.SetActive(false);
 				playerTeam.SetActive(false);
@@ -182,6 +176,9 @@ public class MainGameScene : MonoBehaviour
 				choices.SetActive(false);
 				selection.SetActive(false);
 				initialize = false;
+
+				//Get player input
+				GetInput();
 			} //end if
 
 			//Gym battles
@@ -1402,7 +1399,7 @@ public class MainGameScene : MonoBehaviour
 
 			//Pokemon Ribbon on Continue Game -> Team -> Ribbons
 			else if (gameState == MainGame.POKEMONRIBBONS && Input.mousePosition.x < Camera.main.WorldToScreenPoint(
-				        currentRibbonSlot.transform.position).x - currentRibbonSlot.GetComponent<RectTransform>().rect.width / 2)
+				         currentRibbonSlot.transform.position).x - currentRibbonSlot.GetComponent<RectTransform>().rect.width / 2)
 			{
 				//If next slot is null, don't move
 				if (ribbonChoice - 1 > -1 && ribbonChoice % 4 != 0)
@@ -1593,6 +1590,21 @@ public class MainGameScene : MonoBehaviour
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
 			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
+
+			//Main Game Home
+			else if (gameState == MainGame.HOME)
+			{
+				PointerEventData eventData = new PointerEventData(EventSystem.current);
+				eventData.position = Input.mousePosition;
+				List<RaycastResult> results = new List<RaycastResult>();
+				EventSystem.current.RaycastAll(eventData, results);
+				BaseEventData bEvent = new BaseEventData(EventSystem.current);
+				bEvent.selectedObject = EventSystem.current.currentSelectedGameObject;
+				if (results.Any() && results[0].gameObject.transform.parent.GetComponent<Button>() != null)
+				{
+					EventSystem.current.SetSelectedGameObject(results[0].gameObject.transform.parent.gameObject, bEvent);
+				} //end if
+			} //end else if Main Game Home
 		} //end else if Mouse Moves Up
 
 		/*********************************************
@@ -1718,6 +1730,21 @@ public class MainGameScene : MonoBehaviour
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
 			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
+
+			//Main Game Home
+			else if (gameState == MainGame.HOME)
+			{
+				PointerEventData eventData = new PointerEventData(EventSystem.current);
+				eventData.position = Input.mousePosition;
+				List<RaycastResult> results = new List<RaycastResult>();
+				EventSystem.current.RaycastAll(eventData, results);
+				BaseEventData bEvent = new BaseEventData(EventSystem.current);
+				bEvent.selectedObject = EventSystem.current.currentSelectedGameObject;
+				if (results.Any() && results[0].gameObject.transform.parent.GetComponent<Button>() != null)
+				{
+					EventSystem.current.SetSelectedGameObject(results[0].gameObject.transform.parent.gameObject, bEvent);
+				} //end if
+			} //end else if Main Game Home
 		} //end else if Mouse Moves Down
 
 		/*********************************************
