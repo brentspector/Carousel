@@ -389,7 +389,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
 	public void ItemMode()
 	{
-
+		StartCoroutine(shop.ItemMode());
 	} //end ItemMode
 
 	/***************************************

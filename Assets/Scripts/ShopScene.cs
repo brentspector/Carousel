@@ -230,7 +230,7 @@ public class ShopScene : MonoBehaviour
 						if (EventSystem.current.currentSelectedGameObject == itemRegion.transform.GetChild(i).gameObject)
 						{
 							description.text = DataContents.ExecuteSQL<string>("SELECT pokedex FROM Pokemon WHERE rowid=" +
-								toDisplay[i + location]);
+							toDisplay[i + location]);
 							selectedItem = i + location;
 						} //end if
 					} //end if
@@ -259,7 +259,7 @@ public class ShopScene : MonoBehaviour
 						if (EventSystem.current.currentSelectedGameObject == itemRegion.transform.GetChild(i).gameObject)
 						{
 							description.text = DataContents.ExecuteSQL<string>("SELECT description FROM Items WHERE rowid=" +
-								toDisplay[i + location]);
+							toDisplay[i + location]);
 							selectedItem = i + location;
 						} //end if
 					} //end if
@@ -286,6 +286,54 @@ public class ShopScene : MonoBehaviour
 
 			//Reposition selection rectangle
 			StartCoroutine(WaitForResize());
+		} //end else if
+		else if (checkpoint == 4)
+		{
+			//Get player input
+			GetInput();
+
+			//Get list location
+			int location = page * 15;		
+			selectedItem = -1;
+
+			//Position selection rect to requested spot
+			StartCoroutine(WaitForResize());
+
+			//Loop through and set sprite, name, and cost for each
+			for (int i = 0; i < 15; i++)
+			{
+				if (i + location < toDisplay.Count)
+				{
+					itemRegion.transform.GetChild(i).FindChild("ItemIcon").GetComponent<Image>().color = Color.white;
+					itemRegion.transform.GetChild(i).FindChild("ItemIcon").GetComponent<Image>().sprite =
+						Resources.Load<Sprite>("Sprites/Icons/item" + toDisplay[i + location].ToString("000"));
+					itemRegion.transform.GetChild(i).FindChild("ItemName").GetComponent<Text>().text =
+						DataContents.ExecuteSQL<string>("SELECT gameName FROM Items WHERE rowid=" + toDisplay[i + location]);
+					itemRegion.transform.GetChild(i).FindChild("Cost").GetComponent<Text>().text =
+						DataContents.ExecuteSQL<string>("SELECT cost FROM Items WHERE rowid=" + toDisplay[i + location]);
+
+					//Update description text
+					if (EventSystem.current.currentSelectedGameObject == itemRegion.transform.GetChild(i).gameObject)
+					{
+						description.text = DataContents.ExecuteSQL<string>("SELECT description FROM Items WHERE rowid=" +
+							toDisplay[i + location]);
+						selectedItem = i + location;
+					} //end if
+				} //end if
+				else
+				{
+					itemRegion.transform.GetChild(i).FindChild("ItemIcon").GetComponent<Image>().color = Color.clear;
+					itemRegion.transform.GetChild(i).FindChild("ItemName").GetComponent<Text>().text = "";
+					itemRegion.transform.GetChild(i).FindChild("Cost").GetComponent<Text>().text = "";
+				} //end else
+			} //end for
+
+			//Blank out description if not on an item
+			if (EventSystem.current.currentSelectedGameObject != null && !EventSystem.current.currentSelectedGameObject.transform.
+				IsChildOf(itemRegion.transform) || selectedItem < 0)
+			{
+				description.text = "";
+			} //end if
 		} //end else if
 	} //end RunShop
 
@@ -492,7 +540,21 @@ public class ShopScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetMouseButtonUp(1))
 		{
+			//Normal Processing
+			if (checkpoint == 2)
+			{
+				GameManager.instance.LoadScene("MainGame", true);
+			} //end if
 
+			//Purchase Processing
+			else if (checkpoint == 3)
+			{
+				purchaseRegion.SetActive(false);
+				selection.SetActive(false);
+				EventSystem.current.SetSelectedGameObject(itemRegion.transform.GetChild(selectedItem - 
+					(page * 15)).gameObject);
+				checkpoint = 2;
+			} //end else if
 		} //end else if Right Mouse Button
 
 		/*********************************************
@@ -515,7 +577,21 @@ public class ShopScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetKeyDown(KeyCode.X))
 		{
+			//Normal Processing
+			if (checkpoint == 2)
+			{
+				GameManager.instance.LoadScene("MainGame", true);
+			} //end if
 
+			//Purchase Processing
+			else if (checkpoint == 3)
+			{
+				purchaseRegion.SetActive(false);
+				selection.SetActive(false);
+				EventSystem.current.SetSelectedGameObject(itemRegion.transform.GetChild(selectedItem - 
+					(page * 15)).gameObject);
+				checkpoint = 2;
+			} //end else if
 		} //end else if X Key
 	} //end GetInput
 
@@ -525,7 +601,7 @@ public class ShopScene : MonoBehaviour
 	 ***************************************/
 	public void NextPage()
 	{
-		if(checkpoint == 2)
+		if(checkpoint == 2 || checkpoint == 4)
 		{
 			page++;
 			int count = toDisplay.Count / 15;
@@ -542,7 +618,7 @@ public class ShopScene : MonoBehaviour
 	 ***************************************/
 	public void PreviousPage()
 	{
-		if(checkpoint == 2)
+		if(checkpoint == 2 || checkpoint == 4)
 		{
 			page--;
 			if (page < 0)
@@ -616,7 +692,6 @@ public class ShopScene : MonoBehaviour
 		checkpoint = 2;
 	} //end ConfirmPurchase
 
-
 	/***************************************
      * Name: ChangeFilter
      * Changes shop to display only items
@@ -639,6 +714,28 @@ public class ShopScene : MonoBehaviour
 			GameObject.Find("Filters").GetComponent<Dropdown>().value = filter;
 		} //end if
 	} //end ChangeFilter(int requested)
+
+	/***************************************
+     * Name: ItemMode
+     * Changes shop between buy and sell mode
+     ***************************************/ 
+	public IEnumerator ItemMode()
+	{
+		//Process at end of frame
+		yield return new WaitForEndOfFrame();
+
+		if (checkpoint == 2)
+		{			
+			GameObject.Find("Filters").GetComponent<Dropdown>().value = 0;
+			toDisplay = GameManager.instance.GetTrainer().GetBagInventory();
+			checkpoint = 4;
+		} //end if
+
+		else if (checkpoint == 4)
+		{
+			checkpoint = 1;
+		} //end else if
+	} //end ItemMode
 
 	/***************************************
 	 * Name: CancelPurchase

@@ -228,5 +228,24 @@ public class Inventory
 	{
 		return currentPocket;
 	} //end GetCurrentBagPocket
+
+	/***************************************
+     * Name: GetBagInventory
+     * Returns list of all items in player
+     * inventory
+     ***************************************/
+	public List<int> GetBagInventory()
+	{
+		List<int> bagList = new List<int>();
+		for (int i = 0; i < inventory.Count; i++)
+		{
+			for (int j = 0; j < inventory[i].Count; j++)
+			{
+				bagList.Add(inventory[i][j][0]);
+			} //end for
+		} //end for
+
+		return bagList;
+	} //end GetBagInventory
 	#endregion
 } //end Inventory class

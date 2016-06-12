@@ -461,6 +461,16 @@ public class Trainer
 		return bag.GetCurrentBagPocket();
 	} //end GetCurrentBagPocket
 
+	/***************************************
+     * Name: GetBagInventory
+     * Returns list of all items in player
+     * inventory
+     ***************************************/
+	public List<int> GetBagInventory()
+	{
+		return bag.GetBagInventory();
+	} //end GetBagInventory
+
     /***************************************
      * Name: GetPlayerBadges
      * Return whether player owns a badge or not 
