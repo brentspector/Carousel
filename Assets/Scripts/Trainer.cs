@@ -539,6 +539,15 @@ public class Trainer
 	{
 		return shop.GetPokemonTotal();
 	} //end GetPokemonTotal
+
+	/***************************************
+     * Name: ProcessCode
+     * Enters the code provided
+     ***************************************/
+	public void ProcessCode(string code)
+	{
+		shop.ProcessCode(code);
+	} //end ProcessCode(string code)
     #region Properties
     /***************************************
      * Name: Team

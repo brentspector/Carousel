@@ -33,6 +33,7 @@ public class Shop
 	List<int> battleItemStock;			//Stat modifiers mainly (use of 1/4 for inside)
 	List<int> keyItemStock;				//Permanent items (use of 2 inside)
 	List<int> boughtStock;				//One time purchases to prevent duplication
+	CheatCodes codes;					//The list of codes to be used in the game
     #endregion
 
     #region Methods
@@ -62,6 +63,7 @@ public class Shop
 		battleItemStock = new List<int>();
 		keyItemStock = new List<int>();
 		boughtStock = new List<int>();
+		codes = new CheatCodes();
 	} //end Shop
 
 	/***************************************
@@ -314,5 +316,92 @@ public class Shop
 	{
 		return tier1Pokemon.Count + tier2Pokemon.Count + tier3Pokemon.Count + tier4Pokemon.Count + tier5Pokemon.Count;
 	} //end GetPokemonTotal
+
+	/***************************************
+     * Name: ProcessCode
+     * Enters the code provided
+     ***************************************/
+	public void ProcessCode(string code)
+	{
+		codes.ProcessCode(code);
+	} //end ProcessCode(string code)
     #endregion
 } //end Shop class
+
+[Serializable]
+class CheatCodes
+{
+	//Holds used codes to prevent multiple uses
+	List<string> usedCodes;
+
+	/***************************************
+     * Name: CheatCodes
+     * Initializes anything necessary
+     ***************************************/
+	public CheatCodes()
+	{
+		usedCodes = new List<string>();
+	} //end CheatCodes
+
+	/***************************************
+     * Name: ProcessCode
+     * Evaluates entered code and applies
+     * anything possible
+     ***************************************/
+	public void ProcessCode(string code)
+	{
+		switch (code)
+		{
+			case "32T-LBVN-MD9-4ZC":
+				if (!usedCodes.Contains(code))
+				{
+					GameManager.instance.GetTrainer().AddItem(64, 3, 0);
+					usedCodes.Add(code);
+					GameManager.instance.DisplayText("Congratulations! 3 Destiny Stones have been " +
+					"added to your free space!", true);
+				} //end if
+				else
+				{
+					GameManager.instance.DisplayText("You already used this code. Nice try though.", true);
+				} //end else
+				break;
+			case "A23-EDNB-E7R-GCP":
+				GameManager.instance.DisplayText("This is a valid code, but no value currently exists. " +
+					"Hang on to it for future use: " + code, true);
+				break;
+			case "76G-KPAN-ULR-N4T":
+				GameManager.instance.DisplayText("This is a valid code, but no value currently exists. " +
+					"Hang on to it for future use: " + code, true);
+				break;
+			case "BCW-TP2B-GGK-U5F":
+				GameManager.instance.DisplayText("This is a valid code, but no value currently exists. " +
+					"Hang on to it for future use: " + code, true);
+				break;
+			case "4TS-E79N-CER-YH8":
+				GameManager.instance.DisplayText("This is a valid code, but no value currently exists. " +
+					"Hang on to it for future use: " + code, true);
+				break;
+			case "FP8-NWNP-PK8-JZX":
+				GameManager.instance.DisplayText("This is a valid code, but no value currently exists. " +
+					"Hang on to it for future use: " + code, true);
+				break;
+			case "4EE-YYL9-9YQ-EVQ":
+				if (!usedCodes.Contains(code))
+				{
+					GameManager.instance.GetTrainer().DebugUnlocked = true;
+					usedCodes.Add(code);
+					GameManager.instance.DisplayText("Congratulations! You have unlocked the debug mode. You can " +
+					"access it from the main menu at any time.", true);
+				} //end if
+				else
+				{
+					GameManager.instance.DisplayText("You already used this code. Nice try though.", true);
+				} //end else
+				break;
+			default:
+				GameManager.instance.DisplayText("The code " + code + " does not match any " +
+					"codes for this version. Please make sure you have the right code.", true);
+				break;
+		} //end switch
+	} //end ProcessCode(string code)
+} //end CheatCodes class

@@ -416,7 +416,7 @@ public class GameManager : MonoBehaviour
      ***************************************/ 
 	public void Codes()
 	{
-
+		StartCoroutine(shop.Codes());
 	} //end Codes
 
 	/***************************************
