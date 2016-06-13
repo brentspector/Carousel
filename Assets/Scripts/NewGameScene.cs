@@ -15,7 +15,6 @@ public class NewGameScene : MonoBehaviour
 	//Scene variables
 	int checkpoint = 0;				//Manage function progress
 	int playerChoice;				//The trainer the player is currently selecting
-	int choiceNumber;				//What option is being selected on confirm
 	Image profBase;					//Base professor stands on
 	Image professor;				//Professor image
 	InputField inputText;			//The actual text of input
@@ -23,8 +22,6 @@ public class NewGameScene : MonoBehaviour
 	GameObject currTrainer;			//Object of currently selected trainer
 	GameObject nextTrainer;			//Object of next trainer
 	GameObject input;				//The input portion of scene tools
-	GameObject confirm;				//Confirmation box of scene tools
-	GameObject selection;			//Selection rectangle of scene tools
 	string playerName;				//The player's name
 	#endregion
 
@@ -47,11 +44,12 @@ public class NewGameScene : MonoBehaviour
 			//Set checkpoint delegate
 			GameManager.instance.checkDel = ChangeCheckpoint;
 
+			//Set confirm delegate
+			GameManager.instance.confirmDel = ApplyConfirm;
+
 			//Get references
 			profBase = GameObject.Find("Base").GetComponent<Image>();
 			professor = GameObject.Find("Professor").GetComponent<Image>();
-			confirm = GameManager.tools.transform.FindChild("ConfirmUnit").gameObject;
-			selection = GameManager.tools.transform.FindChild("Selection").gameObject;
 			input = GameManager.tools.transform.FindChild("Input").gameObject;
 			inputText = input.transform.GetChild(1).GetComponent<InputField>();
 			prevTrainer = GameObject.Find("PreviousTrainer");
@@ -135,35 +133,18 @@ public class NewGameScene : MonoBehaviour
 			GetInput();
 		} //end else if
 
-		//Set up confirmation box
-		else if (checkpoint == 7)
-		{
-			//Activate the confirmation box
-			confirm.SetActive(true);
-
-			//Resize at end of frame
-			StartCoroutine(ResizeSelection());
-		} //end else if
-
-		//Wait for player to verify name
-		else if (checkpoint == 8)
-		{
-			//Get player input
-			GetInput();
-		} //end else if
-
 		//Move to character image selection
-		else if (checkpoint == 9)
+		else if (checkpoint == 7)
 		{
 			//Display text
 			GameManager.instance.DisplayText("Great! Which character are you?", true);
 
 			//Move to next checkpoint
-			checkpoint = 10;
+			checkpoint = 8;
 		} //end else if
 
 		//Turn on character choices
-		else if (checkpoint == 10)
+		else if (checkpoint == 8)
 		{
 			//Disable professor
 			profBase.color = Color.clear;
@@ -175,11 +156,11 @@ public class NewGameScene : MonoBehaviour
 			nextTrainer.SetActive(true);
 
 			//Move to next checkpoint
-			checkpoint = 11;
+			checkpoint = 9;
 		} //end else if
 
 		//Wait for player to select a character
-		else if (checkpoint == 11)
+		else if (checkpoint == 9)
 		{
 			//Get player input
 			GetInput();
@@ -215,32 +196,33 @@ public class NewGameScene : MonoBehaviour
 		} //end else if
 
 		//Finish new game
-		else if (checkpoint == 12)
+		else if (checkpoint == 10)
 		{
 			//Enable professor
 			profBase.color = Color.white;
 			professor.color = Color.white;
 
 			//Display text
-			GameManager.instance.DisplayText("Fantastic! Here's your team. Remember not to stab anyone, mk?", true);
+			GameManager.instance.DisplayText("Fantastic! Here's your sample team. Enjoy the show.", true);
 
 			//Move to next checkpoint
-			checkpoint = 13;
+			checkpoint = 11;
 		} //end else if
 
 		//Return to introduction
-		else if (checkpoint == 13)
+		else if (checkpoint == 11)
 		{
 			//Save new file, then go back to intro
 			GameManager.instance.RestartFile(GameManager.instance.GetPersist());
 			GameManager.instance.GetTrainer().PlayerName = playerName;
 			GameManager.instance.GetTrainer().PlayerImage = playerChoice;
 			GameManager.instance.GetTrainer().RandomTeam();
+			GameManager.instance.GetTrainer().PopulateStock(5);
 			GameManager.instance.Persist(false);
 			GameManager.instance.Reset();
 
 			//Set checkpoint to dummy
-			checkpoint = 14;
+			checkpoint = 12;
 		} //end else if
 	} //end RunNewGame
 
@@ -257,7 +239,7 @@ public class NewGameScene : MonoBehaviour
 		if (Input.GetKeyDown(KeyCode.LeftArrow))
 		{
 			//Cycle through trainer choices
-			if (checkpoint == 11)
+			if (checkpoint == 9)
 			{
 				//Decrease player choice
 				playerChoice--;
@@ -276,7 +258,7 @@ public class NewGameScene : MonoBehaviour
 		else if (Input.GetKeyDown(KeyCode.RightArrow))
 		{
 			//Cycle through trainer choices
-			if (checkpoint == 11)
+			if (checkpoint == 9)
 			{
 				//Increase player choice
 				playerChoice++;
@@ -294,15 +276,7 @@ public class NewGameScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetKeyDown(KeyCode.UpArrow))
 		{
-			//If on confirm box
-			if (checkpoint == 8)
-			{
-				//Go to first option
-				choiceNumber = 0;
 
-				//Reposition selection to first option
-				selection.transform.position = confirm.transform.GetChild(0).position;
-			} //end if
 		} //end else if Up Arrow
 
 		/*********************************************
@@ -310,15 +284,7 @@ public class NewGameScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetKeyDown(KeyCode.DownArrow))
 		{
-			//If on confirm box
-			if (checkpoint == 8)
-			{
-				//Go to last option
-				choiceNumber = 1;
 
-				//Reposition selection to last option
-				selection.transform.position = confirm.transform.GetChild(1).position;
-			} //end if	
 		} //end else if Down Arrow
 
 		/*********************************************
@@ -342,16 +308,7 @@ public class NewGameScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetAxis("Mouse Y") > 0)
 		{
-			//If on confirm box
-			if (checkpoint == 8 && Input.mousePosition.y > selection.transform.position.y +
-				selection.GetComponent<RectTransform>().rect.height/2)			
-			{
-				//Go to first option
-				choiceNumber = 0;
 
-				//Reposition selection to first option
-				selection.transform.position = confirm.transform.GetChild(0).position;
-			} //end if
 		} //end else if Mouse Moves Up
 
 		/*********************************************
@@ -359,16 +316,7 @@ public class NewGameScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetAxis("Mouse Y") < 0)
 		{
-			//If on confirm box
-			if (checkpoint == 8 && Input.mousePosition.y < selection.transform.position.y - 
-				selection.GetComponent<RectTransform>().rect.height/2)
-			{
-				//Go to last option
-				choiceNumber = 1;
 
-				//Reposition selection to last option
-				selection.transform.position = confirm.transform.GetChild(1).position;
-			} //end if	
 		} //end else if Mouse Moves Down
 
 		/*********************************************
@@ -377,7 +325,7 @@ public class NewGameScene : MonoBehaviour
 		else if (Input.GetAxis("Mouse ScrollWheel") > 0)
 		{
 			//Cycle through trainer choices
-			if (checkpoint == 11)
+			if (checkpoint == 9)
 			{
 				//Increase player choice
 				playerChoice++;
@@ -396,7 +344,7 @@ public class NewGameScene : MonoBehaviour
 		else if (Input.GetAxis("Mouse ScrollWheel") < 0)
 		{
 			//Cycle through trainer choices
-			if (checkpoint == 11)
+			if (checkpoint == 9)
 			{
 				//Decrease player choice
 				playerChoice--;
@@ -415,48 +363,24 @@ public class NewGameScene : MonoBehaviour
 		else if (Input.GetMouseButtonUp(0))
 		{
 			//Player finished entering their name
-			if (checkpoint == 6 && inputText.tag.Length > 1)
+			if (checkpoint == 6 && inputText.text.Length > 0)
 			{
 				//Conver input name to player's name
 				playerName = inputText.text;
 				input.SetActive(false);
 
 				//Display text
-				GameManager.instance.DisplayText("So your name is " + playerName + "?", false, true);
-
-				//Move to next checkpoint
-				checkpoint = 7;
+				GameManager.instance.DisplayConfirm("So your name is " + playerName + "?", 0, false);
 			} //end if
 
-			//Player verified or denied input name
-			else if (checkpoint == 8)
-			{
-				//Yes selected
-				if (choiceNumber == 0)
-				{
-					checkpoint = 9;
-				} //end if
-
-				//No selected
-				else
-				{
-					GameManager.instance.DisplayText("Ok. Let's try that again. What is your name?", true);
-					checkpoint = 5;
-				} //end else
-
-				//Disable confirm and selection
-				confirm.SetActive(false);
-				selection.SetActive(false);
-			} //end else if
-
 			//Player selected a character
-			else if (checkpoint == 11)
+			else if (checkpoint == 9)
 			{
 				//Turn off character selection
 				prevTrainer.SetActive(false);
 				currTrainer.SetActive(false);
 				nextTrainer.SetActive(false);
-				checkpoint = 12;
+				checkpoint = 10;
 			} //end else if
 		} //end else if Left Mouse Button
 
@@ -474,48 +398,24 @@ public class NewGameScene : MonoBehaviour
 		else if (Input.GetKeyDown(KeyCode.Return))
 		{
 			//Player finished entering their name
-			if (checkpoint == 6 && inputText.tag.Length > 1)
+			if (checkpoint == 6 && inputText.text.Length > 0)
 			{
 				//Conver input name to player's name
 				playerName = inputText.text;
 				input.SetActive(false);
 
 				//Display text
-				GameManager.instance.DisplayText("So your name is " + playerName + "?", false, true);
-
-				//Move to next checkpoint
-				checkpoint = 7;
+				GameManager.instance.DisplayConfirm("So your name is " + playerName + "?", 0, false);
 			} //end if
 
-			//Player verified or denied input name
-			else if (checkpoint == 8)
-			{
-				//Yes selected
-				if (choiceNumber == 0)
-				{
-					checkpoint = 9;
-				} //end if
-
-				//No selected
-				else
-				{
-					GameManager.instance.DisplayText("Ok. Let's try that again. What is your name?", true);
-					checkpoint = 5;
-				} //end else
-
-				//Disable confirm and selection
-				confirm.SetActive(false);
-				selection.SetActive(false);
-			} //end else if
-
 			//Player selected a character
-			else if (checkpoint == 11)
+			else if (checkpoint == 9)
 			{
 				//Turn off character selection
 				prevTrainer.SetActive(false);
 				currTrainer.SetActive(false);
 				nextTrainer.SetActive(false);
-				checkpoint = 12;
+				checkpoint = 10;
 			} //end else if
 		} //end else if Enter/Return Key
 
@@ -529,27 +429,24 @@ public class NewGameScene : MonoBehaviour
 	} //end GetInput
 
 	/***************************************
-	 * Name: ResizeSelection
-	 * Resizes selection rectangle to match
-	 * the confirm unit
+	 * Name: ApplyConfirm
+	 * Appliees the confirm choice
 	 ***************************************/
-	IEnumerator ResizeSelection()
+	public void ApplyConfirm(ConfirmChoice e)
 	{
-		//Process at end of frame
-		yield return new WaitForEndOfFrame();
+		//Yes selected
+		if (e.Choice == 0)
+		{
+			checkpoint = 7;
+		} //end if
 
-		//Reposition selection to top of confirm
-		selection.SetActive(true);
-		choiceNumber = 0;
-		selection.GetComponent<RectTransform>().sizeDelta = new Vector2(
-			confirm.transform.GetChild(0).GetComponent<RectTransform>().rect.width,
-			confirm.transform.GetChild(0).GetComponent<RectTransform>().rect.height);
-		selection.transform.position = new Vector3(confirm.transform.GetChild(0).position.x,
-			confirm.transform.GetChild(0).position.y, 100);
-
-		//Move to next checkpoint
-		checkpoint = 8;
-	} //end ResizeSelection
+		//No selected
+		else if(e.Choice== 1)
+		{
+			GameManager.instance.DisplayText("Ok. Let's try that again. What is your name?", true);
+			checkpoint = 5;
+		} //end else			
+	} //end ApplyConfirm(ConfirmChoice e)
 
 	/***************************************
 	 * Name: ChangeCheckpoint

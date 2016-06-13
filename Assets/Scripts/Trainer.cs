@@ -7,6 +7,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 #endregion
 
 [Serializable]
@@ -28,6 +29,11 @@ public class Trainer
     int pSeconds;         //Total number of seconds played
     bool debugUnlocked;   //Whether the debug has been unlocked or not
     bool[] pEarnedBadges; //Which badges the player has obtained
+
+	[OptionalField(VersionAdded=2)]
+	Inventory bag;		  //The player's item bag
+	[OptionalField(VersionAdded=2)]
+	Shop shop;			  //The status of the shop for the player
 
     //Gym Battle count
     //Kalos
@@ -89,6 +95,12 @@ public class Trainer
             //Initialize PC
             pPC = new PC ();
 
+			//Initialize Bag
+			bag = new Inventory();
+
+			//Initialize Shop
+			shop = new Shop();
+
             //No backups made yet
             bups = 0;
 
@@ -111,7 +123,7 @@ public class Trainer
             pEarnedBadges = new bool[48];
 
             //Player has not unlocked the debug menu
-            debugUnlocked = false;
+            debugUnlocked = true;
 
             //Time played is zero
             pHours = 0;
@@ -140,6 +152,8 @@ public class Trainer
         if (team.Count < 6)
         {
             team.Add (newPokemon);
+			ExtensionMethods.AddUnique(seen, newPokemon.NatSpecies);
+			ExtensionMethods.AddUnique(owned, newPokemon.NatSpecies);
         } //end if
         else
         {
@@ -346,6 +360,117 @@ public class Trainer
         return pPC.GetNextPokemon (spot);
     } //end GetNextPokemon(int spot)
 
+	/***************************************
+     * Name: AddItem
+     * Adds an item to the inventory
+     ***************************************/
+	public void AddItem(int item, int quantity, int bagSpot = -1)
+	{		
+		bag.AddItem(item, quantity, bagSpot);
+	} //end AddItem(int item, int quantity, int bagSpot = -1)
+
+	/***************************************
+     * Name: RemoveItem
+     * Remove an item from the inventory
+     ***************************************/
+	public void RemoveItem(int item, int quantity, int bagSpot = -1)
+	{
+		bag.RemoveItem(item, quantity, bagSpot);
+	} //end RemoveItem(int item, int quantity, int bagSpot = -1)
+
+	/***************************************
+     * Name: GetItem
+     * Get an item from a spot in inventory
+     ***************************************/
+	public List<int> GetItem(int spot, int bagSpot = -1)
+	{
+		return bag.GetItem(spot, bagSpot);
+	} //end GetItem(int spot, int bagSpot = -1)
+
+	/***************************************
+     * Name: ItemCount
+     * How many of the item are in the inventory
+     ***************************************/
+	public int ItemCount(int item, int bagSpot = -1)
+	{
+		return bag.ItemCount(item, bagSpot);
+	} //end ItemCount(int item, int bagSpot = -1)
+
+	/***************************************
+     * Name: SlotCount
+     * How many items are in the inventory
+     * slot
+     ***************************************/
+	public int SlotCount(int bagSpot = -1)
+	{
+		return bag.SlotCount(bagSpot);
+	} //end SlotCount(int bagSpot = -1)
+
+	/***************************************
+     * Name: MoveItemPocket
+     * Move an item to a different bag slot
+     ***************************************/
+	public void MoveItemPocket(int item, int bagPocketTo = -1)
+	{
+		bag.MoveItemPocket(item, bagPocketTo);
+	} //end MoveItemPocket(int item, int bagPocketTo =-1)
+
+	/***************************************
+     * Name: MoveItemLocation
+     * Move an item to a different position 
+     * in bag pocket
+     ***************************************/
+	public void MoveItemLocation(int bagSpotFrom, int bagSpotTo)
+	{
+		bag.MoveItemLocation(bagSpotFrom, bagSpotTo);
+	} //end MoveItemLocation(int bagSpotFrom, int bagSpotTo)
+
+	/***************************************
+     * Name: NextPocket
+     * Move to next bag pocket
+     ***************************************/
+	public void NextPocket()
+	{
+		bag.NextPocket();
+	} //end NextPocket
+
+	/***************************************
+     * Name: PreviousPocket
+     * Move to previous bag pocket
+     ***************************************/
+	public void PreviousPocket()
+	{
+		bag.PreviousPocket();
+	} //end PreviousPocket
+
+	/***************************************
+     * Name: ChangePocket
+     * Moves to requested pocket
+     ***************************************/
+	public void ChangePocket(int requested)
+	{
+		bag.ChangePocket(requested);
+	} //end ChangePocket(int requested)
+
+	/***************************************
+     * Name: GetCurrentBagPocket
+     * Returns the active pocket
+     ***************************************/
+	public int GetCurrentBagPocket()
+	{
+		return bag.GetCurrentBagPocket();
+	} //end GetCurrentBagPocket
+
+	/***************************************
+     * Name: GetBagInventory
+     * Returns list of all items in player
+     * inventory
+     ***************************************/
+	public List<int> GetBagInventory()
+	{
+		return bag.GetBagInventory();
+	} //end GetBagInventory
+
     /***************************************
      * Name: GetPlayerBadges
      * Return whether player owns a badge or not 
@@ -378,6 +503,51 @@ public class Trainer
             } //end else
         } //end if
     } //end GetPlayerBadges(int location)
+
+	/***************************************
+     * Name: PopulateStock
+     * Adds items into stock
+     ***************************************/
+	public void PopulateStock(int region)
+	{
+		shop.PopulateStock(region);
+	} //end PopulateStock(int region)
+
+	/***************************************
+     * Name: GetShopStockList
+     * Get list of items from stock list
+     ***************************************/
+	public List<int> GetShopStockList(int stock)
+	{
+		return shop.GetShopStockList(stock);
+	} //end GetShopStockList(int stock)
+
+	/***************************************
+     * Name: GetShopStockCost
+     * Returns cost list for displayed pokemon 
+     ***************************************/
+	public List<int> GetShopStockCost(int filter)
+	{
+		return shop.GetShopStockCost(filter);
+	} //end GetShopStockCost(int filter)
+
+	/***************************************
+     * Name: GetPokemonTotal
+     * Returns total amount of pokemon 
+     ***************************************/
+	public int GetPokemonTotal()
+	{
+		return shop.GetPokemonTotal();
+	} //end GetPokemonTotal
+
+	/***************************************
+     * Name: ProcessCode
+     * Enters the code provided
+     ***************************************/
+	public void ProcessCode(string code)
+	{
+		shop.ProcessCode(code);
+	} //end ProcessCode(string code)
     #region Properties
     /***************************************
      * Name: Team
@@ -393,6 +563,28 @@ public class Trainer
             team = value;
         } //end set
     } //end Team
+
+	/***************************************
+     * Name: Bag
+     ***************************************/
+	public Inventory Bag
+	{
+		set
+		{
+			bag = value;
+		} //end set
+	} //end Bag
+
+	/***************************************
+     * Name: PShop
+     ***************************************/
+	public Shop PShop
+	{
+		set
+		{
+			shop = value;
+		} //end set
+	} //end PShop
 
     /***************************************
      * Name: Seen

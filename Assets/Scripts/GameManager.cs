@@ -17,7 +17,7 @@ public class GameManager : MonoBehaviour
     #region Variables
 	//GLOBAL SETTING VARIABLES
     [System.NonSerialized]
-	public float VersionNumber = 0.3f;      //Version number for save file management
+	public float VersionNumber = 0.4f;      //Version number for save file management
     [System.NonSerialized]
     public int NumberOfWallpaper = 25;      //How many wallpapers are available
 
@@ -27,6 +27,8 @@ public class GameManager : MonoBehaviour
 	//Delegates
 	public delegate void CheckpointDelegate(int checkpoint);
 	public CheckpointDelegate checkDel;
+	public delegate void ConfirmDelegate(ConfirmChoice e);
+	public ConfirmDelegate confirmDel;
 
 	//SceneTools variables
 	public GameObject pTool;				//Prefab of SceneTools
@@ -40,12 +42,15 @@ public class GameManager : MonoBehaviour
 	MainGameScene mainGame;					//Main game scene script
 	PCScene pc;								//PC scene script
 	PokedexScene pokedex;					//Pokedex scene script
+	InventoryScene inventory;				//Inventory scene script
+	ShopScene shop;							//Shop scene script
 
 	//Scene variables
     SystemManager sysm;                     //Manages system features
 	bool loadingLevel = false;				//If a level is loading, disable update
     bool running = false;                   //Allows methods to run once
     bool textDisplayed = false;             //If text is displayed
+	bool confirmDisplayed = false;			//If confirm is displayed
     bool continueImmediate;                 //Continue as soon as able, don't wait for enter
     #endregion
 
@@ -107,6 +112,9 @@ public class GameManager : MonoBehaviour
 		sysm.GetText(tools.transform.FindChild("TextUnit").gameObject, 
 			tools.transform.FindChild("TextUnit").GetChild(1).gameObject);
 
+		//Initialize confirm
+		sysm.GetConfirm();
+
 		//Get scene scripts
 		anim = GetComponent<AnimationManager>();
 		intro = GetComponent<IntroScene>();
@@ -115,6 +123,8 @@ public class GameManager : MonoBehaviour
 		mainGame = GetComponent<MainGameScene>();
 		pc = GetComponent<PCScene>();
 		pokedex = GetComponent<PokedexScene>();
+		inventory = GetComponent<InventoryScene>();
+		shop = GetComponent<ShopScene>();
 	} //end Awake
 	
     /***************************************
@@ -140,11 +150,17 @@ public class GameManager : MonoBehaviour
                 textDisplayed = sysm.ManageTextbox(continueImmediate);
             } //end if textDisplayed
 
+			//Don't continue updating game until confirm box is gone
+			else if(confirmDisplayed)
+			{
+				confirmDisplayed = sysm.ManageConfirm();
+			} //end else if confirmDisplayed
+
 			//Don't update game while a scene is loading
-			if(loadingLevel)
+			else if(loadingLevel)
 			{
 				return;
-			} //end if
+			} //end else if loadingLevel
 
 			//Intro scene
             else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Intro")
@@ -159,7 +175,7 @@ public class GameManager : MonoBehaviour
                     #if UNITY_EDITOR
                     //Debug mode (development in the editor) commands go here
                     //sysm.GetPersist();
-                    //sysm.Persist();
+					//sysm.Persist();
 
                     #else
                     //Stand-alone mode (user version) diagnostic commands go here
@@ -200,6 +216,18 @@ public class GameManager : MonoBehaviour
             {
 				pokedex.RunPokedex();                
             } //end else if
+
+			//Inventory scene
+			else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Inventory")
+			{
+				inventory.RunInventory();
+			} //end else if
+
+			//Shop scene
+			else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Shop")
+			{
+				shop.RunShop();
+			} //end else if
 		} //end try
 
 		//Log error otherwise
@@ -231,6 +259,7 @@ public class GameManager : MonoBehaviour
 		if (fadeOut)
 		{
 			loadingLevel = true;
+			tools.transform.FindChild("Selection").gameObject.SetActive(false);
 			StartCoroutine(anim.FadeOutAnimation(levelName));
 		} //end if
 		else
@@ -239,6 +268,7 @@ public class GameManager : MonoBehaviour
 			loadingLevel = true;
 			ChangeCheckpoint(0);
 			checkDel = null;
+			confirmDel = null;
 			UnityEngine.SceneManagement.SceneManager.LoadScene(levelName);
 			loadingLevel = false;
 		} //end else
@@ -322,6 +352,110 @@ public class GameManager : MonoBehaviour
     {
 		pokedex.ToggleShown ();
     } //end ToggleShown
+
+	/***************************************
+     * Name: ChangePocket
+     * Moves to requested pocket
+     ***************************************/
+	public void ChangePocket(int requested)
+	{
+		sysm.PlayerTrainer.ChangePocket(requested);
+		ChangeCheckpoint(1);
+	} //end ChangePocket(int requested)
+
+	/***************************************
+	 * Name: SetupPickMove
+	 * Sets up screen for player to pick a
+	 * move to use
+	 ***************************************/
+	public void SetupPickMove()
+	{
+		inventory.SetupPickMove();
+	} //end SetupPickMove
+
+	/***************************************
+     * Name: ChangeFilter
+     * Changes shop to display only items
+     * within the filter
+     ***************************************/ 
+	public void ChangeFilter(int requested)
+	{
+		StartCoroutine(shop.ChangeFilter(requested));
+	} //end ChangeFilter(int requested)
+
+	/***************************************
+     * Name: ItemsMode
+     * Changes shop between buy and sell mode
+     ***************************************/ 
+	public void ItemMode()
+	{
+		StartCoroutine(shop.ItemMode());
+	} //end ItemMode
+
+	/***************************************
+     * Name: PreviousPage
+     * Changes shop's display to previous page
+     ***************************************/ 
+	public void PreviousPage()
+	{
+		shop.PreviousPage();
+	} //end PreviousPage
+
+	/***************************************
+     * Name: NextPage
+     * Changes shop's display to next page
+     ***************************************/ 
+	public void NextPage()
+	{
+		shop.NextPage();
+	} //end NextPage
+
+	/***************************************
+     * Name: Codes
+     * Allows player to input codes
+     ***************************************/ 
+	public void Codes()
+	{
+		StartCoroutine(shop.Codes());
+	} //end Codes
+
+	/***************************************
+	 * Name: IncreaseQuantity
+	 * Adds one to the purchase quantity
+	 ***************************************/
+	public void IncreaseQuantity()
+	{
+		shop.IncreaseQuantity();
+	} //end IncreaseQuantity
+
+	/***************************************
+	 * Name: DecreaseQuantity
+	 * Subtracts one from the purchase quantity
+	 ***************************************/
+	public void DecreaseQuantity()
+	{
+		shop.DecreaseQuantity();
+	} //end DecreaseQuantity
+
+	/***************************************
+	 * Name: ConfirmPurchase
+	 * Allows purchase and returns to 
+	 * shop
+	 ***************************************/
+	public void ConfirmPurchase()
+	{
+		shop.ConfirmPurchase();
+	} //end ConfirmPurchase
+
+	/***************************************
+	 * Name: CancelPurchase
+	 * Cancels purchase and returns to 
+	 * shop
+	 ***************************************/
+	public void CancelPurchase()
+	{
+		StartCoroutine(shop.CancelPurchase());
+	} //end CancelPurchase
     #endregion
 
 	//System Manager functions
@@ -346,6 +480,17 @@ public class GameManager : MonoBehaviour
         textDisplayed = true;
         continueImmediate = immediate;
 	} //end DisplayText(string text, bool closeAfter, bool immediate)
+
+	/***************************************
+     * Name: DisplayConfirm
+     * Shows confirm box for player confirmation
+     ***************************************/
+	public void DisplayConfirm(string message, int start, bool close)
+	{
+		sysm.DisplayConfirm(message,start,close);
+		sysm.confirm += confirmDel;
+		confirmDisplayed = true;
+	} //end DisplayConfirm(string message,int start,bool close)
 
     /***************************************
      * Name: GetTrainer
@@ -509,6 +654,15 @@ public class GameManager : MonoBehaviour
     {
 		mainGame.UpdateSprite ();
     } //end UpdateSprite
+
+	/***************************************
+     * Name: FillInventory
+     * Fills inventory with one of each item
+     ***************************************/ 
+	public void FillInventory()
+	{	
+		mainGame.FillInventory();
+	} //end FillInventory
     #endregion
     #endregion
 } //end GameManager class

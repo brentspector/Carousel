@@ -1,28 +1,24 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using System.Collections;
 
 public class Test : MonoBehaviour {
 	
-	string message;
-	Text textComp;
-	
-	// Use this for initialization
-	void Start () {
-		textComp = GetComponent<Text>();
-		message = textComp.text;
-		textComp.text = "";
-		StartCoroutine(TypeText ());
-	}
-	
-	IEnumerator TypeText () 
+	BoxCollider2D bc;
+
+	void Awake()
 	{
-		char[] letters = message.ToCharArray ();
-		for (int i = 0; i < letters.Length; i++) 
-		{
-			textComp.text += letters[i];
-			yield return null;
-		}
+		bc = this.gameObject.GetComponent<Button>().GetComponent<BoxCollider2D>();
+		Debug.Log(bc.bounds.min + ", " + bc.bounds.max);
+		Physics.queriesHitTriggers = true;
+	} 
+
+	void OnMouseEnter()
+	{
+		Debug.Log(EventSystem.current.currentSelectedGameObject.name);
+		EventSystem.current.SetSelectedGameObject(this.gameObject);
+		Debug.Log(EventSystem.current.currentSelectedGameObject.name);
 	}
 }
 

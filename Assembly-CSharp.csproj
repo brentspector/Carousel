@@ -53,6 +53,9 @@
      <Compile Include="Assets\Scripts\Field.cs" />
      <Compile Include="Assets\Scripts\GameManager.cs" />
      <Compile Include="Assets\Scripts\IntroScene.cs" />
+     <Compile Include="Assets\Scripts\Inventory.cs" />
+     <Compile Include="Assets\Scripts\InventoryScene.cs" />
+     <Compile Include="Assets\Scripts\ItemEffects.cs" />
      <Compile Include="Assets\Scripts\Loader.cs" />
      <Compile Include="Assets\Scripts\MainGameScene.cs" />
      <Compile Include="Assets\Scripts\MenuScene.cs" />
@@ -63,6 +66,7 @@
      <Compile Include="Assets\Scripts\PokedexScene.cs" />
      <Compile Include="Assets\Scripts\Pokemon.cs" />
      <Compile Include="Assets\Scripts\Shop.cs" />
+     <Compile Include="Assets\Scripts\ShopScene.cs" />
      <Compile Include="Assets\Scripts\SystemManager.cs" />
      <Compile Include="Assets\Scripts\Trainer.cs" />
      <Compile Include="Assets\Scripts\Utility\BatchSlice.cs" />

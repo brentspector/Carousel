@@ -44,6 +44,15 @@ public class SystemManager : MonoBehaviour
 	GameObject arrow;		//Arrow to signal end of text
 	bool displaying;		//If text is currently being output
     bool closeBox;          //Whether or not to close the box at the end
+
+	//Confirm variables
+	int choiceNumber;		//The confirm option currently selected
+	GameObject confirmBox;	//The confirm options box
+	GameObject selection;	//The selection for the choice
+
+	//Event handling for confirm box
+	public event GameManager.ConfirmDelegate confirm;
+
     #endregion
     #region Methods
     #region FileReading
@@ -154,6 +163,7 @@ public class SystemManager : MonoBehaviour
         } //end else
 
 		//Send a starting line
+		LogErrorMessage("- - - - - -");
 		LogErrorMessage (DateTime.Now.ToString () + " - Game was started - Version " + 
                          GameManager.instance.VersionNumber);
        
@@ -178,8 +188,7 @@ public class SystemManager : MonoBehaviour
 		if(output != null)
 		{
 			output.WriteLine(message);
-			output.Flush();
-			
+			output.Flush();			
 		} //end if
 	} //end LogErrorMessage(string message)
 
@@ -191,6 +200,7 @@ public class SystemManager : MonoBehaviour
     {
         if (output != null)
         {
+			LogErrorMessage("- - - - - -");
             output.Close();
             output = null;
         } //end if
@@ -305,6 +315,107 @@ public class SystemManager : MonoBehaviour
     } //end ManageTextbox(bool immediate)
 	#endregion
 
+	#region Confirm
+	/***************************************
+     * Name: GetConfirm
+     * Prepares confirm box for use
+     ***************************************/
+	public void GetConfirm()
+	{
+		confirmBox = GameManager.tools.transform.FindChild("ConfirmUnit").gameObject;
+		selection = GameManager.tools.transform.FindChild("Selection").gameObject;
+	} //end GetConfirm
+
+	/***************************************
+     * Name: DisplayConfirm
+     * Displays confirm box with text
+     ***************************************/
+	public void DisplayConfirm(string message, int start, bool close)
+	{
+		//Display message and confirm box
+		DisplayText(message, false);
+		confirmBox.SetActive(true);
+
+		//Resize at end of frame
+		StartCoroutine(ResizeSelection());
+
+		//Start at requested
+		choiceNumber = start;
+
+		//Set close to requested
+		closeBox = close;
+	} //end DisplayConfirm(string message, int start, bool close)
+
+	/***************************************
+     * Name: ManageConfirm
+     * Return the requested selection
+     ***************************************/
+	public bool ManageConfirm()
+	{
+		//Move selection up
+		if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetAxis("Mouse Y") > 0 && Input.mousePosition.y > 
+			selection.transform.position.y + selection.GetComponent<RectTransform>().rect.height/2)
+		{
+			choiceNumber = 0;
+			selection.transform.position = new Vector3(confirmBox.transform.GetChild(0).position.x,
+				confirmBox.transform.GetChild(choiceNumber).position.y, 100);
+			return true;
+		} //end if
+		//Move selection down
+		else if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetAxis("Mouse Y") < 0 && Input.mousePosition.y < 
+			selection.transform.position.y - selection.GetComponent<RectTransform>().rect.height/2)
+		{
+			choiceNumber = 1;
+			selection.transform.position = new Vector3(confirmBox.transform.GetChild(0).position.x,
+				confirmBox.transform.GetChild(choiceNumber).position.y, 100);
+			return true;
+		} //end else if
+		//Proceed when text is finished and player hits enter
+		else if ((Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonUp(0)) && !displaying)
+		{
+			//Close text if requested
+			if (closeBox)
+			{
+				textRegion.SetActive(false);
+				arrow.SetActive(false);
+			} //end if
+
+			//Close confirm
+			confirmBox.SetActive(false);
+			selection.SetActive(false);
+
+			//Raise confirm event
+			ConfirmChoice theChoice = new ConfirmChoice();
+			theChoice.Choice = choiceNumber;
+			confirm(theChoice);
+			confirm = null;
+			return false;
+		} //end else if
+
+		//Still displaying message
+		return true;
+	} //end ManageConfirm()
+
+	/***************************************
+	 * Name: ResizeSelection
+	 * Resizes selection rectangle to match
+	 * the confirm unit
+	 ***************************************/
+	IEnumerator ResizeSelection()
+	{
+		//Process at end of frame
+		yield return new WaitForEndOfFrame();
+
+		//Reposition selection to requested choice
+		selection.SetActive(true);
+		selection.GetComponent<RectTransform>().sizeDelta = new Vector2(
+			confirmBox.transform.GetChild(choiceNumber).GetComponent<RectTransform>().rect.width,
+			confirmBox.transform.GetChild(choiceNumber).GetComponent<RectTransform>().rect.height);
+		selection.transform.position = new Vector3(confirmBox.transform.GetChild(0).position.x,
+			confirmBox.transform.GetChild(choiceNumber).position.y, 100);
+	} //end ResizeSelection
+	#endregion
+
     #region Random
     /***************************************
      * Name: RandomInt
@@ -414,9 +525,30 @@ public class SystemManager : MonoBehaviour
 			pf.Close();
             if(pfd.patchVersion != GameManager.instance.VersionNumber)
             {
-                GameManager.instance.LogErrorMessage("File patch version doesn't match game version");
-                pPlayer = Patch.PatchFile(pfd.player, pfd.patchVersion);
-                GameManager.instance.LogErrorMessage("Updated trainer file");
+				//Create copy of original file
+                GameManager.instance.LogErrorMessage("File patch version doesn't match game version, making backup.");
+				int counter = 0;
+				if (!File.Exists(dataLocation + pfd.player.PlayerName + "-" + pfd.patchVersion + ".dat"))
+				{
+					counter++;
+					while (File.Exists(dataLocation + pfd.player.PlayerName + "-" + pfd.patchVersion + "-" + counter.ToString() + ".dat"))
+					{
+						counter++;
+					} //end while
+				} //end if
+				string fileName = counter == 0 ? dataLocation + pfd.player.PlayerName + "-" + pfd.patchVersion + ".dat" :
+					dataLocation + pfd.player.PlayerName + "-" + pfd.patchVersion + "-" + counter.ToString() + ".dat";
+				File.Copy(dataLocation + "game.dat", fileName);
+				pPlayer = Patch.PatchFile(pfd.player, ref pfd.patchVersion);
+				if (pfd.patchVersion == GameManager.instance.VersionNumber)
+				{
+					GameManager.instance.LogErrorMessage("Updated trainer file to " + pfd.patchVersion);
+					pPatchVersion = pfd.patchVersion;
+				} //end if
+				else
+				{
+					GameManager.instance.LogErrorMessage("File not updated to latest patch.");
+				} //end else
             } //end if
             else
             {
@@ -520,3 +652,20 @@ class PersistentSystem
     public float patchVersion;
     public Trainer player;
 } //end PersistentSystem class
+
+//Class of event arguments for confirm box
+public class ConfirmChoice : EventArgs
+{
+	private int choice;
+	public int Choice
+	{
+		get
+		{
+			return choice;
+		} //end get
+		set
+		{
+			choice = value;
+		} //end set
+	} //end Choice
+} //end ConfirmChoice class

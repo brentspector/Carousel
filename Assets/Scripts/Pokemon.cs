@@ -7,6 +7,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Linq;
 using Random = UnityEngine.Random;
 #endregion
@@ -41,7 +42,7 @@ public class Pokemon
 	int obtainType;			//How this pokemon was obtained
     int obtainFrom;         //Where this pokemon was obtained from
 	int obtainLevel;		//What level the pokemon was obtained at
-	int ability;			//What ability this pokemon is currently on
+	int ability;			//What ability this pokemon has
 	int gender;				//What gender the pokemon is
 	int nature;				//What nature the pokemon has
 	int happiness;			//Happiness level of pokemon
@@ -56,6 +57,15 @@ public class Pokemon
 	string nickname;		//Nickname of pokemon
 	string OtName;			//Name of the original trainer
     DateTime obtainTime;    //When this pokemon was obtained at
+
+	[OptionalField(VersionAdded=2)]
+	int abilityOn;			//What ability this pokemon is currently on
+	[OptionalField(VersionAdded=2)]
+	int[] vitamins;			//How many of each vitamin were added
+	[OptionalField(VersionAdded=2)]
+	int[] ppMax;			//The amount of uses each move has total
+	[OptionalField(VersionAdded=2)]
+	int[] ppUps;			//How many PP Ups and Maxes have been used
     #endregion
 
     #region Methods
@@ -240,11 +250,15 @@ public class Pokemon
         ppReamaining = new int[4];
 		markings = new bool[DataContents.markingCharacters.Length];
 		ribbons = new List<int>();
+		vitamins = new int[6];
+		ppMax = new int[4];
+		ppUps = new int[4];
 
 		for(int i = 0; i < 6; i++)
 		{
             IV[i] = 0;
 			EV[i] = 0;
+			vitamins[i] = 0;
 		} //end for
 
 		for(int i = 0; i < 4; i++)
@@ -647,6 +661,8 @@ public class Pokemon
             moves[index] = values[0];
             ppReamaining[index] = DataContents.ExecuteSQL<int> 
                 ("SELECT totalPP FROM Moves WHERE rowid=" + moves[index]);
+			ppMax[index] = ppReamaining[index];
+			ppUps[index] = 0;
         } //end if
         //No valid index given
         else
@@ -656,6 +672,8 @@ public class Pokemon
                 moves[i] = values[i];
                 ppReamaining[i] = DataContents.ExecuteSQL<int> 
                     ("SELECT totalPP FROM Moves WHERE rowid=" + moves[i]);
+				ppMax[i] = ppReamaining[i];
+				ppUps[i] = 0;
             } //end for
         } //end else
     } //end ChangeMoves(int[] values, int index = -1)
@@ -875,17 +893,40 @@ public class Pokemon
         temp = ppReamaining [move1];
         ppReamaining [move1] = ppReamaining [move2];
         ppReamaining [move2] = temp;
+		temp = ppMax[move1];
+		ppMax[move1] = ppMax[move2];
+		ppMax[move2] = temp;
+		temp = ppUps[move1];
+		ppUps[move1] = ppUps[move2];
+		ppUps[move2] = temp;
     } //end SwitchMoves(int move1, int move2)
 
     /***************************************
-     * Name: FaintPokemon
-     * Sets HP to 0 and status to Faint
+     * Name: CheckPokemonFaint
+     * Checks if Pokemon is fainted
      ***************************************/
-    public void FaintPokemon()
+	public bool CheckPokemonFaint()
     {
-        currentHP = 0;
-        status = 1;
-    } //end FaintPokemon
+		if (currentHP < 1)
+		{
+			currentHP = 0;
+			status = 1;
+			return true;
+		} //end if
+		return false;
+	} //end CheckPokemonFaint
+
+	/***************************************
+     * Name: RevivePokemon
+     * Sets status to healthy and HP to 
+     * parameter
+     ***************************************/
+	public void RevivePokemon(int amountRestored)
+	{		
+		currentHP = ExtensionMethods.BindToInt(amountRestored, 1);
+		status = 0;
+		statusCount = 0;
+	} //end RevivePokemon(int amountRestored)
 
     /***************************************
      * Name: CheckAbility
@@ -901,6 +942,7 @@ public class Pokemon
         {
             abilityName = DataContents.ExecuteSQL<string>
                 ("SELECT ability1 FROM Pokemon WHERE rowid=" + natSpecies);
+			abilityOn = 0;
         } //end if
         //Check if pokemon has a second ability
         else if(newAbility == 1)
@@ -914,6 +956,7 @@ public class Pokemon
             {
                 abilityName = DataContents.ExecuteSQL<string>
                     ("SELECT ability2 FROM Pokemon WHERE rowid=" + natSpecies);
+				abilityOn = 1;
             } //end else
         } //end if
         
@@ -929,6 +972,7 @@ public class Pokemon
             {
                 abilityName = DataContents.ExecuteSQL<string>
                     ("SELECT hiddenAbility FROM Pokemon WHERE rowid=" + natSpecies);
+				abilityOn = 2;
             } //end else
         } //end else if
 
@@ -975,6 +1019,210 @@ public class Pokemon
         } //end for
         return coloredMarkings;
     } //end GetMarkingsString
+
+	/***************************************
+     * Name: CheckEvolution
+     * Check if pokemon can evolve, and return
+     * what it evolves into
+     ***************************************/
+	public int CheckEvolution(int usedItem = 0)
+	{
+		//Get evolved forms
+		string evolveList = DataContents.ExecuteSQL<string>("SELECT evolutions FROM Pokemon WHERE rowid=" + natSpecies);
+
+		//End function if there are no evolutions
+		if (string.IsNullOrEmpty(evolveList))
+		{
+			return -1;
+		} //end if
+
+		//Divide evolutions up
+		string[] arrayList = evolveList.Split(',');
+
+		//Non Item-based evolution
+		if (usedItem == 0)
+		{
+			return -1;
+		} //end if
+	
+		//Item-based evolution
+		else
+		{
+			//Magetic field based evolution
+			if (usedItem == 43)
+			{
+				//Check if any forms evolve by magnetic radiation
+				for (int i = 1; i < arrayList.Length; i += 3)
+				{
+					//A magnetic field based evolution was found
+					if (arrayList[i] == "Location" && int.Parse(arrayList[i + 1]) == 281)
+					{
+						return DataContents.GetPokemonID(arrayList[i - 1]);
+					} //end if
+				} //end for
+			} //end if
+
+			//Dawn, Dusk, Fire, Leaf, Moon, Shiny, Sun, Thunder,Water Stone evolution
+			else if (usedItem == 60 || usedItem == 75 || usedItem == 89 || usedItem == 145 || item == 186 || item== 258 || item == 280
+				|| item == 288 || item == 402)
+			{
+				//Check if any forms evolve by stone
+				for (int i = 1; i < arrayList.Length; i += 3)
+				{
+					//A stone evolution was found
+					if (arrayList[i] == "Item" && DataContents.ExecuteSQL<int>("SELECT rowid FROM Items WHERE internalName='" +
+					    arrayList[i + 1] + "'") == usedItem)
+					{
+						return DataContents.GetPokemonID(arrayList[i - 1]);
+					} //end if
+
+					//A male only stone evolution was found
+					else if (arrayList[i] == "ItemMale" && DataContents.ExecuteSQL<int>("SELECT rowid FROM Items WHERE internalName='" +
+						arrayList[i + 1] + "'") == usedItem)
+					{
+						if (gender == 0)
+						{
+							return DataContents.GetPokemonID(arrayList[i - 1]);
+						} //end if
+						else
+						{
+							GameManager.instance.DisplayText(string.Format("{0} must be male to evolve with a {1}.", nickname, 
+								DataContents.GetItemGameName(usedItem)), true);
+						} //end else
+					} //end else if
+
+					//A female only stone evolution was found
+					else if (arrayList[i] == "ItemFemale" && DataContents.ExecuteSQL<int>("SELECT rowid FROM Items WHERE internalName='" +
+						arrayList[i + 1] + "'") == usedItem)
+					{
+						if (gender == 1)
+						{
+							return DataContents.GetPokemonID(arrayList[i - 1]);
+						} //end if
+						else
+						{
+							GameManager.instance.DisplayText(string.Format("{0} must be female to evolve with a {1}.", nickname, 
+								DataContents.GetItemGameName(usedItem)), true);
+						} //end else
+					} //end else if
+				} //end for
+			} //end else if
+
+			//Trade based evolution
+			else if (usedItem == 64)
+			{
+				//Check if any forms evolve by trade
+				for (int i = 1; i < arrayList.Length; i+=3)
+				{
+					//A Trade evolution was found
+					if (arrayList[i] == "Trade")
+					{
+						return DataContents.GetPokemonID(arrayList[i - 1]);
+					} //end if
+
+					//An Item Trade evolution was found
+					else if (arrayList[i] == "TradeItem")
+					{
+						//Check if holding the necessary item
+						if (DataContents.ExecuteSQL<int>("SELECT rowid FROM Items WHERE internalName='" +
+						    arrayList[i + 1] + "'") == item)
+						{
+							item = 0;
+							return DataContents.GetPokemonID(arrayList[i - 1]);
+						} //end if
+						else
+						{
+							GameManager.instance.DisplayText(nickname + " is not holding the required " +
+							arrayList[i + 1] + " to evolve by trade.", true);
+						} //end else
+					} //end else if
+				} //end for
+			} //end else if
+
+			//No evolution found
+			return -1;
+		} //end else
+	} //end CheckEvolution(int item = 0)
+
+	/***************************************
+     * Name: EvolvePokemon
+     * Evolves the pokemon into requested
+     ***************************************/
+	public void EvolvePokemon(int newPokemon)
+	{
+		//Make sure a valid value was passed
+		if (newPokemon < 0 || newPokemon > 721)
+		{
+			return;
+		} //end if
+
+		//Update national species
+		natSpecies = newPokemon;
+
+		//Update ability
+		CheckAbility(abilityOn);
+
+		//Update stats
+		CalculateStats();
+	} //end EvolvePokemon(int newPokemon)
+
+	/***************************************
+     * Name: UpdateAbilityOn
+     * Legacy file fix
+     ***************************************/
+	public void UpdateAbilityOn()
+	{
+		string abilityName = DataContents.ExecuteSQL<string>("SELECT internalName FROM Abilities WHERE rowid=" + ability);
+		//Check if first ability
+		if (abilityName == DataContents.ExecuteSQL<string>
+			("SELECT ability1 FROM Pokemon WHERE rowid=" + natSpecies))
+		{
+			abilityOn = 0;
+		} //end if
+
+		//Check if second ability
+		else if(abilityName == DataContents.ExecuteSQL<string>
+			("SELECT ability2 FROM Pokemon WHERE rowid=" + natSpecies))
+		{
+			abilityOn = 1;
+		}
+
+		//Hidden or custom ability
+		else
+		{
+			abilityOn = 2;
+		} //end else
+	} //end UpdateAbilityOn
+
+	/***************************************
+     * Name: UpdateVitamins
+     * Legacy file fix
+     ***************************************/
+	public void UpdateVitamins()
+	{
+		vitamins = new int[6];
+
+		for(int i = 0; i < 6; i++)
+		{
+			vitamins[i] = 0;
+		} //end for
+	} //end UpdateVitamins
+
+	/***************************************
+     * Name: UpdatePP
+     * Legacy file fix
+     ***************************************/
+	public void UpdatePP()
+	{
+		ppMax = new int[4];
+		ppUps = new int[4];
+
+		for(int i = 0; i < 4; i++)
+		{
+			ppMax[i] = ppReamaining[i];
+			ppUps[i] = 0;
+		} //end for
+	} //end UpdateVitamins
 	#region Accessors
 	//Stats
     /***************************************
@@ -1127,7 +1375,7 @@ public class Pokemon
 	public void SetEV(int index, int value)
 	{
 		EV [index] = value;
-	} //end SetIV(int index, int value)
+	} //end SetEV(int index, int value)
 
 	//Information
     /***************************************
@@ -1265,6 +1513,22 @@ public class Pokemon
 		} //end set
 	} //end StatusCount
 
+	/***************************************
+     * Name: GetVitamin
+     ***************************************/
+	public int GetVitamin(int index)
+	{
+		return vitamins [index];
+	} //end GetVitamin(int index)
+
+	/***************************************
+     * Name: SetVitamin
+     ***************************************/
+	public void SetVitamin(int index, int value)
+	{
+		vitamins [index] = value;
+	} //end SetVitamin(int index, int value)
+
     /***************************************
      * Name: BallUsed
      ***************************************/
@@ -1340,6 +1604,21 @@ public class Pokemon
 		} //end set
 	} //end Ability 
 
+	/***************************************
+     * Name: AbilityOn
+     ***************************************/
+	public int AbilityOn
+	{
+		get
+		{
+			return abilityOn;
+		} //end get
+		set
+		{
+			abilityOn = value;
+		} //end set
+	} //end AbilityOn 
+
     /***************************************
      * Name: Gender
      ***************************************/
@@ -1381,7 +1660,7 @@ public class Pokemon
 		} //end get
 		set
 		{
-			happiness = value;
+			happiness = ExtensionMethods.WithinIntRange(value, 0, 255);
 		} //end set
 	} //end Happiness
 
@@ -1447,6 +1726,38 @@ public class Pokemon
     {
         ppReamaining [index] = value;
     } //end SetMovePP(int index, int value)
+
+	/***************************************
+     * Name: GetMovePPMax
+     ***************************************/
+	public int GetMovePPMax(int index)
+	{
+		return ppMax [index];
+	} //end GetMovePPMax(int index)
+
+	/***************************************
+     * Name: SetMovePPMax
+     ***************************************/
+	public void SetMovePPMax(int index, int value)
+	{
+		ppMax [index] = value;
+	} //end SetMovePPMax(int index, int value)
+
+	/***************************************
+     * Name: GetMovePPUps
+     ***************************************/
+	public int GetMovePPUps(int index)
+	{
+		return ppUps [index];
+	} //end GetMovePPUps(int index)
+
+	/***************************************
+     * Name: SetMovePPUps
+     ***************************************/
+	public void SetMovePPUps(int index, int value)
+	{
+		ppUps [index] = value;
+	} //end SetMovePPUps(int index, int value)
 
     /***************************************
      * Name: HasPokerus

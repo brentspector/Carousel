@@ -78,6 +78,22 @@ public class ButtonFunctions : MonoBehaviour
         } //end catch
     } //end PlayerPC
 
+	/***************************************
+     * Name: Inventory
+     * Switches to Inventory scene
+     ***************************************/ 
+	public void Inventory()
+	{
+		try
+		{
+			GameManager.instance.LoadScene ("Inventory", true);
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end Inventory
+
     /***************************************
      * Name: Shop
      * Switches to Shop scene
@@ -302,6 +318,169 @@ public class ButtonFunctions : MonoBehaviour
         } //end catch
     } //end ToggleShown
 
+	/***************************************
+     * Name: ChangePocket
+     * Changes pocket to requested
+     ***************************************/ 
+	public void ChangePocket(int requested)
+	{
+		try
+		{
+			GameManager.instance.ChangePocket(requested);
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end ChangePocket(int requested)
+
+	/***************************************
+     * Name: ChangeFilter
+     * Changes shop to display only items
+     * within the filter
+     ***************************************/ 
+	public void ChangeFilter(int requested)
+	{
+		try
+		{
+			GameManager.instance.ChangeFilter(requested);
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end ChangeFilter(int requested)
+
+	/***************************************
+     * Name: ItemsMode
+     * Changes shop between buy and sell mode
+     ***************************************/ 
+	public void ItemMode()
+	{
+		try
+		{
+			GameManager.instance.ItemMode();
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end ItemMode
+
+	/***************************************
+     * Name: PreviousPage
+     * Changes shop's display to previous page
+     ***************************************/ 
+	public void PreviousPage()
+	{
+		try
+		{
+			GameManager.instance.PreviousPage();
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end PreviousPage
+
+	/***************************************
+     * Name: NextPage
+     * Changes shop's display to next page
+     ***************************************/ 
+	public void NextPage()
+	{
+		try
+		{
+			GameManager.instance.NextPage();
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end NextPage
+
+	/***************************************
+     * Name: Codes
+     * Allows player to input codes
+     ***************************************/ 
+	public void Codes()
+	{
+		try
+		{
+			GameManager.instance.Codes();
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end Codes
+
+	/***************************************
+	 * Name: IncreaseQuantity
+	 * Adds one to the purchase quantity
+	 ***************************************/
+	public void IncreaseQuantity()
+	{
+		try
+		{
+			GameManager.instance.IncreaseQuantity();
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end IncreaseQuantity
+
+	/***************************************
+	 * Name: DecreaseQuantity
+	 * Subtracts one from the purchase quantity
+	 ***************************************/
+	public void DecreaseQuantity()
+	{
+		try
+		{
+			GameManager.instance.DecreaseQuantity();
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end DecreaseQuantity
+
+	/***************************************
+	 * Name: ConfirmPurchase
+	 * Allows purchase and returns to 
+	 * shop
+	 ***************************************/
+	public void ConfirmPurchase()
+	{
+		try
+		{
+			GameManager.instance.ConfirmPurchase();
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end ConfirmPurchase
+
+	/***************************************
+	 * Name: CancelPurchase
+	 * Cancels purchase and returns to 
+	 * shop
+	 ***************************************/
+	public void CancelPurchase()
+	{
+		try
+		{
+			GameManager.instance.CancelPurchase();
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end CancelPurchase
+
     /***************************************
      * Name: Persist
      * Persists the game
@@ -350,6 +529,22 @@ public class ButtonFunctions : MonoBehaviour
             GameManager.instance.LogErrorMessage (e.ToString());
         } //end catch
     } //end EditTrainerMode
+
+	/***************************************
+     * Name: FillInventory
+     * Fills inventory with one of each item
+     ***************************************/ 
+	public void FillInventory()
+	{	
+		try
+		{
+			GameManager.instance.FillInventory();
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end FillInventory
 
     /***************************************
      * Name: UpdateSprite
