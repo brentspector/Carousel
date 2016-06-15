@@ -868,7 +868,7 @@ public class ShopScene : MonoBehaviour
 				{
 					for (int i = 0; i < quantity; i++)
 					{
-						Pokemon newPokemon = new Pokemon(toDisplay[selectedItem]);
+						Pokemon newPokemon = new Pokemon(toDisplay[selectedItem],oType: 0, oWhere: 0);
 						GameManager.instance.GetTrainer().AddToPC(
 							GameManager.instance.GetTrainer().GetPCBox(), 0, newPokemon);
 						GameManager.instance.DisplayText("Bought " + quantity + " " + newPokemon.Nickname +

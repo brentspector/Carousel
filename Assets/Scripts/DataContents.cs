@@ -1153,3 +1153,156 @@ public enum ObtainFrom
     UnknownSource= 4,
     COUNT        = 5
 } //end ObtainFrom enum
+
+/***************************************************************************************** 
+ * Enum:    LastingEffects
+ * Summary: Lists and organizes lingering attack or field effects for integer reference
+ *****************************************************************************************/ 
+[Serializable]
+/***************************************
+ * Name: LastingEffects
+ * LIst of effects a pokemon can be under
+ ***************************************/
+public enum LastingEffects
+{
+	AquaRing          = 0,
+	Attract           = 1,
+	Bide              = 2,
+	BideDamage        = 3,
+	BideTarget        = 4,
+	Charge            = 5,
+	Choice        	  = 6,
+	Confusion         = 7,
+	Counter           = 8,
+	CounterTarget     = 9,
+	Curse             = 10,
+	DefenseCurl       = 11,
+	DestinyBond       = 12,
+	Disable           = 13,
+	DisableMove       = 14,
+	EchoedVoice       = 15,
+	Embargo           = 16,
+	Encore            = 17,
+	EncoreIndex       = 18,
+	EncoreMove        = 19,
+	Endure            = 20,
+	FlashFire         = 21,
+	Flinch            = 22,
+	FocusEnergy       = 23,
+	FollowMe          = 24,
+	Foresight         = 25,
+	FuryCutter        = 26,
+	FutureSight       = 27,
+	FutureSightDamage = 28,
+	FutureSightMove   = 29,
+	FutureSightUser   = 30,
+	GastroAcid        = 31,
+	Grudge            = 32,
+	HealBlock         = 33,
+	HealingWish       = 34,
+	HelpingHand       = 35,
+	HyperBeam         = 36,
+	Imprison          = 37,
+	Ingrain           = 38,
+	LeechSeed         = 39,
+	LockOn            = 40,
+	LockOnPos         = 41,
+	LunarDance        = 42,
+	MagicCoat         = 43,
+	MagnetRise        = 44,
+	MeanLook          = 45,
+	Metronome         = 46,
+	Minimize          = 47,
+	MiracleEye        = 48,
+	MirrorCoat        = 49,
+	MirrorCoatTarget  = 50,
+	MeFirst           = 51,
+	MultiTurn         = 52,
+	MultiTurnAttack   = 53,
+	MultiTurnUser     = 54,
+	Nightmare         = 55,
+	Outrage           = 56,
+	PerishSong        = 57,
+	PerishSongUser    = 58,
+	Pinch             = 59,
+	PowerTrick        = 60,
+	Protect           = 61,
+	ProtectNegation   = 62,
+	ProtectRate       = 63,
+	Pursuit           = 64,
+	Rage              = 65,
+	Revenge           = 66,
+	Rollout           = 67,
+	Roost             = 68,
+	SkyDrop           = 69,
+	SmackDown         = 70,
+	Snatch            = 71,
+	Stockpile         = 72,
+	StockpileDef      = 73,
+	StockpileSpDef    = 74,
+	Substitute        = 75,
+	Taunt             = 76,
+	Telekinesis       = 77,
+	Torment           = 78,
+	Toxic             = 79,
+	Trace             = 80,
+	Transform         = 81,
+	Truant            = 82,
+	TwoTurnAttack     = 83,
+	Uproar            = 84,
+	Electrify		  = 85,
+	WeightDivisor 	  = 86,
+	Wish              = 87,
+	WishAmount        = 88,
+	WishMaker         = 89,
+	Yawn              = 90,
+	Illusion          = 91,
+	StickyWeb         = 92,
+	KingsShield       = 93,
+	SpikyShield       = 94,
+	FairyLockRate     = 95,
+	ParentalBond      = 96,
+	Round             = 97,
+	Powder            = 98,
+	COUNT			  = 99
+} //end LastingEffects enum
+
+/***************************************************************************************** 
+ * Enum:    FieldEffects
+ * Summary: Lists and organizes field effects for integer reference
+ *****************************************************************************************/ 
+[Serializable]
+/***************************************
+ * Name: Fie;dEffects
+ * List of effects that can affect one side
+ * of the field
+ ***************************************/
+public enum FieldEffects
+{
+	LightScreen   = 0,
+	LuckyChant    = 1,
+	Mist          = 2,
+	Reflect       = 3,
+	Safeguard     = 4,
+	Spikes        = 5,
+	StealthRock   = 6,
+	Tailwind      = 7,
+	ToxicSpikes   = 8,
+	WideGuard     = 9,
+	QuickGuard    = 10,
+	Retaliate     = 11,
+	CraftyShield  = 12,
+	MatBlock      = 13,
+	Gravity       = 14,
+	MagicRoom     = 15,
+	TrickRoom     = 16,
+	WonderRoom    = 17,
+	Terrain       = 18,
+	FairyLock     = 19,  
+	IonDeluge     = 20,
+	HarshSunlight = 21,
+	HeavyRain     = 22,
+	MudSport      = 23,
+	WaterSport    = 24,
+	COUNT         = 25
+} //end FieldEffects enum

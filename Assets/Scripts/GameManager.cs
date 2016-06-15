@@ -44,6 +44,7 @@ public class GameManager : MonoBehaviour
 	PokedexScene pokedex;					//Pokedex scene script
 	InventoryScene inventory;				//Inventory scene script
 	ShopScene shop;							//Shop scene script
+	BattleScene battle;						//Battle scene script
 
 	//Scene variables
     SystemManager sysm;                     //Manages system features
@@ -125,6 +126,7 @@ public class GameManager : MonoBehaviour
 		pokedex = GetComponent<PokedexScene>();
 		inventory = GetComponent<InventoryScene>();
 		shop = GetComponent<ShopScene>();
+		battle = GetComponent<BattleScene>();
 	} //end Awake
 	
     /***************************************
@@ -227,6 +229,12 @@ public class GameManager : MonoBehaviour
 			else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Shop")
 			{
 				shop.RunShop();
+			} //end else if
+
+			//Battle scene
+			else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Battle")
+			{
+				battle.RunBattle();
 			} //end else if
 		} //end try
 
@@ -456,6 +464,16 @@ public class GameManager : MonoBehaviour
 	{
 		StartCoroutine(shop.CancelPurchase());
 	} //end CancelPurchase
+
+	/***************************************
+	 * Name: CheckEffect
+	 * Checks if an effect is in place on
+	 * the field
+	 ***************************************/
+	public bool CheckEffect(int effect, int target)
+	{
+		return battle.CheckEffect(effect, target);
+	} //end CheckEffect(int effect, int target)
     #endregion
 
 	//System Manager functions

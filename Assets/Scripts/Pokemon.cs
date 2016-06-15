@@ -66,6 +66,12 @@ public class Pokemon
 	int[] ppMax;			//The amount of uses each move has total
 	[OptionalField(VersionAdded=2)]
 	int[] ppUps;			//How many PP Ups and Maxes have been used
+	[OptionalField(VersionAdded=2)]
+	int itemRecycle;		//Stores an item valid to recycle
+	[OptionalField(VersionAdded=2)]
+	int type1;				//The primary type of this pokemon
+	[OptionalField(VersionAdded=2)]
+	int type2;				//The secondary type (if any) of this pokemon
     #endregion
 
     #region Methods
@@ -275,6 +281,7 @@ public class Pokemon
         //Initialize any values that can be given from data
         ChangeIVs (new int[] {-1});
         CalculateStats ();
+		SetTypes();
         currentHP = totalHP;
         GiveInitialMoves (new int[] {-1, -1, -1, -1});
 	} //end Pokemon constructor
@@ -758,6 +765,30 @@ public class Pokemon
             } //end else
         } //end for
     } //end GiveInitialMoves(int[] moves)
+
+	/***************************************
+     * Name: SetTypes
+     * Sets the pokemon's types
+     ***************************************/
+	void SetTypes()
+	{
+		//Set the primary (first) type
+		type1 = Convert.ToInt32(Enum.Parse(typeof(Types),
+			DataContents.ExecuteSQL<string>("SELECT type1 FROM Pokemon WHERE rowid=" + natSpecies)));
+
+		//Get the string for the secondary type
+		string type2SQL = DataContents.ExecuteSQL<string>("SELECT type2 FROM Pokemon WHERE rowid=" + natSpecies);
+
+		//If a second type exists, set it
+		if (!String.IsNullOrEmpty(type2SQL))
+		{
+			type2 = Convert.ToInt32(Enum.Parse(typeof(Types), type2SQL));
+		} //end if
+		else
+		{
+			type2 = -1;
+		} //end else
+	} //end SetTypes
 
     /***************************************
      * Name: ChangeRibbons
@@ -1758,6 +1789,43 @@ public class Pokemon
 	{
 		ppUps [index] = value;
 	} //end SetMovePPUps(int index, int value)
+
+	/***************************************
+     * Name: Type1
+     ***************************************/
+	public int Type1
+	{
+		get
+		{
+			return type1;
+		} //end get
+	} //end Type1
+
+	/***************************************
+     * Name: Type2
+     ***************************************/
+	public int Type2
+	{
+		get
+		{
+			return type2;
+		} //end get
+	} //end Type2
+
+	/***************************************
+     * Name: ItemRecycle
+     ***************************************/
+	public int ItemRecycle
+	{
+		get
+		{
+			return itemRecycle;
+		} //end get
+		set
+		{
+			itemRecycle = value;
+		} //end set
+	} //end ItemRecycle
 
     /***************************************
      * Name: HasPokerus
