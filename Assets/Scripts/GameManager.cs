@@ -474,6 +474,33 @@ public class GameManager : MonoBehaviour
 	{
 		return battle.CheckEffect(effect, target);
 	} //end CheckEffect(int effect, int target)
+
+	/***************************************
+	 * Name: CheckMoveUser
+	 * Returns the pokemon using the move
+	 ***************************************/
+	public Pokemon CheckMoveUser()
+	{
+		return battle.CheckMoveUser();
+	} //end CheckMoveUser
+
+	/***************************************
+	 * Name: CheckMoveUsed
+	 * Retrieves name of the attack used
+	 ***************************************/
+	public string CheckMoveUsed()
+	{
+		return battle.CheckMoveUsed();
+	} //end CheckMoveUsed
+
+	/***************************************
+	 * Name: WriteBattleMessage
+	 * Writes a message to the battle window
+	 ***************************************/
+	public void WriteBattleMessage(string message)
+	{
+		battle.WriteBattleMessage(message);
+	} //end WriteBattleMessage(string message)
     #endregion
 
 	//System Manager functions

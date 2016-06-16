@@ -1245,7 +1245,7 @@ public static class ItemEffects
 		int restored = selectedPokemon.TotalHP - selectedPokemon.CurrentHP;
 		if (restored > 0 && restored < selectedPokemon.TotalHP)
 		{
-			selectedPokemon.CurrentHP = ExtensionMethods.CapAtInt(selectedPokemon.CurrentHP + amount, selectedPokemon.TotalHP);
+			selectedPokemon.CurrentHP += amount;
 			GameManager.instance.DisplayText(string.Format("{0} regained {1} HP!", selectedPokemon.Nickname, 
 				ExtensionMethods.CapAtInt(restored, amount)), true);
 			return true;

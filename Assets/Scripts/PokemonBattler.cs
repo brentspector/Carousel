@@ -95,8 +95,6 @@ public class PokemonBattler
 			effects.Add(0);
 		} //end for
 		InitializeEffects();
-
-
 	} //end PokemonBattler(Pokemon toRepresent)
 
 	/***************************************
@@ -137,6 +135,9 @@ public class PokemonBattler
 
 		//Illusion is target based
 		effects[(int)LastingEffects.Illusion] = -1;
+
+		//MeanLookTarget is target based
+		effects[(int)LastingEffects.MeanLookTarget] = -1;
 	} //end InitializeEffects
 
 	/***************************************
@@ -146,6 +147,19 @@ public class PokemonBattler
      ***************************************/
 	public void SwitchInPokemon(Pokemon toSwitch, bool retainStats = false)
 	{
+		//Check for Natural Cure
+		if (CheckAbility(99))
+		{
+			battler.Status = (int)Status.HEALTHY;
+			battler.StatusCount = 0;
+		} //end if
+
+		//Check for Regenerator
+		if (CheckAbility(124))
+		{
+			battler.CurrentHP += battler.CurrentHP / 3;
+		} //end if
+
 		//Initialize fields
 		battler = toSwitch;
 		currentHP = battler.CurrentHP;
@@ -200,6 +214,8 @@ public class PokemonBattler
 			effects[(int)LastingEffects.LockOn] = 0;
 			effects[(int)LastingEffects.LockOnPos] = -1;
 			effects[(int)LastingEffects.MagnetRise] = 0;
+			effects[(int)LastingEffects.MeanLook] = 0;
+			effects[(int)LastingEffects.MeanLookTarget] = -1;
 			effects[(int)LastingEffects.PerishSong] = 0;
 			effects[(int)LastingEffects.PerishSongUser] = 0;
 			effects[(int)LastingEffects.PowerTrick] = 0;
@@ -219,7 +235,7 @@ public class PokemonBattler
 				effects[(int)LastingEffects.LockOn] = 0;
 			} //end else
 
-			if (effects[(int)LastingEffects.PowerTrick] == 1)
+			if (effects[(int)LastingEffects.PowerTrick] > 0)
 			{
 				int temp = attack;
 				attack = defense;
@@ -232,6 +248,113 @@ public class PokemonBattler
 		lastMoveUsed = 0;
 		turnCount = 0;
 	} //end SwitchInPokemon(bool retainStats = false)
+
+	/***************************************
+     * Name: CheckTyping
+     * Determine the impact a move will have
+     * this pokemon
+     ***************************************/
+	public float CheckTyping(int moveType)
+	{
+		//Make sure attack type exists
+		if (moveType < 0)
+		{
+			return 1;
+		} //end if
+
+		//If Flying type holding Iron Ball is hit by a Ground Move
+		if (moveType == 4 && types.Contains(2) && CheckItem(128))
+		{
+			return 1;
+		} //end if
+
+		//Keep a list of modifiers
+		List<int> mods = new List<int>();
+
+		//Loop through and get the modifiers for each
+		for (int i = 0; i < types.Count; i++)
+		{
+			//Check for Roost
+			if (effects[(int)LastingEffects.Roost] > 0 && types[i] == 2)
+			{
+				//Change to Normal Type if pure Flying
+				if (types.Count == 1)
+				{
+					mods.Add(DataContents.typeChart.DetermineTyping(moveType, 0));
+				} //end if
+				//Remove typing otherwise
+				else
+				{
+					mods.Add(1);
+				} //end else
+			} //end if				
+
+			//Otherwise process normally
+			else
+			{
+				//Get base mod
+				mods.Add(DataContents.typeChart.DetermineTyping(moveType, types[i]));
+
+				//Check for Ring Target
+				if (CheckItem(238) && mods[i] == 0)
+				{
+					mods[i] = 1;
+				} //end if
+
+				//Check for Sap Sipper
+				if (moveType == 12 && CheckAbility(133))
+				{
+					//If attack can be increased
+					if (stages[1] < 6)
+					{
+						//Increase attack stage
+						stages[1]++;
+
+						//Display message
+						GameManager.instance.WriteBattleMessage(string.Format("{0}'s {1} raised {2}'s Attack with Sap Sipper!", 
+							GameManager.instance.CheckMoveUser().Nickname, GameManager.instance.CheckMoveUsed(),
+							battler.Nickname));
+					} //end if
+					else
+					{
+						//Display message
+						GameManager.instance.WriteBattleMessage(string.Format("{0}'s {1} had no effect on {2} due to Sap Sipper!", 
+							GameManager.instance.CheckMoveUser().Nickname, GameManager.instance.CheckMoveUsed(),
+							battler.Nickname));
+					} //end else
+
+					//Attack is negated
+					return 0;
+				} //end if
+
+				//Check for Scrappy/Foresight
+				if ((moveType == 0 || moveType == 1) && types[i] == 7 &&
+					(GameManager.instance.CheckMoveUser().Ability == 134 || effects[(int)LastingEffects.Foresight] > 0))
+				{
+					mods[i] = 1;										
+				} //end if
+
+				//Check for Miracle Eye
+				if(moveType == 14 && types[i] == 17 && effects[(int)LastingEffects.MiracleEye] > 0)
+				{
+					mods[i] = 1;
+				} //end if
+
+				//Check for Ingrain/Smack Down/Gravity
+				if(moveType == 4 && types[i] == 2 && (effects[(int)LastingEffects.Ingrain] > 0 || 
+					effects[(int)LastingEffects.SmackDown] > 0 || GameManager.instance.CheckEffect((int)FieldEffects.Gravity, sideOn)))
+				{
+					mods[i] = 1;
+				} //end if
+			} //end else
+
+			//If mod still is immune, return
+			if (mods[i] == 0)
+			{
+				return 0;
+			} //end if
+		} //end for
+	} //end CheckTyping(int moveType)
 
 	/***************************************
      * Name: UseItemOnPokemon
@@ -257,7 +380,19 @@ public class PokemonBattler
 
 		//Failed
 		return false;
-	} //end UseItemOnPokemon(Pokemon toTarget)
+	} //end UseItemOnPokemon(Pokemon toTarget, int itemNumber)
+
+	/***************************************
+     * Name: RestoreHP
+     * Attempts to restore HP
+     ***************************************/
+	public void RestoreHP(int amount)
+	{
+		if (effects[(int)LastingEffects.HealBlock] == 0)
+		{
+			battler.CurrentHP += amount;
+		} //end if
+	} //end RestoreHP(int amount)
 
 	/***************************************
      * Name: SetStage
@@ -298,10 +433,62 @@ public class PokemonBattler
 		} //end if
 
 		//Check for Swift Swim
-		if (CheckAbility(164))
+		if (CheckAbility(164) && GameManager.instance.CheckEffect((int)FieldEffects.Rain, sideOn))
 		{
-
+			result *= 2;
 		} //end if
+
+		//Check for Chlorophyll
+		if (CheckAbility(17) && GameManager.instance.CheckEffect((int)FieldEffects.Sun, sideOn))
+		{
+			result *= 2;
+		} //end if
+
+		//Check for Sand Rush
+		if (CheckAbility(130) && GameManager.instance.CheckEffect((int)FieldEffects.Sand, sideOn))
+		{
+			result *= 2;
+		} //end if
+
+		//Check for Quick Feet
+		if (CheckAbility(119) && battler.Status != (int)Status.HEALTHY && battler.Status != (int)Status.FAINT)
+		{
+			result *= 15;
+			result /= 10;
+		} //end if
+
+		//Check for Slow Start
+		if (CheckAbility(143) && turnCount > 0)
+		{
+			result /= 2;
+		} //end if
+
+		//Check for Choice Scarf
+		if (CheckItem(52))
+		{
+			result *= 15;
+			result /= 10;
+		} //end if
+
+		//Check for Macho Brace, Power items, or Iron Ball
+		if (CheckItem(128) || CheckItem(161) || CheckItem(208) || CheckItem(209) || CheckItem(210) || CheckItem(211) || 
+			CheckItem(213) || CheckItem(214))
+		{
+			result /= 2;
+		} //end if
+
+		//Check for Quick Powder
+		if (CheckItem(223) && battler.NatSpecies == 132 && effects[(int)LastingEffects.Transform] == 0)
+		{
+			result *= 2;
+		} //end if
+
+		//Check for Paralysis
+		if (battler.Status == (int)Status.PARALYZE && !CheckAbility(119))
+		{
+			speed /= 4;
+		} //end if
+		return result;
 	} //end GetSpeed
 
 	/***************************************
@@ -340,12 +527,30 @@ public class PokemonBattler
 	public bool CheckAbility(int abilityToCheck)
 	{
 		//Check for ability, then if active
-		if (ability != abilityToCheck || effects[(int)LastingEffects.GastroAcid] == 1)
+		if (ability != abilityToCheck || effects[(int)LastingEffects.GastroAcid] > 0)
 		{
 			return false;
 		} //end if
 
 		//Ability is present and active
+		return true;
+	} //end CheckAbility(int abilityToCheck)
+
+	/***************************************
+     * Name: CheckItem
+     * Checks if item is present and active
+     ***************************************/
+	public bool CheckItem(int itemToCheck)
+	{
+		//Check for item, then if active
+		if (battler.Item != itemToCheck || effects[(int)LastingEffects.Embargo] == 0 || 
+			GameManager.instance.CheckEffect((int)FieldEffects.MagicRoom, sideOn) || 
+			CheckAbility(77))
+		{
+			return false;
+		} //end if
+
+		//Item is present and active
 		return true;
 	} //end CheckAbility(int abilityToCheck)
 	#endregion

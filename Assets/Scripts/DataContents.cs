@@ -82,59 +82,6 @@ public static class DataContents : System.Object
             return false;
         } //end if
 
-		/*SystemManager sysm = new SystemManager();
-		sysm.GetContents (dataLocation + "items.txt");
-		dbCommand.CommandText = "DROP TABLE Items";
-		dbCommand.ExecuteNonQuery();
-		dbCommand.CommandText = "CREATE TABLE Items(id int,internalName text,gameName text,bagNumber int,cost int,outsideUse int,battleUse int,description text)";
-		dbCommand.ExecuteNonQuery();
-		for (int i = 0; i < 440; i++)
-		{
-			string[] contents = sysm.ReadCSV(i);
-			dbCommand.CommandText = "INSERT INTO Items(id,internalName,gameName,bagNumber,cost,outsideUse,battleUse,description) VALUES " +
-				"(@id,@in,@gn,@bg,@cs,@ou,@bu,@desc)";
-			dbCommand.Parameters.Add(new SqliteParameter("@id", contents[0]));
-			dbCommand.Parameters.Add(new SqliteParameter("@in", contents[1]));
-			dbCommand.Parameters.Add(new SqliteParameter("@gn", contents[2]));
-			dbCommand.Parameters.Add(new SqliteParameter("@bg", contents[3]));
-			dbCommand.Parameters.Add(new SqliteParameter("@cs", contents[4]));
-			dbCommand.Parameters.Add(new SqliteParameter("@ou", contents[5]));
-			dbCommand.Parameters.Add(new SqliteParameter("@bu", contents[6]));
-			string temp = contents[7].Replace("\"", "");
-			for(int j = 8; j < contents.Length-1; j++)
-			{
-				temp += "," + contents[j].Replace("\"", "");
-			} //end for
-			dbCommand.Parameters.Add(new SqliteParameter("@desc", temp));
-			Debug.Log(temp);
-			dbCommand.Prepare();
-			dbCommand.ExecuteNonQuery();
-			dbCommand.Parameters.Clear();
-		} //end for
-
-		sysm.GetContents(dataLocation + "KalosShop.txt");
-		dbCommand.CommandText = "DELETE FROM Shop";
-		dbCommand.ExecuteNonQuery();
-		dbCommand.CommandText = "INSERT INTO Shop(region,tier1,tier2,tier3,tier4,tier5,held,megastones,evolution,medicine,tms,berries," +
-			"battle,key) VALUES " +
-			"(@rg,@t1,@t2,@t3,@t4,@t5,@hd,@ms,@ev,@md,@tm,@br,@bt,@key)";
-		dbCommand.Parameters.Add(new SqliteParameter("@rg", string.Join(",",sysm.ReadCSV(0))));
-		dbCommand.Parameters.Add(new SqliteParameter("@t1", string.Join(",",sysm.ReadCSV(1))));
-		dbCommand.Parameters.Add(new SqliteParameter("@t2", string.Join(",",sysm.ReadCSV(2))));
-		dbCommand.Parameters.Add(new SqliteParameter("@t3", string.Join(",",sysm.ReadCSV(3))));
-		dbCommand.Parameters.Add(new SqliteParameter("@t4", string.Join(",",sysm.ReadCSV(4))));
-		dbCommand.Parameters.Add(new SqliteParameter("@t5", string.Join(",",sysm.ReadCSV(5))));
-		dbCommand.Parameters.Add(new SqliteParameter("@hd", string.Join(",",sysm.ReadCSV(6))));
-		dbCommand.Parameters.Add(new SqliteParameter("@ms", string.Join(",",sysm.ReadCSV(7))));
-		dbCommand.Parameters.Add(new SqliteParameter("@ev", string.Join(",",sysm.ReadCSV(8))));
-		dbCommand.Parameters.Add(new SqliteParameter("@md", string.Join(",",sysm.ReadCSV(9))));
-		dbCommand.Parameters.Add(new SqliteParameter("@tm", string.Join(",",sysm.ReadCSV(10))));
-		dbCommand.Parameters.Add(new SqliteParameter("@br", string.Join(",",sysm.ReadCSV(11))));
-		dbCommand.Parameters.Add(new SqliteParameter("@bt", string.Join(",",sysm.ReadCSV(12))));
-		dbCommand.Parameters.Add(new SqliteParameter("@key", string.Join(",",sysm.ReadCSV(13))));
-		dbCommand.Prepare();
-		dbCommand.ExecuteNonQuery();*/
-
         //Initialize markings
         markingCharacters = new char[] {'●','■','▲','♥','♦','☻'};
 
@@ -828,7 +775,7 @@ public class TypeChart
         typeMatches[15].resistances = new int[]{15};
         typeMatches[15].immunities = new int[]{};
         //DRAGON  = 16
-        typeMatches[16].weaknesses = new int[]{16,18};
+        typeMatches[16].weaknesses = new int[]{15,16,18};
         typeMatches[16].resistances = new int[]{10,11,12,13};
         typeMatches[16].immunities = new int[]{};
         //DARK    = 17
@@ -915,6 +862,34 @@ public class TypeChart
 
         return resistList;
     } //end DetermineWeaknesses(int type1, int type2=-1)
+
+	/***************************************
+     * Name: DetermineTyping
+     * Returns the modifier the move will have
+     * on the list of types
+     ***************************************/
+	public int DetermineTyping(int moveType, int type)
+	{
+		//Check if immune
+		if (typeMatches[type].immunities.Contains(moveType))
+		{
+			return 0;
+		} //end if
+
+		//Check if weak
+		else if (typeMatches[type].weaknesses.Contains(moveType))
+		{
+			return 2;
+		} //end else if
+
+		//Check if resists
+		else if (typeMatches[type].resistances.Contains(moveType))
+		{
+			return -1;
+		} //end else if
+
+		return 1;
+	} //end DetermineTyping(int moveType, int type)
 } //end ExperienceTable class
 
 /***************************************************************************************** 
@@ -1264,7 +1239,8 @@ public enum LastingEffects
 	ParentalBond      = 96,
 	Round             = 97,
 	Powder            = 98,
-	COUNT			  = 99
+	MeanLookTarget    = 99,
+	COUNT			  = 100
 } //end LastingEffects enum
 
 /***************************************************************************************** 
@@ -1304,5 +1280,10 @@ public enum FieldEffects
 	HeavyRain     = 22,
 	MudSport      = 23,
 	WaterSport    = 24,
-	COUNT         = 25
+	Rain		  = 25,
+	Sun			  = 26,
+	Sand		  = 27,
+	Hail    	  = 28,
+	StrongWinds   = 29,
+	COUNT         = 30
 } //end FieldEffects enum

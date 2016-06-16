@@ -14,8 +14,10 @@ public class BattleScene : MonoBehaviour
 {
 	#region Variables
 	int checkpoint = 0;				//Manage function progress
-	int lastAttacker;				//Who was the last pokemon to attack
 	int battleType;					//Singles, Doubles, Triples, or other type
+	int currentAttack;				//What move is currently being used
+	Pokemon currentAttacker;		//Who is currently attacking
+	Pokemon lastAttacker;			//Who was the last pokemon to attack
 	List<int> participants;			//The pokemon that participated in the fight
 	List<List<int>> fieldEffects;	//Effects that are present on the field
 	bool processing = false;		//Whether a function is already processing something
@@ -35,7 +37,8 @@ public class BattleScene : MonoBehaviour
 			GameManager.instance.checkDel = ChangeCheckpoint;
 
 			//Initialize references
-			lastAttacker = -1;
+			currentAttacker = null;
+			lastAttacker = null;
 			participants = new List<int>();
 			fieldEffects = new List<List<int>>();
 
@@ -111,10 +114,12 @@ public class BattleScene : MonoBehaviour
 			 * --Item (fastest goes first)
 			 * --Attack
 			 * ---Sort by Priority, then Speed
-			 * --Queue with flag indentifying the pokemon who used it
+			 * ---Queue with flag indentifying the pokemon who used it
 			 * Middle of round
 			 * -Resolve Queue
 			 * --Attack
+			 * ----Resolve typing
+			 * ----Resolve accuracy, critical
 			 * ----Resolve ability, item, and field
 			 * ----Resolve damage
 			 * ----Resolve recoil
@@ -254,6 +259,33 @@ public class BattleScene : MonoBehaviour
 
 		} //end else if X Key
 	} //end GetInput
+
+	/***************************************
+	 * Name: WriteBattleMessage
+	 * Writes a message to the battle window
+	 ***************************************/
+	public void WriteBattleMessage(string message)
+	{
+		
+	} //end WriteBattleMessage(string message)
+
+	/***************************************
+	 * Name: CheckMoveUsed
+	 * Retrieves name of the attack used
+	 ***************************************/
+	public string CheckMoveUsed()
+	{
+		return DataContents.GetMoveGameName(currentAttack);
+	} //end CheckMoveUsed
+
+	/***************************************
+	 * Name: CheckMoveUser
+	 * Returns the pokemon using the move
+	 ***************************************/
+	public Pokemon CheckMoveUser()
+	{
+		return currentAttacker;
+	} //end CheckMoveUser
 
 	/***************************************
 	 * Name: CheckEffect

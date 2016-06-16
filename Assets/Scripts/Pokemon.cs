@@ -1267,7 +1267,7 @@ public class Pokemon
 		} //end get
 		set
 		{
-			currentHP = value;
+			currentHP = ExtensionMethods.CapAtInt(value, totalHP);
 		} //end set
 	}//end Current HP
 
