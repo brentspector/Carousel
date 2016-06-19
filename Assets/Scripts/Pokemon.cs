@@ -72,6 +72,8 @@ public class Pokemon
 	int type1;				//The primary type of this pokemon
 	[OptionalField(VersionAdded=2)]
 	int type2;				//The secondary type (if any) of this pokemon
+	[OptionalField(VersionAdded=2)]
+	int expForLevel;		//The amount of EXP needed for the next level
     #endregion
 
     #region Methods
@@ -832,10 +834,14 @@ public class Pokemon
      ***************************************/
     int CalculateRemainingEXP(int level)
     {
-        int nextLevelEXP = DataContents.experienceTable.GetNextValue (
+		int nextLevel = DataContents.experienceTable.GetNextValue (
             DataContents.ExecuteSQL<string>("SELECT growthRate FROM Pokemon WHERE rowid=" + natSpecies),
             level);
-		return ExtensionMethods.BindToInt(nextLevelEXP - CurrentEXP, 0);
+		int thisLevel = DataContents.experienceTable.GetCurrentValue (
+			DataContents.ExecuteSQL<string>("SELECT growthRate FROM Pokemon WHERE rowid=" + natSpecies),
+			level);
+		expForLevel = nextLevel - thisLevel;
+		return ExtensionMethods.BindToInt(nextLevel - CurrentEXP, 0);
     } //end CalculateRemainingEXP(int level)
 
     /***************************************
@@ -910,6 +916,9 @@ public class Pokemon
         speed = results[2];
         specialA = results[3];
         specialD = results[4];
+
+		//Calculate EXP
+		remainingEXP = CalculateRemainingEXP(currentLevel);
     } //end CalculateStat
 
     /***************************************
@@ -1483,6 +1492,21 @@ public class Pokemon
             remainingEXP = value;
         } //end set
     }//end RemainingEXP 
+
+	/***************************************
+     * Name: EXPForLevel
+     ***************************************/
+	public int EXPForLevel
+	{
+		get
+		{
+			return expForLevel;
+		} //end get
+		set
+		{
+			expForLevel = value;
+		} //end set
+	}//end EXPForLevel 
 
     /***************************************
      * Name: CurrentLevel

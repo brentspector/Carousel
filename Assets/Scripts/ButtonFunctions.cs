@@ -481,6 +481,22 @@ public class ButtonFunctions : MonoBehaviour
 		} //end catch
 	} //end CancelPurchase
 
+	/***************************************
+     * Name: BeginBattle
+     * Begins a battle 
+     ***************************************/ 
+	public void BeginBattle()
+	{	
+		try
+		{
+			GameManager.instance.QuickBattle(); 
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end BeginBattle
+
     /***************************************
      * Name: Persist
      * Persists the game

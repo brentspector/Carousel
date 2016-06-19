@@ -42,6 +42,8 @@ public static class Patch
 			 * 	 vitamins
 			 * - Added ppMax and ppUp to track
 			 *   how many total uses a move has
+			 * - Added EXPToLevel to allow
+			 *   experience bar to scale correctly
 			 ***********************************/
 			else if(patchVersion == 0.3f)
 			{
@@ -54,6 +56,7 @@ public static class Patch
 					fixedTrainer.Team[i].UpdateAbilityOn();
 					fixedTrainer.Team[i].UpdateVitamins();
 					fixedTrainer.Team[i].UpdatePP();
+					fixedTrainer.Team[i].CalculateStats();
 				} //end for
 				//Loop through pc boxes
 				for(int i = 0; i < 50; i++)
@@ -66,6 +69,7 @@ public static class Patch
 							fixedTrainer.GetPC(i, j).UpdateAbilityOn();
 							fixedTrainer.GetPC(i,j).UpdateVitamins();
 							fixedTrainer.GetPC(i,j).UpdatePP();
+							fixedTrainer.GetPC(i,j).CalculateStats();
 						} //end  if
 					} //end for
 				} //end for

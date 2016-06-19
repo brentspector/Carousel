@@ -4,6 +4,7 @@
  *****************************************************************************************/ 
 #region Using
 using UnityEngine;
+using UnityEngine.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -18,8 +19,15 @@ public class BattleScene : MonoBehaviour
 	int currentAttack;				//What move is currently being used
 	Pokemon currentAttacker;		//Who is currently attacking
 	Pokemon lastAttacker;			//Who was the last pokemon to attack
-	List<int> participants;			//The pokemon that participated in the fight
+	List<Pokemon> participants;		//The pokemon that participated in the fight
 	List<List<int>> fieldEffects;	//Effects that are present on the field
+	List<PokemonBattler> battlers;	//A list of the battling spots on the field
+	List<GameObject> battlerBoxes;	//List of each box that represents an active pokemon
+	List<GameObject> pokemonStands; //List of places the pokemon sprites and bases are located
+	List<Trainer> combatants;		//Lists the trainers participating in the battle
+	GameObject attackSelection;		//Contains all attacks player can choose for the active pokemon
+	GameObject commandChoice;		//Contains all the options the player can conduct in battle
+
 	bool processing = false;		//Whether a function is already processing something
 	#endregion
 
@@ -37,19 +45,41 @@ public class BattleScene : MonoBehaviour
 			GameManager.instance.checkDel = ChangeCheckpoint;
 
 			//Initialize references
+			currentAttack = -1;
 			currentAttacker = null;
 			lastAttacker = null;
-			participants = new List<int>();
+			participants = new List<Pokemon>();
 			fieldEffects = new List<List<int>>();
+			battlers = new List<PokemonBattler>();
+			battlerBoxes = new List<GameObject>();
+			pokemonStands = new List<GameObject>();
+			attackSelection = GameObject.Find("AttackSelection");
+			commandChoice = GameObject.Find("CommandChoice");
 
 			//Initialize effects lists
-			for (int i = 0; i < fieldEffects.Count; i++)
+			for (int i = 0; i < combatants.Count; i++)
 			{
+				fieldEffects.Add(new List<int>());
 				for (int j = 0; j < (int)FieldEffects.COUNT; j++)
 				{
 					fieldEffects[i].Add(0);
 				} //end for
 			} //end for
+
+			//Initialize battlers
+			for (int i = 0; i < combatants.Count; i++)
+			{
+				battlers.Add(new PokemonBattler(combatants[i].Team[0]));
+				participants.Add(combatants[i].Team[0]);
+			} //end for
+
+			//Initialize battler boxes
+			battlerBoxes.Add(GameObject.Find("PlayerBox"));
+			battlerBoxes.Add(GameObject.Find("FoeBox"));
+
+			//Initialize pokemon stands
+			pokemonStands.Add(GameObject.Find("PlayerPokemon"));
+			pokemonStands.Add(GameObject.Find("FoePokemon"));
 
 			//Move to next checkpoint
 			checkpoint = 1;
@@ -67,7 +97,92 @@ public class BattleScene : MonoBehaviour
 			//Begin processing
 			processing = true;
 
+			//Set back of player pokemon
+			string toLoad = "Sprites/Pokemon/" + battlers[0].BattlerPokemon.NatSpecies.ToString("000");
+			toLoad += battlers[0].BattlerPokemon.Gender == 1 ? "f" : "";
+			toLoad += battlers[0].BattlerPokemon.IsShiny ? "sb" : "b";
+			if (Resources.Load<Sprite>(toLoad) == null)
+			{
+				toLoad = toLoad.Replace("f", "");
+				pokemonStands[0].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
+					Resources.Load<Sprite>(toLoad);
+			} //end if
+			else
+			{
+				pokemonStands[0].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
+					Resources.Load<Sprite>(toLoad);
+			} //end else 
 
+			//Set front for rest
+			for (int i = 1; i < pokemonStands.Count; i++)
+			{
+				toLoad = "Sprites/Pokemon/" + battlers[i].BattlerPokemon.NatSpecies.ToString("000");
+				toLoad += battlers[i].BattlerPokemon.Gender == 1 ? "f" : "";
+				toLoad += battlers[i].BattlerPokemon.IsShiny ? "s" : "";
+				if (Resources.Load<Sprite>(toLoad) == null)
+				{
+					toLoad = toLoad.Replace("f", "");
+					pokemonStands[i].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
+						Resources.Load<Sprite>(toLoad);
+				} //end if
+				else
+				{
+					pokemonStands[i].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
+						Resources.Load<Sprite>(toLoad);
+				} //end else 
+			} //end for
+
+			//Set player battler box
+			battlerBoxes[0].transform.FindChild("HP").GetComponent<Text>().text = battlers[0].CurrentHP.ToString() + "/" +
+				battlers[0].TotalHP.ToString();
+			battlerBoxes[0].transform.FindChild("Name").GetComponent<Text>().text = battlers[0].Nickname;
+			battlerBoxes[0].transform.FindChild("Level").GetComponent<Text>().text = "Lv." + battlers[0].CurrentLevel.ToString();
+			battlerBoxes[0].transform.FindChild("Gender").GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/gender" 
+				+ battlers[0].Gender);
+			SetStatusIcon(battlerBoxes[0].transform.FindChild("Status").GetComponent<Image>(), battlers[0].BattlerPokemon);
+			battlerBoxes[0].transform.FindChild("Experience").GetComponent<RectTransform>().localScale = new Vector3(
+				(float)(battlers[0].BattlerPokemon.EXPForLevel - battlers[0].BattlerPokemon.RemainingEXP)/ 
+				(float) battlers[0].BattlerPokemon.EXPForLevel, 1, 1);
+			float scale = (float)battlers[0].CurrentHP / (float)battlers[0].TotalHP;
+			battlerBoxes[0].transform.FindChild("HPBar").GetComponent<RectTransform>().localScale = new Vector3(
+				scale, 1, 1);
+			if (scale < 0.25f)
+			{
+				battlerBoxes[0].transform.FindChild("HPBar").GetComponent<Image>().color = Color.red;
+			} //end if
+			else if (scale < 0.5f)
+			{
+				battlerBoxes[0].transform.FindChild("HPBar").GetComponent<Image>().color = Color.yellow;
+			} //end else if
+			else
+			{
+				battlerBoxes[0].transform.FindChild("HPBar").GetComponent<Image>().color = Color.green;
+			} //end else 
+
+			//Set remaining battler boxes
+			for (int i = 1; i < combatants.Count; i++)
+			{
+				battlerBoxes[i].transform.FindChild("Name").GetComponent<Text>().text = battlers[i].Nickname;
+				battlerBoxes[i].transform.FindChild("Level").GetComponent<Text>().text = "Lv." + battlers[i].CurrentLevel.ToString();
+				battlerBoxes[i].transform.FindChild("Gender").GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/gender" 
+					+ battlers[i].Gender);
+				SetStatusIcon(battlerBoxes[i].transform.FindChild("Status").GetComponent<Image>(), battlers[i].BattlerPokemon);
+				scale = (float)battlers[i].CurrentHP / (float)battlers[i].TotalHP;
+				battlerBoxes[i].transform.FindChild("HPBar").GetComponent<RectTransform>().localScale = new Vector3(
+					scale, 1, 1);
+				if (scale < 0.25f)
+				{
+					battlerBoxes[i].transform.FindChild("HPBar").GetComponent<Image>().color = Color.red;
+				} //end if
+				else if (scale < 0.5f)
+				{
+					battlerBoxes[i].transform.FindChild("HPBar").GetComponent<Image>().color = Color.yellow;
+				} //end else if
+				else
+				{
+					battlerBoxes[i].transform.FindChild("HPBar").GetComponent<Image>().color = Color.green;
+				} //end else 
+			} //end for
 
 			//Move to next checkpoint
 			GameManager.instance.FadeInAnimation(2);
@@ -118,10 +233,12 @@ public class BattleScene : MonoBehaviour
 			 * Middle of round
 			 * -Resolve Queue
 			 * --Attack
+			 * ----Resolve protect
+			 * ----Resolve blocking abilities (Bulletproof & Telepathy)
 			 * ----Resolve typing
-			 * ----Resolve accuracy, critical
-			 * ----Resolve ability, item, and field
-			 * ----Resolve damage
+			 * ----Resolve accuracy
+			 * ----Resolve critical
+			 * ----Resolve damage, item, ability, field
 			 * ----Resolve recoil
 			 * ----Check if either pokemon is fainted
 			 * -----Resolve ability (aftermath)
@@ -261,6 +378,17 @@ public class BattleScene : MonoBehaviour
 	} //end GetInput
 
 	/***************************************
+	 * Name: InitializeBattle
+	 * Sets battle as a Single, Double, Triple
+	 * or other type and the trainers 
+	 ***************************************/
+	public void InitializeBattle(int bType, List<Trainer> trainers)
+	{
+		battleType = bType;
+		combatants = trainers;
+	} //end InitializeBattle(int bType)
+
+	/***************************************
 	 * Name: WriteBattleMessage
 	 * Writes a message to the battle window
 	 ***************************************/
@@ -296,6 +424,53 @@ public class BattleScene : MonoBehaviour
 	{
 		return fieldEffects[target][effect] > 0;
 	} //end CheckEffect(int effect, int target)
+
+	/***************************************
+	 * Name: SetStatusIcon
+	 * Sets status icon based on pokemon 
+	 * status
+	 ***************************************/
+	void SetStatusIcon(Image statusImage, Pokemon myPokemon)
+	{
+		//Set status
+		switch (myPokemon.Status)
+		{
+			//Healthy
+			case 0:
+				statusImage.color = Color.clear;
+				break;
+				//Faint
+			case 1:
+				statusImage.color = Color.white;
+				statusImage.sprite = DataContents.statusSprites[5];
+				break;
+				//Sleep
+			case 2:
+				statusImage.color = Color.white;
+				statusImage.sprite = DataContents.statusSprites[0];
+				break;
+				//Poison
+			case 3:
+				statusImage.color = Color.white;
+				statusImage.sprite = DataContents.statusSprites[1];
+				break;
+				//Burn
+			case 4:
+				statusImage.color = Color.white;
+				statusImage.sprite = DataContents.statusSprites[2];
+				break;
+				//Paralyze
+			case 5:
+				statusImage.color = Color.white;
+				statusImage.sprite = DataContents.statusSprites[3];
+				break;
+				//Freeze
+			case 6:
+				statusImage.color = Color.white;
+				statusImage.sprite = DataContents.statusSprites[4];
+				break;
+		} //end switch
+	} //end SetStatusIcon(Image statusImage, Pokemon myPokemon)
 
 	/***************************************
 	 * Name: ChangeCheckpoint

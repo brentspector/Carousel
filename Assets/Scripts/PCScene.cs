@@ -3636,7 +3636,7 @@ public class PCScene : MonoBehaviour
 
 				//Set the move PP
 				moveScreen.FindChild("Move" + (i + 1)).GetChild(2).GetComponent<Text>().text = "PP " +
-				myPokemon.GetMovePP(i).ToString() + "/" + myPokemon.GetMovePP(i).ToString() + "/" + myPokemon.GetMovePPMax(i);
+				myPokemon.GetMovePP(i).ToString() + "/" + myPokemon.GetMovePPMax(i);
 			} //end if
 			else
 			{

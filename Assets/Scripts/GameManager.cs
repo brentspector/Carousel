@@ -501,6 +501,37 @@ public class GameManager : MonoBehaviour
 	{
 		battle.WriteBattleMessage(message);
 	} //end WriteBattleMessage(string message)
+
+	/***************************************
+	 * Name: InitializeBattle
+	 * Sets battle as a Single, Double, Triple
+	 * or other type and the trainers 
+	 ***************************************/
+	public void InitializeBattle(int bType, List<Trainer> trainers)
+	{
+		battle.InitializeBattle(bType, trainers);
+	} //end InitializeBattle(int bType)
+
+	/***************************************
+	 * Name: QuickBattle
+
+	 ***************************************/
+	public void QuickBattle()
+	{
+		List<Trainer> tList = new List<Trainer>();
+		sysm.PlayerTrainer.Team[0].CurrentEXP += sysm.PlayerTrainer.Team[0].RemainingEXP - 1;
+		sysm.PlayerTrainer.Team[0].CalculateStats();
+		sysm.PlayerTrainer.Team[0].CurrentHP /= 5;
+		sysm.PlayerTrainer.Team[0].Status = (int)Status.BURN;
+		tList.Add(sysm.PlayerTrainer);
+		Trainer testTrainer = new Trainer();
+		testTrainer.RandomTeam();
+		testTrainer.Team[0].CurrentHP /= 5;
+		testTrainer.Team[0].Status = (int)Status.PARALYZE;
+		tList.Add(testTrainer);
+		battle.InitializeBattle(0, tList);
+		LoadScene("Battle", true);
+	} //end InitializeBattle(int bType)
     #endregion
 
 	//System Manager functions

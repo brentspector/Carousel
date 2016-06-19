@@ -115,7 +115,7 @@ public class Shop
 				{
 					tier3Pokemon.Add(int.Parse(list[i]));
 					int cost = DataContents.ExecuteSQL<int>("SELECT catchRate FROM Pokemon WHERE rowid=" + tier3Pokemon[i]);
-					cost = 3 * (555 - cost);
+					cost = 4 * (555 - cost);
 					tier3Cost.Add(cost);
 				} //end for
 				contents = DataContents.ExecuteSQL<string>("SELECT tier4 FROM Shop WHERE region=5");
@@ -124,7 +124,7 @@ public class Shop
 				{
 					tier4Pokemon.Add(int.Parse(list[i]));
 					int cost = DataContents.ExecuteSQL<int>("SELECT catchRate FROM Pokemon WHERE rowid=" + tier4Pokemon[i]);
-					cost = 4 * (555 - cost);
+					cost = 6 * (555 - cost);
 					tier4Cost.Add(cost);
 				} //end for
 				contents = DataContents.ExecuteSQL<string>("SELECT tier5 FROM Shop WHERE region=5");
@@ -133,7 +133,7 @@ public class Shop
 				{
 					tier5Pokemon.Add(int.Parse(list[i]));
 					int cost = DataContents.ExecuteSQL<int>("SELECT catchRate FROM Pokemon WHERE rowid=" + tier5Pokemon[i]);
-					cost = 5 * (555 - cost);
+					cost = 10 * (555 - cost);
 					tier5Cost.Add(cost);
 				} //end for
 
