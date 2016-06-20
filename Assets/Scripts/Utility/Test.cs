@@ -4,21 +4,26 @@ using UnityEngine.EventSystems;
 using System.Collections;
 
 public class Test : MonoBehaviour {
-	
-	BoxCollider2D bc;
 
-	void Awake()
-	{
-		bc = this.gameObject.GetComponent<Button>().GetComponent<BoxCollider2D>();
-		Debug.Log(bc.bounds.min + ", " + bc.bounds.max);
-		Physics.queriesHitTriggers = true;
-	} 
+	public Image back;
+	float lerper = 0f;
 
-	void OnMouseEnter()
+	public void Begin()
 	{
-		Debug.Log(EventSystem.current.currentSelectedGameObject.name);
-		EventSystem.current.SetSelectedGameObject(this.gameObject);
-		Debug.Log(EventSystem.current.currentSelectedGameObject.name);
+		back.gameObject.SetActive(true);
+		back.color = Color.white;
+		lerper = 0f;
+		StartCoroutine(Finished());
+	}
+
+	IEnumerator Finished()
+	{
+		while (back.color.a != 0)
+		{
+			back.color = new Color(back.color.r, back.color.g, back.color.b, Mathf.Lerp(1, 0, lerper));
+			lerper += 0.15f;
+			yield return null;
+		}
 	}
 }
 
