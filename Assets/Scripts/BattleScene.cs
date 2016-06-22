@@ -23,11 +23,11 @@ public class BattleScene : MonoBehaviour
 	List<List<int>> fieldEffects;	//Effects that are present on the field
 	List<PokemonBattler> battlers;	//A list of the battling spots on the field
 	List<GameObject> battlerBoxes;	//List of each box that represents an active pokemon
-	List<GameObject> pokemonStands; //List of places the pokemon sprites and bases are located
+	List<GameObject> trainerStands;  //List of places the trainer, pokemon, and base images are
+	List<GameObject> partyLineups;	//List of parties for trainers
 	List<Trainer> combatants;		//Lists the trainers participating in the battle
 	GameObject attackSelection;		//Contains all attacks player can choose for the active pokemon
 	GameObject commandChoice;		//Contains all the options the player can conduct in battle
-
 	bool processing = false;		//Whether a function is already processing something
 	#endregion
 
@@ -52,7 +52,8 @@ public class BattleScene : MonoBehaviour
 			fieldEffects = new List<List<int>>();
 			battlers = new List<PokemonBattler>();
 			battlerBoxes = new List<GameObject>();
-			pokemonStands = new List<GameObject>();
+			trainerStands = new List<GameObject>();
+			partyLineups = new List<GameObject>();
 			attackSelection = GameObject.Find("AttackSelection");
 			commandChoice = GameObject.Find("CommandChoice");
 
@@ -77,9 +78,13 @@ public class BattleScene : MonoBehaviour
 			battlerBoxes.Add(GameObject.Find("PlayerBox"));
 			battlerBoxes.Add(GameObject.Find("FoeBox"));
 
-			//Initialize pokemon stands
-			pokemonStands.Add(GameObject.Find("PlayerPokemon"));
-			pokemonStands.Add(GameObject.Find("FoePokemon"));
+			//Initialize player stands
+			trainerStands.Add(GameObject.Find("PlayerSide"));
+			trainerStands.Add(GameObject.Find("FoeSide"));
+
+			//Initialize party lineups
+			partyLineups.Add(GameObject.Find("PlayerPartyLineup"));
+			partyLineups.Add(GameObject.Find("FoePartyLineup"));
 
 			//Move to next checkpoint
 			checkpoint = 1;
@@ -97,6 +102,12 @@ public class BattleScene : MonoBehaviour
 			//Begin processing
 			processing = true;
 
+			//Set trainer images
+			trainerStands[0].transform.FindChild("Trainer").GetComponent<Image>().sprite =
+				DataContents.trainerBacks[GameManager.instance.GetTrainer().PlayerImage];
+			trainerStands[1].transform.FindChild("Trainer").GetComponent<Image>().sprite =
+				DataContents.versusImages[0];
+
 			//Set back of player pokemon
 			string toLoad = "Sprites/Pokemon/" + battlers[0].BattlerPokemon.NatSpecies.ToString("000");
 			toLoad += battlers[0].BattlerPokemon.Gender == 1 ? "f" : "";
@@ -104,17 +115,17 @@ public class BattleScene : MonoBehaviour
 			if (Resources.Load<Sprite>(toLoad) == null)
 			{
 				toLoad = toLoad.Replace("f", "");
-				pokemonStands[0].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
+				trainerStands[0].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
 					Resources.Load<Sprite>(toLoad);
 			} //end if
 			else
 			{
-				pokemonStands[0].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
+				trainerStands[0].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
 					Resources.Load<Sprite>(toLoad);
 			} //end else 
 
 			//Set front for rest
-			for (int i = 1; i < pokemonStands.Count; i++)
+			for (int i = 1; i < trainerStands.Count; i++)
 			{
 				toLoad = "Sprites/Pokemon/" + battlers[i].BattlerPokemon.NatSpecies.ToString("000");
 				toLoad += battlers[i].BattlerPokemon.Gender == 1 ? "f" : "";
@@ -122,12 +133,12 @@ public class BattleScene : MonoBehaviour
 				if (Resources.Load<Sprite>(toLoad) == null)
 				{
 					toLoad = toLoad.Replace("f", "");
-					pokemonStands[i].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
+					trainerStands[i].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
 						Resources.Load<Sprite>(toLoad);
 				} //end if
 				else
 				{
-					pokemonStands[i].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
+					trainerStands[i].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
 						Resources.Load<Sprite>(toLoad);
 				} //end else 
 			} //end for

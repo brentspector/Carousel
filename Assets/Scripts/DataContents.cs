@@ -35,6 +35,8 @@ public static class DataContents : System.Object
     public static Sprite[] ribbonSprites;           //Sprites for each ribbon
     public static Sprite[] badgeSprites;            //Sprites for each badge
     public static Sprite[] trainerCardSprites;      //Sprites for full trainer for trainer card
+	public static Sprite[] trainerBacks;			//Sprites for back of trainers for battle scene
+	public static Sprite[] versusImages;			//Sprites for Versus images
 
     //Shorthand for main data path
     static string dataLocation;                     
@@ -107,6 +109,8 @@ public static class DataContents : System.Object
         ribbonSprites       = Resources.LoadAll<Sprite> ("Sprites/Icons/ribbons");
         badgeSprites        = Resources.LoadAll<Sprite> ("Sprites/Icons/Badges");
         trainerCardSprites  = Resources.LoadAll<Sprite> ("Sprites/Menus/FullTrainers");
+		trainerBacks        = Resources.LoadAll<Sprite>("Sprites/Battle/TrainerBack");
+		versusImages 		= Resources.LoadAll<Sprite>("Sprites/Battle/Leaders");
 
         return true;
     } //end InitDataContents()

@@ -16,6 +16,7 @@ public class AnimationManager : MonoBehaviour
 
 	//Scene tools variables
 	Image fade;						//The fade screen
+	GameObject openScene;			//Opens or closes scene between center and top/bottom
 	#endregion
 
 	#region Methods
@@ -27,6 +28,7 @@ public class AnimationManager : MonoBehaviour
 	{
 		processing = false;
 		fade = GameManager.tools.transform.FindChild("Fade").GetComponent<Image>();
+		openScene = GameManager.tools.transform.FindChild("SceneOpen").gameObject;
 	} //end Awake
 
 	/***************************************
@@ -189,6 +191,21 @@ public class AnimationManager : MonoBehaviour
 		//End fade animation
 		processing = false;
 	} //end FadeObjectOut(Image[] targetObject, int targetCheckpoint)
+
+	/***************************************
+     * Name: OpenScene
+     * Scales top and bottom images to 0 to
+     * create a "shutter open" effect
+     ***************************************/
+	public IEnumerator OpenScene(int targetCheckpoint)
+	{
+		//Begin animation
+		processing = true;
+
+		//Initialize starting position of objects
+		openScene.transform.GetChild(0).GetComponent<RectTransform>().localScale = Vector3.one;
+
+	} //end OpenScene(int targetCheckpoint)
 
 	/***************************************
 	 * Name: IsProcessing
