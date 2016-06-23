@@ -104,10 +104,9 @@ public class BattleScene : MonoBehaviour
 
 			//Set trainer images
 			trainerStands[0].transform.FindChild("Trainer").GetComponent<Image>().sprite =
-				DataContents.trainerBacks[GameManager.instance.GetTrainer().PlayerImage];
+				DataContents.trainerBacks[GameManager.instance.GetTrainer().PlayerImage * 5];
 			trainerStands[1].transform.FindChild("Trainer").GetComponent<Image>().sprite =
 				DataContents.versusImages[0];
-
 			//Set back of player pokemon
 			string toLoad = "Sprites/Pokemon/" + battlers[0].BattlerPokemon.NatSpecies.ToString("000");
 			toLoad += battlers[0].BattlerPokemon.Gender == 1 ? "f" : "";
@@ -196,7 +195,7 @@ public class BattleScene : MonoBehaviour
 			} //end for
 
 			//Move to next checkpoint
-			GameManager.instance.FadeInAnimation(2);
+			GameManager.instance.OpenScene(2);
 		} //end else if
 		else if (checkpoint == 2)
 		{	

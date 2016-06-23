@@ -202,10 +202,76 @@ public class AnimationManager : MonoBehaviour
 		//Begin animation
 		processing = true;
 
+		//Turn off fade, turn on openScene
+		fade.gameObject.SetActive(false);
+		openScene.SetActive(true);
+
 		//Initialize starting position of objects
 		openScene.transform.GetChild(0).GetComponent<RectTransform>().localScale = Vector3.one;
+		openScene.transform.GetChild(1).GetComponent<RectTransform>().localScale = Vector3.one;
 
+		//Internal elapsed time
+		float elapsedTime = 0f;
+
+		Vector3 endScale = new Vector3(1, 0, 0);
+
+		//Lerp shutters for specified time
+		while (openScene.transform.GetChild(0).GetComponent<RectTransform>().localScale.y > 0)
+		{
+			openScene.transform.GetChild(0).GetComponent<RectTransform>().localScale =
+				Vector3.Lerp(Vector3.one, endScale, elapsedTime);
+			openScene.transform.GetChild(1).GetComponent<RectTransform>().localScale =
+				Vector3.Lerp(Vector3.one, endScale, elapsedTime);
+			elapsedTime += Time.deltaTime;
+			yield return null;
+		} //end while
+
+		//Move to target checkpoint
+		GameManager.instance.ChangeCheckpoint(targetCheckpoint);
+
+		//End scene open
+		processing = false;
 	} //end OpenScene(int targetCheckpoint)
+
+	/***************************************
+     * Name: ShowFoeParty
+     * Plays animation for the foe's party to
+     * appear
+     ***************************************/
+	public void ShowFoeParty()
+	{
+		GameObject.Find("FoePartyLineup").GetComponent<Animator>().SetTrigger("ShowParty");
+	} //end ShowFoeParty
+
+	/***************************************
+     * Name: ShowPlayerParty
+     * Plays animation for the player's party 
+     * to appear
+     ***************************************/
+	public void ShowPlayerParty()
+	{
+		GameObject.Find("PlayerPartyLineup").GetComponent<Animator>().SetTrigger("ShowParty");
+	} //end ShowPlayerParty
+
+	/***************************************
+     * Name: HideFoeParty
+     * Plays animation for the foe's party to
+     * disappear
+     ***************************************/
+	public void HideFoeParty()
+	{
+		GameObject.Find("FoePartyLineup").GetComponent<Animator>().SetTrigger("HideParty");
+	} //end HideFoeParty
+
+	/***************************************
+     * Name: HidePlayerParty
+     * Plays animation for the player's party 
+     * to disappear
+     ***************************************/
+	public void HidePlayerParty()
+	{
+		GameObject.Find("PlayerPartyLineup").GetComponent<Animator>().SetTrigger("HideParty");
+	} //end HidePlayerParty
 
 	/***************************************
 	 * Name: IsProcessing

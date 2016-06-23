@@ -643,6 +643,16 @@ public class GameManager : MonoBehaviour
 	} //end FadeInObjects(Image[] objects, int targetCheckpoint)
 
 	/***************************************
+     * Name: OpenScene
+     * Scales top and bottom images to 0 to
+     * create a "shutter open" effect
+     ***************************************/
+	public void OpenScene(int targetCheckpoint)
+	{
+		StartCoroutine(anim.OpenScene(targetCheckpoint));
+	} //end OpenScene(int targetCheckpoint)
+
+	/***************************************
 	 * Name: IsProcessing
 	 * Whether there is an animation in
 	 * progress
