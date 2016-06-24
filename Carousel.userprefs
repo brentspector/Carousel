@@ -2,8 +2,8 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\BattleScene.cs">
     <Files>
-      <File FileName="Assets\Scripts\AnimationManager.cs" Line="263" Column="33" />
-      <File FileName="Assets\Scripts\BattleScene.cs" Line="107" Column="82" />
+      <File FileName="Assets\Scripts\BattleScene.cs" Line="494" Column="32" />
+      <File FileName="Assets\Scripts\AnimationManager.cs" Line="1" Column="1" />
       <File FileName="Assets\Scripts\Utility\Test.cs" Line="1" Column="1" />
       <File FileName="Assets\Scripts\PokemonBattler.cs" Line="1" Column="1" />
       <File FileName="Assets\Scripts\GameManager.cs" Line="1" Column="1" />

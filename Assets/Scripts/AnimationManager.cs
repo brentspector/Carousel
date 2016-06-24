@@ -274,6 +274,46 @@ public class AnimationManager : MonoBehaviour
 	} //end HidePlayerParty
 
 	/***************************************
+     * Name: ShowFoeBox
+     * Plays animation for the foe's pokemon
+     * status box to appear
+     ***************************************/
+	public void ShowFoeBox()
+	{
+		GameObject.Find("FoeBox").GetComponent<Animator>().SetTrigger("ShowBox");
+	} //end ShowFoeBox
+
+	/***************************************
+     * Name: ShowPlayerBox
+     * Plays animation for the player's 
+     * pokemon box to appear
+     ***************************************/
+	public void ShowPlayerBox()
+	{
+		GameObject.Find("PlayerBox").GetComponent<Animator>().SetTrigger("ShowBox");
+	} //end ShowPlayerBox
+
+	/***************************************
+     * Name: HideFoeBox
+     * Plays animation for the foe's pokemon
+     * status box to disappear
+     ***************************************/
+	public void HideFoeBox()
+	{
+		GameObject.Find("FoeBox").GetComponent<Animator>().SetTrigger("HideBox");
+	} //end HideFoeBox
+
+	/***************************************
+     * Name: HidePlayerBox
+     * Plays animation for the player's 
+     * pokemon box to disappear
+     ***************************************/
+	public void HidePlayerBox()
+	{
+		GameObject.Find("PlayerBox").GetComponent<Animator>().SetTrigger("HideBox");
+	} //end HidePlayerBox
+
+	/***************************************
 	 * Name: IsProcessing
 	 * Whether there is an animation in
 	 * progress

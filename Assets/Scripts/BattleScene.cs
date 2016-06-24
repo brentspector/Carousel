@@ -359,8 +359,9 @@ public class BattleScene : MonoBehaviour
 		* Left Mouse Button
 		**********************************************/
 		else if (Input.GetMouseButtonUp(0))
-		{
-
+		{			
+			trainerStands[1].GetComponent<Animator>().SetTrigger("FadeEnemy");
+			Invoke("FadePlayer", 1f);
 		} //end else if Left Mouse Button
 
 		/*********************************************
@@ -404,7 +405,7 @@ public class BattleScene : MonoBehaviour
 	 ***************************************/
 	public void WriteBattleMessage(string message)
 	{
-		
+
 	} //end WriteBattleMessage(string message)
 
 	/***************************************
@@ -481,6 +482,20 @@ public class BattleScene : MonoBehaviour
 				break;
 		} //end switch
 	} //end SetStatusIcon(Image statusImage, Pokemon myPokemon)
+
+	/***************************************
+	 * Name: FadePlayer
+	 * Plays the correct player fade animation
+	 ***************************************/
+	void FadePlayer()
+	{
+		AnimatorOverrideController newController = new AnimatorOverrideController();
+		newController.runtimeAnimatorController = trainerStands[0].GetComponent<Animator>().runtimeAnimatorController;
+		newController["StopPlayerFade"] = Resources.Load<AnimationClip>("Animations/TrainerBack" + 
+			GameManager.instance.GetTrainer().PlayerImage.ToString());
+		trainerStands[0].GetComponent<Animator>().runtimeAnimatorController = newController;
+		trainerStands[0].GetComponent<Animator>().SetTrigger("FadeEnemy");
+	} //end FadePlayer
 
 	/***************************************
 	 * Name: ChangeCheckpoint
