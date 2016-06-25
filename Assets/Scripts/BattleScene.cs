@@ -26,6 +26,7 @@ public class BattleScene : MonoBehaviour
 	List<GameObject> trainerStands;  //List of places the trainer, pokemon, and base images are
 	List<GameObject> partyLineups;	//List of parties for trainers
 	List<Trainer> combatants;		//Lists the trainers participating in the battle
+	Text messageBox;				//Commentary section for the battle
 	GameObject attackSelection;		//Contains all attacks player can choose for the active pokemon
 	GameObject commandChoice;		//Contains all the options the player can conduct in battle
 	bool processing = false;		//Whether a function is already processing something
@@ -54,6 +55,7 @@ public class BattleScene : MonoBehaviour
 			battlerBoxes = new List<GameObject>();
 			trainerStands = new List<GameObject>();
 			partyLineups = new List<GameObject>();
+			messageBox = GameObject.Find("MessageBox").GetComponentInChildren<Text>();
 			attackSelection = GameObject.Find("AttackSelection");
 			commandChoice = GameObject.Find("CommandChoice");
 
@@ -102,11 +104,19 @@ public class BattleScene : MonoBehaviour
 			//Begin processing
 			processing = true;
 
+			//Turn off command choice and attack selection
+			commandChoice.SetActive(false);
+			attackSelection.SetActive(false);
+
+			//Set starting message
+			WriteBattleMessage("The battle is starting between " + combatants[0].PlayerName + " and " + combatants[1].PlayerName + "!");
+
 			//Set trainer images
 			trainerStands[0].transform.FindChild("Trainer").GetComponent<Image>().sprite =
 				DataContents.trainerBacks[GameManager.instance.GetTrainer().PlayerImage * 5];
 			trainerStands[1].transform.FindChild("Trainer").GetComponent<Image>().sprite =
-				DataContents.versusImages[0];
+				DataContents.leaderSprites[combatants[1].PlayerImage];
+			
 			//Set back of player pokemon
 			string toLoad = "Sprites/Pokemon/" + battlers[0].BattlerPokemon.NatSpecies.ToString("000");
 			toLoad += battlers[0].BattlerPokemon.Gender == 1 ? "f" : "";
@@ -144,15 +154,15 @@ public class BattleScene : MonoBehaviour
 
 			//Set player battler box
 			battlerBoxes[0].transform.FindChild("HP").GetComponent<Text>().text = battlers[0].CurrentHP.ToString() + "/" +
-				battlers[0].TotalHP.ToString();
+			battlers[0].TotalHP.ToString();
 			battlerBoxes[0].transform.FindChild("Name").GetComponent<Text>().text = battlers[0].Nickname;
 			battlerBoxes[0].transform.FindChild("Level").GetComponent<Text>().text = "Lv." + battlers[0].CurrentLevel.ToString();
-			battlerBoxes[0].transform.FindChild("Gender").GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/gender" 
-				+ battlers[0].Gender);
+			battlerBoxes[0].transform.FindChild("Gender").GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/gender"
+			+ battlers[0].Gender);
 			SetStatusIcon(battlerBoxes[0].transform.FindChild("Status").GetComponent<Image>(), battlers[0].BattlerPokemon);
 			battlerBoxes[0].transform.FindChild("Experience").GetComponent<RectTransform>().localScale = new Vector3(
-				(float)(battlers[0].BattlerPokemon.EXPForLevel - battlers[0].BattlerPokemon.RemainingEXP)/ 
-				(float) battlers[0].BattlerPokemon.EXPForLevel, 1, 1);
+				(float)(battlers[0].BattlerPokemon.EXPForLevel - battlers[0].BattlerPokemon.RemainingEXP) /
+				(float)battlers[0].BattlerPokemon.EXPForLevel, 1, 1);
 			float scale = (float)battlers[0].CurrentHP / (float)battlers[0].TotalHP;
 			battlerBoxes[0].transform.FindChild("HPBar").GetComponent<RectTransform>().localScale = new Vector3(
 				scale, 1, 1);
@@ -174,8 +184,8 @@ public class BattleScene : MonoBehaviour
 			{
 				battlerBoxes[i].transform.FindChild("Name").GetComponent<Text>().text = battlers[i].Nickname;
 				battlerBoxes[i].transform.FindChild("Level").GetComponent<Text>().text = "Lv." + battlers[i].CurrentLevel.ToString();
-				battlerBoxes[i].transform.FindChild("Gender").GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/gender" 
-					+ battlers[i].Gender);
+				battlerBoxes[i].transform.FindChild("Gender").GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/gender"
+				+ battlers[i].Gender);
 				SetStatusIcon(battlerBoxes[i].transform.FindChild("Status").GetComponent<Image>(), battlers[i].BattlerPokemon);
 				scale = (float)battlers[i].CurrentHP / (float)battlers[i].TotalHP;
 				battlerBoxes[i].transform.FindChild("HPBar").GetComponent<RectTransform>().localScale = new Vector3(
@@ -199,13 +209,26 @@ public class BattleScene : MonoBehaviour
 		} //end else if
 		else if (checkpoint == 2)
 		{	
+			//Return if processing
+			if (processing)
+			{
+				return;
+			} //end if
+
 			//Get player input
 			GetInput();
+		} //end else if
+		else if(checkpoint == 3)
+		{
+			//Turn on the choice menu
+			commandChoice.SetActive(true);
 
-			/* Start of Battle
-			 * -Display trainers
-			 * -AI sends out first pokemon in roster
-			 * -Player sends out first pokemon in roster
+			//Get player input
+			GetInput();
+			/* Done - Start of Battle
+			 * ++++++-Display trainers
+			 * ++++++-AI sends out first pokemon in roster
+			 * ++++++-Player sends out first pokemon in roster
 			 * 
 			 * On Entry
 			 * -Resolve field
@@ -359,9 +382,15 @@ public class BattleScene : MonoBehaviour
 		* Left Mouse Button
 		**********************************************/
 		else if (Input.GetMouseButtonUp(0))
-		{			
-			trainerStands[1].GetComponent<Animator>().SetTrigger("FadeEnemy");
-			Invoke("FadePlayer", 1f);
+		{	
+			//Wait for playing to begin the fade animation
+			if (checkpoint == 2)
+			{
+				processing = true;
+				trainerStands[1].GetComponent<Animator>().SetTrigger("FadeEnemy");
+				WriteBattleMessage(combatants[1].PlayerName + " sent out " + battlers[1].Nickname + "!");
+				StartCoroutine(FadePlayer());
+			} //end if
 		} //end else if Left Mouse Button
 
 		/*********************************************
@@ -376,7 +405,14 @@ public class BattleScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetKeyDown(KeyCode.Return))
 		{
-
+			//Wait for playing to begin the fade animation
+			if (checkpoint == 2)
+			{
+				processing = true;
+				trainerStands[1].GetComponent<Animator>().SetTrigger("FadeEnemy");
+				WriteBattleMessage(combatants[1].PlayerName + " sent out " + battlers[1].Nickname + "!");
+				StartCoroutine(FadePlayer());
+			} //end if
 		} //end else if Enter/Return Key
 
 		/*********************************************
@@ -384,7 +420,7 @@ public class BattleScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetKeyDown(KeyCode.X))
 		{
-
+			GameManager.instance.LoadScene("Intro");
 		} //end else if X Key
 	} //end GetInput
 
@@ -405,7 +441,7 @@ public class BattleScene : MonoBehaviour
 	 ***************************************/
 	public void WriteBattleMessage(string message)
 	{
-
+		messageBox.text = message;
 	} //end WriteBattleMessage(string message)
 
 	/***************************************
@@ -487,14 +523,19 @@ public class BattleScene : MonoBehaviour
 	 * Name: FadePlayer
 	 * Plays the correct player fade animation
 	 ***************************************/
-	void FadePlayer()
+	IEnumerator FadePlayer()
 	{
+		yield return new WaitForSeconds(1f);
 		AnimatorOverrideController newController = new AnimatorOverrideController();
 		newController.runtimeAnimatorController = trainerStands[0].GetComponent<Animator>().runtimeAnimatorController;
 		newController["StopPlayerFade"] = Resources.Load<AnimationClip>("Animations/TrainerBack" + 
 			GameManager.instance.GetTrainer().PlayerImage.ToString());
 		trainerStands[0].GetComponent<Animator>().runtimeAnimatorController = newController;
 		trainerStands[0].GetComponent<Animator>().SetTrigger("FadeEnemy");
+		WriteBattleMessage("Go, " + battlers[0].Nickname + "!");
+		yield return new WaitForSeconds(newController["StopPlayerFade"].length);
+		checkpoint = 3;
+		processing = false;
 	} //end FadePlayer
 
 	/***************************************

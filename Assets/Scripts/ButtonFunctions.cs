@@ -6,6 +6,7 @@
 #region Using
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 #endregion
 
 public class ButtonFunctions : MonoBehaviour 
@@ -485,11 +486,32 @@ public class ButtonFunctions : MonoBehaviour
      * Name: BeginBattle
      * Begins a battle 
      ***************************************/ 
-	public void BeginBattle()
+	public void BeginBattle(string battleData)
 	{	
+		//String should be ordered bType,enemyTrainerInts
 		try
 		{
-			GameManager.instance.QuickBattle(); 
+			List<Trainer> battlerList = new List<Trainer>();
+			battlerList.Add(GameManager.instance.GetTrainer());
+			string[] enemiesGiven = battleData.Split(',');
+			for(int i = 1; i < enemiesGiven.Length; i++)
+			{
+				Trainer newTrainer = new Trainer();
+				if(enemiesGiven[i] == "0")
+				{
+					newTrainer.PlayerName = "Leader Viola";
+					newTrainer.PlayerImage = 0;
+					newTrainer.Team.Add(new Pokemon(species:283,level:10));
+				}
+				else if(enemiesGiven[i] == "1")
+				{
+					newTrainer.PlayerName = "Leader Grant";
+					newTrainer.PlayerImage = 1;
+					newTrainer.Team.Add(new Pokemon(species:698,level:25));
+				}
+				battlerList.Add(newTrainer);					
+			} //end for
+			GameManager.instance.InitializeBattle(int.Parse(enemiesGiven[0]), battlerList);
 		} //end try
 		catch(System.Exception e)
 		{

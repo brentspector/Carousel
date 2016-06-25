@@ -510,6 +510,7 @@ public class GameManager : MonoBehaviour
 	public void InitializeBattle(int bType, List<Trainer> trainers)
 	{
 		battle.InitializeBattle(bType, trainers);
+		LoadScene("Battle", true);
 	} //end InitializeBattle(int bType)
 
 	/***************************************

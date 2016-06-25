@@ -314,6 +314,15 @@ public class AnimationManager : MonoBehaviour
 	} //end HidePlayerBox
 
 	/***************************************
+     * Name: Flash
+     * Plays animation of a bright flash
+     ***************************************/
+	public void Flash()
+	{
+		GameObject.Find("Flash").GetComponent<Animator>().SetTrigger("Flash");
+	} //end Flash
+
+	/***************************************
 	 * Name: IsProcessing
 	 * Whether there is an animation in
 	 * progress
