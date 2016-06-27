@@ -7,6 +7,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 #endregion
 
 public class ButtonFunctions : MonoBehaviour 
@@ -497,18 +498,35 @@ public class ButtonFunctions : MonoBehaviour
 			for(int i = 1; i < enemiesGiven.Length; i++)
 			{
 				Trainer newTrainer = new Trainer();
-				if(enemiesGiven[i] == "0")
+				newTrainer.PlayerName = DataContents.ExecuteSQL<string>("SELECT name FROM Trainers WHERE rowid=" + enemiesGiven[i]);
+				newTrainer.PlayerImage = DataContents.ExecuteSQL<int>("SELECT image FROM Trainers WHERE rowid=" + enemiesGiven[i]);
+				string[] items = DataContents.ExecuteSQL<string>("SELECT items FROM Trainers WHERE rowid=" + enemiesGiven[i]).Split(',');
+				for(int j = 0; j < items.Length; j++)
 				{
-					newTrainer.PlayerName = "Leader Viola";
-					newTrainer.PlayerImage = 0;
-					newTrainer.Team.Add(new Pokemon(species:283,level:10));
-				}
-				else if(enemiesGiven[i] == "1")
+					//If the item isn't empty, add it
+					if(!string.IsNullOrEmpty(items[j]))
+					{
+						newTrainer.AddItem(int.Parse(items[j]), 1, 0);
+					} //end if
+				} //end for		
+				newTrainer.EmptyTeam();
+				for(int j = 1; j < 7; j++)
 				{
-					newTrainer.PlayerName = "Leader Grant";
-					newTrainer.PlayerImage = 1;
-					newTrainer.Team.Add(new Pokemon(species:698,level:25));
-				}
+					string[] pokemon = DataContents.ExecuteSQL<string>("SELECT pokemon" + j + " FROM TRAINERS WHERE rowid=" + 
+						enemiesGiven[i]).Split(',');
+					if(pokemon.Length > 1)
+					{
+						Pokemon newPokemon = new Pokemon(species: int.Parse(pokemon[0]),level: int.Parse(pokemon[1]),
+							ability: int.Parse(pokemon[2]),item:  int.Parse(pokemon[3]));
+						List<int> moveSet = new List<int>();
+						for(int k = 4; k < pokemon.Length; k++)
+						{
+							moveSet.Add(DataContents.GetMoveID((pokemon[k])));
+						} //end for
+						newPokemon.ChangeMoves(moveSet.ToArray());
+						newTrainer.AddPokemon(newPokemon);
+					} //end if
+				} //end for
 				battlerList.Add(newTrainer);					
 			} //end for
 			GameManager.instance.InitializeBattle(int.Parse(enemiesGiven[0]), battlerList);
@@ -517,7 +535,7 @@ public class ButtonFunctions : MonoBehaviour
 		{
 			GameManager.instance.LogErrorMessage (e.ToString());
 		} //end catch
-	} //end BeginBattle
+	} //end BeginBattle(string battleData)
 
     /***************************************
      * Name: Persist

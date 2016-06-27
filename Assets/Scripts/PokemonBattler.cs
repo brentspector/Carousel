@@ -34,7 +34,8 @@ public class PokemonBattler
 	List<int> stages;		//Buffs and debuffs to the stats of the pokemon
 	List<int> effects;		//Attack effects this pokemon is under
 	bool hasSubstitute;		//Is there a substitute active for this pokemon
-	bool isMega;			//Is this Pokemon mega-evolved
+	bool isMega;			//Is this pokemon mega-evolved
+	bool justEntered;		//Has this pokemon just entered battle
 	Pokemon battler;		//The pokemon this object is representing
 	#endregion
 
@@ -1045,5 +1046,20 @@ public class PokemonBattler
 			isMega = value;
 		} //end set
 	} //end IsMega
+
+	/***************************************
+     * Name: JustEntered
+     ***************************************/
+	public bool JustEntered
+	{
+		get
+		{
+			return justEntered;
+		} //end get
+		set
+		{
+			justEntered = value;
+		} //end set
+	} //end JustEntered
 	#endregion
 } //end PokemonBattler class

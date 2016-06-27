@@ -385,6 +385,30 @@ public class CodeWarehouse : MonoBehaviour
             dbCommand.ExecuteNonQuery();
             dbCommand.Parameters.Clear();
         } //end for
+
+		//Load trainers
+		SystemManager sysm = new SystemManager();
+		sysm.GetContents(dataLocation + "trainers.txt");
+		dbCommand.CommandText = "DELETE FROM Trainers";
+		dbCommand.ExecuteNonQuery();
+		for (int i = 1; i < 14; i++)
+		{
+			dbCommand.CommandText = "INSERT INTO Trainers(name,battle,image,items,pokemon1,pokemon2,pokemon3,pokemon4,pokemon5,pokemon6) " +
+				"VALUES (@nm,@bt,@im,@it,@p1,@p2,@p3,@p4,@p5,@p6)";
+			dbCommand.Parameters.Add(new SqliteParameter("@nm",sysm.ReadINI<string>(i.ToString(),"Name")));
+			dbCommand.Parameters.Add(new SqliteParameter("@bt",sysm.ReadINI<int>(i.ToString(),"Battle")));
+			dbCommand.Parameters.Add(new SqliteParameter("@im",sysm.ReadINI<int>(i.ToString(),"Image")));
+			dbCommand.Parameters.Add(new SqliteParameter("@it",sysm.ReadINI<string>(i.ToString(),"Items")));
+			dbCommand.Parameters.Add(new SqliteParameter("@p1",sysm.ReadINI<string>(i.ToString(),"Pokemon1")));
+			dbCommand.Parameters.Add(new SqliteParameter("@p2",sysm.ReadINI<string>(i.ToString(),"Pokemon2")));
+			dbCommand.Parameters.Add(new SqliteParameter("@p3",sysm.ReadINI<string>(i.ToString(),"Pokemon3")));
+			dbCommand.Parameters.Add(new SqliteParameter("@p4",sysm.ReadINI<string>(i.ToString(),"Pokemon4")));
+			dbCommand.Parameters.Add(new SqliteParameter("@p5",sysm.ReadINI<string>(i.ToString(),"Pokemon5")));
+			dbCommand.Parameters.Add(new SqliteParameter("@p6",sysm.ReadINI<string>(i.ToString(),"Pokemon6")));
+			dbCommand.Prepare();
+			dbCommand.ExecuteNonQuery();
+			dbCommand.Parameters.Clear();
+		} //end for
      */
     #endregion
     #region LevelUpFinder

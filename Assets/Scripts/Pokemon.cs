@@ -82,7 +82,7 @@ public class Pokemon
      * Contructor for pokemon encounters
      ***************************************/
 	public Pokemon(int species = 0, int tID = 0, int level = 5, int item = 0, int ball = 0, 
-				   int oType = 6, int oWhere = 4, int ability = -1, int gender = -1, int form = 0,
+				   int oType = -1, int oWhere = -1, int ability = -1, int gender = -1, int form = 0,
 	               int nature = -1, int happy = 70, bool pokerus = false, bool shiny = false)
 	{
 		//Set data fields
@@ -226,6 +226,26 @@ public class Pokemon
             Ability = CheckAbility(ability) ? ability : 0;
         } //end else
 
+		//Set obtain type
+		if (oType > -1)
+		{
+			obtainType = oType;
+		} //end if
+		else
+		{
+			obtainType = (int)ObtainTypeEnum.COUNT - 1;
+		} //end else
+
+		//Set obtain from
+		if (oWhere > -1)
+		{
+			obtainFrom = oWhere;
+		} //end if
+		else
+		{
+			obtainFrom = (int)ObtainFromEnum.COUNT - 1;
+		} //end else
+
         //Give pokemon a random ID
         personalID = (uint)GameManager.instance.RandomInt (0,256);
         personalID |= (uint)GameManager.instance.RandomInt (0,256) << 8;
@@ -237,9 +257,7 @@ public class Pokemon
 		remainingEXP = CalculateRemainingEXP (currentLevel);
 		Item = item;
 		ballUsed = ball;
-		obtainType = oType;
 		obtainLevel = currentLevel;
-        obtainFrom = oWhere;
 		string formString = DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=" + natSpecies);
 		int formCount = formString.Split(',').Count();
 		formNumber = ExtensionMethods.WithinIntRange(form, 0, formCount);
@@ -755,6 +773,7 @@ public class Pokemon
                         firstMoves[j] = moveID;
                         ppReamaining[j] = DataContents.ExecuteSQL<int> 
                             ("SELECT totalPP FROM Moves WHERE rowid=" + moves[j]);
+						ppMax[j] = ppReamaining[j];
                     } //end if
                     else
                     {

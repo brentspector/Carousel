@@ -2730,9 +2730,7 @@ public class MainGameScene : MonoBehaviour
 				//Set the move type
 				moveScreen.FindChild("Move" + (i + 1)).gameObject.SetActive(true);
 				moveScreen.FindChild("Move" + (i + 1)).GetChild(0).GetComponent<Image>().sprite =
-					DataContents.typeSprites[Convert.ToInt32(Enum.Parse(typeof(Types),
-					DataContents.ExecuteSQL<string>("SELECT type FROM Moves WHERE rowid=" +
-					myPokemon.GetMove(i))))];
+					DataContents.typeSprites[DataContents.GetMoveIcon(myPokemon.GetMove(i))];
 
 				//Set the move name
 				moveScreen.FindChild("Move" + (i + 1)).GetChild(1).GetComponent<Text>().text =
@@ -2765,7 +2763,7 @@ public class MainGameScene : MonoBehaviour
 			                0);
 		selection.GetComponent<RectTransform>().sizeDelta = scale;
 
-		//Reposition to location of top choice, with 2 unit offset to center it
+		//Reposition to location of top choice
 		selection.transform.position = Camera.main.WorldToScreenPoint(currentMoveSlot.transform.position);
 
 		//Set the move category
@@ -2867,7 +2865,7 @@ public class MainGameScene : MonoBehaviour
 				summaryScreen.transform.GetChild(1).FindChild("CaughtDate").GetComponent<Text>().text =
 					pokemonChoice.ObtainTime.ToLongDateString() + " at " + pokemonChoice.ObtainTime.ToShortTimeString();
 				summaryScreen.transform.GetChild(1).FindChild("CaughtType").GetComponent<Text>().text =
-					((ObtainType)pokemonChoice.ObtainType).ToString() + " from " + ((ObtainFrom)pokemonChoice.ObtainFrom).
+					((ObtainTypeEnum)pokemonChoice.ObtainType).ToString() + " from " + ((ObtainFromEnum)pokemonChoice.ObtainFrom).
 					ToString();
 				summaryScreen.transform.GetChild(1).FindChild("CaughtLevel").GetComponent<Text>().text =
 					"Found at level " + pokemonChoice.ObtainLevel;
@@ -3155,7 +3153,7 @@ public class MainGameScene : MonoBehaviour
 
 	/***************************************
 	 * Name: ApplyConfirm
-	 * Appliees the confirm choice
+	 * Applies the confirm choice
 	 ***************************************/
 	public void ApplyConfirm(ConfirmChoice e)
 	{

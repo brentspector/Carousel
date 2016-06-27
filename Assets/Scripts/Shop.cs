@@ -216,55 +216,39 @@ public class Shop
 			case 0:
 				return tier1Pokemon.Concat(tier2Pokemon).Concat(tier3Pokemon).Concat(tier4Pokemon).Concat(tier5Pokemon).Concat(heldItemStock).Concat(megaStoneStock).
 					Concat(evolutionItemStock).Concat(medicineStock).Concat(TMStock).Concat(battleItemStock).Concat(keyItemStock).ToList();
-				break;
 			case 1:
 				return tier1Pokemon;
-				break;
 			case 2:
 				return tier2Pokemon;
-				break;
 			case 3:
 				return tier3Pokemon;
-				break;
 			case 4:
 				return tier4Pokemon;
-				break;
 			case 5:
 				return tier5Pokemon;
-				break;
 			//All Pokemon
 			case 6:
 				return tier1Pokemon.Concat(tier2Pokemon).Concat(tier3Pokemon).Concat(tier4Pokemon).Concat(tier5Pokemon).ToList();
-				break;
 			case 7:
 				return heldItemStock;
-				break;
 			case 8:
 				return megaStoneStock;
-				break;
 			case 9:
 				return evolutionItemStock;
-				break;
 			case 10:
 				return medicineStock;
-				break;
 			case 11:
 				return TMStock;
-				break;
 			case 12:
 				return berryStock;
-				break;
 			case 13:
 				return battleItemStock;
-				break;
 			case 14:
 				return keyItemStock;
-				break;
 			//All items
 			case 15:
 				return heldItemStock.Concat(megaStoneStock).Concat(evolutionItemStock).Concat(medicineStock).
 					Concat(TMStock).Concat(battleItemStock).Concat(keyItemStock).ToList();
-				break;
 		} //end switch
 
 		//If no shop stock found, return a blank list
@@ -282,26 +266,19 @@ public class Shop
 			//All
 			case 0:
 				return tier1Cost.Concat(tier2Cost).Concat(tier3Cost).Concat(tier4Cost).Concat(tier5Cost).ToList();
-				break;
 			case 1:
 				return tier1Cost;
-				break;
 			case 2:
 				return tier2Cost;
-				break;
 			case 3:
 				return tier3Cost;
-				break;
 			case 4:
 				return tier4Cost;
-				break;
 			case 5:
 				return tier5Cost;
-				break;
 			//All Pokemon
 			case 6:
-				return tier1Cost.Concat(tier2Cost).Concat(tier3Cost).Concat(tier4Cost).Concat(tier5Cost).ToList();
-				break;			
+				return tier1Cost.Concat(tier2Cost).Concat(tier3Cost).Concat(tier4Cost).Concat(tier5Cost).ToList();		
 		} //end switch
 
 		//If no shop stock found, return a blank list

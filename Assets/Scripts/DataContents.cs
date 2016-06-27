@@ -38,6 +38,7 @@ public static class DataContents : System.Object
 	public static Sprite[] trainerBacks;			//Sprites for back of trainers for battle scene
 	public static Sprite[] versusImages;			//Sprites for Versus images
 	public static Sprite[] leaderSprites;			//Sprites for leaders in battle
+	public static Sprite[] attackSprites;			//Sprites for attack backgrounds
 
     //Shorthand for main data path
     static string dataLocation;                     
@@ -112,7 +113,8 @@ public static class DataContents : System.Object
         trainerCardSprites  = Resources.LoadAll<Sprite> ("Sprites/Menus/FullTrainers");
 		trainerBacks        = Resources.LoadAll<Sprite>("Sprites/Battle/TrainerBack");
 		versusImages 		= Resources.LoadAll<Sprite>("Sprites/Battle/Leaders");
-		leaderSprites = Resources.LoadAll<Sprite>("Sprites/Battle/FullLeaders");
+		leaderSprites 		= Resources.LoadAll<Sprite>("Sprites/Battle/FullLeaders");
+		attackSprites 		= Resources.LoadAll<Sprite>("Sprites/Battle/battleFightButtons");
 
         return true;
     } //end InitDataContents()
@@ -250,6 +252,17 @@ public static class DataContents : System.Object
             return moveName;
         } //end else
     } //end GetMoveGameName(int moveNumber)
+
+	/***************************************
+     * Name: GetMoveIcon
+     * Returns numeric sprite location for 
+     * move given
+     ***************************************/
+	public static int GetMoveIcon(int moveNumber)
+	{		
+		return moveNumber < 0 ? -1 : Convert.ToInt32(Enum.Parse(typeof(Types), 
+			DataContents.ExecuteSQL<string>("SELECT type FROM Moves WHERE rowid=" + moveNumber)));
+	} //end GetMoveIcon(int moveNumber)
 
     /***************************************
      * Name: GetItemID
@@ -1096,15 +1109,15 @@ public enum Categories
 } //end Categories enum
 
 /***************************************************************************************** 
- * Enum:    ObtainType
+ * Enum:    ObtainTypeEnum
  * Summary: Lists and organizes obtain methods for integer reference
  *****************************************************************************************/ 
 [Serializable]
 /***************************************
- * Name: ObtainType
+ * Name: ObtainTypeEnum
  * List of methods pokemon can be obtained
  ***************************************/
-public enum ObtainType
+public enum ObtainTypeEnum
 {
     Bought  = 0,
     Traded  = 1,
@@ -1114,18 +1127,18 @@ public enum ObtainType
     Function= 5,
     Unknown = 6,
     COUNT   = 7
-} //end ObtainType enum
+} //end ObtainTypeEnum enum
 
 /***************************************************************************************** 
- * Enum:    ObtainFrom
+ * Enum:    ObtainFromEnum
  * Summary: Lists and organizes obtain locations for integer reference
  *****************************************************************************************/ 
 [Serializable]
 /***************************************
- * Name: ObtainFrom
+ * Name: ObtainFromEnum
  * List of locations pokemon can be obtained
  ***************************************/
-public enum ObtainFrom
+public enum ObtainFromEnum
 {
     Shop         = 0,
     MysteryEvent = 1,
@@ -1133,7 +1146,7 @@ public enum ObtainFrom
     Debug        = 3,
     UnknownSource= 4,
     COUNT        = 5
-} //end ObtainFrom enum
+} //end ObtainFromEnum enum
 
 /***************************************************************************************** 
  * Enum:    LastingEffects
