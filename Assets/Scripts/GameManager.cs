@@ -158,8 +158,8 @@ public class GameManager : MonoBehaviour
 				confirmDisplayed = sysm.ManageConfirm();
 			} //end else if confirmDisplayed
 
-			//Don't update game while a scene is loading
-			else if(loadingLevel)
+			//Don't update game while a scene is loading or an animation is playing
+			else if(loadingLevel || anim.IsProcessing())
 			{
 				return;
 			} //end else if loadingLevel
@@ -368,7 +368,18 @@ public class GameManager : MonoBehaviour
 	public void ChangePocket(int requested)
 	{
 		sysm.PlayerTrainer.ChangePocket(requested);
-		ChangeCheckpoint(1);
+		if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Inventory")
+		{
+			ChangeCheckpoint(1);
+		} //end if
+		else if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Battle")
+		{
+			StartCoroutine(battle.FadeInBagPocket());
+		} //end else if
+		else if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainGame")
+		{
+			StartCoroutine(mainGame.FadeInBagPocket());
+		} //end else if
 	} //end ChangePocket(int requested)
 
 	/***************************************

@@ -19,6 +19,11 @@ public class BattleScene : MonoBehaviour
 	int attackInt;					//What choice is being selected on attackSelection
 	int battleType;					//Singles, Doubles, Triples, or other type
 	int currentAttack;				//What move is currently being used
+	int teamSlot;					//The slot currently highlighted
+	int previousTeamSlot;       	//The slot last highlighted
+	int inventorySpot;				//What slot in pocket the player is on
+	int topShown;					//The top slot displayed in the inventory
+	int bottomShown;				//The bottom slot displayed in the inventory
 	Field battleField;				//The active battle field
 	Pokemon currentAttacker;		//Who is currently attacking
 	Pokemon lastAttacker;			//Who was the last pokemon to attack
@@ -29,10 +34,17 @@ public class BattleScene : MonoBehaviour
 	List<GameObject> trainerStands; //List of places the trainer, pokemon, and base images are
 	List<GameObject> partyLineups;	//List of parties for trainers
 	List<Trainer> combatants;		//Lists the trainers participating in the battle
+	Image bagBack;					//Background bag image
+	Image bagSprite;				//Item currently highlighted
+	Text bagDescription;			//The item's description
 	Text messageBox;				//Commentary section for the battle
 	GameObject attackSelection;		//Contains all attacks player can choose for the active pokemon
 	GameObject commandChoice;		//Contains all the options the player can conduct in battle
 	GameObject selectedChoice;		//The command or selection currently chosen
+	GameObject playerTeam;			//Team screen for using an item on
+	GameObject currentTeamSlot; 	//The object that is currently highlighted on the team
+	GameObject playerBag;			//Screen of the player's bag
+	GameObject viewport;			//The items shown to the player
 	bool processing = false;		//Whether a function is already processing something
 	#endregion
 
@@ -69,6 +81,12 @@ public class BattleScene : MonoBehaviour
 			attackSelection = GameObject.Find("AttackSelection");
 			commandChoice = GameObject.Find("CommandChoice");
 			selectedChoice = commandChoice.transform.GetChild(0).gameObject;
+			playerTeam = GameObject.Find("Team").gameObject;
+			playerBag = GameObject.Find("PlayerBag");
+			viewport = playerBag.transform.FindChild("InventoryRegion").gameObject;
+			bagBack = playerBag.transform.FindChild("BagBack").GetComponent<Image>();
+			bagSprite = playerBag.transform.FindChild("BagSprite").GetComponent<Image>();
+			bagDescription = playerBag.transform.FindChild("BagDescription").GetComponent<Text>();
 
 			//Initialize effects lists
 			for (int i = 0; i < combatants.Count; i++)
@@ -251,6 +269,108 @@ public class BattleScene : MonoBehaviour
 				} //end else 
 			} //end for
 
+			//Fill in all team data
+			for (int i = 0; i < GameManager.instance.GetTrainer().Team.Count; i++)
+			{
+				//Activate slots
+				playerTeam.transform.FindChild("Background").GetChild(i).gameObject.SetActive(true);
+				playerTeam.transform.FindChild("Pokemon" + (i + 1)).gameObject.SetActive(true);
+
+				//If on first slot
+				if (i == 0)
+				{
+					//If pokemon in first slot is fainted
+					if (GameManager.instance.GetTrainer().Team[i].Status == 1)
+					{
+						playerTeam.transform.FindChild("Background").GetChild(i).
+						GetComponent<Image>().sprite = Resources.Load<Sprite>
+							("Sprites/Menus/partyPanelRoundSelFnt");
+					} //end if
+					//Otherwise give regular slot image
+					else
+					{
+						playerTeam.transform.FindChild("Background").GetChild(i).
+						GetComponent<Image>().sprite = Resources.Load<Sprite>
+							("Sprites/Menus/partyPanelRoundSel");
+					} //end else
+
+					//Set party ball to selected
+					playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("PartyBall").
+					GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBallSel");
+				} //end if
+				//Fill in any other slot
+				else
+				{
+					//If pokemon in slot is fainted
+					if (GameManager.instance.GetTrainer().Team[i].Status == 1)
+					{
+						playerTeam.transform.FindChild("Background").GetChild(i).GetComponent<Image>().sprite =
+							Resources.Load<Sprite>("Sprites/Menus/partyPanelRectFnt");
+					} //end if
+					//Otherwise give regular slot image
+					else
+					{
+						playerTeam.transform.FindChild("Background").GetChild(i).GetComponent<Image>().sprite =
+							Resources.Load<Sprite>("Sprites/Menus/partyPanelRect");
+					} //end else
+
+					//Set party ball to unselected
+					playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("PartyBall").
+					GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBall");
+				} //end else
+
+				//Set status
+				SetStatusIcon(playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Status").
+					GetComponent<Image>(), GameManager.instance.GetTrainer().Team[i]);
+
+				//Set sprite
+				playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Sprite").GetComponent<Image>()
+					.sprite = GetCorrectIcon(GameManager.instance.GetTrainer().Team[i]);
+
+				//Set nickname
+				playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Nickname").GetComponent<Text>().text =
+					GameManager.instance.GetTrainer().Team[i].Nickname;
+
+				//Set item
+				if (GameManager.instance.GetTrainer().Team[i].Item != 0)
+				{
+					playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Item").GetComponent<Image>().color =
+						Color.white;						
+				} //end if
+				else
+				{
+					playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Item").GetComponent<Image>().color =
+						Color.clear;	
+				} //end else 
+
+				//Set remaining HP
+				playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("RemainingHP").GetComponent<RectTransform>().
+				localScale = new Vector3((float)GameManager.instance.GetTrainer().Team[i].CurrentHP / (float)GameManager.
+					instance.GetTrainer().Team[i].TotalHP, 1f, 1f);
+
+				//Set level
+				playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Level").GetComponent<Text>().text = "Lv." +
+					GameManager.instance.GetTrainer().Team[i].CurrentLevel.ToString();
+
+				//Set HP text
+				playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("CurrentHP").GetComponent<Text>().text =
+					GameManager.instance.GetTrainer().Team[i].CurrentHP.ToString() + "/" + GameManager.instance.GetTrainer().
+					Team[i].TotalHP.ToString();
+			} //end for
+
+			//Deactivate any empty party spots
+			for (int i = 5; i > GameManager.instance.GetTrainer().Team.Count - 1; i--)
+			{
+				playerTeam.transform.FindChild("Background").GetChild(i).gameObject.SetActive(false);
+				playerTeam.transform.FindChild("Pokemon" + (i + 1)).gameObject.SetActive(false);
+			} //end for
+
+			//Turn off team
+			playerTeam.SetActive(false);
+
+			//Turn off bag
+			playerBag.SetActive(false);
+
 			//Move to next checkpoint
 			GameManager.instance.OpenScene(2);
 		} //end else if
@@ -273,7 +393,7 @@ public class BattleScene : MonoBehaviour
 			//Check field effect, abilities, and items
 			StartCoroutine(ResolveFieldEntrance());
 		} //end else if
-		else if(checkpoint == 4)
+		else if (checkpoint == 4)
 		{
 			//Turn on command choice screen
 			commandChoice.SetActive(true);
@@ -341,8 +461,170 @@ public class BattleScene : MonoBehaviour
 			 * End of Battle
 			 * -Give badge if needed
 			 * -Give points
+			 * -Give item
 			 */
 
+		} //end else if
+		else if (checkpoint == 5)
+		{
+			//Get player input
+			GetInput();
+		} //end else if
+		else if (checkpoint == 6)
+		{
+			//Get player input
+			GetInput();
+
+			//Change background
+			int currentPocket = GameManager.instance.GetTrainer().GetCurrentBagPocket();
+			bagBack.sprite = Resources.Load<Sprite>("Sprites/Menus/bag" + currentPocket);
+
+			//Fill in slots
+			for (int i = 0; i < 10; i++)
+			{
+				if (GameManager.instance.GetTrainer().SlotCount() - 1 < topShown + i)
+				{
+					viewport.transform.GetChild(i).GetComponent<Text>().text = "";
+				} //end if
+				else
+				{
+					if (topShown + i == inventorySpot)
+					{
+						viewport.transform.GetChild(i).GetComponent<Text>().text = "<color=red>" +
+							GameManager.instance.GetTrainer().GetItem(topShown + i)[1] + " - " +
+							DataContents.GetItemGameName(GameManager.instance.GetTrainer().GetItem(topShown + i)[0]) + "</color>";
+					} //end if
+					else
+					{
+						viewport.transform.GetChild(i).GetComponent<Text>().text = GameManager.instance.GetTrainer().GetItem(topShown + i)[1]
+							+ " - " + DataContents.GetItemGameName(GameManager.instance.GetTrainer().GetItem(topShown + i)[0]);
+					} //end else
+				} //end else
+			} //end for
+
+			//Fill in sprite and description
+			if (GameManager.instance.GetTrainer().SlotCount() != 0)
+			{
+				List<int> item = GameManager.instance.GetTrainer().GetItem(inventorySpot);
+				bagSprite.color = Color.white;
+				bagSprite.sprite = Resources.Load<Sprite>("Sprites/Icons/item" + item[0].ToString("000"));
+				bagDescription.text = DataContents.ExecuteSQL<string>("SELECT description FROM Items WHERE rowid=" + item[0]);
+			} //end if
+			else
+			{
+				bagSprite.color = Color.clear;
+				bagDescription.text = "";
+			} //end else
+		} //end else if
+		else if (checkpoint == 7)
+		{
+			//Change background sprites based on player input
+			if (previousTeamSlot != teamSlot)
+			{
+				//Deactivate panel
+				if (previousTeamSlot == 1)
+				{
+					//Adjust if pokemon is fainted
+					if (GameManager.instance.GetTrainer().Team[previousTeamSlot - 1].Status != 1)
+					{
+						playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot - 1).GetComponent<Image>().
+						sprite = Resources.Load<Sprite>("Sprites/Menus/partypanelRound");
+					} //end if
+					else
+					{
+						playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot - 1).GetComponent<Image>().
+						sprite = Resources.Load<Sprite>("Sprites/Menus/partypanelRoundFnt");
+					} //end else
+
+					//Deactivate party ball
+					playerTeam.transform.FindChild("Pokemon" + previousTeamSlot).FindChild("PartyBall").
+					GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBall");
+				} //end if
+
+				//As long as previous choice was greater than 0 (no buttons)
+				else if (previousTeamSlot > 0)
+				{
+					//Adjust if pokemon is fainted
+					if (GameManager.instance.GetTrainer().Team[previousTeamSlot - 1].Status != 1)
+					{
+						playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot - 1).GetComponent<Image>().
+						sprite = Resources.Load<Sprite>("Sprites/Menus/partypanelRect");
+					} //end if
+					else
+					{
+						playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot - 1).GetComponent<Image>().
+						sprite = Resources.Load<Sprite>("Sprites/Menus/partypanelRectFnt");
+					} //end else
+
+					//Deactivate party ball
+					playerTeam.transform.FindChild("Pokemon" + previousTeamSlot).FindChild("PartyBall").
+					GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBall");
+				} //end else if
+
+				//Deactivate buttons
+				playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Button>().interactable = false;
+				playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Button>().interactable = false;
+				playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Image>().color = Color.gray;
+				playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Image>().color = Color.gray;
+
+				//Activate panel
+				//First slot selected
+				if (teamSlot == 1)
+				{
+					//Adjust if pokemon is fainted
+					if (GameManager.instance.GetTrainer().Team[teamSlot - 1].Status != 1)
+					{
+						playerTeam.transform.FindChild("Background").GetChild(teamSlot - 1).GetComponent<Image>().
+						sprite = Resources.Load<Sprite>("Sprites/Menus/partyPanelRoundSel");
+					} //end if
+					else
+					{
+						playerTeam.transform.FindChild("Background").GetChild(teamSlot - 1).GetComponent<Image>().
+						sprite = Resources.Load<Sprite>("Sprites/Menus/partyPanelRoundSelFnt");
+					} //end else
+
+					//Activate party ball
+					playerTeam.transform.FindChild("Pokemon" + teamSlot).FindChild("PartyBall").
+					GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBallSel");
+				} //end if
+				//PC Button selected
+				else if (teamSlot == -1)
+				{
+					playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Button>().interactable = true;
+					playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Image>().color = Color.gray * 2;
+				} //end else if
+				//Cancel Button selected
+				else if (teamSlot == 0)
+				{
+					playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Button>().interactable = true;
+					playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Image>().color = Color.gray * 2;
+				} //end else if
+				//Any other slot
+				else
+				{
+					//Adjust if pokemon is fainted
+					if (GameManager.instance.GetTrainer().Team[teamSlot - 1].Status != 1)
+					{
+						playerTeam.transform.FindChild("Background").GetChild(teamSlot - 1).GetComponent<Image>().
+						sprite = Resources.Load<Sprite>("Sprites/Menus/partyPanelRectSel");
+					} //end if
+					else
+					{
+						playerTeam.transform.FindChild("Background").GetChild(teamSlot - 1).GetComponent<Image>().
+						sprite = Resources.Load<Sprite>("Sprites/Menus/partyPanelRectSelFnt");
+					} //end else
+
+					//Activate party ball
+					playerTeam.transform.FindChild("Pokemon" + teamSlot).FindChild("PartyBall").
+					GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBallSel");
+				} //end else
+
+				//Update previous slot
+				previousTeamSlot = teamSlot;
+			} //end if
+
+			//Get player input
+			GetInput();
 		} //end else if
 	} //end RunBattle
 
@@ -377,6 +659,44 @@ public class BattleScene : MonoBehaviour
 				//Update selection reference
 				selectedChoice = commandChoice.transform.GetChild(commandInt).gameObject;
 			} //end if
+
+			//Attack selection
+			else if (checkpoint == 5)
+			{
+				//Change current sprite to non selected
+				attackSelection.transform.GetChild(attackInt).GetComponent<Image>().sprite = DataContents.attackNonSelSprites[
+					Array.IndexOf(DataContents.attackSelSprites, attackSelection.transform.GetChild(attackInt).
+						GetComponent<Image>().sprite)];
+
+				//Change selection
+				attackInt--;
+				if (attackInt < 0)
+				{
+					attackInt = battlers[0].BattlerPokemon.GetMoveCount() - 1;
+				} //end if
+
+				//Change new sprite to selected
+				attackSelection.transform.GetChild(attackInt).GetComponent<Image>().sprite = DataContents.attackSelSprites[
+					Array.IndexOf(DataContents.attackNonSelSprites, attackSelection.transform.GetChild(attackInt).
+						GetComponent<Image>().sprite)];
+
+				//Update PP for new selection
+				attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
+					GetMovePP(attackInt) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(attackInt);
+				
+				//Update selection reference
+				selectedChoice = attackSelection.transform.GetChild(attackInt).gameObject;
+			} //end else if
+
+			//Inventory selection
+			else if (checkpoint == 6)
+			{
+				GameManager.instance.GetTrainer().PreviousPocket();
+				inventorySpot = 0;
+				bottomShown = 9;
+				topShown = 0;
+				GameManager.instance.FadeInAnimation(6);
+			} //end else if
 		} //end if Left Arrow
 
 		/*********************************************
@@ -403,6 +723,44 @@ public class BattleScene : MonoBehaviour
 				//Update selection reference
 				selectedChoice = commandChoice.transform.GetChild(commandInt).gameObject;
 			} //end if
+
+			//Attack selection
+			else if (checkpoint == 5)
+			{
+				//Change current sprite to non selected
+				attackSelection.transform.GetChild(attackInt).GetComponent<Image>().sprite = DataContents.attackNonSelSprites[
+					Array.IndexOf(DataContents.attackSelSprites, attackSelection.transform.GetChild(attackInt).
+						GetComponent<Image>().sprite)];
+
+				//Change selection
+				attackInt++;
+				if (attackInt > battlers[0].BattlerPokemon.GetMoveCount()-1)
+				{
+					attackInt = 0;
+				} //end if
+
+				//Change new sprite to selected
+				attackSelection.transform.GetChild(attackInt).GetComponent<Image>().sprite = DataContents.attackSelSprites[
+					Array.IndexOf(DataContents.attackNonSelSprites, attackSelection.transform.GetChild(attackInt).
+						GetComponent<Image>().sprite)];
+
+				//Update PP for new selection
+				attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
+					GetMovePP(attackInt) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(attackInt);
+				
+				//Update selection reference
+				selectedChoice = attackSelection.transform.GetChild(attackInt).gameObject;
+			} //end else if
+
+			//Inventory selection
+			else if (checkpoint == 6)
+			{
+				GameManager.instance.GetTrainer().NextPocket();
+				inventorySpot = 0;
+				bottomShown = 9;
+				topShown = 0;
+				GameManager.instance.FadeInAnimation(6);
+			} //end else if
 		} //end else if Right Arrow
 
 		/*********************************************
@@ -429,6 +787,45 @@ public class BattleScene : MonoBehaviour
 				//Update selection reference
 				selectedChoice = commandChoice.transform.GetChild(commandInt).gameObject;
 			} //end if
+
+			//Attack selection
+			else if (checkpoint == 5)
+			{
+				//Change current sprite to non selected
+				attackSelection.transform.GetChild(attackInt).GetComponent<Image>().sprite = DataContents.attackNonSelSprites[
+					Array.IndexOf(DataContents.attackSelSprites, attackSelection.transform.GetChild(attackInt).
+						GetComponent<Image>().sprite)];
+
+				//Change selection
+				attackInt -= 2;
+				if (attackInt < 0)
+				{
+					attackInt += 2;
+				} //end if
+
+				//Change new sprite to selected
+				attackSelection.transform.GetChild(attackInt).GetComponent<Image>().sprite = DataContents.attackSelSprites[
+					Array.IndexOf(DataContents.attackNonSelSprites, attackSelection.transform.GetChild(attackInt).
+						GetComponent<Image>().sprite)];
+
+				//Update PP for new selection
+				attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
+					GetMovePP(attackInt) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(attackInt);
+				
+				//Update selection reference
+				selectedChoice = attackSelection.transform.GetChild(attackInt).gameObject;
+			} //end else if
+
+			//Inventory selection
+			else if (checkpoint == 6)
+			{
+				inventorySpot = ExtensionMethods.BindToInt(inventorySpot - 1, 0);
+				if (inventorySpot < topShown)
+				{
+					topShown = inventorySpot;
+					bottomShown--;
+				} //end if
+			} //end else if
 		} //end else if Up Arrow
 
 		/*********************************************
@@ -455,6 +852,45 @@ public class BattleScene : MonoBehaviour
 				//Update selection reference
 				selectedChoice = commandChoice.transform.GetChild(commandInt).gameObject;
 			} //end if
+
+			//Attack selection
+			else if (checkpoint == 5)
+			{
+				//Change current sprite to non selected
+				attackSelection.transform.GetChild(attackInt).GetComponent<Image>().sprite = DataContents.attackNonSelSprites[
+					Array.IndexOf(DataContents.attackSelSprites, attackSelection.transform.GetChild(attackInt).
+						GetComponent<Image>().sprite)];
+
+				//Change selection
+				attackInt += 2;
+				if (attackInt > battlers[0].BattlerPokemon.GetMoveCount() - 1)
+				{
+					attackInt -= 2;
+				} //end if
+
+				//Change new sprite to selected
+				attackSelection.transform.GetChild(attackInt).GetComponent<Image>().sprite = DataContents.attackSelSprites[
+					Array.IndexOf(DataContents.attackNonSelSprites, attackSelection.transform.GetChild(attackInt).
+						GetComponent<Image>().sprite)];
+
+				//Update PP for new selection
+				attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
+					GetMovePP(attackInt) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(attackInt);
+				
+				//Update selection reference
+				selectedChoice = attackSelection.transform.GetChild(attackInt).gameObject;
+			} //end else if
+
+			//Inventory selection
+			else if (checkpoint == 6)
+			{
+				inventorySpot = ExtensionMethods.CapAtInt(inventorySpot + 1, GameManager.instance.GetTrainer().SlotCount() - 1);
+				if (inventorySpot > bottomShown)
+				{
+					bottomShown = inventorySpot;
+					topShown++;
+				} //end if
+			} //end else if
 		} //end else if Down Arrow
 
 		/*********************************************
@@ -482,6 +918,35 @@ public class BattleScene : MonoBehaviour
 					selectedChoice = commandChoice.transform.GetChild(commandInt).gameObject;
 				} //end if
 			} //end if
+
+			//Attack selection
+			else if (checkpoint == 5 && Input.mousePosition.x < Camera.main.WorldToScreenPoint(selectedChoice.transform.position).x -
+				selectedChoice.GetComponent<RectTransform>().rect.width/2)
+			{
+				//Move left only if on an odd choice
+				if (attackInt%2 == 1)
+				{
+					//Change current sprite to non selected
+					attackSelection.transform.GetChild(attackInt).GetComponent<Image>().sprite = DataContents.attackNonSelSprites[
+						Array.IndexOf(DataContents.attackSelSprites, attackSelection.transform.GetChild(attackInt).
+							GetComponent<Image>().sprite)];
+
+					//Change selection
+					attackInt--;
+
+					//Change new sprite to selected
+					attackSelection.transform.GetChild(attackInt).GetComponent<Image>().sprite = DataContents.attackSelSprites[
+						Array.IndexOf(DataContents.attackNonSelSprites, attackSelection.transform.GetChild(attackInt).
+							GetComponent<Image>().sprite)];
+
+					//Update PP for new selection
+					attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
+						GetMovePP(attackInt) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(attackInt);
+					
+					//Update selection reference
+					selectedChoice = attackSelection.transform.GetChild(attackInt).gameObject;
+				} //end if
+			} //end else if
 		} //end else if Mouse Moves Left
 
 		/*********************************************
@@ -509,6 +974,35 @@ public class BattleScene : MonoBehaviour
 					selectedChoice = commandChoice.transform.GetChild(commandInt).gameObject;
 				} //end if
 			} //end if
+
+			//Attack selection
+			else if (checkpoint == 5 && Input.mousePosition.x > Camera.main.WorldToScreenPoint(selectedChoice.transform.position).x +
+				selectedChoice.GetComponent<RectTransform>().rect.width/2)
+			{
+				//Move right only if on an even choice
+				if (attackInt%2 == 0 && attackInt < battlers[0].BattlerPokemon.GetMoveCount() - 1)
+				{
+					//Change current sprite to non selected
+					attackSelection.transform.GetChild(attackInt).GetComponent<Image>().sprite = DataContents.attackNonSelSprites[
+						Array.IndexOf(DataContents.attackSelSprites, attackSelection.transform.GetChild(attackInt).
+							GetComponent<Image>().sprite)];
+
+					//Change selection
+					attackInt++;
+
+					//Change new sprite to selected
+					attackSelection.transform.GetChild(attackInt).GetComponent<Image>().sprite = DataContents.attackSelSprites[
+						Array.IndexOf(DataContents.attackNonSelSprites, attackSelection.transform.GetChild(attackInt).
+							GetComponent<Image>().sprite)];
+
+					//Update PP for new selection
+					attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
+						GetMovePP(attackInt) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(attackInt);
+					
+					//Update selection reference
+					selectedChoice = attackSelection.transform.GetChild(attackInt).gameObject;
+				} //end if
+			} //end else if
 		} //end else if Mouse Moves Right
 
 		/*********************************************
@@ -518,7 +1012,7 @@ public class BattleScene : MonoBehaviour
 		{
 			//Command choice
 			if (checkpoint == 4 && Input.mousePosition.y > Camera.main.WorldToScreenPoint(selectedChoice.transform.position).y +
-				selectedChoice.GetComponent<RectTransform>().rect.height/2)
+			    selectedChoice.GetComponent<RectTransform>().rect.height / 2)
 			{
 				//Move up only if on a higher child (lower in game)
 				if (commandInt > 1)
@@ -527,7 +1021,7 @@ public class BattleScene : MonoBehaviour
 					commandChoice.transform.GetChild(commandInt).GetChild(0).GetComponent<Text>().color = Color.white;
 
 					//Change selection
-					commandInt-=2;
+					commandInt -= 2;
 
 					//Set new selection font to black
 					commandChoice.transform.GetChild(commandInt).GetChild(0).GetComponent<Text>().color = Color.black;
@@ -536,6 +1030,35 @@ public class BattleScene : MonoBehaviour
 					selectedChoice = commandChoice.transform.GetChild(commandInt).gameObject;
 				} //end if
 			} //end if
+
+			//Attack selection
+			else if (checkpoint == 5 && Input.mousePosition.y > Camera.main.WorldToScreenPoint(selectedChoice.transform.position).y +
+			         selectedChoice.GetComponent<RectTransform>().rect.height / 2)
+			{
+				//Move up only on a higher child (lower in game)
+				if (attackInt > 1)
+				{
+					//Change current sprite to non selected
+					attackSelection.transform.GetChild(attackInt).GetComponent<Image>().sprite = DataContents.attackNonSelSprites[
+						Array.IndexOf(DataContents.attackSelSprites, attackSelection.transform.GetChild(attackInt).
+							GetComponent<Image>().sprite)];
+
+					//Change selection
+					attackInt -= 2;
+
+					//Change new sprite to selected
+					attackSelection.transform.GetChild(attackInt).GetComponent<Image>().sprite = DataContents.attackSelSprites[
+						Array.IndexOf(DataContents.attackNonSelSprites, attackSelection.transform.GetChild(attackInt).
+							GetComponent<Image>().sprite)];
+
+					//Update PP for new selection
+					attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
+						GetMovePP(attackInt) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(attackInt);
+					
+					//Update selection reference
+					selectedChoice = attackSelection.transform.GetChild(attackInt).gameObject;
+				} //end if
+			} //end else if
 		} //end else if Mouse Moves Up
 
 		/*********************************************
@@ -563,6 +1086,35 @@ public class BattleScene : MonoBehaviour
 					selectedChoice = commandChoice.transform.GetChild(commandInt).gameObject;
 				} //end if
 			} //end if
+
+			//Attack selection
+			else if (checkpoint == 5 && Input.mousePosition.y < Camera.main.WorldToScreenPoint(selectedChoice.transform.position).y -
+				selectedChoice.GetComponent<RectTransform>().rect.height/2)
+			{
+				//Move down only on a lower child (higher in game)
+				if (attackInt < 2 && attackInt + 2 < battlers[0].BattlerPokemon.GetMoveCount())
+				{
+					//Change current sprite to non selected
+					attackSelection.transform.GetChild(attackInt).GetComponent<Image>().sprite = DataContents.attackNonSelSprites[
+						Array.IndexOf(DataContents.attackSelSprites, attackSelection.transform.GetChild(attackInt).
+							GetComponent<Image>().sprite)];
+
+					//Change selection
+					attackInt += 2;
+
+					//Change new sprite to selected
+					attackSelection.transform.GetChild(attackInt).GetComponent<Image>().sprite = DataContents.attackSelSprites[
+						Array.IndexOf(DataContents.attackNonSelSprites, attackSelection.transform.GetChild(attackInt).
+							GetComponent<Image>().sprite)];
+
+					//Update PP for new selection
+					attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
+						GetMovePP(attackInt) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(attackInt);
+					
+					//Update selection reference
+					selectedChoice = attackSelection.transform.GetChild(attackInt).gameObject;
+				} //end if
+			} //end else if
 		} //end else if Mouse Moves Down
 
 		/*********************************************
@@ -570,7 +1122,16 @@ public class BattleScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetAxis("Mouse ScrollWheel") > 0)
 		{
-
+			//Inventory selection
+			if (checkpoint == 6)
+			{
+				inventorySpot = ExtensionMethods.BindToInt(inventorySpot - 1, 0);
+				if (inventorySpot < topShown)
+				{
+					topShown = inventorySpot;
+					bottomShown--;
+				} //end if
+			} //end if
 		} //end else if Mouse Wheel Up
 
 		/*********************************************
@@ -578,7 +1139,16 @@ public class BattleScene : MonoBehaviour
 		**********************************************/
 		else if (Input.GetAxis("Mouse ScrollWheel") < 0)
 		{
-
+			//Inventory selection
+			if (checkpoint == 6)
+			{
+				inventorySpot = ExtensionMethods.CapAtInt(inventorySpot + 1, GameManager.instance.GetTrainer().SlotCount() - 1);
+				if (inventorySpot > bottomShown)
+				{
+					bottomShown = inventorySpot;
+					topShown++;
+				} //end if
+			} //end if
 		} //end else if Mouse Wheel Down
 
 		/*********************************************
@@ -617,8 +1187,8 @@ public class BattleScene : MonoBehaviour
 							if (attackType != -1)
 							{
 								attackSelection.transform.GetChild(i).gameObject.SetActive(true);
-								attackSelection.transform.GetChild(i).GetComponent<Image>().sprite = DataContents.attackSprites[
-									2 * attackType];
+								attackSelection.transform.GetChild(i).GetComponent<Image>().sprite = DataContents.attackNonSelSprites[
+									attackType];
 								attackSelection.transform.GetChild(i).GetChild(0).GetComponent<Text>().text = 
 									DataContents.GetMoveGameName(battlers[0].BattlerPokemon.GetMove(i));
 							} //end if
@@ -627,16 +1197,31 @@ public class BattleScene : MonoBehaviour
 								attackSelection.transform.GetChild(i).gameObject.SetActive(false);
 							} //end else
 						} //end for
-						attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP " + battlers[0].BattlerPokemon.
+						attackSelection.transform.GetChild(attackInt).GetComponent<Image>().sprite = DataContents.attackSelSprites[
+							Array.IndexOf(DataContents.attackNonSelSprites, attackSelection.transform.GetChild(attackInt).
+								GetComponent<Image>().sprite)];
+						attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
 							GetMovePP(attackInt) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(attackInt);
+						selectedChoice = attackSelection.transform.GetChild(attackInt).gameObject;
 						checkpoint = 5;
 						break;
-					//Pokemon
+					//Bag
 					case 1:
+						playerBag.SetActive(true);
+						int currentPocket = GameManager.instance.GetTrainer().GetCurrentBagPocket();
+						bagBack.sprite = Resources.Load<Sprite>("Sprites/Menus/bag" + currentPocket);
+						inventorySpot = 0;
+						topShown = 0;
+						bottomShown = 9;
 						checkpoint = 6;
 						break;
-					//Bag
+					//Pokemon
 					case 2:
+						playerTeam.SetActive(true);
+						currentTeamSlot = playerTeam.transform.FindChild("Pokemon1").gameObject;
+						playerTeam.transform.FindChild("PartyInstructions").GetChild(0).GetComponent<Text>().text = 
+							"Choose a Pokemon to switch in.";
+						teamSlot = 1;
 						checkpoint = 7;
 						break;
 					//Run
@@ -787,6 +1372,7 @@ public class BattleScene : MonoBehaviour
 	 ***************************************/
 	IEnumerator ResolveFieldEntrance()
 	{
+		WriteBattleMessage("Field entrance effects are processing");
 		battlers = battleField.ResolveFieldEntrance(battlers);
 		yield return new WaitForSeconds(2.5f);
 		StartCoroutine(EntranceAbilities());
@@ -865,6 +1451,35 @@ public class BattleScene : MonoBehaviour
 	} //end SetStatusIcon(Image statusImage, Pokemon myPokemon)
 
 	/***************************************
+	 * Name: GetCorrectIcon
+	 * Returns the icon sprite for the pokemon
+	 * based on species, gender, and form
+	 ***************************************/
+	Sprite GetCorrectIcon(Pokemon myPokemon)
+	{
+		//Get requested sprite
+		string chosenString = myPokemon.NatSpecies.ToString("000");
+		chosenString += myPokemon.Gender == 1 ? "f" : "";
+		chosenString += myPokemon.FormNumber > 0 ? "_" + myPokemon.FormNumber.ToString() : "";
+
+		//Change sprite, and fix if sprite is null
+		Sprite result = Resources.Load<Sprite>("Sprites/Icons/icon" + chosenString);
+		if (result	 == null)
+		{
+			chosenString = chosenString.Replace("f", "");
+			result = Resources.Load<Sprite>("Sprites/Icons/icon" + chosenString);
+
+			//If still null, load generic
+			if (result == null)
+			{
+				result = Resources.Load<Sprite>("Sprites/Icons/icon000");
+			} //end if
+		} //end if
+
+		return result;
+	} //end GetCorrectIcon(Pokemon myPokemon)
+
+	/***************************************
 	 * Name: FadePlayer
 	 * Plays the correct player fade animation
 	 ***************************************/
@@ -882,6 +1497,21 @@ public class BattleScene : MonoBehaviour
 		checkpoint = 3;
 		processing = false;
 	} //end FadePlayer
+
+	/***************************************
+	 * Name: FadeInBagPocket
+	 * Plays a fade in animation for the bag
+	 * after a delay because Invoke can't take
+	 * parameters and a delay.
+	 ***************************************/
+	public IEnumerator FadeInBagPocket()
+	{
+		inventorySpot = 0;
+		bottomShown = 9;
+		topShown = 0;
+		yield return new WaitForSeconds(Time.deltaTime);
+		GameManager.instance.FadeInAnimation(6);
+	} //end FadeInBagPocket
 
 	/***************************************
 	 * Name: ApplyConfirm

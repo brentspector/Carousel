@@ -38,7 +38,8 @@ public static class DataContents : System.Object
 	public static Sprite[] trainerBacks;			//Sprites for back of trainers for battle scene
 	public static Sprite[] versusImages;			//Sprites for Versus images
 	public static Sprite[] leaderSprites;			//Sprites for leaders in battle
-	public static Sprite[] attackSprites;			//Sprites for attack backgrounds
+	public static Sprite[] attackNonSelSprites;		//Sprites for attack backgrounds that are not selected
+	public static Sprite[] attackSelSprites;		//Sprites for attack backgrounds that are selected
 
     //Shorthand for main data path
     static string dataLocation;                     
@@ -114,7 +115,8 @@ public static class DataContents : System.Object
 		trainerBacks        = Resources.LoadAll<Sprite>("Sprites/Battle/TrainerBack");
 		versusImages 		= Resources.LoadAll<Sprite>("Sprites/Battle/Leaders");
 		leaderSprites 		= Resources.LoadAll<Sprite>("Sprites/Battle/FullLeaders");
-		attackSprites 		= Resources.LoadAll<Sprite>("Sprites/Battle/battleFightButtons");
+		attackNonSelSprites	= Resources.LoadAll<Sprite>("Sprites/Battle/battleFightButtons");
+		attackSelSprites 	= Resources.LoadAll<Sprite>("Sprites/Battle/battleFightButtonsSelect");
 
         return true;
     } //end InitDataContents()

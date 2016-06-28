@@ -54,7 +54,7 @@ public class AnimationManager : MonoBehaviour
 
 		//Lerp color for specified time
 		while(fade.color.a != 0)
-		{
+		{			
 			fade.color = Color.Lerp(startColor, endColor, 2 * elapsedTime);
 			elapsedTime+= Time.deltaTime;
 			yield return null;

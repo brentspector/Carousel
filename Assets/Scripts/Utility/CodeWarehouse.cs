@@ -330,12 +330,29 @@ public class CodeWarehouse : MonoBehaviour
 				temp += "," + contents[j].Replace("\"", "");
 			} //end for
 			dbCommand.Parameters.Add(new SqliteParameter("@desc", temp));
-			Debug.Log(temp);
 			dbCommand.Prepare();
 			dbCommand.ExecuteNonQuery();
 			dbCommand.Parameters.Clear();
 		} //end for
-		
+
+		SystemManager sysm = new SystemManager();
+		sysm.GetContents (dataLocation + "items.txt");
+		for (int i = 0; i < 440; i++)
+		{
+			string[] contents = sysm.ReadCSV(i);
+			dbCommand.CommandText = "UPDATE Items SET cost=@cs WHERE rowid=" + (i+1);
+			dbCommand.Parameters.Add(new SqliteParameter("@cs", contents[4]));
+			string temp = contents[7].Replace("\"", "");
+			for(int j = 8; j < contents.Length-1; j++)
+			{
+				temp += "," + contents[j].Replace("\"", "");
+			} //end for
+			dbCommand.Parameters.Add(new SqliteParameter("@desc", temp));
+			dbCommand.Prepare();
+			dbCommand.ExecuteNonQuery();
+			dbCommand.Parameters.Clear();
+		} //end for
+
         //Moves
         sysm.GetContents (dataLocation + "moves.txt");
         for (int i = 0; i < 633; i++)

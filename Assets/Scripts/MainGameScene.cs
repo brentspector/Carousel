@@ -49,6 +49,7 @@ public class MainGameScene : MonoBehaviour
 	int topShown;					//The top slot displayed in the inventory
 	int bottomShown;				//The bottom slot displayed in the inventory
 	bool initialize;                //Initialize each state only once per access
+	bool pocketChange = false;		//Whether the pocket of the player's bag is currently changing
 	bool processing = false;		//Whether a function is already processing something
 	GameObject choices;				//Choices box from scene tools
 	GameObject selection;			//Selection rectangle from scene tools
@@ -2025,29 +2026,7 @@ public class MainGameScene : MonoBehaviour
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 			else if (gameState == MainGame.ITEMGIVE)
 			{
-				//Verify a item is highlighted
-				if(inventorySpot < GameManager.instance.GetTrainer().SlotCount())
-				{
-					//Make sure pokemon isn't holding another item
-					if (GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item == 0)
-					{
-						int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
-						GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
-						GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
-						GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " to " + 
-							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname,true);
-						playerBag.SetActive(false);
-						initialize = false;
-						gameState = MainGame.TEAM;
-					} //end if
-					else
-					{
-						int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
-						GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
-							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item) + " for " + DataContents.GetItemGameName(
-								itemNumber) + "?", 0, false);
-					} //end else
-				} //end if
+				StartCoroutine(ProcessGiveItem());
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Left Mouse Button
 
@@ -3150,6 +3129,58 @@ public class MainGameScene : MonoBehaviour
             } //end else
         } //end if
     } //end SetSummaryPage(int summaryPage)
+
+	/***************************************
+	 * Name: FadeInBagPocket
+	 * Plays a fade in animation for the bag
+	 * after a delay because Invoke can't take
+	 * parameters and a delay.
+	 ***************************************/
+	public IEnumerator FadeInBagPocket()
+	{
+		pocketChange = true;
+		inventorySpot = 0;
+		bottomShown = 9;
+		topShown = 0;
+		initialize = false;
+		yield return new WaitForSeconds(Time.deltaTime);
+		GameManager.instance.FadeInAnimation(2);
+		pocketChange = false;
+	} //end FadeInBagPocket
+
+	/***************************************
+	* Name: ProcessGiveItem
+	* Processes what to do when item is given
+	***************************************/
+	IEnumerator ProcessGiveItem()
+	{
+		//Process at end of frame
+		yield return new WaitForEndOfFrame ();
+
+		//Verify a item is highlighted
+		if(inventorySpot < GameManager.instance.GetTrainer().SlotCount() && !pocketChange)
+		{
+			//Make sure pokemon isn't holding another item
+			if (GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item == 0)
+			{
+				int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+				GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
+				GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
+				GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " to " + 
+					GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname,true);
+				playerBag.SetActive(false);
+				initialize = false;
+				gameState = MainGame.TEAM;
+			} //end if
+			else
+			{
+				int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+				GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
+					GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item) + " for " + DataContents.GetItemGameName(
+						itemNumber) + "?", 0, false);
+			} //end else
+		} //end if
+	} //end ProcessGiveItem
 
 	/***************************************
 	 * Name: ApplyConfirm
