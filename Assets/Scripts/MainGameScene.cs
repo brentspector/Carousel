@@ -191,6 +191,8 @@ public class MainGameScene : MonoBehaviour
 					initialize = true;
 					buttonMenu.SetActive(false);
 					gymBattle.SetActive(true);
+					EventSystem.current.SetSelectedGameObject(gymBattle.transform.GetChild(0).GetChild(0).
+						GetChild(0).gameObject);
 				} //end if
 
 				//Get player input

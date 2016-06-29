@@ -215,7 +215,7 @@ public class Shop
 			//All
 			case 0:
 				return tier1Pokemon.Concat(tier2Pokemon).Concat(tier3Pokemon).Concat(tier4Pokemon).Concat(tier5Pokemon).Concat(heldItemStock).Concat(megaStoneStock).
-					Concat(evolutionItemStock).Concat(medicineStock).Concat(TMStock).Concat(battleItemStock).Concat(keyItemStock).ToList();
+					Concat(evolutionItemStock).Concat(medicineStock).Concat(TMStock).Concat(berryStock).Concat(battleItemStock).Concat(keyItemStock).ToList();
 			case 1:
 				return tier1Pokemon;
 			case 2:
@@ -248,7 +248,7 @@ public class Shop
 			//All items
 			case 15:
 				return heldItemStock.Concat(megaStoneStock).Concat(evolutionItemStock).Concat(medicineStock).
-					Concat(TMStock).Concat(battleItemStock).Concat(keyItemStock).ToList();
+					Concat(TMStock).Concat(berryStock).Concat(battleItemStock).Concat(keyItemStock).ToList();
 		} //end switch
 
 		//If no shop stock found, return a blank list
