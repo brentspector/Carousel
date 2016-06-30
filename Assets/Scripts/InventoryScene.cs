@@ -1305,7 +1305,7 @@ public class InventoryScene : MonoBehaviour
 
 					if (DataContents.ExecuteSQL<int>("SELECT outsideUse FROM Items WHERE id=" + itemNumber) == 1)
 					{
-						GameManager.instance.GetTrainer().RemoveItem(GameManager.instance.GetTrainer().GetItem(inventorySpot)[0], 1);
+						GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 					} //end if
 				} //end if
 				checkpoint = 1;
@@ -1659,7 +1659,7 @@ public class InventoryScene : MonoBehaviour
 
 					if (DataContents.ExecuteSQL<int>("SELECT outsideUse FROM Items WHERE id=" + itemNumber) == 1)
 					{
-						GameManager.instance.GetTrainer().RemoveItem(GameManager.instance.GetTrainer().GetItem(inventorySpot)[0], 1);
+						GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 					} //end if
 				} //end if
 				checkpoint = 1;

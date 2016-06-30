@@ -2,28 +2,28 @@
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Diagnostics;
 
 public class Test : MonoBehaviour {
 
-	public Image back;
-	float lerper = 0f;
+	List<int> theList;
 
-	public void Begin()
+	public void testFunction()
 	{
-		back.gameObject.SetActive(true);
-		back.color = Color.white;
-		lerper = 0f;
-		StartCoroutine(Finished());
-	}
+		theList = new List<int>();
+		theList.AddRange(Enumerable.Range(0,1000000));
 
-	IEnumerator Finished()
-	{
-		while (back.color.a != 0)
+		Stopwatch myStopwatch = new Stopwatch();
+		myStopwatch.Start();
+		for (int i = 0; i < 100000; i++)
 		{
-			back.color = new Color(back.color.r, back.color.g, back.color.b, Mathf.Lerp(1, 0, lerper));
-			lerper += 0.15f;
-			yield return null;
-		}
-	}
+			ExtensionMethods.Swap(theList, 23521, 90731);
+		} //end for
+		myStopwatch.Stop();
+		UnityEngine.Debug.Log(myStopwatch.ElapsedMilliseconds);
+	} //end
+
 }
 

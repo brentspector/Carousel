@@ -39,7 +39,7 @@ public class Field
 				if (modification > 4)
 				{					
 					modification /= 5;
-					for (int i = 0; i < 6; i++)
+					for (int i = 1; i < 6; i++)
 					{
 						battlers[1].SetStage(modification, i, true);
 					} //end for

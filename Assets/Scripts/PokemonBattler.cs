@@ -177,6 +177,9 @@ public class PokemonBattler
 		specialA = battler.SpecialA;
 		specialD = battler.SpecialD;
 		ability = battler.Ability;
+		gender = battler.Gender;
+		currentLevel = battler.CurrentLevel;
+		nickname = battler.Nickname;
 
 		//Initialize moves
 		for (int i = 0; i < 4; i++)
@@ -254,6 +257,8 @@ public class PokemonBattler
 		lastHPLost = 0;
 		lastMoveUsed = 0;
 		turnCount = 0;
+		isMega = false;
+		justEntered = true;
 	} //end SwitchInPokemon(bool retainStats = false)
 
 	/***************************************
@@ -703,7 +708,32 @@ public class PokemonBattler
 	{
 		stages[stage] = adjust ? stages[stage] + amount : amount;
 		stages[stage] = ExtensionMethods.CapAtInt(stages[stage], 6);
+		CalculateStats();
 	} //end SetStage(int amount, int stage, bool adjust = true)
+
+	/***************************************
+     * Name: CalculateStats
+     * Determines the values for all stats,
+     * using the base battler as a reference
+     ***************************************/
+	public void CalculateStats()
+	{
+		float value = (float)battler.Attack * (1f + (0.5f * stages[1]));
+		attack = (int)value;
+		value = (float)battler.Defense * (1f + (0.5f * stages[2]));
+		defense = (int)value;
+		value = (float)battler.Speed * (1f + (0.5f * stages[3]));
+		speed = (int)value;
+		value = (float)battler.SpecialA * (1f + (0.5f * stages[4]));
+		specialA = (int)value;
+		value = (float)battler.SpecialD * (1f + (0.5f * stages[5]));
+		specialD = (int)value;
+		/*Debug.Log("Base Attack: " + battler.Attack + ", Current Attack: " + attack + ", " +
+		"Base Defense: " + battler.Defense + ", Current Defense: " + defense + ", " +
+		"Base Speed: " + battler.Speed + ", Current Speed: " + speed + ", " +
+		"Base SpecialA: " + battler.SpecialA + ", Current SpecialA: " + specialA + ", " +
+		"Base SpecialD: " + battler.SpecialD + ", Current SpecialD: " + specialD);*/
+	} //end CalculateStat
 
 	/***************************************
      * Name: GetSpeed
@@ -819,6 +849,14 @@ public class PokemonBattler
 		//Return
 		return weight;
 	} //end GetWeight
+
+	/***************************************
+     * Name: GetMove
+     ***************************************/
+	public int GetMove(int index)
+	{
+		return moves [index];
+	} //end GetMove(int index)
 
 	/***************************************
      * Name: CheckAbility

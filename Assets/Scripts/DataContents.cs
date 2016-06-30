@@ -266,6 +266,15 @@ public static class DataContents : System.Object
 			DataContents.ExecuteSQL<string>("SELECT type FROM Moves WHERE rowid=" + moveNumber)));
 	} //end GetMoveIcon(int moveNumber)
 
+	/***************************************
+     * Name: GetMovePriority
+     * Returns priority of given move
+     ***************************************/
+	public static int GetMovePriority(int moveNumber)
+	{		
+		return moveNumber < 0 ? -1 : ExecuteSQL<int>("SELECT priority FROM Moves WHERE rowid=" + moveNumber);
+	} //end GetMovePriority(int moveNumber)
+
     /***************************************
      * Name: GetItemID
      * Returns numeric location of item
