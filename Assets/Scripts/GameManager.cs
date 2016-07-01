@@ -389,7 +389,14 @@ public class GameManager : MonoBehaviour
 	 ***************************************/
 	public void SetupPickMove()
 	{
-		inventory.SetupPickMove();
+		if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Inventory")
+		{
+			inventory.SetupPickMove();
+		} //end if
+		else if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Battle")
+		{
+			battle.SetupPickMove();
+		} //end else if
 	} //end SetupPickMove
 
 	/***************************************

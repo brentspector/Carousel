@@ -805,22 +805,28 @@ public static class ItemEffects
      * Uses an item from bag on Pokemon 
      * inside of battle
      ***************************************/ 
-	public static bool BattleUseOnPokemon(Pokemon selectedPokemon, int item)
+	public static string BattleUseOnPokemon(Pokemon selectedPokemon, int item, bool check = false)
 	{		
 		//Antidote, Pecha Berry
 		if (item == 15 || item == 199)
 		{
 			if (selectedPokemon.Status == (int)Status.POISON)
 			{
-				selectedPokemon.Status = (int)Status.HEALTHY;
-				selectedPokemon.StatusCount = 0;
-				GameManager.instance.DisplayText(selectedPokemon.Nickname + " was cured of its poisoning!", true);
-				return true;
+				if (!check)
+				{					
+					selectedPokemon.Status = (int)Status.HEALTHY;
+					selectedPokemon.StatusCount = 0;
+					return selectedPokemon.Nickname + " was cured of its poisoning!";
+				} //end if
+				else
+				{
+					return bool.TrueString;
+				} //end else
 			} //end if
 			else
 			{
 				GameManager.instance.DisplayText(selectedPokemon.Nickname + " isn't poisoned. It won't have any effect.", true);
-				return false;
+				return bool.FalseString;
 			} //end else
 		} //end if Antidote, Pecha Berry
 
@@ -829,15 +835,21 @@ public static class ItemEffects
 		{
 			if (selectedPokemon.Status == (int)Status.FREEZE)
 			{
-				selectedPokemon.Status = (int)Status.HEALTHY;
-				selectedPokemon.StatusCount = 0;
-				GameManager.instance.DisplayText(selectedPokemon.Nickname + " was thawed out!", true);
-				return true;
+				if (!check)
+				{
+					selectedPokemon.Status = (int)Status.HEALTHY;
+					selectedPokemon.StatusCount = 0;
+					return selectedPokemon.Nickname + " was thawed out!";
+				} //end if
+				else
+				{
+					return bool.TrueString;
+				} //end else
 			} //end if
 			else
 			{
 				GameManager.instance.DisplayText(selectedPokemon.Nickname + " isn't frozen. It won't have any effect.", true);
-				return false;
+				return bool.FalseString;
 			} //end else
 		} //end else if Aspear Berry, Ice Heal
 
@@ -846,22 +858,28 @@ public static class ItemEffects
 		{
 			if (selectedPokemon.Status == (int)Status.SLEEP)
 			{
-				selectedPokemon.Status = (int)Status.HEALTHY;
-				selectedPokemon.StatusCount = 0;
-				GameManager.instance.DisplayText(selectedPokemon.Nickname + " woke up!", true);
-				return true;
+				if (!check)
+				{
+					selectedPokemon.Status = (int)Status.HEALTHY;
+					selectedPokemon.StatusCount = 0;
+					return selectedPokemon.Nickname + " woke up!";
+				} //end if
+				else
+				{
+					return bool.TrueString;
+				} //end else
 			} //end if
 			else
 			{
 				GameManager.instance.DisplayText(selectedPokemon.Nickname + " isn't asleep. It won't have any effect.", true);
-				return false;
+				return bool.FalseString;
 			} //end else
 		} //end else if Awakening, Blue Flute, Chesto Berry
 
 		//Berry Juice, Potion, RageCandyBar, Sweet Heart
 		else if (item == 24 || item == 207 || item == 224 || item == 283)
 		{
-			return HealPokemon(selectedPokemon, 20);
+			return BattleHealPokemon(selectedPokemon, 20, check);
 		} //end else if Berry Juice, Potion, RageCandyBar, Sweet Heart
 
 		//Burn Heal, Rawst Berry
@@ -869,15 +887,21 @@ public static class ItemEffects
 		{
 			if (selectedPokemon.Status == (int)Status.BURN)
 			{
-				selectedPokemon.Status = (int)Status.HEALTHY;
-				selectedPokemon.StatusCount = 0;
-				GameManager.instance.DisplayText(selectedPokemon.Nickname + "'s burn was healed!", true);
-				return true;
+				if (!check)
+				{
+					selectedPokemon.Status = (int)Status.HEALTHY;
+					selectedPokemon.StatusCount = 0;
+					return selectedPokemon.Nickname + "'s burn was healed!";
+				} //end if
+				else
+				{
+					return bool.TrueString;
+				} //end else
 			} //end if
 			else
 			{
 				GameManager.instance.DisplayText(selectedPokemon.Nickname + " isn't burned. It won't have any effect.", true);
-				return false;
+				return bool.FalseString;
 			} //end else
 		} //end else if Burn Heal, Rawst Berry
 
@@ -886,16 +910,22 @@ public static class ItemEffects
 		{
 			if (selectedPokemon.Status != (int)Status.HEALTHY && selectedPokemon.Status != (int)Status.FAINT)
 			{
-				selectedPokemon.Status = (int)Status.HEALTHY;
-				selectedPokemon.StatusCount = 0;
-				GameManager.instance.DisplayText(selectedPokemon.Nickname + " was cured of its affliction!", true);
-				return true;
+				if (!check)
+				{
+					selectedPokemon.Status = (int)Status.HEALTHY;
+					selectedPokemon.StatusCount = 0;
+					return selectedPokemon.Nickname + " was cured of its affliction!";
+				} //end if
+				else
+				{
+					return bool.TrueString;
+				} //end else
 			} //end if
 			else
 			{
 				GameManager.instance.DisplayText(selectedPokemon.Nickname + " isn't afflicted with a curable condition. " +
 				"It won't have any effect.", true);
-				return false;
+				return bool.FalseString;
 			} //end else
 		} //end else if Casteliacone, Full Heal, Lava Cookie, Lum Berry, Old Gateau
 
@@ -904,15 +934,21 @@ public static class ItemEffects
 		{
 			if (selectedPokemon.Status == (int)Status.PARALYZE)
 			{
-				selectedPokemon.Status = (int)Status.HEALTHY;
-				selectedPokemon.StatusCount = 0;
-				GameManager.instance.DisplayText(selectedPokemon.Nickname + " was cured of paralysis!", true);
-				return true;
+				if (!check)
+				{
+					selectedPokemon.Status = (int)Status.HEALTHY;
+					selectedPokemon.StatusCount = 0;
+					return selectedPokemon.Nickname + " was cured of paralysis!";
+				} //end if
+				else
+				{
+					return bool.TrueString;
+				} //end else
 			} //end if
 			else
 			{
 				GameManager.instance.DisplayText(selectedPokemon.Nickname + " isn't paralyzed. It won't have any effect.", true);
-				return false;
+				return bool.FalseString;
 			} //end else
 		} //end else if Cheri Berry, Paralyz Heal
 
@@ -923,20 +959,30 @@ public static class ItemEffects
 			for (int i = 0; i < selectedPokemon.GetMoveCount(); i++)
 			{
 				ppRestored += selectedPokemon.GetMovePPMax(i) - selectedPokemon.GetMovePP(i);
-				selectedPokemon.SetMovePP(i, ExtensionMethods.CapAtInt(selectedPokemon.GetMovePP(i) + 10, 
-					selectedPokemon.GetMovePPMax(i)));
+				if (!check)
+				{
+					selectedPokemon.SetMovePP(i, ExtensionMethods.CapAtInt(selectedPokemon.GetMovePP(i) + 10, 
+						selectedPokemon.GetMovePPMax(i)));
+				} //end if
 			} //end for
 
 			//Make sure pp was restored
 			if (ppRestored > 0)
 			{
-				GameManager.instance.DisplayText(string.Format("All of {0}'s moves were restored by 10!", selectedPokemon.Nickname), true);
-				return true;
+				if (!check)
+				{
+					return string.Format("All of {0}'s moves were restored by 10!", 
+						selectedPokemon.Nickname);
+				} //end if
+				else
+				{
+					return bool.TrueString;
+				} //end else
 			} //end if
 			else
 			{
 				GameManager.instance.DisplayText(selectedPokemon.Nickname + " already has maximum PP. It won't have any effect.", true);
-				return false;
+				return bool.FalseString;
 			} //end else
 		} //end else if Elixir
 
@@ -946,16 +992,22 @@ public static class ItemEffects
 			int restored = selectedPokemon.TotalHP - selectedPokemon.CurrentHP;
 			if (restored > 0 && restored < selectedPokemon.TotalHP)
 			{
-				selectedPokemon.CurrentHP = ExtensionMethods.CapAtInt(selectedPokemon.CurrentHP + 200, selectedPokemon.TotalHP);
-				int change = selectedPokemon.Happiness - 15;
-				if (selectedPokemon.Happiness < 200)
+				if (!check)
 				{
-					change += 5;
+					selectedPokemon.CurrentHP = ExtensionMethods.CapAtInt(selectedPokemon.CurrentHP + 200, selectedPokemon.TotalHP);
+					int change = selectedPokemon.Happiness - 15;
+					if (selectedPokemon.Happiness < 200)
+					{
+						change += 5;
+					} //end if
+					selectedPokemon.Happiness = change;
+					return string.Format("{0} regained {1} HP, but cringed badly.", 
+						selectedPokemon.Nickname, ExtensionMethods.CapAtInt(restored, 200));
 				} //end if
-				selectedPokemon.Happiness = change;
-				GameManager.instance.DisplayText(string.Format("{0} regained {1} HP, but cringed badly.", selectedPokemon.Nickname, 
-					ExtensionMethods.CapAtInt(restored, 200)), true);
-				return true;
+				else
+				{
+					return bool.TrueString;
+				} //end else
 			} //end if
 			else
 			{
@@ -967,7 +1019,7 @@ public static class ItemEffects
 				{
 					GameManager.instance.DisplayText(selectedPokemon.Nickname + " is fainted. It won't have any effect.", true);
 				} //end else if
-				return false;
+				return bool.FalseString;
 			} //end else
 		} //end else if Energy Root
 
@@ -977,16 +1029,22 @@ public static class ItemEffects
 			int restored = selectedPokemon.TotalHP - selectedPokemon.CurrentHP;
 			if (restored > 0 && restored < selectedPokemon.TotalHP)
 			{
-				selectedPokemon.CurrentHP = ExtensionMethods.CapAtInt(selectedPokemon.CurrentHP + 50, selectedPokemon.TotalHP);
-				int change = selectedPokemon.Happiness - 10;
-				if (selectedPokemon.Happiness < 200)
+				if (!check)
 				{
-					change += 5;
+					selectedPokemon.CurrentHP = ExtensionMethods.CapAtInt(selectedPokemon.CurrentHP + 50, selectedPokemon.TotalHP);
+					int change = selectedPokemon.Happiness - 10;
+					if (selectedPokemon.Happiness < 200)
+					{
+						change += 5;
+					} //end if
+					selectedPokemon.Happiness = change;
+					return string.Format("{0} regained {1} HP, but cringed.", selectedPokemon.Nickname, 
+						ExtensionMethods.CapAtInt(restored, 50));
 				} //end if
-				selectedPokemon.Happiness = change;
-				GameManager.instance.DisplayText(string.Format("{0} regained {1} HP, but cringed.", selectedPokemon.Nickname, 
-					ExtensionMethods.CapAtInt(restored, 200)), true);
-				return true;
+				else
+				{
+					return bool.TrueString;
+				} //end else
 			} //end if
 			else
 			{
@@ -998,7 +1056,7 @@ public static class ItemEffects
 				{
 					GameManager.instance.DisplayText(selectedPokemon.Nickname + " is fainted. It won't have any effect.", true);
 				} //end else if
-				return false;
+				return bool.FalseString;
 			} //end else
 		} //end else if Energy Powder
 
@@ -1006,13 +1064,13 @@ public static class ItemEffects
 		else if (item == 83 || item == 148)
 		{
 			GameManager.instance.SetupPickMove();
-			return false;
+			return bool.FalseString;
 		} //end else if Ether, Leppa Berry
 
 		//Fresh Water, Super Potion
 		else if (item == 96 || item == 281)
 		{
-			return HealPokemon(selectedPokemon, 50);
+			return BattleHealPokemon(selectedPokemon, 50, check);
 		} //end else if Fresh Water, Super Potion
 
 		//Full Restore
@@ -1021,19 +1079,30 @@ public static class ItemEffects
 			int restored = selectedPokemon.TotalHP - selectedPokemon.CurrentHP;
 			if (restored > 0 && restored < selectedPokemon.TotalHP)
 			{
-				selectedPokemon.CurrentHP = ExtensionMethods.CapAtInt(selectedPokemon.CurrentHP + 50, selectedPokemon.TotalHP);
-				selectedPokemon.Status = (int)Status.HEALTHY;
-				selectedPokemon.StatusCount = 0;
-				GameManager.instance.DisplayText(string.Format("{0} regained {1} HP!", selectedPokemon.Nickname, 
-					ExtensionMethods.CapAtInt(restored, 50)), true);
-				return true;
+				if (!check)
+				{
+					selectedPokemon.CurrentHP = selectedPokemon.TotalHP;
+					selectedPokemon.Status = (int)Status.HEALTHY;
+					selectedPokemon.StatusCount = 0;
+					return string.Format("{0} regained {1} HP!", selectedPokemon.Nickname, restored);
+				} //end if
+				else
+				{
+					return bool.TrueString;
+				} //end else
 			} //end if
 			else if (selectedPokemon.Status != (int)Status.HEALTHY && selectedPokemon.Status != (int)Status.FAINT)
 			{
-				selectedPokemon.Status = (int)Status.HEALTHY;
-				selectedPokemon.StatusCount = 0;
-				GameManager.instance.DisplayText(selectedPokemon.Nickname + " was cured of its affliction!", true);
-				return true;
+				if (!check)
+				{
+					selectedPokemon.Status = (int)Status.HEALTHY;
+					selectedPokemon.StatusCount = 0;
+					return selectedPokemon.Nickname + " was cured of its affliction!";
+				} //end if
+				else
+				{
+					return bool.TrueString;
+				} //end else
 			} //end else if
 			else
 			{
@@ -1045,7 +1114,7 @@ public static class ItemEffects
 				{
 					GameManager.instance.DisplayText(selectedPokemon.Nickname + " is fainted. It won't have any effect.", true);
 				} //end else if
-				return false;
+				return bool.FalseString;
 			} //end else
 		} //end else if Full Restore
 
@@ -1054,35 +1123,41 @@ public static class ItemEffects
 		{
 			if (selectedPokemon.Status != (int)Status.HEALTHY && selectedPokemon.Status != (int)Status.FAINT)
 			{
-				selectedPokemon.Status = (int)Status.HEALTHY;
-				selectedPokemon.StatusCount = 0;
-				int change = selectedPokemon.Happiness - 10;
-				if (selectedPokemon.Happiness < 200)
+				if (!check)
 				{
-					change += 5;
+					selectedPokemon.Status = (int)Status.HEALTHY;
+					selectedPokemon.StatusCount = 0;
+					int change = selectedPokemon.Happiness - 10;
+					if (selectedPokemon.Happiness < 200)
+					{
+						change += 5;
+					} //end if
+					selectedPokemon.Happiness = change;
+					return selectedPokemon.Nickname + " was cured of its affliction, but cringed.";
 				} //end if
-				selectedPokemon.Happiness = change;
-				GameManager.instance.DisplayText(selectedPokemon.Nickname + " was cured of its affliction, but cringed.", true);
-				return true;
+				else
+				{
+					return bool.TrueString;
+				} //end else
 			} //end if
 			else
 			{
 				GameManager.instance.DisplayText(selectedPokemon.Nickname + " isn't afflicted with a curable condition. " +
-					"It won't have any effect.", true);
-				return false;
+				"It won't have any effect.", true);
+				return bool.FalseString;
 			} //end else
 		} //end else if Heal Powder
 
 		//Hyper Potion
 		else if (item == 121)
 		{
-			return HealPokemon(selectedPokemon, 200);
+			return BattleHealPokemon(selectedPokemon, 200, check);
 		} //end else if Hyper Potion
 
 		//Lemonade
 		else if (item == 147)
 		{
-			return HealPokemon(selectedPokemon, 80);
+			return BattleHealPokemon(selectedPokemon, 80, check);
 		} //end else if Lemonade
 
 		//Max Elixer
@@ -1092,28 +1167,42 @@ public static class ItemEffects
 			for (int i = 0; i < selectedPokemon.GetMoveCount(); i++)
 			{
 				ppRestored += selectedPokemon.GetMovePPMax(i) - selectedPokemon.GetMovePP(i);
-				selectedPokemon.SetMovePP(i, selectedPokemon.GetMovePPMax(i));
+				if (!check)
+				{
+					selectedPokemon.SetMovePP(i, selectedPokemon.GetMovePPMax(i));
+				} //end if
 			} //end for
 
 			//Make sure pp was restored
 			if (ppRestored > 0)
 			{
-				GameManager.instance.DisplayText(string.Format("All of {0}'s moves were restored by 10!", selectedPokemon.Nickname), true);
-				return true;
+				if (!check)
+				{
+					return string.Format("All of {0}'s moves were restored by 10!", selectedPokemon.Nickname);
+				} //end if
+				else
+				{
+					return bool.TrueString;
+				} //end else
 			} //end if
 			else
 			{
 				GameManager.instance.DisplayText(selectedPokemon.Nickname + " already has maximum PP. It won't have any effect.", true);
-				return false;
+				return bool.FalseString;
 			} //end else
 		} //end else if Max Elixer
 
 		//Max Ether - 169
+		else if (item == 169)
+		{
+			GameManager.instance.SetupPickMove();
+			return bool.FalseString;
+		} //end else if Max Ether
 
 		//Max Potion
 		else if (item == 170)
 		{
-			return HealPokemon(selectedPokemon, selectedPokemon.TotalHP);
+			return BattleHealPokemon(selectedPokemon, selectedPokemon.TotalHP, check);
 		} //end else if Max Potion
 
 		//Max Revive
@@ -1121,27 +1210,33 @@ public static class ItemEffects
 		{
 			if (selectedPokemon.Status == (int)Status.FAINT)
 			{
-				selectedPokemon.RevivePokemon(selectedPokemon.TotalHP / 2);
-				GameManager.instance.DisplayText(selectedPokemon.Nickname + " was revived and fully restored!", true);
-				return true;
+				if (!check)
+				{
+					selectedPokemon.RevivePokemon(selectedPokemon.TotalHP / 2);
+					return selectedPokemon.Nickname + " was revived and fully restored!";
+				} //end if
+				else
+				{
+					return bool.TrueString;
+				} //end else
 			} //end if
 			else
 			{
 				GameManager.instance.DisplayText(selectedPokemon.Nickname + " is not fainted. It won't have any effect.", true);
-				return false;
+				return bool.FalseString;
 			} //end else
 		} //end else if Max Revive
 
 		//Moomoo Milk
 		else if (item == 185)
 		{
-			return HealPokemon(selectedPokemon, 100);
+			return BattleHealPokemon(selectedPokemon, 100, check);
 		} //end else if Moomoo Milk
 
 		//Oran Berry
 		else if (item == 194)
 		{
-			return HealPokemon(selectedPokemon, 10);
+			return BattleHealPokemon(selectedPokemon, 10, check);
 		} //end else if Oran Berry
 
 		//Revival Herb
@@ -1149,20 +1244,26 @@ public static class ItemEffects
 		{
 			if (selectedPokemon.Status == (int)Status.FAINT)
 			{
-				selectedPokemon.RevivePokemon(selectedPokemon.TotalHP);
-				int change = selectedPokemon.Happiness - 20;
-				if (selectedPokemon.Happiness < 200)
+				if (!check)
 				{
-					change += 5;
+					selectedPokemon.RevivePokemon(selectedPokemon.TotalHP);
+					int change = selectedPokemon.Happiness - 20;
+					if (selectedPokemon.Happiness < 200)
+					{
+						change += 5;
+					} //end if
+					selectedPokemon.Happiness = change;
+					return selectedPokemon.Nickname + " was revived and fully restored, but shook violently.";
 				} //end if
-				selectedPokemon.Happiness = change;
-				GameManager.instance.DisplayText(selectedPokemon.Nickname + " was revived and fully restored, but shook violently.", true);
-				return true;
+				else
+				{
+					return bool.TrueString;
+				} //end else
 			} //end if
 			else
 			{
 				GameManager.instance.DisplayText(selectedPokemon.Nickname + " is not fainted. It won't have any effect.", true);
-				return false;
+				return bool.FalseString;
 			} //end else
 		} //end else if Revival Herb
 
@@ -1171,14 +1272,20 @@ public static class ItemEffects
 		{
 			if (selectedPokemon.Status == (int)Status.FAINT)
 			{
-				selectedPokemon.RevivePokemon(selectedPokemon.TotalHP / 2);
-				GameManager.instance.DisplayText(selectedPokemon.Nickname + " was revived and restored to half health!", true);
-				return true;
+				if (!check)
+				{
+					selectedPokemon.RevivePokemon(selectedPokemon.TotalHP / 2);
+					return selectedPokemon.Nickname + " was revived and restored to half health!";
+				} //end if
+				else
+				{
+					return bool.TrueString;
+				} //end else
 			} //end if
 			else
 			{
 				GameManager.instance.DisplayText(selectedPokemon.Nickname + " is not fainted. It won't have any effect.", true);
-				return false;
+				return bool.FalseString;
 			} //end else
 		} //end else if Revive
 
@@ -1200,39 +1307,45 @@ public static class ItemEffects
 			//If a pokemon is revivable
 			if (revivable.Any())
 			{
-				for (int i = 0; i < revivable.Count; i++)
+				if (!check)
 				{
-					GameManager.instance.GetTrainer().Team[revivable[i]].RevivePokemon(
-						GameManager.instance.GetTrainer().Team[revivable[i]].TotalHP);
-				} //end for
+					for (int i = 0; i < revivable.Count; i++)
+					{
+						GameManager.instance.GetTrainer().Team[revivable[i]].RevivePokemon(
+							GameManager.instance.GetTrainer().Team[revivable[i]].TotalHP);
+					} //end for
 
-				GameManager.instance.DisplayText("Revived " + revivable.Count + " pokemon to full health!", true);
-				return true;
+					return "Revived " + revivable.Count + " pokemon to full health!";
+				} //end if
+				else
+				{
+					return bool.TrueString;
+				} //end else
 			} //end if
 			else
 			{
 				GameManager.instance.DisplayText("You have no fainted pokemon. It won't have any effect.", true);
-				return false;
+				return bool.FalseString;
 			} //end else
 		} //end else if Sacred Ash
 
 		//Sitrus Berry
 		else if (item == 263)
 		{
-			return HealPokemon(selectedPokemon, selectedPokemon.TotalHP / 4);
+			return BattleHealPokemon(selectedPokemon, selectedPokemon.TotalHP / 4, check);
 		} //end else if Sitrus Berry
 
 		//Soda Pop
 		else if (item == 268)
 		{
-			return HealPokemon(selectedPokemon, 60);
+			return BattleHealPokemon(selectedPokemon, 60, check);
 		} //end else if Soda Pop
 
 		//Anything else. This is what occurs when an item has no effect but is listed as usable
 		else
 		{
 			GameManager.instance.DisplayText(DataContents.GetItemGameName(item) + " has no listed effect yet.", true);
-			return false;
+			return bool.FalseString;
 		} //end else
 	} //end BattleUseOnPokemon(Pokemon selectedPokemon, int item)
 
@@ -1263,6 +1376,41 @@ public static class ItemEffects
 			return false;
 		} //end else
 	} //end HealPokemon(Pokemon selectedPokemon, int amount)
+
+	/***************************************
+     * Name: BattleHealPokemon
+     * Attempts to restore a pokemon by an amount
+     * for battle use
+     ***************************************/ 
+	static string BattleHealPokemon(Pokemon selectedPokemon, int amount, bool check = false)
+	{
+		int restored = selectedPokemon.TotalHP - selectedPokemon.CurrentHP;
+		if (restored > 0 && restored < selectedPokemon.TotalHP)
+		{
+			if (!check)
+			{
+				selectedPokemon.CurrentHP += amount;
+				return string.Format("{0} regained {1} HP!", selectedPokemon.Nickname, 
+					ExtensionMethods.CapAtInt(restored, amount));
+			} //end if
+			else
+			{
+				return bool.TrueString;
+			} //end else
+		} //end if
+		else
+		{
+			if (restored <= 0)
+			{
+				GameManager.instance.DisplayText(selectedPokemon.Nickname + " is already at full HP. It won't have any effect.", true);
+			} //end if
+			else
+			{
+				GameManager.instance.DisplayText(selectedPokemon.Nickname + " is fainted. It won't have any effect.", true);
+			} //end else if
+			return bool.FalseString;
+		} //end else
+	} //end BattleHealPokemon(Pokemon selectedPokemon, int amount, bool check = false)
 
 	/***************************************
      * Name: ApplyEVBoost

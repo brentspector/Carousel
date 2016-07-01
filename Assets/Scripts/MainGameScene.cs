@@ -1608,6 +1608,21 @@ public class MainGameScene : MonoBehaviour
 					EventSystem.current.SetSelectedGameObject(results[0].gameObject.transform.parent.gameObject, bEvent);
 				} //end if
 			} //end else if Main Game Home
+
+			//Gym Battle 
+			else if (gameState == MainGame.GYMBATTLE)
+			{
+				PointerEventData eventData = new PointerEventData(EventSystem.current);
+				eventData.position = Input.mousePosition;
+				List<RaycastResult> results = new List<RaycastResult>();
+				EventSystem.current.RaycastAll(eventData, results);
+				BaseEventData bEvent = new BaseEventData(EventSystem.current);
+				bEvent.selectedObject = EventSystem.current.currentSelectedGameObject;
+				if (results.Any() && results[0].gameObject.transform.parent.GetComponent<Button>() != null)
+				{
+					EventSystem.current.SetSelectedGameObject(results[0].gameObject.transform.parent.gameObject, bEvent);
+				} //end if
+			} //end else if GymBattle
 		} //end else if Mouse Moves Up
 
 		/*********************************************
@@ -1748,6 +1763,21 @@ public class MainGameScene : MonoBehaviour
 					EventSystem.current.SetSelectedGameObject(results[0].gameObject.transform.parent.gameObject, bEvent);
 				} //end if
 			} //end else if Main Game Home
+
+			//Gym Battle 
+			else if (gameState == MainGame.GYMBATTLE)
+			{
+				PointerEventData eventData = new PointerEventData(EventSystem.current);
+				eventData.position = Input.mousePosition;
+				List<RaycastResult> results = new List<RaycastResult>();
+				EventSystem.current.RaycastAll(eventData, results);
+				BaseEventData bEvent = new BaseEventData(EventSystem.current);
+				bEvent.selectedObject = EventSystem.current.currentSelectedGameObject;
+				if (results.Any() && results[0].gameObject.transform.parent.GetComponent<Button>() != null)
+				{
+					EventSystem.current.SetSelectedGameObject(results[0].gameObject.transform.parent.gameObject, bEvent);
+				} //end if
+			} //end else if GymBattle
 		} //end else if Mouse Moves Down
 
 		/*********************************************
@@ -3439,7 +3469,7 @@ public class MainGameScene : MonoBehaviour
                 int value = pokemonRightRegion.transform.FindChild ("Moves").GetChild (i).GetComponent<Dropdown> ().value;
                 updateMoves [i] = value > 0 ? value : -1;                
             } //end for
-            newPokemon.GiveInitialMoves(updateMoves);
+			newPokemon.ChangeMoves(updateMoves);
 
             //Add to requested spot, or PC if not chosen
             if (GameObject.Find ("LeftRegion").transform.FindChild ("TeamToggle").GetComponent<Toggle> ().isOn)

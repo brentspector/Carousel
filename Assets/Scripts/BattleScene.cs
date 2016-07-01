@@ -24,6 +24,7 @@ public class BattleScene : MonoBehaviour
 		POKEMONSUMMARY,
 		POKEMONRIBBONS,
 		ITEMUSE,
+		PICKMOVE,
 		MOVESWITCH,
 		GETAICHOICE,
 		PROCESSQUEUE,
@@ -41,11 +42,17 @@ public class BattleScene : MonoBehaviour
 	int previousTeamSlot;       	//The slot last highlighted
 	int topShown;					//The top slot displayed in the inventory
 	int bottomShown;				//The bottom slot displayed in the inventory
+	int subMenuChoice;          	//What choice is highlighted in the pokemon submenu
+	int summaryChoice;              //What page is open on the summary screen
+	int ribbonChoice;               //The ribbon currently shown
+	int previousRibbonChoice;       //The ribbon last highlighted for reading
 	bool processing = false;		//Whether a function is already processing something
+	bool pickMove = false;			//Whether the player must pick a move to use an item on
 	bool pocketChange;				//Is the pocket currently changing
 	Field battleField;				//The active battle field
 	Pokemon currentAttacker;		//Who is currently attacking
 	Pokemon lastAttacker;			//Who was the last pokemon to attack
+	List<Pokemon> originalOrder;	//Restores the team to the order it was before battle
 	List<Pokemon> participants;		//The pokemon that participated in the fight
 	List<List<int>> fieldEffects;	//Effects that are present on the field
 	List<PokemonBattler> battlers;	//A list of the battling spots on the field
@@ -66,6 +73,9 @@ public class BattleScene : MonoBehaviour
 	GameObject ribbonScreen;        //Screen showing ribbons for pokemon
 	GameObject playerBag;			//Screen of the player's bag
 	GameObject viewport;			//The items shown to the player
+	GameObject choices;				//Choices box from scene tools
+	GameObject selection;			//Selection rectangle from scene tools
+	GameObject currentRibbonSlot;   //The object that is currently highlighted for reading
 	#endregion
 
 	#region Methods
@@ -111,6 +121,8 @@ public class BattleScene : MonoBehaviour
 			bagBack = playerBag.transform.FindChild("BagBack").GetComponent<Image>();
 			bagSprite = playerBag.transform.FindChild("BagSprite").GetComponent<Image>();
 			bagDescription = playerBag.transform.FindChild("BagDescription").GetComponent<Text>();
+			selection = GameManager.tools.transform.FindChild("Selection").gameObject;
+			choices = GameManager.tools.transform.FindChild("ChoiceUnit").gameObject;
 
 			//Initialize effects lists
 			for (int i = 0; i < combatants.Count; i++)
@@ -169,7 +181,7 @@ public class BattleScene : MonoBehaviour
 
 			//Set trainer images
 			trainerStands[0].transform.FindChild("Trainer").GetComponent<Image>().sprite =
-				DataContents.trainerBacks[GameManager.instance.GetTrainer().PlayerImage * 5];
+				DataContents.trainerBacks[combatants[0].PlayerImage * 5];
 			trainerStands[1].transform.FindChild("Trainer").GetComponent<Image>().sprite =
 				DataContents.leaderSprites[combatants[1].PlayerImage];
 
@@ -203,100 +215,7 @@ public class BattleScene : MonoBehaviour
 			FillInBattlerData();
 
 			//Fill in all team data
-			for (int i = 0; i < combatants[0].Team.Count; i++)
-			{
-				//Activate slots
-				playerTeam.transform.FindChild("Background").GetChild(i).gameObject.SetActive(true);
-				playerTeam.transform.FindChild("Pokemon" + (i + 1)).gameObject.SetActive(true);
-
-				//If on first slot
-				if (i == 0)
-				{
-					//If pokemon in first slot is fainted
-					if (combatants[0].Team[i].Status == 1)
-					{
-						playerTeam.transform.FindChild("Background").GetChild(i).
-						GetComponent<Image>().sprite = Resources.Load<Sprite>
-							("Sprites/Menus/partyPanelRoundSelFnt");
-					} //end if
-					//Otherwise give regular slot image
-					else
-					{
-						playerTeam.transform.FindChild("Background").GetChild(i).
-						GetComponent<Image>().sprite = Resources.Load<Sprite>
-							("Sprites/Menus/partyPanelRoundSel");
-					} //end else
-
-					//Set party ball to selected
-					playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("PartyBall").
-					GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBallSel");
-				} //end if
-				//Fill in any other slot
-				else
-				{
-					//If pokemon in slot is fainted
-					if (combatants[0].Team[i].Status == 1)
-					{
-						playerTeam.transform.FindChild("Background").GetChild(i).GetComponent<Image>().sprite =
-							Resources.Load<Sprite>("Sprites/Menus/partyPanelRectFnt");
-					} //end if
-					//Otherwise give regular slot image
-					else
-					{
-						playerTeam.transform.FindChild("Background").GetChild(i).GetComponent<Image>().sprite =
-							Resources.Load<Sprite>("Sprites/Menus/partyPanelRect");
-					} //end else
-
-					//Set party ball to unselected
-					playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("PartyBall").
-					GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBall");
-				} //end else
-
-				//Set status
-				SetStatusIcon(playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Status").
-					GetComponent<Image>(), combatants[0].Team[i]);
-
-				//Set sprite
-				playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Sprite").GetComponent<Image>()
-					.sprite = GetCorrectIcon(combatants[0].Team[i]);
-
-				//Set nickname
-				playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Nickname").GetComponent<Text>().text =
-					combatants[0].Team[i].Nickname;
-
-				//Set item
-				if (combatants[0].Team[i].Item != 0)
-				{
-					playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Item").GetComponent<Image>().color =
-						Color.white;						
-				} //end if
-				else
-				{
-					playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Item").GetComponent<Image>().color =
-						Color.clear;	
-				} //end else 
-
-				//Set remaining HP
-				playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("RemainingHP").GetComponent<RectTransform>().
-				localScale = new Vector3((float)combatants[0].Team[i].CurrentHP / (float)GameManager.
-					instance.GetTrainer().Team[i].TotalHP, 1f, 1f);
-
-				//Set level
-				playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Level").GetComponent<Text>().text = "Lv." +
-					combatants[0].Team[i].CurrentLevel.ToString();
-
-				//Set HP text
-				playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("CurrentHP").GetComponent<Text>().text =
-					combatants[0].Team[i].CurrentHP.ToString() + "/" + GameManager.instance.GetTrainer().
-					Team[i].TotalHP.ToString();
-			} //end for
-
-			//Deactivate any empty party spots
-			for (int i = 5; i > combatants[0].Team.Count - 1; i--)
-			{
-				playerTeam.transform.FindChild("Background").GetChild(i).gameObject.SetActive(false);
-				playerTeam.transform.FindChild("Pokemon" + (i + 1)).gameObject.SetActive(false);
-			} //end for
+			UpdateDisplayedTeam();
 
 			//Turn off team
 			summaryScreen.SetActive(false);
@@ -338,6 +257,9 @@ public class BattleScene : MonoBehaviour
 				//Reset choiceNumber to zero
 				choiceNumber = 0;
 
+				//Reset choiceTarget to zero
+				choiceTarget = 0;
+
 				//Get player input
 				GetInput();
 			} //end if
@@ -352,13 +274,13 @@ public class BattleScene : MonoBehaviour
 				GetInput();
 
 				//Change background
-				int currentPocket = GameManager.instance.GetTrainer().GetCurrentBagPocket();
+				int currentPocket = combatants[0].GetCurrentBagPocket();
 				bagBack.sprite = Resources.Load<Sprite>("Sprites/Menus/bag" + currentPocket);
 
 				//Fill in slots
 				for (int i = 0; i < 10; i++)
 				{
-					if (GameManager.instance.GetTrainer().SlotCount() - 1 < topShown + i)
+					if (combatants[0].SlotCount() - 1 < topShown + i)
 					{
 						viewport.transform.GetChild(i).GetComponent<Text>().text = "";
 					} //end if
@@ -367,21 +289,21 @@ public class BattleScene : MonoBehaviour
 						if (topShown + i == choiceNumber)
 						{
 							viewport.transform.GetChild(i).GetComponent<Text>().text = "<color=red>" +
-							GameManager.instance.GetTrainer().GetItem(topShown + i)[1] + " - " +
-							DataContents.GetItemGameName(GameManager.instance.GetTrainer().GetItem(topShown + i)[0]) + "</color>";
+							combatants[0].GetItem(topShown + i)[1] + " - " +
+							DataContents.GetItemGameName(combatants[0].GetItem(topShown + i)[0]) + "</color>";
 						} //end if
 						else
 						{
-							viewport.transform.GetChild(i).GetComponent<Text>().text = GameManager.instance.GetTrainer().GetItem(topShown + i)[1]
-							+ " - " + DataContents.GetItemGameName(GameManager.instance.GetTrainer().GetItem(topShown + i)[0]);
+							viewport.transform.GetChild(i).GetComponent<Text>().text = combatants[0].GetItem(topShown + i)[1]
+							+ " - " + DataContents.GetItemGameName(combatants[0].GetItem(topShown + i)[0]);
 						} //end else
 					} //end else
 				} //end for
 
 				//Fill in sprite and description
-				if (GameManager.instance.GetTrainer().SlotCount() != 0)
+				if (combatants[0].SlotCount() != 0)
 				{
-					List<int> item = GameManager.instance.GetTrainer().GetItem(choiceNumber);
+					List<int> item = combatants[0].GetItem(choiceNumber);
 					bagSprite.color = Color.white;
 					bagSprite.sprite = Resources.Load<Sprite>("Sprites/Icons/item" + item[0].ToString("000"));
 					bagDescription.text = DataContents.ExecuteSQL<string>("SELECT description FROM Items WHERE rowid=" + item[0]);
@@ -397,91 +319,8 @@ public class BattleScene : MonoBehaviour
 				//Change background sprites based on player input
 				if (previousTeamSlot != choiceNumber)
 				{
-					//Deactivate panel
-					if (previousTeamSlot == 1)
-					{
-						//Adjust if pokemon is fainted
-						if (combatants[0].Team[previousTeamSlot - 1].Status != 1)
-						{
-							playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot - 1).GetComponent<Image>().
-							sprite = Resources.Load<Sprite>("Sprites/Menus/partypanelRound");
-						} //end if
-						else
-						{
-							playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot - 1).GetComponent<Image>().
-							sprite = Resources.Load<Sprite>("Sprites/Menus/partypanelRoundFnt");
-						} //end else
-
-						//Deactivate party ball
-						playerTeam.transform.FindChild("Pokemon" + previousTeamSlot).FindChild("PartyBall").
-						GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBall");
-					} //end if
-
-					//As long as previous choice was greater than 0 (no buttons)
-					else if (previousTeamSlot > 0)
-					{
-						//Adjust if pokemon is fainted
-						if (combatants[0].Team[previousTeamSlot - 1].Status != 1)
-						{
-							playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot - 1).GetComponent<Image>().
-							sprite = Resources.Load<Sprite>("Sprites/Menus/partypanelRect");
-						} //end if
-						else
-						{
-							playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot - 1).GetComponent<Image>().
-							sprite = Resources.Load<Sprite>("Sprites/Menus/partypanelRectFnt");
-						} //end else
-
-						//Deactivate party ball
-						playerTeam.transform.FindChild("Pokemon" + previousTeamSlot).FindChild("PartyBall").
-						GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBall");
-					} //end else if
-
-					//Deactivate buttons
-					playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Button>().interactable = false;
-					playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Button>().interactable = false;
-					playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Image>().color = Color.gray;
-					playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Image>().color = Color.gray;
-
-					//Activate panel
-					//First slot selected
-					if (choiceNumber == 1)
-					{
-						//Adjust if pokemon is fainted
-						if (combatants[0].Team[choiceNumber - 1].Status != 1)
-						{
-							playerTeam.transform.FindChild("Background").GetChild(choiceNumber - 1).GetComponent<Image>().
-							sprite = Resources.Load<Sprite>("Sprites/Menus/partyPanelRoundSel");
-						} //end if
-						else
-						{
-							playerTeam.transform.FindChild("Background").GetChild(choiceNumber - 1).GetComponent<Image>().
-							sprite = Resources.Load<Sprite>("Sprites/Menus/partyPanelRoundSelFnt");
-						} //end else
-
-						//Activate party ball
-						playerTeam.transform.FindChild("Pokemon" + choiceNumber).FindChild("PartyBall").
-						GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBallSel");
-					} //end if
-					//Any other slot
-					else
-					{
-						//Adjust if pokemon is fainted
-						if (combatants[0].Team[choiceNumber - 1].Status != 1)
-						{
-							playerTeam.transform.FindChild("Background").GetChild(choiceNumber - 1).GetComponent<Image>().
-							sprite = Resources.Load<Sprite>("Sprites/Menus/partyPanelRectSel");
-						} //end if
-						else
-						{
-							playerTeam.transform.FindChild("Background").GetChild(choiceNumber - 1).GetComponent<Image>().
-							sprite = Resources.Load<Sprite>("Sprites/Menus/partyPanelRectSelFnt");
-						} //end else
-
-						//Activate party ball
-						playerTeam.transform.FindChild("Pokemon" + choiceNumber).FindChild("PartyBall").
-						GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBallSel");
-					} //end else
+					//Update backgrounds
+					FillInTeam(choiceNumber);
 
 					//Update previous slot
 					previousTeamSlot = choiceNumber;
@@ -490,101 +329,28 @@ public class BattleScene : MonoBehaviour
 				//Get player input
 				GetInput();
 			} //end else if
+			else if (battleState == Battle.POKEMONSUBMENU)
+			{
+				//Get player input
+				GetInput();
+			} //end else if
 			else if (battleState == Battle.ITEMUSE)
 			{
 				//Change background sprites based on player input
 				if (previousTeamSlot != choiceTarget)
 				{
-					//Deactivate panel
-					if (previousTeamSlot == 1)
-					{
-						//Adjust if pokemon is fainted
-						if (combatants[0].Team[previousTeamSlot - 1].Status != 1)
-						{
-							playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot - 1).GetComponent<Image>().
-							sprite = Resources.Load<Sprite>("Sprites/Menus/partypanelRound");
-						} //end if
-						else
-						{
-							playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot - 1).GetComponent<Image>().
-							sprite = Resources.Load<Sprite>("Sprites/Menus/partypanelRoundFnt");
-						} //end else
-
-						//Deactivate party ball
-						playerTeam.transform.FindChild("Pokemon" + previousTeamSlot).FindChild("PartyBall").
-						GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBall");
-					} //end if
-
-					//As long as previous choice was greater than 0 (no buttons)
-					else if (previousTeamSlot > 0)
-					{
-						//Adjust if pokemon is fainted
-						if (combatants[0].Team[previousTeamSlot - 1].Status != 1)
-						{
-							playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot - 1).GetComponent<Image>().
-							sprite = Resources.Load<Sprite>("Sprites/Menus/partypanelRect");
-						} //end if
-						else
-						{
-							playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot - 1).GetComponent<Image>().
-							sprite = Resources.Load<Sprite>("Sprites/Menus/partypanelRectFnt");
-						} //end else
-
-						//Deactivate party ball
-						playerTeam.transform.FindChild("Pokemon" + previousTeamSlot).FindChild("PartyBall").
-						GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBall");
-					} //end else if
-
-					//Deactivate buttons
-					playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Button>().interactable = false;
-					playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Button>().interactable = false;
-					playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Image>().color = Color.gray;
-					playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Image>().color = Color.gray;
-
-					//Activate panel
-					//First slot selected
-					if (choiceTarget == 1)
-					{
-						//Adjust if pokemon is fainted
-						if (combatants[0].Team[choiceTarget - 1].Status != 1)
-						{
-							playerTeam.transform.FindChild("Background").GetChild(choiceTarget - 1).GetComponent<Image>().
-							sprite = Resources.Load<Sprite>("Sprites/Menus/partyPanelRoundSel");
-						} //end if
-						else
-						{
-							playerTeam.transform.FindChild("Background").GetChild(choiceTarget - 1).GetComponent<Image>().
-							sprite = Resources.Load<Sprite>("Sprites/Menus/partyPanelRoundSelFnt");
-						} //end else
-
-						//Activate party ball
-						playerTeam.transform.FindChild("Pokemon" + choiceTarget).FindChild("PartyBall").
-						GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBallSel");
-					} //end if
-					//Any other slot
-					else
-					{
-						//Adjust if pokemon is fainted
-						if (combatants[0].Team[choiceTarget - 1].Status != 1)
-						{
-							playerTeam.transform.FindChild("Background").GetChild(choiceTarget - 1).GetComponent<Image>().
-							sprite = Resources.Load<Sprite>("Sprites/Menus/partyPanelRectSel");
-						} //end if
-						else
-						{
-							playerTeam.transform.FindChild("Background").GetChild(choiceTarget - 1).GetComponent<Image>().
-							sprite = Resources.Load<Sprite>("Sprites/Menus/partyPanelRectSelFnt");
-						} //end else
-
-						//Activate party ball
-						playerTeam.transform.FindChild("Pokemon" + choiceTarget).FindChild("PartyBall").
-						GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBallSel");
-					} //end else
+					//Update backgrounds
+					FillInTeam(choiceTarget);
 
 					//Update previous slot
 					previousTeamSlot = choiceTarget;
 				} //end if
 
+				//Get player input
+				GetInput();
+			} //end else if
+			else if (battleState == Battle.PICKMOVE)
+			{
 				//Get player input
 				GetInput();
 			} //end else if
@@ -627,18 +393,18 @@ public class BattleScene : MonoBehaviour
 			 * ++++++-Resolve item(air balloon)
 			 * 
 			 * Beginning of round
-			 * -Player picks Fight/Bag/Pokemon/Run
-			 * --Fight
-			 * ----Display pokemon attacks
-			 * ----Player picks an attack or cancels back to main
-			 * --Bag
-			 * ----Display inventory
-			 * ----Player picks an item with a battle use
-			 * ----Player picks pokemon to use it on
+			 * ++++++-Player picks Fight/Bag/Pokemon/Run
+			 * ++++++--Fight
+			 * ++++++----Display pokemon attacks
+			 * ++++++----Player picks an attack or cancels back to main
+			 * ++++++--Bag
+			 * ++++++----Display inventory
+			 * ++++++----Player picks an item with a battle use
+			 * ++++++----Player picks pokemon to use it on
 			 * --Pokemon
-			 * ----Team roster is shown
-			 * ----Player picks a pokemon
-			 * ----If switch is chosen, queue it
+			 * ++++++----Team roster is shown
+			 * ++++++----Player picks a pokemon
+			 * ++++++----If switch is chosen, queue it
 			 * ----Player can view summary or cancel back to main
 			 * --Run
 			 * ----End the fight and return any variables to start
@@ -749,27 +515,11 @@ public class BattleScene : MonoBehaviour
 				//Inventory selection
 				else if (battleState == Battle.SELECTITEM)
 				{
-					GameManager.instance.GetTrainer().PreviousPocket();
+					combatants[0].PreviousPocket();
 					choiceNumber = 0;
 					bottomShown = 9;
 					topShown = 0;
 					GameManager.instance.FadeInAnimation(4);
-				} //end else if
-
-				//Pokemon selection
-				else if (battleState == Battle.SELECTPOKEMON)
-				{
-					//Decrease (higher slots are on lower children)
-					choiceNumber--;
-
-					//Loop to end of team if out of pokemon choice range
-					if (choiceNumber < 1)
-					{
-						choiceNumber = combatants[0].Team.Count;
-					} //end if
-
-					//Set current slot choice
-					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else if
 
 				//Item use
@@ -786,6 +536,22 @@ public class BattleScene : MonoBehaviour
 
 					//Set current slot choice if on pokemon slot
 					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceTarget).gameObject;
+				} //end else if
+
+				//Pokemon selection
+				else if (battleState == Battle.SELECTPOKEMON)
+				{
+					//Decrease (higher slots are on lower children)
+					choiceNumber--;
+
+					//Loop to end of team if out of pokemon choice range
+					if (choiceNumber < 1)
+					{
+						choiceNumber = combatants[0].Team.Count;
+					} //end if
+
+					//Set current slot choice
+					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else if
 			} //end if
 		} //end if Left Arrow
@@ -849,27 +615,11 @@ public class BattleScene : MonoBehaviour
 				//Inventory selection
 				else if (battleState == Battle.SELECTITEM)
 				{
-					GameManager.instance.GetTrainer().NextPocket();
+					combatants[0].NextPocket();
 					choiceNumber = 0;
 					bottomShown = 9;
 					topShown = 0;
 					GameManager.instance.FadeInAnimation(4);
-				} //end else if
-
-				//Pokemon selection
-				else if (battleState == Battle.SELECTPOKEMON)
-				{
-					//Increase (lower slots are on higher children)
-					choiceNumber++;
-
-					//Loop to end of team if outside of pokemon range
-					if (choiceNumber > combatants[0].Team.Count)
-					{
-						choiceNumber = 1;
-					} //end if
-
-					//Set current slot choice
-					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else if
 
 				//Item use
@@ -886,6 +636,22 @@ public class BattleScene : MonoBehaviour
 
 					//Set current slot choice if on pokemon slot
 					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceTarget).gameObject;
+				} //end else if
+
+				//Pokemon selection
+				else if (battleState == Battle.SELECTPOKEMON)
+				{
+					//Increase (lower slots are on higher children)
+					choiceNumber++;
+
+					//Loop to end of team if outside of pokemon range
+					if (choiceNumber > combatants[0].Team.Count)
+					{
+						choiceNumber = 1;
+					} //end if
+
+					//Set current slot choice
+					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else if
 			} //end if
 		} //end else if Right Arrow
@@ -957,8 +723,41 @@ public class BattleScene : MonoBehaviour
 					} //end if
 				} //end else if
 
+				//Item use
+				else if (battleState == Battle.ITEMUSE)
+				{
+					//Move from top slot to last team slot
+					if (choiceTarget == 1 || choiceTarget == 2)
+					{
+						choiceTarget = combatants[0].Team.Count;
+						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceTarget).gameObject;
+					} //end if
+					//Go up vertically
+					else
+					{
+						choiceTarget -= 2;
+						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceTarget).gameObject;
+					} //end else
+				} //end else if
+
+				//Pick move
+				else if (battleState == Battle.PICKMOVE)
+				{
+					//Decrease choice (higher slots are on lower children)
+					subMenuChoice--;
+
+					//If on first option, loop to end
+					if (subMenuChoice < 0)
+					{
+						subMenuChoice = choices.transform.childCount - 1;
+					} //end if
+
+					//Reposition selection
+					selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+				} //end else if
+
 				//Pokemon selection
-				else if(battleState == Battle.SELECTPOKEMON)
+				else if (battleState == Battle.SELECTPOKEMON)
 				{
 					//Move from top slot to last pokemon
 					if (choiceNumber == 1 || choiceNumber == 2)
@@ -975,21 +774,20 @@ public class BattleScene : MonoBehaviour
 					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else if
 
-				//Item use
-				else if (battleState == Battle.ITEMUSE)
+				//Pokemon submenu
+				else if (battleState == Battle.POKEMONSUBMENU)
 				{
-					//Move from top slot to last team slot
-					if (choiceTarget == 1 || choiceTarget == 2)
+					//Decrease choice (higher slots are on lower children)
+					subMenuChoice--;
+
+					//If on first option, loop to end
+					if (subMenuChoice < 0)
 					{
-						choiceTarget = combatants[0].Team.Count;
-						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceTarget).gameObject;
+						subMenuChoice = choices.transform.childCount - 1;
 					} //end if
-					//Go up vertically
-					else
-					{
-						choiceTarget -= 2;
-						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceTarget).gameObject;
-					} //end else
+
+					//Reposition selection
+					selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
 				} //end else if
 			} //end if
 		} //end else if Up Arrow
@@ -1053,7 +851,7 @@ public class BattleScene : MonoBehaviour
 				//Inventory selection
 				else if (battleState == Battle.SELECTITEM)
 				{
-					choiceNumber = ExtensionMethods.CapAtInt(choiceNumber + 1, GameManager.instance.GetTrainer().SlotCount() - 1);
+					choiceNumber = ExtensionMethods.CapAtInt(choiceNumber + 1, combatants[0].SlotCount() - 1);
 					if (choiceNumber > bottomShown)
 					{
 						bottomShown = choiceNumber;
@@ -1061,12 +859,46 @@ public class BattleScene : MonoBehaviour
 					} //end if
 				} //end else if
 
+				//Item use
+				else if (battleState == Battle.ITEMUSE)
+				{
+					//Move from bottom slot to first team slot
+					if ((choiceTarget == combatants[0].Team.Count - 1 && choiceTarget > 0) ||
+						choiceTarget == combatants[0].Team.Count)
+					{
+						choiceTarget = 1;
+						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceTarget).gameObject;
+					} //end if
+					//Go down vertically
+					else
+					{
+						choiceTarget += 2;
+						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceTarget).gameObject;
+					} //end else
+				} //end else if
+
+				//Pick move
+				else if (battleState == Battle.PICKMOVE)
+				{
+					//Increase choice (lower slots are on higher children)
+					subMenuChoice++;
+
+					//If on last option, loop to first
+					if (subMenuChoice > choices.transform.childCount - 1)
+					{
+						subMenuChoice = 0;
+					} //end if
+
+					//Reposition selection
+					selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+				} //end else if
+
 				//Pokemon selection
-				else if(battleState == Battle.SELECTPOKEMON)
+				else if (battleState == Battle.SELECTPOKEMON)
 				{
 					//Move from bottom slot to first pokemon
-					if ((choiceNumber == combatants[0].Team.Count-1 && choiceNumber > 0) || 
-						choiceNumber == combatants[0].Team.Count)
+					if ((choiceNumber == combatants[0].Team.Count - 1 && choiceNumber > 0) ||
+					    choiceNumber == combatants[0].Team.Count)
 					{
 						choiceNumber = 1;
 					} //end else if
@@ -1080,22 +912,20 @@ public class BattleScene : MonoBehaviour
 					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else if
 
-				//Item use
-				else if (battleState == Battle.ITEMUSE)
+				//Pokemon submenu
+				else if (battleState == Battle.POKEMONSUBMENU)
 				{
-					//Move from bottom slot to first team slot
-					if ((choiceTarget == combatants[0].Team.Count-1 && choiceTarget > 0) || 
-						choiceTarget == combatants[0].Team.Count)
+					//Increase choice (lower slots are on higher children)
+					subMenuChoice++;
+
+					//If on last option, loop to first
+					if (subMenuChoice > choices.transform.childCount - 1)
 					{
-						choiceTarget = 1;
-						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceTarget).gameObject;
+						subMenuChoice = 0;
 					} //end if
-					//Go down vertically
-					else
-					{
-						choiceTarget += 2;
-						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceTarget).gameObject;
-					} //end else
+
+					//Reposition selection
+					selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
 				} //end else if
 			} //end if
 		} //end else if Down Arrow
@@ -1326,6 +1156,37 @@ public class BattleScene : MonoBehaviour
 					} //end if
 				} //end else if
 
+				//Item use
+				else if (battleState == Battle.ITEMUSE && Input.mousePosition.y > Camera.main.WorldToScreenPoint(
+					selectedChoice.transform.position).y + selectedChoice.GetComponent<RectTransform>().rect.height / 2)
+				{
+					//Stay put if on top slot
+					if (choiceTarget == 1 || choiceTarget == 2)
+					{
+						//Do nothing
+					} //end if
+					//Go up vertically
+					else
+					{
+						choiceTarget -= 2;
+						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceTarget).gameObject;
+					} //end else
+				} //end else if
+
+				//Pick move
+				else if(battleState == Battle.PICKMOVE && Input.mousePosition.y > selection.transform.position.y +
+					selection.GetComponent<RectTransform>().rect.height / 2)
+				{
+					//If not on last option, decrease (higher slots are on lower children)
+					if (subMenuChoice > 0)
+					{
+						subMenuChoice--;
+					} //end if
+
+					//Reposition selection
+					selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+				} //end else if
+
 				//Pokemon selection
 				else if (battleState == Battle.SELECTPOKEMON && Input.mousePosition.y > Camera.main.WorldToScreenPoint(
 					selectedChoice.transform.position).y + selectedChoice.GetComponent<RectTransform>().rect.height / 2)
@@ -1343,21 +1204,18 @@ public class BattleScene : MonoBehaviour
 					} //end else
 				} //end else if
 
-				//Item use
-				else if (battleState == Battle.ITEMUSE && Input.mousePosition.y > Camera.main.WorldToScreenPoint(
-					selectedChoice.transform.position).y + selectedChoice.GetComponent<RectTransform>().rect.height / 2)
+				//Pokemon submenu
+				else if(battleState == Battle.POKEMONSUBMENU && Input.mousePosition.y > selection.transform.position.y +
+					selection.GetComponent<RectTransform>().rect.height / 2)
 				{
-					//Stay put if on top slot
-					if (choiceTarget == 1 || choiceTarget == 2)
+					//If not on last option, decrease (higher slots are on lower children)
+					if (subMenuChoice > 0)
 					{
-						//Do nothing
+						subMenuChoice--;
 					} //end if
-					//Go up vertically
-					else
-					{
-						choiceTarget -= 2;
-						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceTarget).gameObject;
-					} //end else
+
+					//Reposition selection
+					selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
 				} //end else if
 			} //end if
 		} //end else if Mouse Moves Up
@@ -1420,6 +1278,38 @@ public class BattleScene : MonoBehaviour
 					} //end if
 				} //end else if
 
+				//Item use
+				else if (battleState == Battle.ITEMUSE && Input.mousePosition.y < Camera.main.WorldToScreenPoint(
+					selectedChoice.transform.position).y - selectedChoice.GetComponent<RectTransform>().rect.height / 2)
+				{
+					//Stay put if on bottom slot
+					if ((choiceTarget == combatants[0].Team.Count - 1 && choiceTarget > 0) ||
+						choiceTarget == combatants[0].Team.Count)
+					{
+						//Do nothing
+					} //end if
+					//Go down vertically
+					else
+					{
+						choiceTarget += 2;
+						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceTarget).gameObject;
+					} //end else
+				} //end else if
+
+				//Pick move
+				else if(battleState == Battle.PICKMOVE && Input.mousePosition.y < selection.transform.position.y -
+					selection.GetComponent<RectTransform>().rect.height / 2)
+				{
+					//If not on last option, increase (lower slots are on higher children)
+					if (subMenuChoice < choices.transform.childCount - 1)
+					{
+						subMenuChoice++;
+					} //end if
+
+					//Reposition selection
+					selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+				} //end else if
+
 				//Pokemon selection
 				else if (battleState == Battle.SELECTPOKEMON && Input.mousePosition.y < Camera.main.WorldToScreenPoint(
 					selectedChoice.transform.position).y - selectedChoice.GetComponent<RectTransform>().rect.height / 2)
@@ -1438,22 +1328,18 @@ public class BattleScene : MonoBehaviour
 					} //end else
 				} //end else if
 
-				//Item use
-				else if (battleState == Battle.ITEMUSE && Input.mousePosition.y < Camera.main.WorldToScreenPoint(
-					selectedChoice.transform.position).y - selectedChoice.GetComponent<RectTransform>().rect.height / 2)
+				//Pokemon submenu
+				else if(battleState == Battle.POKEMONSUBMENU && Input.mousePosition.y < selection.transform.position.y -
+					selection.GetComponent<RectTransform>().rect.height / 2)
 				{
-					//Stay put if on bottom slot
-					if ((choiceTarget == combatants[0].Team.Count - 1 && choiceTarget > 0) ||
-						choiceTarget == combatants[0].Team.Count)
+					//If not on last option, increase (lower slots are on higher children)
+					if (subMenuChoice < choices.transform.childCount - 1)
 					{
-						//Do nothing
+						subMenuChoice++;
 					} //end if
-					//Go down vertically
-					else
-					{
-						choiceTarget += 2;
-						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceTarget).gameObject;
-					} //end else
+
+					//Reposition selection
+					selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
 				} //end else if
 			} //end if
 		} //end else if Mouse Moves Down
@@ -1490,7 +1376,7 @@ public class BattleScene : MonoBehaviour
 				//Inventory selection
 				if (battleState == Battle.SELECTITEM)
 				{
-					choiceNumber = ExtensionMethods.CapAtInt(choiceNumber + 1, GameManager.instance.GetTrainer().SlotCount() - 1);
+					choiceNumber = ExtensionMethods.CapAtInt(choiceNumber + 1, combatants[0].SlotCount() - 1);
 					if (choiceNumber > bottomShown)
 					{
 						bottomShown = choiceNumber;
@@ -1560,7 +1446,7 @@ public class BattleScene : MonoBehaviour
 					//Bag
 						case 1:
 							playerBag.SetActive(true);
-							int currentPocket = GameManager.instance.GetTrainer().GetCurrentBagPocket();
+							int currentPocket = combatants[0].GetCurrentBagPocket();
 							bagBack.sprite = Resources.Load<Sprite>("Sprites/Menus/bag" + currentPocket);
 							choiceNumber = 0;
 							topShown = 0;
@@ -1601,23 +1487,86 @@ public class BattleScene : MonoBehaviour
 				else if (battleState == Battle.ITEMUSE)
 				{
 					int itemNumber = combatants[0].GetItem(choiceNumber)[0];
-					if (ItemEffects.BattleUseOnPokemon(combatants[0].Team[choiceTarget], itemNumber))
+					if (bool.Parse(ItemEffects.BattleUseOnPokemon(combatants[0].Team[choiceTarget - 1], itemNumber, true)))
 					{
-						playerBag.SetActive(false);
+						playerTeam.SetActive(false);
 						commandChoice.SetActive(false);
-						AddToQueue(0, commandInt, choiceNumber, choiceTarget, DeterminePriority(0, 1, choiceNumber));
+						AddToQueue(0, commandInt, choiceNumber, choiceTarget - 1, DeterminePriority(0, 1, itemNumber));
 						battleState = Battle.GETAICHOICE;
-						GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 					}  //end if
+				} //end else if
+
+				//Pick Move Processing
+				else if (battleState == Battle.PICKMOVE)
+				{
+					int itemNumber = combatants[0].GetItem(choiceNumber)[0];
+					QueueEvent newEvent = new QueueEvent();
+					newEvent.battler = 0;
+					newEvent.action = 1;
+					newEvent.selection = choiceNumber;
+					newEvent.target = DetermineTarget(0, 1, choiceNumber);
+					newEvent.priority = 7;
+					if (bool.Parse(ApplySpecialItem(newEvent, true)))
+					{
+						selection.SetActive(false);
+						choices.SetActive(false);
+						playerTeam.SetActive(false);
+						commandChoice.SetActive(false);
+						AddToQueue(0, commandInt, choiceNumber, DetermineTarget(0, 1, itemNumber), DeterminePriority(0, 1, itemNumber));
+						battleState = Battle.GETAICHOICE;
+					} //end if
 				} //end else if
 
 				//Pokemon selection
 				else if (battleState == Battle.SELECTPOKEMON)
 				{
-					playerTeam.SetActive(false);
-					commandChoice.SetActive(false);
-					AddToQueue(0, commandInt, 0, choiceNumber-1, DeterminePriority(0,2,choiceNumber));
-					battleState = Battle.GETAICHOICE;
+					FillInChoices();
+					StartCoroutine(WaitForResize());
+					choices.SetActive(true);
+					subMenuChoice = 0;
+					battleState = Battle.POKEMONSUBMENU;
+				} //end else if
+
+				//Pokemon submenu
+				else if (battleState == Battle.POKEMONSUBMENU)
+				{
+					//Apply appropriate action based on subMenuChoice
+					switch (subMenuChoice)
+					{
+						case 0:
+							selection.SetActive(false);
+							choices.SetActive(false);
+							summaryScreen.SetActive(true);
+							summaryChoice = 0;
+							battleState = Battle.POKEMONSUMMARY;
+							break;
+						case 1:
+							if (combatants[0].Team[choiceNumber - 1].Status != (int)Status.FAINT)
+							{
+								playerTeam.SetActive(false);
+								commandChoice.SetActive(false);
+								AddToQueue(0, commandInt, 0, choiceNumber - 1, DeterminePriority(0, 2, choiceNumber));
+								battleState = Battle.GETAICHOICE;
+							} //end if
+							else
+							{
+								GameManager.instance.DisplayText(combatants[0].Team[choiceNumber - 1].Nickname +
+									" has fainted. It can't be used in battle currently.", true);
+							} //end else
+							break;
+						case 2:
+							selection.SetActive(false);
+							choices.SetActive(false);
+							currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").GetChild(0).gameObject;
+							ribbonScreen.SetActive(true);
+							battleState = Battle.POKEMONRIBBONS;
+							break;
+						case 3:
+							selection.SetActive(false);
+							choices.SetActive(false);
+							battleState = Battle.SELECTPOKEMON;
+							break;
+					} //end switch
 				} //end else if
 			} //end else if
 		} //end else if Left Mouse Button
@@ -1652,6 +1601,14 @@ public class BattleScene : MonoBehaviour
 					playerBag.SetActive(true);
 					playerTeam.SetActive(false);
 					battleState = Battle.SELECTITEM;
+				} //end else if
+
+				//Pick move
+				else if (battleState == Battle.PICKMOVE)
+				{
+					selection.SetActive(false);
+					choices.SetActive(false);
+					battleState = Battle.ITEMUSE;
 				} //end else if
 
 				//Pokemon selection
@@ -1724,7 +1681,7 @@ public class BattleScene : MonoBehaviour
 							//Bag
 						case 1:
 							playerBag.SetActive(true);
-							int currentPocket = GameManager.instance.GetTrainer().GetCurrentBagPocket();
+							int currentPocket = combatants[0].GetCurrentBagPocket();
 							bagBack.sprite = Resources.Load<Sprite>("Sprites/Menus/bag" + currentPocket);
 							choiceNumber = 0;
 							topShown = 0;
@@ -1765,23 +1722,51 @@ public class BattleScene : MonoBehaviour
 				else if (battleState == Battle.ITEMUSE)
 				{
 					int itemNumber = combatants[0].GetItem(choiceNumber)[0];
-					if (ItemEffects.BattleUseOnPokemon(combatants[0].Team[choiceTarget], itemNumber))
+					if (bool.Parse(ItemEffects.BattleUseOnPokemon(combatants[0].Team[choiceTarget-1], itemNumber, true)))
 					{
-						playerBag.SetActive(false);
+						playerTeam.SetActive(false);
 						commandChoice.SetActive(false);
-						AddToQueue(0, commandInt, choiceNumber, choiceTarget, DeterminePriority(0, 1, choiceNumber));
+						AddToQueue(0, commandInt, choiceNumber, choiceTarget-1, DeterminePriority(0, 1, itemNumber));
 						battleState = Battle.GETAICHOICE;
-						GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 					}  //end if
+				} //end else if
+
+				//Pick Move Processing
+				else if (battleState == Battle.PICKMOVE)
+				{
+					int itemNumber = combatants[0].GetItem(choiceNumber)[0];
+					QueueEvent newEvent = new QueueEvent();
+					newEvent.battler = 0;
+					newEvent.action = 1;
+					newEvent.selection = choiceNumber;
+					newEvent.target = DetermineTarget(0, 1, choiceNumber);
+					newEvent.priority = 7;
+					if (bool.Parse(ApplySpecialItem(newEvent, true)))
+					{
+						selection.SetActive(false);
+						choices.SetActive(false);
+						playerTeam.SetActive(false);
+						commandChoice.SetActive(false);
+						AddToQueue(0, commandInt, choiceNumber, DetermineTarget(0, 1, itemNumber), DeterminePriority(0, 1, itemNumber));
+						battleState = Battle.GETAICHOICE;
+					} //end if
 				} //end else if
 
 				//Pokemon selection
 				else if (battleState == Battle.SELECTPOKEMON)
 				{
-					playerTeam.SetActive(false);
-					commandChoice.SetActive(false);
-					AddToQueue(0, commandInt, 0, choiceNumber-1, DeterminePriority(0,2,choiceNumber));
-					battleState = Battle.GETAICHOICE;
+					if (combatants[0].Team[choiceNumber - 1].Status != (int)Status.FAINT)
+					{
+						playerTeam.SetActive(false);
+						commandChoice.SetActive(false);
+						AddToQueue(0, commandInt, 0, choiceNumber - 1, DeterminePriority(0, 2, choiceNumber));
+						battleState = Battle.GETAICHOICE;
+					} //end if
+					else
+					{
+						GameManager.instance.DisplayText(combatants[0].Team[choiceNumber - 1].Nickname +
+							" has fainted. It can't be used in battle currently.", true);
+					} //end else
 				} //end else if
 			} //end else if
 		} //end else if Enter/Return Key
@@ -1818,6 +1803,14 @@ public class BattleScene : MonoBehaviour
 					battleState = Battle.SELECTITEM;
 				} //end else if
 
+				//Pick move
+				else if (battleState == Battle.PICKMOVE)
+				{
+					selection.SetActive(false);
+					choices.SetActive(false);
+					battleState = Battle.ITEMUSE;
+				} //end else if
+
 				//Pokemon selection
 				else if (battleState == Battle.SELECTPOKEMON)
 				{
@@ -1838,6 +1831,7 @@ public class BattleScene : MonoBehaviour
 	{
 		battleType = bType;
 		combatants = trainers;
+		originalOrder = trainers[0].Team;
 	} //end InitializeBattle(int bType)
 
 	/***************************************
@@ -1951,8 +1945,21 @@ public class BattleScene : MonoBehaviour
 						GameManager.instance.LogErrorMessage(selection + " did not have a target.");
 						return  battler == 0 ? 1 : 0;
 				} //end switch
-			case 1:	
-				return battler;
+			case 1:
+				//Get item used
+				int item = combatants[0].GetItem(choiceNumber)[0];
+
+				//Check for Leppa Berry/Ether/MaxEther
+				if (item == 83 || item == 148 || item == 169)
+				{
+					return int.Parse("9" + (choiceTarget-1).ToString() + subMenuChoice.ToString());
+				} //end if
+
+				//Otherwise return battler
+				else
+				{
+					return battler;
+				} //end else
 			case 2:
 				return battler;
 			default:
@@ -2014,6 +2021,93 @@ public class BattleScene : MonoBehaviour
 	} //end SortQueue
 
 	/***************************************
+	 * Name: ApplySpecialItem
+	 * Applies items that require multiple 
+	 * parameters beyond normal item
+	 ***************************************/
+	string ApplySpecialItem(QueueEvent toProcess, bool check = false)
+	{
+		//Get item and targets
+		string givenTarget = toProcess.target.ToString();
+		int pokemonTarget = int.Parse(givenTarget[1].ToString());
+		int moveTarget = int.Parse(givenTarget[2].ToString());
+		int item = GameManager.instance.GetTrainer().GetItem(toProcess.selection)[0];
+
+		//Ether, Leppa Berry
+		if (item == 83 || item == 148)
+		{
+			//Get current move pp and max
+			int currentPP = combatants[toProcess.battler].Team[pokemonTarget].GetMovePP(moveTarget);
+			int maxPP = combatants[toProcess.battler].Team[pokemonTarget].GetMovePPMax(moveTarget);
+
+			//Check if Move PP is not full
+			if (currentPP < maxPP)
+			{
+				if (!check)
+				{
+					int result = ExtensionMethods.CapAtInt(currentPP + 10, maxPP);
+					combatants[toProcess.battler].Team[pokemonTarget].SetMovePP(moveTarget, result);
+					return string.Format("{0}! {1} was restored by {2}!",combatants[toProcess.battler].Team[pokemonTarget].Nickname, 
+						DataContents.GetMoveGameName(combatants[toProcess.battler].Team[pokemonTarget].GetMove(moveTarget)),
+						result);
+					combatants[toProcess.battler].RemoveItem(combatants[toProcess.battler].GetItem(toProcess.selection)[0], 1);
+				} //end if
+				else
+				{
+					return bool.TrueString;
+				} //end else
+			} //end if
+			else
+			{
+				GameManager.instance.DisplayText(string.Format("{0} is already at full PP. It won't have any effect.", 
+					DataContents.GetMoveGameName(combatants[toProcess.battler].Team[pokemonTarget].GetMove(moveTarget))), 
+					true);
+				return bool.FalseString;
+			} //end else
+		} //end if
+
+		//Max Ether
+		else if (item == 169)
+		{
+			//Get current move pp and max
+			int currentPP = combatants[toProcess.battler].Team[pokemonTarget].GetMovePP(moveTarget);
+			int maxPP = combatants[toProcess.battler].Team[pokemonTarget].GetMovePPMax(moveTarget);
+
+			//Check if Move PP is not full
+			if (currentPP < maxPP)
+			{
+				if (!check)
+				{
+					int result = maxPP - currentPP;
+					combatants[toProcess.battler].Team[pokemonTarget].SetMovePP(moveTarget, maxPP);
+					return string.Format("{0}! {1} was restored by {2}!", combatants[toProcess.battler].Team[pokemonTarget].Nickname,
+						DataContents.GetMoveGameName(combatants[toProcess.battler].Team[pokemonTarget].GetMove(moveTarget)),
+						result);
+					combatants[toProcess.battler].RemoveItem(combatants[toProcess.battler].GetItem(toProcess.selection)[0], 1);
+				} //end if
+				else
+				{
+					return bool.TrueString;
+				} //end else
+			} //end if
+			else
+			{
+				GameManager.instance.DisplayText(string.Format("{0} is already at full PP. It won't have any effect.", 
+					DataContents.GetMoveGameName(combatants[toProcess.battler].Team[pokemonTarget].GetMove(moveTarget))), 
+					true);
+				return bool.FalseString;
+			} //end else
+		} //end else if
+
+		//Anything else. This is what occurs when an item has no effect but is listed as usable
+		else
+		{
+			GameManager.instance.DisplayText(DataContents.GetItemGameName(item) + " has no listed effect yet.", true);
+			return bool.FalseString;
+		} //end else
+	} //end ApplySpecialItem(QueueEvent toProcess, bool check = false)
+
+	/***************************************
 	 * Name: ResolveFieldEntrance
 	 * Activates entrance effects of fields,
 	 * abilities, and items
@@ -2056,10 +2150,10 @@ public class BattleScene : MonoBehaviour
 	 * Sets status icon based on pokemon 
 	 * status
 	 ***************************************/
-	void SetStatusIcon(Image statusImage, Pokemon myPokemon)
+	void SetStatusIcon(Image statusImage, PokemonBattler myPokemon)
 	{
 		//Set status
-		switch (myPokemon.Status)
+		switch (myPokemon.BattlerStatus)
 		{
 			//Healthy
 			case 0:
@@ -2096,7 +2190,7 @@ public class BattleScene : MonoBehaviour
 				statusImage.sprite = DataContents.statusSprites[4];
 				break;
 		} //end switch
-	} //end SetStatusIcon(Image statusImage, Pokemon myPokemon)
+	} //end SetStatusIcon(Image statusImage, PokemonBattler myPokemon)
 
 	/***************************************
 	 * Name: GetCorrectIcon
@@ -2134,6 +2228,9 @@ public class BattleScene : MonoBehaviour
 	 ***************************************/
 	void FillInBattlerData()
 	{
+		//Update the battler
+		battlers[0].UpdateActiveBattler();
+
 		//Set back of player pokemon
 		string toLoad = "Sprites/Pokemon/" + battlers[0].BattlerPokemon.NatSpecies.ToString("000");
 		toLoad += battlers[0].BattlerPokemon.Gender == 1 ? "f" : "";
@@ -2153,6 +2250,10 @@ public class BattleScene : MonoBehaviour
 		//Set front for rest
 		for (int i = 1; i < trainerStands.Count; i++)
 		{
+			//Update the battler
+			battlers[i].UpdateActiveBattler();
+
+			//Set sprites
 			toLoad = "Sprites/Pokemon/" + battlers[i].BattlerPokemon.NatSpecies.ToString("000");
 			toLoad += battlers[i].BattlerPokemon.Gender == 1 ? "f" : "";
 			toLoad += battlers[i].BattlerPokemon.IsShiny ? "s" : "";
@@ -2176,7 +2277,7 @@ public class BattleScene : MonoBehaviour
 		battlerBoxes[0].transform.FindChild("Level").GetComponent<Text>().text = "Lv." + battlers[0].CurrentLevel.ToString();
 		battlerBoxes[0].transform.FindChild("Gender").GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/gender"
 			+ battlers[0].Gender);
-		SetStatusIcon(battlerBoxes[0].transform.FindChild("Status").GetComponent<Image>(), battlers[0].BattlerPokemon);
+		SetStatusIcon(battlerBoxes[0].transform.FindChild("Status").GetComponent<Image>(), battlers[0]);
 		if (battlers[0].CurrentLevel != 100)
 		{
 			battlerBoxes[0].transform.FindChild("Experience").GetComponent<RectTransform>().localScale = new Vector3(
@@ -2210,7 +2311,7 @@ public class BattleScene : MonoBehaviour
 			battlerBoxes[i].transform.FindChild("Level").GetComponent<Text>().text = "Lv." + battlers[i].CurrentLevel.ToString();
 			battlerBoxes[i].transform.FindChild("Gender").GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/gender"
 				+ battlers[i].Gender);
-			SetStatusIcon(battlerBoxes[i].transform.FindChild("Status").GetComponent<Image>(), battlers[i].BattlerPokemon);
+			SetStatusIcon(battlerBoxes[i].transform.FindChild("Status").GetComponent<Image>(), battlers[i]);
 			scale = (float)battlers[i].CurrentHP / (float)battlers[i].TotalHP;
 			battlerBoxes[i].transform.FindChild("HPBar").GetComponent<RectTransform>().localScale = new Vector3(
 				scale, 1, 1);
@@ -2230,6 +2331,235 @@ public class BattleScene : MonoBehaviour
 	} //end FillInBattlerData
 
 	/***************************************
+	 * Name: FillInTeam
+	 * Fills in the player's team data
+	 ***************************************/
+	void FillInTeam(int selectedPokemon)
+	{		
+		//Deactivate panel
+		if (previousTeamSlot == 1)
+		{
+			//Adjust if pokemon is fainted
+			if (combatants[0].Team[previousTeamSlot - 1].Status != (int)Status.FAINT)
+			{
+				playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot - 1).GetComponent<Image>().
+				sprite = Resources.Load<Sprite>("Sprites/Menus/partypanelRound");
+			} //end if
+			else
+			{
+				playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot - 1).GetComponent<Image>().
+				sprite = Resources.Load<Sprite>("Sprites/Menus/partypanelRoundFnt");
+			} //end else
+
+			//Deactivate party ball
+			playerTeam.transform.FindChild("Pokemon" + previousTeamSlot).FindChild("PartyBall").
+			GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBall");
+		} //end if
+
+		//As long as previous choice was greater than 0 (no buttons)
+		else if (previousTeamSlot > 0)
+		{
+			//Adjust if pokemon is fainted
+			if (combatants[0].Team[previousTeamSlot - 1].Status != (int)Status.FAINT)
+			{
+				playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot - 1).GetComponent<Image>().
+				sprite = Resources.Load<Sprite>("Sprites/Menus/partypanelRect");
+			} //end if
+			else
+			{
+				playerTeam.transform.FindChild("Background").GetChild(previousTeamSlot - 1).GetComponent<Image>().
+				sprite = Resources.Load<Sprite>("Sprites/Menus/partypanelRectFnt");
+			} //end else
+
+			//Deactivate party ball
+			playerTeam.transform.FindChild("Pokemon" + previousTeamSlot).FindChild("PartyBall").
+			GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBall");
+		} //end else if
+
+		//Deactivate buttons
+		playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Button>().interactable = false;
+		playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Button>().interactable = false;
+		playerTeam.transform.FindChild("Buttons").GetChild(0).GetComponent<Image>().color = Color.gray;
+		playerTeam.transform.FindChild("Buttons").GetChild(1).GetComponent<Image>().color = Color.gray;
+
+		//Activate panel
+		//First slot selected
+		if (selectedPokemon == 1)
+		{
+			//Adjust if pokemon is fainted
+			if (combatants[0].Team[selectedPokemon - 1].Status != (int)Status.FAINT)
+			{
+				playerTeam.transform.FindChild("Background").GetChild(selectedPokemon - 1).GetComponent<Image>().
+				sprite = Resources.Load<Sprite>("Sprites/Menus/partyPanelRoundSel");
+			} //end if
+			else
+			{
+				playerTeam.transform.FindChild("Background").GetChild(selectedPokemon - 1).GetComponent<Image>().
+				sprite = Resources.Load<Sprite>("Sprites/Menus/partyPanelRoundSelFnt");
+			} //end else
+
+			//Activate party ball
+			playerTeam.transform.FindChild("Pokemon" + selectedPokemon).FindChild("PartyBall").
+			GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBallSel");
+		} //end if
+		//Any other slot
+		else
+		{
+			//Adjust if pokemon is fainted
+			if (combatants[0].Team[selectedPokemon - 1].Status != (int)Status.FAINT)
+			{
+				playerTeam.transform.FindChild("Background").GetChild(selectedPokemon - 1).GetComponent<Image>().
+				sprite = Resources.Load<Sprite>("Sprites/Menus/partyPanelRectSel");
+			} //end if
+			else
+			{
+				playerTeam.transform.FindChild("Background").GetChild(selectedPokemon - 1).GetComponent<Image>().
+				sprite = Resources.Load<Sprite>("Sprites/Menus/partyPanelRectSelFnt");
+			} //end else
+
+			//Activate party ball
+			playerTeam.transform.FindChild("Pokemon" + selectedPokemon).FindChild("PartyBall").
+			GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBallSel");
+		} //end else
+	} //end FillInTeam(int selectedPokemon)
+
+	/***************************************
+	 * Name: UpdateDisplayedTeam
+	 * Changes sprites to match switches
+	 ***************************************/
+	void UpdateDisplayedTeam()
+	{
+		for (int i = 0; i < combatants[0].Team.Count; i++)
+		{
+			//Activate slots
+			playerTeam.transform.FindChild("Background").GetChild(i).gameObject.SetActive(true);
+			playerTeam.transform.FindChild("Pokemon" + (i + 1)).gameObject.SetActive(true);
+
+			//If on first slot
+			if (i == 0)
+			{
+				//If pokemon in first slot is fainted
+				if (combatants[0].Team[i].Status == 1)
+				{
+					playerTeam.transform.FindChild("Background").GetChild(i).
+					GetComponent<Image>().sprite = Resources.Load<Sprite>
+						("Sprites/Menus/partyPanelRoundSelFnt");
+				} //end if
+				//Otherwise give regular slot image
+				else
+				{
+					playerTeam.transform.FindChild("Background").GetChild(i).
+					GetComponent<Image>().sprite = Resources.Load<Sprite>
+						("Sprites/Menus/partyPanelRoundSel");
+				} //end else
+
+				//Set party ball to selected
+				playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("PartyBall").
+				GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBallSel");
+			} //end if
+			//Fill in any other slot
+			else
+			{
+				//If pokemon in slot is fainted
+				if (combatants[0].Team[i].Status == 1)
+				{
+					playerTeam.transform.FindChild("Background").GetChild(i).GetComponent<Image>().sprite =
+						Resources.Load<Sprite>("Sprites/Menus/partyPanelRectFnt");
+				} //end if
+				//Otherwise give regular slot image
+				else
+				{
+					playerTeam.transform.FindChild("Background").GetChild(i).GetComponent<Image>().sprite =
+						Resources.Load<Sprite>("Sprites/Menus/partyPanelRect");
+				} //end else
+
+				//Set party ball to unselected
+				playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("PartyBall").
+				GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Menus/partyBall");
+			} //end else
+
+			//Set status
+			SetStatusIcon(playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Status").
+				GetComponent<Image>(), new PokemonBattler(combatants[0].Team[i]));
+
+			//Set sprite
+			playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Sprite").GetComponent<Image>()
+				.sprite = GetCorrectIcon(combatants[0].Team[i]);
+
+			//Set nickname
+			playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Nickname").GetComponent<Text>().text =
+				combatants[0].Team[i].Nickname;
+
+			//Set item
+			if (combatants[0].Team[i].Item != 0)
+			{
+				playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Item").GetComponent<Image>().color =
+					Color.white;						
+			} //end if
+			else
+			{
+				playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Item").GetComponent<Image>().color =
+					Color.clear;	
+			} //end else 
+
+			//Set remaining HP
+			playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("RemainingHP").GetComponent<RectTransform>().
+			localScale = new Vector3((float)combatants[0].Team[i].CurrentHP / (float)GameManager.
+				instance.GetTrainer().Team[i].TotalHP, 1f, 1f);
+
+			//Set level
+			playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("Level").GetComponent<Text>().text = "Lv." +
+				combatants[0].Team[i].CurrentLevel.ToString();
+
+			//Set HP text
+			playerTeam.transform.FindChild("Pokemon" + (i + 1)).FindChild("CurrentHP").GetComponent<Text>().text =
+				combatants[0].Team[i].CurrentHP.ToString() + "/" + combatants[0].
+				Team[i].TotalHP.ToString();
+		} //end for
+
+		//Deactivate any empty party spots
+		for (int i = 5; i > combatants[0].Team.Count - 1; i--)
+		{
+			playerTeam.transform.FindChild("Background").GetChild(i).gameObject.SetActive(false);
+			playerTeam.transform.FindChild("Pokemon" + (i + 1)).gameObject.SetActive(false);
+		} //end for
+	} //end UpdateDisplayedTeam
+
+	/***************************************
+	 * Name: FillInChoices
+	 * Sets the choices for the choice menu
+	 ***************************************/
+	void FillInChoices()
+	{
+		if (pickMove)
+		{
+			//Add to choice menu if necessary
+			for (int i = choices.transform.childCount; i < 4; i++)
+			{
+				GameObject clone = Instantiate(choices.transform.GetChild(0).gameObject,
+					choices.transform.GetChild(0).position,
+					Quaternion.identity) as GameObject;
+				clone.transform.SetParent(choices.transform);
+			} //end for
+
+			//Destroy extra chocies
+			for (int i = choices.transform.childCount; i > 4; i--)
+			{
+				Destroy(choices.transform.GetChild(i - 1).gameObject);
+			} //end for
+
+			//Set text for each choice
+			for (int i = 0; i < 4; i++)
+			{
+				choices.transform.GetChild(i).GetComponent<Text>().text = string.Format("{0} PP {1}/{2}",
+					DataContents.GetMoveGameName(combatants[0].Team[choiceTarget-1].GetMove(i)),
+					combatants[0].Team[choiceTarget-1].GetMovePP(i),
+					combatants[0].Team[choiceTarget-1].GetMovePPMax(i));
+			} //end for
+		} //end if
+	} //end FillInChoices
+
+	/***************************************
 	 * Name: ProcessQueue
 	 * Applies each queue action
 	 ***************************************/
@@ -2245,9 +2575,24 @@ public class BattleScene : MonoBehaviour
 						battlers[queue[i].target].Nickname));
 					break;
 				case 1:
-					WriteBattleMessage(string.Format("{0} used {1} on {2}!", battlers[queue[i].battler].Nickname,
-						DataContents.GetItemGameName(queue[i].selection), combatants[queue[i].battler].Team[
-							queue[i].target].Nickname));
+					if (queue[i].target < 900)
+					{
+						int item = combatants[queue[i].battler].GetItem(queue[i].selection)[0];
+						string effect = ItemEffects.BattleUseOnPokemon(combatants[queue[i].battler].Team[queue[i].target], 
+							                combatants[queue[i].battler].GetItem(queue[i].selection)[0]);
+						combatants[queue[i].battler].RemoveItem(item, 1);
+						WriteBattleMessage(string.Format("{0} used {1} on {2}! {3}", combatants[queue[i].battler].PlayerName,
+							DataContents.GetItemGameName(item),	combatants[queue[i].battler].Team[queue[i].target].Nickname, effect));
+						FillInBattlerData();
+						UpdateDisplayedTeam();
+					} //end if
+					else
+					{
+						string effect = ApplySpecialItem(queue[i]);
+						WriteBattleMessage(string.Format("{0} used {1} on {2}", combatants[queue[i].battler].PlayerName,
+							DataContents.GetItemGameName(combatants[queue[i].battler].GetItem(queue[i].selection)[0]), 
+							effect));
+					} //end else
 					break;
 				case 2:
 					WriteBattleMessage(string.Format("That's enough, {0}! Go, {1}!", battlers[queue[i].battler].Nickname,
@@ -2255,13 +2600,13 @@ public class BattleScene : MonoBehaviour
 					battlers[queue[i].battler].SwitchInPokemon(combatants[queue[i].battler].Team[queue[i].target]);
 					combatants[queue[i].battler].Swap(0, queue[i].target);
 					FillInBattlerData();
+					UpdateDisplayedTeam();
 					break;
 			} //end switch
 
 			yield return new WaitForSeconds(1.5f);
 		} //end for
 		queue.Clear();
-		choiceNumber = 0;
 		commandChoice.SetActive(true);
 		selectedChoice = commandChoice.transform.GetChild(commandInt).gameObject;
 		battleState = Battle.ROUNDSTART;
@@ -2278,7 +2623,7 @@ public class BattleScene : MonoBehaviour
 		AnimatorOverrideController newController = new AnimatorOverrideController();
 		newController.runtimeAnimatorController = trainerStands[0].GetComponent<Animator>().runtimeAnimatorController;
 		newController["StopPlayerFade"] = Resources.Load<AnimationClip>("Animations/TrainerBack" + 
-			GameManager.instance.GetTrainer().PlayerImage.ToString());
+			combatants[0].PlayerImage.ToString());
 		trainerStands[0].GetComponent<Animator>().runtimeAnimatorController = newController;
 		trainerStands[0].GetComponent<Animator>().SetTrigger("FadeEnemy");
 		WriteBattleMessage("Go, " + battlers[0].Nickname + "!");
@@ -2314,7 +2659,7 @@ public class BattleScene : MonoBehaviour
 		//Process at end of frame
 		yield return new WaitForEndOfFrame();
 
-		if (choiceNumber < GameManager.instance.GetTrainer().SlotCount() && !pocketChange)
+		if (choiceNumber < combatants[0].SlotCount() && !pocketChange)
 		{
 			//Get item type
 			int itemType = DataContents.ExecuteSQL<int>("SELECT battleUse FROM Items WHERE id=" + combatants[0].GetItem(choiceNumber)[0]);
@@ -2325,6 +2670,7 @@ public class BattleScene : MonoBehaviour
 				playerBag.SetActive(false);
 				playerTeam.SetActive(true);
 				choiceTarget = 1;
+				selectedChoice = playerTeam.transform.FindChild("Pokemon1").gameObject;
 				battleState = Battle.ITEMUSE;
 			} //end if
 			else
@@ -2333,6 +2679,60 @@ public class BattleScene : MonoBehaviour
 			} //end else
 		} //end if
 	} //end ProcessUseItem
+
+	/***************************************
+	 * Name: PositionChoices
+	 * Places choices in bottom right of screen
+	 ***************************************/
+	IEnumerator PositionChoices()
+	{
+		//Process at end of frame
+		yield return new WaitForEndOfFrame();
+
+		//Reposition choices to bottom right
+		choices.GetComponent<RectTransform>().position = new Vector3(
+			choices.GetComponent<RectTransform>().position.x,
+			choices.GetComponent<RectTransform>().rect.height / 2);
+
+		//Reposition selection to top menu choice
+		subMenuChoice = 0;
+		selection.transform.position = choices.transform.GetChild(0).position;
+	} //end PositionChoices
+
+	/***************************************
+	 * Name: WaitForResize
+	 * Waits for choice menu to resize before
+	 * setting selection dimensions
+	 ***************************************/
+	IEnumerator WaitForResize()
+	{
+		//Process at end of frame
+		StartCoroutine(PositionChoices());
+		yield return new WaitForEndOfFrame();
+
+		Vector3 scale = new Vector3(choices.GetComponent<RectTransform>().rect.width,
+			choices.GetComponent<RectTransform>().rect.height /
+			choices.transform.childCount, 0);
+		selection.GetComponent<RectTransform>().sizeDelta = scale;
+		selection.transform.position = choices.transform.GetChild(0).
+			GetComponent<RectTransform>().position;
+		selection.SetActive(true);
+	} //end WaitForResize
+
+	/***************************************
+	 * Name: SetupPickMove
+	 * Sets up screen for player to pick a
+	 * move to use
+	 ***************************************/
+	public void SetupPickMove()
+	{
+		pickMove = true;
+		FillInChoices();
+		StartCoroutine(WaitForResize());
+		choices.SetActive(true);
+		subMenuChoice = 0;
+		battleState = Battle.PICKMOVE;
+	} //end SetupPickMove
 
 	/***************************************
 	 * Name: ApplyConfirm

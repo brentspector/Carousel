@@ -21,6 +21,7 @@ public class PokemonBattler
 	int speed;              //Standard speed
 	int specialA;			//Standard special attack
 	int specialD;			//Standard special defense
+	int status;				//Standard status
 	int ability;			//What ability does this pokemon currently have
 	int turnCount;			//How many turns have passed
 	int lastHPLost;			//The last mount of HP this pokemon lost
@@ -56,6 +57,7 @@ public class PokemonBattler
 		speed = battler.Speed;
 		specialA = battler.SpecialA;
 		specialD = battler.SpecialD;
+		status = battler.Status;
 		ability = battler.Ability;
 		gender = battler.Gender;
 		currentLevel = battler.CurrentLevel;
@@ -176,6 +178,7 @@ public class PokemonBattler
 		speed = battler.Speed;
 		specialA = battler.SpecialA;
 		specialD = battler.SpecialD;
+		status = battler.Status;
 		ability = battler.Ability;
 		gender = battler.Gender;
 		currentLevel = battler.CurrentLevel;
@@ -260,6 +263,18 @@ public class PokemonBattler
 		isMega = false;
 		justEntered = true;
 	} //end SwitchInPokemon(bool retainStats = false)
+
+	/***************************************
+     * Name: UpdateActiveBattler
+     * Mimics changes from team member to
+     * active battler
+     ***************************************/
+	public void UpdateActiveBattler()
+	{
+		currentHP = battler.CurrentHP;
+		totalHP = battler.TotalHP;
+		status = battler.Status;
+	} //end UpdateActiveBattler
 
 	/***************************************
      * Name: CheckTyping
@@ -662,32 +677,6 @@ public class PokemonBattler
 	} //end CheckAccuracy(int moveAccuracy, int attackerAccuracyStage, int moveType, bool ignoreEvasion)
 
 	/***************************************
-     * Name: UseItemOnPokemon
-     * Attempts to use an item on the target
-     * pokemon in battle
-     ***************************************/
-	public bool UseItemOnPokemon(Pokemon toTarget, int itemNumber)
-	{
-		//Try to use on pokemon in battle
-		if (ItemEffects.BattleUseOnPokemon(toTarget, itemNumber))
-		{
-			//If item is only one use
-			if (DataContents.ExecuteSQL<int>("SELECT battleUse FROM Items WHERE id=" + itemNumber) == 1 ||
-				DataContents.ExecuteSQL<int>("SELECT battleUse FROM Items WHERE id=" + itemNumber) == 2 ||
-				DataContents.ExecuteSQL<int>("SELECT battleUse FROM Items WHERE id=" + itemNumber) == 4)
-			{
-				GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
-			} //end if
-
-			//Success
-			return true;
-		} //end if
-
-		//Failed
-		return false;
-	} //end UseItemOnPokemon(Pokemon toTarget, int itemNumber)
-
-	/***************************************
      * Name: RestoreHP
      * Attempts to restore HP
      ***************************************/
@@ -890,7 +879,23 @@ public class PokemonBattler
 
 		//Item is present and active
 		return true;
-	} //end CheckAbility(int abilityToCheck)
+	} //end CheckItem(int itemToCheck)
+
+	/***************************************
+     * Name: CheckEffect
+     * Checks if effect is active
+     ***************************************/
+	public bool CheckEffect(int effectToCheck)
+	{
+		//Check for item, then if active
+		if (effects[effectToCheck] < 1)
+		{
+			return false;
+		} //end if
+
+		//Effect is active
+		return true;
+	} //end CheckEffect(int effectToCheck)
 	#endregion
 
 	#region Properties
@@ -1024,6 +1029,21 @@ public class PokemonBattler
 			speed = value;
 		} //end set
 	} //end Speed
+
+	/***************************************
+     * Name: BattlerStatus
+     ***************************************/
+	public int BattlerStatus
+	{
+		get
+		{
+			return status;
+		} //end get
+		set
+		{
+			status = value;
+		} //end set
+	} //end BattlerStatus
 
 	/***************************************
      * Name: Nickname

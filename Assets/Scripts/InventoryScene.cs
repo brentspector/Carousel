@@ -1696,6 +1696,154 @@ public class InventoryScene : MonoBehaviour
 				bottomShown = 9;
 				checkpoint = 2;
 			} //end else if
+
+			//Pick Move Processing
+			else if (checkpoint == 7)
+			{
+				//Get item
+				int item = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
+
+				//Ether, Leppa Berry
+				if (item == 83 || item == 148)
+				{
+					//Get current move pp and max
+					int currentPP = GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMovePP(subMenuChoice);
+					int maxPP = GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMovePPMax(subMenuChoice);
+					//Check if Move PP is not full
+					if (currentPP < maxPP)
+					{
+						int result = ExtensionMethods.CapAtInt(currentPP + 10, maxPP);
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].SetMovePP(subMenuChoice, 
+							result);
+						GameManager.instance.DisplayText(string.Format("{0} was restored by {1}!", 
+							DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice)),
+							result), true);
+						GameManager.instance.GetTrainer().RemoveItem(GameManager.instance.GetTrainer().GetItem(inventorySpot)[0], 1);
+					} //end if
+					else
+					{
+						GameManager.instance.DisplayText(string.Format("{0} is already at full PP. It won't have any effect.", 
+							DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice))), 
+							true);
+					} //end else
+
+					//Return to inventory
+					checkpoint = 1;
+				} //end if
+
+				//Max Ether
+				else if (item == 169)
+				{
+					//Get current move pp and max
+					int currentPP = GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMovePP(subMenuChoice);
+					int maxPP = GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMovePPMax(subMenuChoice);
+					//Check if Move PP is not full
+					if (currentPP < maxPP)
+					{
+						int result = maxPP - currentPP;
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].SetMovePP(subMenuChoice, 
+							maxPP);
+						GameManager.instance.DisplayText(string.Format("{0} was restored by {1}!", 
+							DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice)),
+							result), true);
+						GameManager.instance.GetTrainer().RemoveItem(GameManager.instance.GetTrainer().GetItem(inventorySpot)[0], 1);
+					} //end if
+					else
+					{
+						GameManager.instance.DisplayText(string.Format("{0} is already at full PP. It won't have any effect.", 
+							DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice))), 
+							true);
+					} //end else
+
+					//Return to inventory
+					checkpoint = 1;
+				} //end else if
+
+				//PP Max
+				else if (item == 215)
+				{
+					int PPUsed = GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMovePPUps(subMenuChoice);
+					if (PPUsed < 3)
+					{
+						//Get base pp
+						int basePP = DataContents.ExecuteSQL<int>("SELECT totalPP FROM Moves WHERE rowid=" +
+							GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice));
+						int changedPP = ((basePP * 3) / 5) + basePP;
+						int currentPPUpdate = GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMovePP(subMenuChoice) +
+							((basePP * (3-PPUsed))/ 5);
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].SetMovePP(subMenuChoice, currentPPUpdate);
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].SetMovePPMax(subMenuChoice, changedPP);
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].SetMovePPUps(subMenuChoice, 3);
+						GameManager.instance.DisplayText(string.Format("{0} now has a maximum PP of {1}!", 
+							DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice)),
+							changedPP), true);
+						GameManager.instance.GetTrainer().RemoveItem(GameManager.instance.GetTrainer().GetItem(inventorySpot)[0], 1);
+					} //end if
+					else
+					{
+						GameManager.instance.DisplayText(string.Format("{0} is already at maximum total PP. It won't have any effect.", 
+							DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice))), 
+							true);
+					} //end else
+
+					//Return to inventory
+					checkpoint = 1;
+				} //end else if
+
+				//PP Up
+				else if (item == 216)
+				{
+					int PPUsed = GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMovePPUps(subMenuChoice);
+					if (PPUsed < 3)
+					{
+						//Get base pp
+						int basePP = DataContents.ExecuteSQL<int>("SELECT totalPP FROM Moves WHERE rowid=" +
+							GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice));
+						int changedPP = ((basePP * (PPUsed + 1)) / 5) + basePP;
+						int currentPPUpdate = GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMovePP(subMenuChoice) +
+							(basePP / 5);
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].SetMovePP(subMenuChoice, currentPPUpdate);
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].SetMovePPMax(subMenuChoice, changedPP);
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].SetMovePPUps(subMenuChoice, (PPUsed + 1));
+						GameManager.instance.DisplayText(string.Format("{0} now has a maximum PP of {1}!", 
+							DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice)),
+							changedPP), true);
+						GameManager.instance.GetTrainer().RemoveItem(GameManager.instance.GetTrainer().GetItem(inventorySpot)[0], 1);
+					} //end if
+					else
+					{
+						GameManager.instance.DisplayText(string.Format("{0} is already at maximum total PP. It won't have any effect.", 
+							DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice))), 
+							true);
+					} //end else
+
+					//Return to inventory
+					checkpoint = 1;
+				} //end else if
+
+				//TMs
+				else if (item > 288 && item < 395)
+				{
+					string[] contents = DataContents.ExecuteSQL<string>("SELECT description FROM Items WHERE rowid=" + item).Split(',');
+					GameManager.instance.DisplayConfirm(string.Format("Are you sure you want to forget {0} and learn {1}?",
+						DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice)),
+						contents[0]), 0, false);
+				} //end else if
+
+				//Anything else. This is what occurs when an item has no effect but is listed as usable
+				else
+				{
+					GameManager.instance.DisplayText(DataContents.GetItemGameName(item) + " has no listed effect yet.", true);
+
+					//Return to inventory
+					checkpoint = 1;
+				} //end else
+
+				//Done picking a move
+				selection.SetActive(false);
+				choices.SetActive(false);
+				pickMove = false;
+			} //end else if
 		} //end else if Enter/Return Key
 
 		/*********************************************
