@@ -1113,6 +1113,9 @@ public class MainGameScene : MonoBehaviour
 					{
 						choiceNumber = GameManager.instance.GetTrainer().Team.Count;
 					} //end if
+
+					//Update current team slot
+					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else if
 				else
 				{
@@ -1175,6 +1178,9 @@ public class MainGameScene : MonoBehaviour
 				{
 					choiceNumber = GameManager.instance.GetTrainer().Team.Count;
 				} //end if
+
+				//Update current team slot
+				currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 
 				//Reload ribbons
 				initialize = false;
@@ -1273,6 +1279,9 @@ public class MainGameScene : MonoBehaviour
 					{
 						choiceNumber = 1;
 					} //end if
+
+					//Update current team slot
+					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else if
 				else
 				{
@@ -1335,6 +1344,9 @@ public class MainGameScene : MonoBehaviour
 				{
 					choiceNumber = 1;
 				} //end if
+
+				//Update current team slot
+				currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 
 				//Reload ribbons
 				initialize = false;
@@ -1793,12 +1805,15 @@ public class MainGameScene : MonoBehaviour
 				{
 					//Decrease (higher slots are on lower children)
 					choiceNumber--;
-				} //end if
 
-				//Loop to end of team if on first member
-				if (choiceNumber < 1)
-				{
-					choiceNumber = GameManager.instance.GetTrainer().Team.Count;
+					//Loop to end of team if on first member
+					if (choiceNumber < 1)
+					{
+						choiceNumber = GameManager.instance.GetTrainer().Team.Count;
+					} //end if
+
+					//Update current team slot
+					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end if
 			} //end if Pokemon Summary on Continue Game -> Team -> Summary
 
@@ -1813,6 +1828,9 @@ public class MainGameScene : MonoBehaviour
 				{
 					choiceNumber = GameManager.instance.GetTrainer().Team.Count;
 				} //end if
+
+				//Update current team slot
+				currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 
 				//Reload ribbons
 				initialize = false;
@@ -1843,12 +1861,15 @@ public class MainGameScene : MonoBehaviour
 				{
 					//Increase (lower slots are on higher children)
 					choiceNumber++;
-				} //end if
 
-				//Loop to front of team if on last member
-				if (choiceNumber > GameManager.instance.GetTrainer().Team.Count)
-				{
-					choiceNumber = 1;
+					//Loop to front of team if on last member
+					if (choiceNumber > GameManager.instance.GetTrainer().Team.Count)
+					{
+						choiceNumber = 1;
+					} //end if
+
+					//Update current team slot
+					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end if
 			} //end if Pokemon Summary on Continue Game -> Team -> Summary
 
@@ -1863,6 +1884,9 @@ public class MainGameScene : MonoBehaviour
 				{
 					choiceNumber = 1;
 				} //end if
+
+				//Update current team slot
+				currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 
 				//Reload ribbons
 				initialize = false;

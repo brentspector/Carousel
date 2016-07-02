@@ -341,6 +341,10 @@ public class GameManager : MonoBehaviour
 		{
 			StartCoroutine(pc.SetSummaryPage(summaryPage));
 		} //end else if
+		else if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Battle")
+		{
+			StartCoroutine(battle.SetSummaryPage(summaryPage));
+		} //end else if
     } //end SummaryChange(int summaryPage)
 
     /***************************************

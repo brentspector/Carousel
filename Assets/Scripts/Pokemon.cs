@@ -751,6 +751,7 @@ public class Pokemon
                 firstMoves[i] = values[i];
                 ppReamaining[i] = DataContents.ExecuteSQL<int> 
                     ("SELECT totalPP FROM Moves WHERE rowid=" + moves[i]);
+				ppMax[i] = ppReamaining[i];
             } //end if
             //If it equals -1, give level up move
             else

@@ -677,6 +677,19 @@ public class PokemonBattler
 	} //end CheckAccuracy(int moveAccuracy, int attackerAccuracyStage, int moveType, bool ignoreEvasion)
 
 	/***************************************
+     * Name: ProcessAttackEffect
+     * Attempt to apply the effect of a move
+     * to this pokemon
+     ***************************************/
+	public void ProcessAttackEffect(int moveNumber)
+	{
+		if (moveNumber == 413)
+		{
+			effects[(int)LastingEffects.Protect] = 1;
+		} //end if
+	} //end ProcessAttackEffect(int moveNumber)
+
+	/***************************************
      * Name: RestoreHP
      * Attempts to restore HP
      ***************************************/
@@ -687,6 +700,15 @@ public class PokemonBattler
 			battler.CurrentHP += amount;
 		} //end if
 	} //end RestoreHP(int amount)
+
+	/***************************************
+     * Name: GetStage
+     * Gets the requested stage
+     ***************************************/
+	public int GetStage(int stage)
+	{
+		return stages[stage];
+	} //end GetStage(int stage)
 
 	/***************************************
      * Name: SetStage

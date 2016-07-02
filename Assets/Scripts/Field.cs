@@ -6,12 +6,14 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 #endregion
 
 public class Field
 {
     #region Variables
-	int activeField;	//What field is active
+	int activeField;				//What field is active
+	List<int> defaultFieldBoosts;	//What are the applicable boosts of the field
     #endregion
 
     #region Methods
@@ -22,6 +24,7 @@ public class Field
 	public Field(int fieldStart)
 	{
 		activeField = fieldStart;
+		ResetDefaultBoosts();
 	} //end Field(int fieldStart)
 
 	/***************************************
@@ -32,26 +35,87 @@ public class Field
 	{
 		switch (activeField)
 		{
-			//Default Field
+		//Default Field
 			case 0:
 				//Add buffs for every 5 levels of difference
 				int modification = battlers[0].CurrentLevel - battlers[1].CurrentLevel;
-				if (modification > 4)
-				{					
-					modification /= 5;
-					for (int i = 1; i < 6; i++)
+				modification = ExtensionMethods.CapAtInt(modification / 5, 6);
+				//Loop through opponent's stat boosts
+				for (int i = 1; i < 6; i++)
+				{
+					//Opponent loses any default boost
+					battlers[1].SetStage(-defaultFieldBoosts[i], i, true);
+
+					//Set new boost
+					if (modification > 0)
 					{
-						battlers[1].SetStage(modification, i, true);
-					} //end for
-					GameManager.instance.WriteBattleMessage("The foe " + battlers[1].Nickname + " was boosted by " +
-						ExtensionMethods.CapAtInt(modification, 6).ToString() + " stages to accomodate for level difference!");
-				} //end if
+						//Get modification value
+						int modValue;
+						if (modification + battlers[1].GetStage(i) > 6)
+						{
+							modValue = 6 - battlers[1].GetStage(i);
+						} //end if
+						else
+						{
+							modValue = modification;
+						} //end else
+
+						//Update battler
+						battlers[1].SetStage(modValue, i, true);
+
+						//Display result
+						if (defaultFieldBoosts[i] < modValue)
+						{
+							GameManager.instance.WriteBattleMessage(string.Format("{0}'s stats rose by {1} to accomodate for " +
+								"level difference!", battlers[1].Nickname, modValue - defaultFieldBoosts[i]));
+						} //end if
+						else if (defaultFieldBoosts[i] > modValue)
+						{
+							GameManager.instance.WriteBattleMessage(string.Format("{0}'s stats dropped by {1} to accomodate for " +
+								"level difference!", battlers[1].Nickname, defaultFieldBoosts[i] - modValue));
+						} //end else if
+						else
+						{
+							GameManager.instance.WriteBattleMessage(battlers[1].Nickname + "'s stats were not affected by the " +
+							"opponent's level!"); 
+						} //end else
+
+						//Update boosts
+						defaultFieldBoosts[i] = modValue;
+					} //end if
+					else
+					{
+						//No field boosts given
+						if (defaultFieldBoosts[i] != 0)
+						{
+							GameManager.instance.WriteBattleMessage(string.Format("{0} stats dropped by {1} to accomodate for " +
+								"level difference!", battlers[1].Nickname, defaultFieldBoosts[i]));
+						} //end if
+						else
+						{
+							GameManager.instance.WriteBattleMessage(battlers[1].Nickname + "'s stats were not affected by the " +
+								"opponent's level!"); 
+						} //end else
+
+						//Update boosts
+						defaultFieldBoosts[i] = 0;
+					} //end else
+				} //end for
 				break;
 		} //end switch
 
 		//Return battlers list
 		return battlers;
 	} //end ResolveFieldEntrance
+
+	/***************************************
+	 * Name: ResolveFieldEntrance
+	 * Activates entrance effects of fields
+	 ***************************************/
+	public void ResetDefaultBoosts()
+	{
+		defaultFieldBoosts = Enumerable.Repeat(0, 6).ToList();
+	} //end ResetDefaultBoosts
     #endregion
 
 	#region Properties
