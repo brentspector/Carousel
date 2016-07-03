@@ -31,6 +31,7 @@ public class PokemonBattler
 	int currentLevel;		//The current level for the pokemon (for Illusion)
 	string nickname;		//The current name of the pokemon (for Illusion)
 	List<int> moves;		//What moves does this pokemon currently have
+	List<int> ppRemaining;	//How many uses does this move have remaining
 	List<int> types;		//What types does this pokemon have
 	List<int> stages;		//Buffs and debuffs to the stats of the pokemon
 	List<int> effects;		//Attack effects this pokemon is under
@@ -78,10 +79,12 @@ public class PokemonBattler
 			if (i < battler.GetMoveCount())
 			{
 				moves.Add(battler.GetMove(i));
+				ppRemaining.Add(battler.GetMovePP(i));
 			} //end if
 			else
 			{
 				moves.Add(-1);
+				ppRemaining.Add(0);
 			} //end else
 		} //end for
 
@@ -190,10 +193,12 @@ public class PokemonBattler
 			if (i < battler.GetMoveCount())
 			{
 				moves[i] = battler.GetMove(i);
+				ppRemaining[i] = battler.GetMovePP(i);
 			} //end if
 			else
 			{
 				moves[i] = -1;
+				ppRemaining[i] = 0;
 			} //end else
 		} //end for
 
@@ -277,11 +282,20 @@ public class PokemonBattler
 	} //end UpdateActiveBattler
 
 	/***************************************
-     * Name: CheckTyping
-     * Determine the impact a move will have
-     * this pokemon
+     * Name: ApplyEffect
+     * Changes effect to given
      ***************************************/
-	public float CheckTyping(int moveType)
+	public void ApplyEffect(int effect, int toSet)
+	{
+		effects[effect] = toSet;
+	} //end ApplyEffect(int effect, int toSet)
+
+	/***************************************
+     * Name: CheckDefenderTyping
+     * Determine the impact a move will have
+     * this target pokemon
+     ***************************************/
+	public float CheckDefenderTyping(int moveType, PokemonBattler moveUser)
 	{
 		//Make sure attack type exists
 		if (moveType < 0)
@@ -298,7 +312,7 @@ public class PokemonBattler
 		//Keep a list of modifiers
 		List<int> mods = new List<int>();
 
-		//Loop through and get the modifiers for each
+		//Loop through and get the modifiers for each of the battler's types
 		for (int i = 0; i < types.Count; i++)
 		{
 			//Check for Roost
@@ -334,7 +348,7 @@ public class PokemonBattler
 					//Normal attack
 					case 0: 
 						//Check for Scrappy/Foresight
-						if (types[i] == 7 && (GameManager.instance.CheckMoveUser().Ability == 134 || 
+						if (types[i] == 7 && (moveUser.CheckAbility(134) || 
 							effects[(int)LastingEffects.Foresight] > 0))
 						{
 							mods[i] = 1;										
@@ -343,7 +357,7 @@ public class PokemonBattler
 					//Fighting attack
 					case 1:
 						//Check for Scrappy/Foresight
-						if (types[i] == 7 && (GameManager.instance.CheckMoveUser().Ability == 134 || 
+						if (types[i] == 7 && (moveUser.CheckAbility(134) || 
 							effects[(int)LastingEffects.Foresight] > 0))
 						{
 							mods[i] = 1;										
@@ -367,207 +381,13 @@ public class PokemonBattler
 							mods[i] = 1;
 						} //end if
 						break;
-					//Fire attack
-					case 10:
-						//Check for Flash Fire
-						if (CheckAbility(42))
-						{
-							//See if Flash Fire can be activated
-							if(effects[(int)LastingEffects.FlashFire] == 0)
-							{
-								//Flash Fire is activated
-								effects[(int)LastingEffects.FlashFire] = 1;
-
-								//Display message
-								GameManager.instance.WriteBattleMessage(string.Format("{0}'s {1} raised {2}'s Fire power with Flash Fire!", 
-									GameManager.instance.CheckMoveUser().Nickname, GameManager.instance.CheckMoveUsed(),
-									battler.Nickname));
-							} //end if
-							else
-							{
-								//Display message
-								GameManager.instance.WriteBattleMessage(string.Format("{0}'s {1} had no effect on {2} due to Flash Fire!", 
-									GameManager.instance.CheckMoveUser().Nickname, GameManager.instance.CheckMoveUsed(),
-									battler.Nickname));
-							} //end else
-
-							//Attack is negated
-							return 0;
-						} //end if
-						break;
-					//Water attack
-					case 11:
-						//Check for Storm Drain
-						if (CheckAbility(157))
-						{
-							//If special attack can be increased
-							if (stages[4] < 6)
-							{
-								//Increase special attack stage
-								stages[4]++;
-
-								//Display message
-								GameManager.instance.WriteBattleMessage(string.Format("{0}'s {1} raised {2}'s Special Attack with Storm Drain!", 
-									GameManager.instance.CheckMoveUser().Nickname, GameManager.instance.CheckMoveUsed(),
-									battler.Nickname));
-							} //end if
-							else
-							{
-								//Display message
-								GameManager.instance.WriteBattleMessage(string.Format("{0}'s {1} had no effect on {2} due to Storm Drain!", 
-									GameManager.instance.CheckMoveUser().Nickname, GameManager.instance.CheckMoveUsed(),
-									battler.Nickname));
-							} //end else
-
-							//Attack is negated
-							return 0;
-						} //end if
-
-						//Check for Dry Skin, Water Absorb
-						else if (CheckAbility(35) || CheckAbility(185))
-						{
-							//If HP can be restored
-							if (currentHP < totalHP && effects[(int)LastingEffects.HealBlock] == 0)
-							{
-								//Restore HP
-								RestoreHP(totalHP / 4);
-
-								//Display message
-								GameManager.instance.WriteBattleMessage(string.Format("{0}'s {1} healed {2} due to {3}!", 
-									GameManager.instance.CheckMoveUser().Nickname, GameManager.instance.CheckMoveUsed(),
-									battler.Nickname, battler.GetAbilityName()));
-							} //end if
-							else
-							{
-								//Display message
-								GameManager.instance.WriteBattleMessage(string.Format("{0}'s {1} had no effect on {2} due to {3}!", 
-									GameManager.instance.CheckMoveUser().Nickname, GameManager.instance.CheckMoveUsed(),
-									battler.Nickname, battler.GetAbilityName()));
-							} //end else
-
-							//Attack is negated
-							return 0;
-						} //end else if
-
-						//Check for Freeze Dry
-						else if (GameManager.instance.CheckMoveUsed() == "Freeze Dry" && types[i] == 11)
-						{
-							mods[i] = 2;
-						} //end else if
-						break;
-					//Grass attack
-					case 12:
-						//Check for Sap Sipper
-						if (CheckAbility(133))
-						{
-							//If attack can be increased
-							if (stages[1] < 6)
-							{
-								//Increase attack stage
-								stages[1]++;
-
-								//Display message
-								GameManager.instance.WriteBattleMessage(string.Format("{0}'s {1} raised {2}'s Attack with Sap Sipper!", 
-									GameManager.instance.CheckMoveUser().Nickname, GameManager.instance.CheckMoveUsed(),
-									battler.Nickname));
-							} //end if
-							else
-							{
-								//Display message
-								GameManager.instance.WriteBattleMessage(string.Format("{0}'s {1} had no effect on {2} due to Sap Sipper!", 
-									GameManager.instance.CheckMoveUser().Nickname, GameManager.instance.CheckMoveUsed(),
-									battler.Nickname));
-							} //end else
-
-							//Attack is negated
-							return 0;
-						} //end if
-						break;
 					//Electric attack
 					case 13:
-						//Check for Lightning Rod
-						if (CheckAbility(81))
-						{
-							//If special attack can be increased
-							if (stages[4] < 6 && mods[i] != 0)
-							{
-								//Increase special attack stage
-								stages[4]++;
-
-								//Display message
-								GameManager.instance.WriteBattleMessage(string.Format("{0}'s {1} raised {2}'s Special Attack with Lightning Rod!", 
-									GameManager.instance.CheckMoveUser().Nickname, GameManager.instance.CheckMoveUsed(),
-									battler.Nickname));
-							} //end if
-							else
-							{
-								//Display message
-								GameManager.instance.WriteBattleMessage(string.Format("{0}'s {1} had no effect on {2} due to Lightning Rod!", 
-									GameManager.instance.CheckMoveUser().Nickname, GameManager.instance.CheckMoveUsed(),
-									battler.Nickname));
-							} //end else
-
-							//Attack is negated
-							return 0;
-						} //end if
-
-						//Check for Motor Drive
-						else if (CheckAbility(81))
-						{
-							//If speed can be increased
-							if (stages[3] < 6 && mods[i] != 0)
-							{
-								//Increase speed stage
-								stages[3]++;
-
-								//Display message
-								GameManager.instance.WriteBattleMessage(string.Format("{0}'s {1} raised {2}'s Speed with Motor Drive!", 
-									GameManager.instance.CheckMoveUser().Nickname, GameManager.instance.CheckMoveUsed(),
-									battler.Nickname));
-							} //end if
-							else
-							{
-								//Display message
-								GameManager.instance.WriteBattleMessage(string.Format("{0}'s {1} had no effect on {2} due to Motor Drive!", 
-									GameManager.instance.CheckMoveUser().Nickname, GameManager.instance.CheckMoveUsed(),
-									battler.Nickname));
-							} //end else
-
-							//Attack is negated
-							return 0;
-						} //end else if
-
-						//Check for Volt Absorb
-						else if (CheckAbility(184))
-						{
-							//If HP can be restored
-							if (currentHP < totalHP && effects[(int)LastingEffects.HealBlock] == 0)
-							{
-								//Restore HP
-								RestoreHP(totalHP / 4);
-
-								//Display message
-								GameManager.instance.WriteBattleMessage(string.Format("{0}'s {1} healed {2} due to Volt Absorb!", 
-									GameManager.instance.CheckMoveUser().Nickname, GameManager.instance.CheckMoveUsed(),
-									battler.Nickname));
-							} //end if
-							else
-							{
-								//Display message
-								GameManager.instance.WriteBattleMessage(string.Format("{0}'s {1} had no effect on {2} due to Volt Absorb!", 
-									GameManager.instance.CheckMoveUser().Nickname, GameManager.instance.CheckMoveUsed(),
-									battler.Nickname));
-							} //end else
-
-							//Attack is negated
-							return 0;
-						} //end else if
-
 						//Check for Strong Winds
-						else if (GameManager.instance.CheckEffect((int)FieldEffects.StrongWinds, sideOn) && types[i] == 2)
+						if (GameManager.instance.CheckEffect((int)FieldEffects.StrongWinds, sideOn) && types[i] == 2)
 						{
 							mods[i] = 1;
-						} //end else if
+						} //end if
 						break;
 					//Psychic attack
 					case 14:
@@ -584,6 +404,12 @@ public class PokemonBattler
 						{
 							mods[i] = 1;
 						} //end if
+
+						//Check for Freeze Dry
+						else if (GameManager.instance.CheckMoveUsed() == "Freeze Dry" && types[i] == 11)
+						{
+							mods[i] = 2;
+						} //end else if
 						break;
 				} //end switch
 			} //end else
@@ -611,11 +437,12 @@ public class PokemonBattler
 
 		//Return final mod
 		return finalMod;
-	} //end CheckTyping(int moveType)
+	} //end CheckDefenderTyping(int moveType, PokemonBattler moveUser)
 
 	/***************************************
      * Name: CheckAccuracy
-     * Checks if the move hits or not
+     * Checks if the move hits this target
+     * or not
      ***************************************/
 	public bool CheckAccuracy(int moveAccuracy, int attackerAccuracyStage, int moveType, bool ignoreEvasion)
 	{
@@ -662,19 +489,68 @@ public class PokemonBattler
 			evasionValue = (evasionValue * 11) / 10;
 		} //end if
 
-		//Store the accuracy amount
+		//Check for Unaware
 		int attackerAccuracy = CheckAbility(179) ? 0 : attackerAccuracyStage;
+
+		//Store the accuracy ammount
 		attackerAccuracy = attackerAccuracy > -1 ? ((attackerAccuracy + 3) * 100) / 3 : 300 / (3 - attackerAccuracy);
 
 		//Check for Wonder Skin
-		if (CheckAbility(190) && moveType == (int)Categories.Status)
+		if (CheckAbility(190) && moveType == (int)Categories.Status && moveAccuracy > 50)
 		{
-			attackerAccuracy /= 2;
+			moveAccuracy = 50;
 		} //end if
 
 		//Calculate and return if move hits
 		return GameManager.instance.RandomInt(0, 100) < (moveAccuracy*attackerAccuracy/evasionValue);
 	} //end CheckAccuracy(int moveAccuracy, int attackerAccuracyStage, int moveType, bool ignoreEvasion)
+
+	/***************************************
+     * Name: CheckCritical
+     * Checks if this battler scores a critical hit
+     ***************************************/
+	public bool CheckCritical(int critStage)
+	{
+		//Track critical hit stage
+		int cHit = critStage;
+
+		//Increase based on Focus Energy
+		cHit += effects[(int)LastingEffects.FocusEnergy];
+
+		//Check for Super Luck
+		cHit += CheckAbility(161) ? 1 : 0;
+
+		//Check for Farfetch'd holding Stick
+		if (CheckItem(277) && battler.NatSpecies == 83)
+		{
+			cHit += 2;
+		} //end if
+
+		//Check for Chansey holding Lucky Punch
+		else if(CheckItem(157) && battler.NatSpecies == 113)
+		{
+			cHit += 2;
+		} //end else if
+
+		//Check Razor Claw and Scope Lens
+		cHit += CheckItem(227) || CheckItem(252) ? 1 : 0;
+
+		//Calculate if critical occurs
+		cHit = ExtensionMethods.CapAtInt(cHit, 3);
+		switch (cHit)
+		{
+			case 0:
+				return GameManager.instance.RandomInt(0, 16) == 0;
+			case 1:
+				return GameManager.instance.RandomInt(0, 8) == 0;
+			case 2:
+				return GameManager.instance.RandomInt(0, 2) == 0;
+			case 3:
+				return true;
+			default:
+				return false;
+		} //end switch
+	} //end CheckCritical(int critStage)
 
 	/***************************************
      * Name: ProcessAttackEffect
@@ -688,6 +564,15 @@ public class PokemonBattler
 			effects[(int)LastingEffects.Protect] = 1;
 		} //end if
 	} //end ProcessAttackEffect(int moveNumber)
+
+	/***************************************
+     * Name: EndOfRoundReset
+     * Resets effects at end of round
+     ***************************************/
+	public void EndOfRoundReset()
+	{
+		effects[(int)LastingEffects.Protect] = 0;
+	} //end EndOfRoundReset
 
 	/***************************************
      * Name: RestoreHP
@@ -862,14 +747,6 @@ public class PokemonBattler
 	} //end GetWeight
 
 	/***************************************
-     * Name: GetMove
-     ***************************************/
-	public int GetMove(int index)
-	{
-		return moves [index];
-	} //end GetMove(int index)
-
-	/***************************************
      * Name: CheckAbility
      * Checks if ability is present and active
      ***************************************/
@@ -884,6 +761,15 @@ public class PokemonBattler
 		//Ability is present and active
 		return true;
 	} //end CheckAbility(int abilityToCheck)
+
+	/***************************************
+     * Name: GetAbilityName
+     * Returns ability name
+     ***************************************/
+	public string GetAbilityName()
+	{
+		return DataContents.ExecuteSQL<string> ("SELECT gameName FROM Abilities WHERE rowid=" + ability);
+	} //end GetAbilityName
 
 	/***************************************
      * Name: CheckItem
@@ -909,7 +795,7 @@ public class PokemonBattler
      ***************************************/
 	public bool CheckEffect(int effectToCheck)
 	{
-		//Check for item, then if active
+		//Check if effect is disabled
 		if (effects[effectToCheck] < 1)
 		{
 			return false;
@@ -918,6 +804,15 @@ public class PokemonBattler
 		//Effect is active
 		return true;
 	} //end CheckEffect(int effectToCheck)
+
+	/***************************************
+     * Name: CheckType
+     * Checks if type exists
+     ***************************************/
+	public bool CheckType(int type)
+	{
+		return types.Contains(type) ? true : false;
+	} //end CheckType(int type)
 	#endregion
 
 	#region Properties
@@ -1111,6 +1006,38 @@ public class PokemonBattler
 			currentLevel = ExtensionMethods.WithinIntRange(value, 1, 100);
 		} //end set
 	} //end CurrentLevel
+
+	/***************************************
+     * Name: GetMove
+     ***************************************/
+	public int GetMove(int index)
+	{
+		return moves [index];
+	} //end GetMove(int index)
+
+	/***************************************
+     * Name: SetMove
+     ***************************************/
+	public void SetMove(int index, int move)
+	{
+		moves [index] = move;
+	} //end SetMove(int index, int move)
+
+	/***************************************
+     * Name: GetMovePP
+     ***************************************/
+	public int GetMovePP(int index)
+	{
+		return ppRemaining [index];
+	} //end GetMovePP(int index)
+
+	/***************************************
+     * Name: SetMovePP
+     ***************************************/
+	public void SetMovePP(int index, int amount)
+	{
+		ppRemaining [index] = amount;
+	} //end SetMovePP(int index, int amount)
 
 	/***************************************
      * Name: IsMega

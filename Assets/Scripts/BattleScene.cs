@@ -53,8 +53,8 @@ public class BattleScene : MonoBehaviour
 	bool pickMove = false;			//Whether the player must pick a move to use an item on
 	bool pocketChange;				//Is the pocket currently changing
 	Field battleField;				//The active battle field
-	Pokemon currentAttacker;		//Who is currently attacking
-	Pokemon lastAttacker;			//Who was the last pokemon to attack
+	PokemonBattler currentAttacker;	//Who is currently attacking
+	PokemonBattler lastAttacker;	//Who was the last pokemon to attack
 	List<Pokemon> originalOrder;	//Restores the team to the order it was before battle
 	List<Pokemon> participants;		//The pokemon that participated in the fight
 	List<List<int>> fieldEffects;	//Effects that are present on the field
@@ -461,10 +461,10 @@ public class BattleScene : MonoBehaviour
 			 * Middle of round
 			 * -Resolve Queue
 			 * --Attack
-			 * ----Resolve protect
-			 * ----Resolve blocking abilities (Bulletproof & Telepathy)
-			 * ----Resolve typing
-			 * ----Resolve accuracy
+			 * ++++++----Resolve protect
+			 * ++++++----Resolve blocking abilities (Bulletproof & Telepathy)
+			 * ++++++----Resolve typing
+			 * ++++++----Resolve accuracy
 			 * ----Resolve critical
 			 * ----Resolve damage, item, ability, field
 			 * ----Resolve recoil
@@ -1937,9 +1937,16 @@ public class BattleScene : MonoBehaviour
 				//Attack selection
 				else if (battleState == Battle.SELECTATTACK)
 				{						
-					attackSelection.SetActive(false);
-					AddToQueue(0, commandInt, choiceNumber, DetermineTarget(0, 0, choiceNumber), DeterminePriority(0, 0, choiceNumber));
-					battleState = Battle.GETAICHOICE;
+					if (battlers[0].GetMovePP(choiceNumber) > 0)
+					{
+						attackSelection.SetActive(false);
+						AddToQueue(0, commandInt, choiceNumber, DetermineTarget(0, 0, choiceNumber), DeterminePriority(0, 0, choiceNumber));
+						battleState = Battle.GETAICHOICE;
+					} //end if
+					else
+					{
+						GameManager.instance.DisplayText("There's no PP left! You can't choose this move.", true);
+					} //end else
 				} //end else if
 
 				//Item selection
@@ -2275,9 +2282,16 @@ public class BattleScene : MonoBehaviour
 				//Attack selection
 				else if (battleState == Battle.SELECTATTACK)
 				{						
-					attackSelection.SetActive(false);
-					AddToQueue(0, commandInt, choiceNumber, DetermineTarget(0, 0, choiceNumber), DeterminePriority(0, 0, choiceNumber));
-					battleState = Battle.GETAICHOICE;
+					if (battlers[0].GetMovePP(choiceNumber) > 0)
+					{
+						attackSelection.SetActive(false);
+						AddToQueue(0, commandInt, choiceNumber, DetermineTarget(0, 0, choiceNumber), DeterminePriority(0, 0, choiceNumber));
+						battleState = Battle.GETAICHOICE;
+					} //end if
+					else
+					{
+						GameManager.instance.DisplayText("There's no PP left! You can't choose this move.", true);
+					} //end else
 				} //end else if
 
 				//Item selection
@@ -2562,7 +2576,7 @@ public class BattleScene : MonoBehaviour
 	 * Name: CheckMoveUser
 	 * Returns the pokemon using the move
 	 ***************************************/
-	public Pokemon CheckMoveUser()
+	public PokemonBattler CheckMoveUser()
 	{
 		return currentAttacker;
 	} //end CheckMoveUser
@@ -2708,7 +2722,7 @@ public class BattleScene : MonoBehaviour
 				if (queue[eventIndex].priority == queue[j].priority)
 				{
 					//If current event has a lower speed, swap to new event
-					if (battlers[queue[eventIndex].battler].Speed < battlers[queue[j].battler].Speed)
+					if (battlers[queue[eventIndex].battler].GetSpeed() < battlers[queue[j].battler].GetSpeed())
 					{
 						eventIndex = j;
 					} //end if
@@ -3783,6 +3797,9 @@ public class BattleScene : MonoBehaviour
 	 ***************************************/
 	void ProcessAttack(QueueEvent toProcess)
 	{
+		//Decrease PP of attack used
+		battlers[toProcess.battler].SetMovePP(toProcess.selection, battlers[toProcess.battler].GetMovePP(toProcess.selection) - 1);
+
 		//Check for protect
 		if (battlers[toProcess.target].CheckEffect((int)LastingEffects.Protect))
 		{
@@ -3790,11 +3807,81 @@ public class BattleScene : MonoBehaviour
 			return;
 		} //end if
 
+		//Check for negating abilities
+		if (AbilityEffects.ResolveBlockingAbilities(15, battlers[toProcess.battler].GetMove(toProcess.selection),
+			battlers[toProcess.target]))
+		{
+			return;
+		} //end if
+
+		//Check for typing
+		float typeMod = battlers[toProcess.target].CheckDefenderTyping(battlers[toProcess.battler].GetMove(toProcess.selection),
+			                battlers[toProcess.battler]);
+		if (typeMod == 0)
+		{
+			WriteBattleMessage("But it had no effect...");
+			return;
+		} //end if
+
+		//Check for accuracy
+		if (!battlers[toProcess.target].CheckAccuracy(DataContents.GetMoveAccuracy(battlers[toProcess.battler].
+			GetMove(toProcess.selection)), battlers[toProcess.battler].GetStage(6), DataContents.GetMoveIcon(
+			   battlers[toProcess.battler].GetMove(toProcess.selection)), false))
+		{
+			WriteBattleMessage(battlers[toProcess.target].Nickname + "'s attack missed!");
+			return;
+		} //end if
+
+		//Check for critical
+		bool critical = ProcessCritical(toProcess);		
+
+		//Resolve damage, item, ability, field
+		//Resolve recoil
+		//Check if either pokemon is fainted
+			//Resolve ability (aftermath)
+			//Resolve player targeted secondary effects
+			//If opponent is still alive, process opponent secondary effects
 		battlers[toProcess.battler].ProcessAttackEffect(battlers[toProcess.battler].GetMove(toProcess.selection));
+
 		WriteBattleMessage("This would go through");
 		return;
 
 	} //end ProcessAttack(QueueEvent toProcess)
+
+	/***************************************
+	 * Name: ProcessQueue
+	 * Applies each queue action
+	 ***************************************/
+	bool ProcessCritical(QueueEvent toProcess)
+	{
+		//Check for Shell Armor and Battle Armor
+		if ((battlers[toProcess.target].CheckAbility(12) || battlers[toProcess.target].CheckAbility(139)) &&
+		    !battlers[toProcess.battler].CheckAbility(92) && !battlers[toProcess.battler].CheckAbility(170) &&
+		    !battlers[toProcess.battler].CheckAbility(178))
+		{
+			return false;
+		} //end if
+
+		//Check for Lucky Chant
+		else if (GameManager.instance.CheckEffect((int)FieldEffects.LuckyChant, toProcess.target))
+		{
+			return false;
+		} //end else if
+
+		//Check for Frost Breath
+		else if (battlers[toProcess.battler].GetMove(toProcess.selection) == 199)
+		{
+			return true;
+		} //end else if
+
+		//Run battler critical check
+		else
+		{
+			int baseStage = DataContents.GetMoveFlag(battlers[toProcess.battler].GetMove(toProcess.selection), "h") ?
+				1 : 0;
+			return battlers[toProcess.battler].CheckCritical(baseStage);
+		} //end else
+	} //end ProcessCritical(QueueEvent toProcess)
 
 	/***************************************
 	 * Name: ProcessQueue
@@ -3851,12 +3938,29 @@ public class BattleScene : MonoBehaviour
 
 			yield return new WaitForSeconds(1.5f);
 		} //end for
+		ProcessEndOfRound();
+	} //end ProcessQueue
+
+	/***************************************
+	 * Name: ProcessEndOfRound
+	 * Apply any end of round effects or
+	 * resets
+	 ***************************************/
+	void ProcessEndOfRound()
+	{
+		//Reset battler effects
+		for (int i = 0; i < battlers.Count; i++)
+		{
+			battlers[i].EndOfRoundReset();
+		} //end for
+
+		//Reset to beginning of round
 		queue.Clear();
 		commandChoice.SetActive(true);
 		selectedChoice = commandChoice.transform.GetChild(commandInt).gameObject;
 		battleState = Battle.ROUNDSTART;
 		processing = false;
-	} //end ProcessQueue
+	} //end ProcessEndOfRound
 
 	/***************************************
      * Name: SetSummaryPage

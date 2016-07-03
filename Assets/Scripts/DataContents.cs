@@ -275,6 +275,24 @@ public static class DataContents : System.Object
 		return moveNumber < 0 ? -1 : ExecuteSQL<int>("SELECT priority FROM Moves WHERE rowid=" + moveNumber);
 	} //end GetMovePriority(int moveNumber)
 
+	/***************************************
+     * Name: GetMoveAccuracy
+     * Returns base accuracy of given move
+     ***************************************/
+	public static int GetMoveAccuracy(int moveNumber)
+	{		
+		return moveNumber < 0 ? -1 : ExecuteSQL<int>("SELECT priority FROM Moves WHERE rowid=" + moveNumber);
+	} //end GetMoveAccuracy(int moveNumber)
+
+	/***************************************
+     * Name: GetMoveFlag
+     * Returns if a flag exists
+     ***************************************/
+	public static bool GetMoveFlag(int moveNumber, string flag)
+	{		
+		return ExecuteSQL<string>("SELECT flags FROM Moves WHERE rowid=" + moveNumber).Contains(flag);
+	} //end GetMoveFlag(int moveNumber, string flag)
+
     /***************************************
      * Name: GetItemID
      * Returns numeric location of item

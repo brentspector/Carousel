@@ -501,7 +501,7 @@ public class GameManager : MonoBehaviour
 	 * Name: CheckMoveUser
 	 * Returns the pokemon using the move
 	 ***************************************/
-	public Pokemon CheckMoveUser()
+	public PokemonBattler CheckMoveUser()
 	{
 		return battle.CheckMoveUser();
 	} //end CheckMoveUser
