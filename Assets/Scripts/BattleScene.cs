@@ -29,6 +29,8 @@ public class BattleScene : MonoBehaviour
 		GETAICHOICE,
 		PROCESSQUEUE,
 		ENDROUND,
+		USERPICKPOKEMON,
+		AIPICKPOKEMON,
 		ENDFIGHT
 	} //end Battle
 
@@ -51,6 +53,7 @@ public class BattleScene : MonoBehaviour
 	int previousRibbonChoice;       //The ribbon last highlighted for reading
 	bool processing = false;		//Whether a function is already processing something
 	bool pickMove = false;			//Whether the player must pick a move to use an item on
+	bool replacePokemon = false;	//Whether the player must replace the active battler
 	bool pocketChange;				//Is the pocket currently changing
 	Field battleField;				//The active battle field
 	PokemonBattler currentAttacker;	//Who is currently attacking
@@ -395,7 +398,7 @@ public class BattleScene : MonoBehaviour
 			else if (battleState == Battle.GETAICHOICE)
 			{
 				//Select a random attack
-				int randomSelection = GameManager.instance.RandomInt(0, battlers[1].BattlerPokemon.GetMoveCount()-1);
+				int randomSelection = GameManager.instance.RandomInt(0, battlers[1].BattlerPokemon.GetMoveCount() - 1);
 
 				//Queue it
 				AddToQueue(1, 0, randomSelection, 0, DeterminePriority(1, 0, randomSelection));
@@ -420,6 +423,46 @@ public class BattleScene : MonoBehaviour
 				//Process queue
 				StartCoroutine(ProcessQueue());
 			} //end if
+			else if (battleState == Battle.ENDROUND)
+			{
+				//Return if processing
+				if (processing)
+				{
+					return;
+				} //end if
+
+				//Begin processing
+				processing = true;
+
+				//Process queue
+				StartCoroutine(ProcessEndOfRound());
+			} //end else if
+			else if (battleState == Battle.USERPICKPOKEMON)
+			{
+				//Change background sprites based on player input
+				if (previousTeamSlot != choiceNumber)
+				{
+					//Update backgrounds
+					FillInTeam(choiceNumber);
+
+					//Update previous slot
+					previousTeamSlot = choiceNumber;
+				} //end if
+
+				//Get player input
+				GetInput();
+			} //end else if
+			else if (battleState == Battle.AIPICKPOKEMON)
+			{
+				//Select random pokemon
+				int randomSelection = GameManager.instance.RandomInt(0, combatants[1].Team.Count()-1);
+
+				battlers[1].SwitchInPokemon(combatants[1].Team[randomSelection]);
+				combatants[1].Swap(0, randomSelection);
+				battleField.ResetDefaultBoosts();
+				FillInBattlerData();
+				battleState = Battle.ENDROUND;
+			} //end else if
 			/* Done - Start of Battle
 			 * ++++++-Display trainers
 			 * ++++++-AI sends out first pokemon in roster
@@ -458,26 +501,26 @@ public class BattleScene : MonoBehaviour
 			 * ++++++---Sort by Priority, then Speed
 			 * ++++++---Queue with flag indentifying the pokemon who used it
 			 * 
-			 * Middle of round
-			 * -Resolve Queue
-			 * --Attack
+			 * Done - Middle of round
+			 * ++++++-Resolve Queue
+			 * ++++++--Attack
 			 * ++++++----Resolve protect
 			 * ++++++----Resolve blocking abilities (Bulletproof & Telepathy)
 			 * ++++++----Resolve typing
 			 * ++++++----Resolve accuracy
-			 * ----Resolve critical
-			 * ----Resolve damage, item, ability, field
-			 * ----Resolve recoil
-			 * ----Check if either pokemon is fainted
-			 * -----Resolve ability (aftermath)
-			 * -----Resolve player targeted secondary effects
-			 * -----If opponent is still alive, process opponent secondary effects
-			 * --Loop until queue is empty
+			 * ++++++----Resolve critical
+			 * ++++++----Resolve damage, item, ability, field
+			 * ++++++----Resolve recoil
+			 * ++++++----Check if either pokemon is fainted
+			 * ++++++-----Resolve ability (aftermath)
+			 * ++++++-----Resolve player targeted secondary effects
+			 * ++++++-----If opponent is still alive, process opponent secondary effects
+			 * ++++++--Loop until queue is empty
 			 * 
-			 * End of round
-			 * -Resolve field & item
-			 * -Replace missing pokemon
-			 * -Loop to beginning of round
+			 * Done - End of round
+			 * +++++-Resolve field & item
+			 * +++++-Replace missing pokemon
+			 * +++++-Loop to beginning of round
 			 * 
 			 * End of Battle
 			 * -Give badge if needed
@@ -632,6 +675,22 @@ public class BattleScene : MonoBehaviour
 					//Read ribbon
 					ReadRibbon();
 				} //end else if
+
+				//Replace fainted
+				else if (battleState == Battle.USERPICKPOKEMON)
+				{
+					//Decrease (higher slots are on lower children)
+					choiceNumber--;
+
+					//Loop to end of team if out of pokemon choice range
+					if (choiceNumber < 1)
+					{
+						choiceNumber = combatants[0].Team.Count;
+					} //end if
+
+					//Set current slot choice
+					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
+				} //end else if
 			} //end if
 		} //end if Left Arrow
 
@@ -772,6 +831,22 @@ public class BattleScene : MonoBehaviour
 
 					//Read ribbon
 					ReadRibbon();
+				} //end else if
+
+				//Replace fainted pokemon
+				else if (battleState == Battle.USERPICKPOKEMON)
+				{
+					//Increase (lower slots are on higher children)
+					choiceNumber++;
+
+					//Loop to end of team if outside of pokemon range
+					if (choiceNumber > combatants[0].Team.Count)
+					{
+						choiceNumber = 1;
+					} //end if
+
+					//Set current slot choice
+					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else if
 			} //end if
 		} //end else if Right Arrow
@@ -977,6 +1052,24 @@ public class BattleScene : MonoBehaviour
 
 					//Reload ribbons
 					InitializeRibbons();
+				} //end else if
+
+				//Replace fainted pokemon
+				else if (battleState == Battle.USERPICKPOKEMON)
+				{
+					//Move from top slot to last pokemon
+					if (choiceNumber == 1 || choiceNumber == 2)
+					{
+						choiceNumber = combatants[0].Team.Count;
+					} //end else if
+					//Go up vertically
+					else
+					{
+						choiceNumber -= 2;
+					} //end else
+
+					//Set current slot choice
+					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else if
 			} //end if
 		} //end else if Up Arrow
@@ -1185,6 +1278,25 @@ public class BattleScene : MonoBehaviour
 					//Reload ribbons
 					InitializeRibbons();
 				} //end else if
+
+				//Replace fainted pokemon
+				else if (battleState == Battle.USERPICKPOKEMON)
+				{
+					//Move from bottom slot to first pokemon
+					if ((choiceNumber == combatants[0].Team.Count - 1 && choiceNumber > 0) ||
+						choiceNumber == combatants[0].Team.Count)
+					{
+						choiceNumber = 1;
+					} //end else if
+					//Go down vertically
+					else
+					{
+						choiceNumber += 2;
+					} //end else
+
+					//Set current slot choice
+					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
+				} //end else if
 			} //end if
 		} //end else if Down Arrow
 
@@ -1282,6 +1394,18 @@ public class BattleScene : MonoBehaviour
 
 						//Read ribbon
 						ReadRibbon();
+					} //end if
+				} //end else if
+
+				//Replace fainted pokemon
+				else if (battleState == Battle.USERPICKPOKEMON && Input.mousePosition.x < Camera.main.WorldToScreenPoint(
+					selectedChoice.transform.position).x - selectedChoice.GetComponent<RectTransform>().rect.width / 2)
+				{
+					//If choice number is not odd, and is greater than 0, move left
+					if ((choiceNumber & 1) != 1 && choiceNumber > 0)
+					{
+						choiceNumber--;
+						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 					} //end if
 				} //end else if
 			} //end if
@@ -1382,6 +1506,18 @@ public class BattleScene : MonoBehaviour
 
 						//Read ribbon
 						ReadRibbon();
+					} //end if
+				} //end else if
+
+				//Replace fainted pokemon
+				else if (battleState == Battle.USERPICKPOKEMON && Input.mousePosition.x > Camera.main.WorldToScreenPoint(
+					selectedChoice.transform.position).x + selectedChoice.GetComponent<RectTransform>().rect.width / 2)
+				{
+					//If choice number is odd, and team is not odd numbered, and choice is greater than 0, move right
+					if ((choiceNumber & 1) == 1 && choiceNumber != combatants[0].Team.Count && choiceNumber > 0)
+					{
+						choiceNumber++;
+						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 					} //end if
 				} //end else if
 			} //end if
@@ -1555,6 +1691,23 @@ public class BattleScene : MonoBehaviour
 						currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").GetChild(ribbonChoice).gameObject;
 					} //end if
 				} //end else if
+
+				//Replace fainted pokemon
+				else if (battleState == Battle.USERPICKPOKEMON && Input.mousePosition.y > Camera.main.WorldToScreenPoint(
+					selectedChoice.transform.position).y + selectedChoice.GetComponent<RectTransform>().rect.height / 2)
+				{
+					//Stay put if on top slot
+					if (choiceNumber == 1 || choiceNumber == 2)
+					{
+						//Do nothing
+					} //end if
+					//Go up vertically
+					else
+					{
+						choiceNumber -= 2;
+						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
+					} //end else
+				} //end else if
 			} //end if
 		} //end else if Mouse Moves Up
 
@@ -1727,6 +1880,24 @@ public class BattleScene : MonoBehaviour
 						//Set currentRibbonSlot
 						currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").GetChild(ribbonChoice).gameObject;
 					} //end if
+				} //end else if
+
+				//Replace fainted pokemon
+				else if (battleState == Battle.USERPICKPOKEMON && Input.mousePosition.y < Camera.main.WorldToScreenPoint(
+					selectedChoice.transform.position).y - selectedChoice.GetComponent<RectTransform>().rect.height / 2)
+				{
+					//Stay put if on bottom slot
+					if ((choiceNumber == combatants[0].Team.Count - 1 && choiceNumber > 0) ||
+						choiceNumber == combatants[0].Team.Count)
+					{
+						//Do nothing
+					} //end if
+					//Go down vertically
+					else
+					{
+						choiceNumber += 2;
+						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
+					} //end else
 				} //end else if
 			} //end if
 		} //end else if Mouse Moves Down
@@ -2025,8 +2196,16 @@ public class BattleScene : MonoBehaviour
 								choices.SetActive(false);
 								playerTeam.SetActive(false);
 								commandChoice.SetActive(false);
-								AddToQueue(0, commandInt, 0, choiceNumber - 1, DeterminePriority(0, 2, choiceNumber));
-								battleState = Battle.GETAICHOICE;
+								if (replacePokemon)
+								{
+									battlers[0].SwitchInPokemon(combatants[0].Team[choiceNumber - 1]);
+									combatants[0].Swap(0, choiceNumber);
+								} //end if
+								else
+								{
+									AddToQueue(0, commandInt, 0, choiceNumber - 1, DeterminePriority(0, 2, choiceNumber));
+									battleState = Battle.GETAICHOICE;
+								} //end else
 							} //end if
 							else
 							{
@@ -2045,7 +2224,7 @@ public class BattleScene : MonoBehaviour
 						case 3:
 							selection.SetActive(false);
 							choices.SetActive(false);
-							battleState = Battle.SELECTPOKEMON;
+							battleState = replacePokemon ? Battle.USERPICKPOKEMON : Battle.SELECTPOKEMON;
 							break;
 					} //end switch
 				} //end else if
@@ -2094,6 +2273,16 @@ public class BattleScene : MonoBehaviour
 						selection.SetActive(!selection.activeSelf);
 						ReadRibbon();
 					} //end if
+				} //end else if
+
+				//Replace fainted pokemon
+				else if (battleState == Battle.USERPICKPOKEMON)
+				{
+					FillInChoices();
+					StartCoroutine(WaitForResize());
+					choices.SetActive(true);
+					subMenuChoice = 0;
+					battleState = Battle.POKEMONSUBMENU;
 				} //end else if
 			} //end else if
 		} //end else if Left Mouse Button
@@ -2151,7 +2340,7 @@ public class BattleScene : MonoBehaviour
 				{
 					selection.SetActive(false);
 					choices.SetActive(false);
-					battleState = Battle.SELECTPOKEMON;
+					battleState = replacePokemon ? Battle.USERPICKPOKEMON : Battle.SELECTPOKEMON;
 				} //end else if
 
 				//Pokemon summary
@@ -2370,8 +2559,16 @@ public class BattleScene : MonoBehaviour
 								choices.SetActive(false);
 								playerTeam.SetActive(false);
 								commandChoice.SetActive(false);
-								AddToQueue(0, commandInt, 0, choiceNumber - 1, DeterminePriority(0, 2, choiceNumber));
-								battleState = Battle.GETAICHOICE;
+								if (replacePokemon)
+								{
+									battlers[0].SwitchInPokemon(combatants[0].Team[choiceNumber - 1]);
+									combatants[0].Swap(0, choiceNumber);
+								} //end if
+								else
+								{
+									AddToQueue(0, commandInt, 0, choiceNumber - 1, DeterminePriority(0, 2, choiceNumber));
+									battleState = Battle.GETAICHOICE;
+								} //end else
 							} //end if
 							else
 							{
@@ -2390,7 +2587,7 @@ public class BattleScene : MonoBehaviour
 						case 3:
 							selection.SetActive(false);
 							choices.SetActive(false);
-							battleState = Battle.SELECTPOKEMON;
+							battleState = replacePokemon ? Battle.USERPICKPOKEMON : Battle.SELECTPOKEMON;
 							break;
 					} //end switch
 				} //end else if
@@ -2439,6 +2636,16 @@ public class BattleScene : MonoBehaviour
 						selection.SetActive(!selection.activeSelf);
 						ReadRibbon();
 					} //end if
+				} //end else if
+
+				//Replace fainted pokemon
+				else if (battleState == Battle.USERPICKPOKEMON)
+				{
+					FillInChoices();
+					StartCoroutine(WaitForResize());
+					choices.SetActive(true);
+					subMenuChoice = 0;
+					battleState = Battle.POKEMONSUBMENU;
 				} //end else if
 			} //end else if
 		} //end else if Enter/Return Key
@@ -2496,7 +2703,7 @@ public class BattleScene : MonoBehaviour
 				{
 					selection.SetActive(false);
 					choices.SetActive(false);
-					battleState = Battle.SELECTPOKEMON;
+					battleState = replacePokemon ? Battle.USERPICKPOKEMON : Battle.SELECTPOKEMON;
 				} //end else if
 
 				//Pokemon summary
@@ -2767,10 +2974,10 @@ public class BattleScene : MonoBehaviour
 				{
 					int result = ExtensionMethods.CapAtInt(currentPP + 10, maxPP);
 					combatants[toProcess.battler].Team[pokemonTarget].SetMovePP(moveTarget, result);
+					combatants[toProcess.battler].RemoveItem(combatants[toProcess.battler].GetItem(toProcess.selection)[0], 1);
 					return string.Format("{0}! {1} was restored by {2}!",combatants[toProcess.battler].Team[pokemonTarget].Nickname, 
 						DataContents.GetMoveGameName(combatants[toProcess.battler].Team[pokemonTarget].GetMove(moveTarget)),
 						result);
-					combatants[toProcess.battler].RemoveItem(combatants[toProcess.battler].GetItem(toProcess.selection)[0], 1);
 				} //end if
 				else
 				{
@@ -2800,10 +3007,10 @@ public class BattleScene : MonoBehaviour
 				{
 					int result = maxPP - currentPP;
 					combatants[toProcess.battler].Team[pokemonTarget].SetMovePP(moveTarget, maxPP);
+					combatants[toProcess.battler].RemoveItem(combatants[toProcess.battler].GetItem(toProcess.selection)[0], 1);
 					return string.Format("{0}! {1} was restored by {2}!", combatants[toProcess.battler].Team[pokemonTarget].Nickname,
 						DataContents.GetMoveGameName(combatants[toProcess.battler].Team[pokemonTarget].GetMove(moveTarget)),
 						result);
-					combatants[toProcess.battler].RemoveItem(combatants[toProcess.battler].GetItem(toProcess.selection)[0], 1);
 				} //end if
 				else
 				{
@@ -2862,6 +3069,7 @@ public class BattleScene : MonoBehaviour
 		WriteBattleMessage("There were no items to process");
 		yield return new WaitForSeconds(1.5f);
 		checkpoint = 4;
+		Debug.Log(battleState);
 	} //end EntranceItems
 
 	/***************************************
@@ -3511,9 +3719,7 @@ public class BattleScene : MonoBehaviour
 
 		//Set the move category
 		moveScreen.FindChild("Category").GetComponent<Image>().sprite =
-			DataContents.categorySprites[Convert.ToInt32(Enum.Parse(typeof(Categories),
-				DataContents.ExecuteSQL<string>("SELECT category FROM Moves WHERE rowid=" +
-					myPokemon.GetMove(moveChoice))))];
+			DataContents.categorySprites[DataContents.GetMoveCategory(myPokemon.GetMove(moveChoice))];
 
 		//Set the move power
 		int temp = DataContents.ExecuteSQL<int>("SELECT baseDamage FROM Moves WHERE rowid=" +
@@ -3795,62 +4001,103 @@ public class BattleScene : MonoBehaviour
 	 * Name: ProcessAttack
 	 * Processes effect of an attack
 	 ***************************************/
-	void ProcessAttack(QueueEvent toProcess)
+	int ProcessAttack(QueueEvent toProcess)
 	{
 		//Decrease PP of attack used
 		battlers[toProcess.battler].SetMovePP(toProcess.selection, battlers[toProcess.battler].GetMovePP(toProcess.selection) - 1);
+
+		//Get move used
+		currentAttack = battlers[toProcess.battler].GetMove(toProcess.selection);
+
+		//Get category of move
+		int moveCategory = DataContents.GetMoveCategory(currentAttack);
+
+		//Get move damage
+		int moveDamage = DataContents.GetMoveDamage(currentAttack);
 
 		//Check for protect
 		if (battlers[toProcess.target].CheckEffect((int)LastingEffects.Protect))
 		{
 			WriteBattleMessage(battlers[toProcess.target].Nickname + " protected itself!");
-			return;
+			return 0;
 		} //end if
 
 		//Check for negating abilities
-		if (AbilityEffects.ResolveBlockingAbilities(15, battlers[toProcess.battler].GetMove(toProcess.selection),
+		if (AbilityEffects.ResolveBlockingAbilities(battlers[toProcess.battler].GetAbility(), currentAttack,
 			battlers[toProcess.target]))
 		{
-			return;
+			return 0;
 		} //end if
 
-		//Check for typing
-		float typeMod = battlers[toProcess.target].CheckDefenderTyping(battlers[toProcess.battler].GetMove(toProcess.selection),
-			                battlers[toProcess.battler]);
-		if (typeMod == 0)
+		//If the move is not a status move, check for damage
+		if (moveCategory != (int)Categories.Status)
 		{
-			WriteBattleMessage("But it had no effect...");
-			return;
-		} //end if
+			//Check for typing
+			float typeMod = battlers[toProcess.target].CheckDefenderTyping(DataContents.GetMoveIcon(battlers[toProcess.battler].
+			GetMove(toProcess.selection)), battlers[toProcess.battler]);
+			if (typeMod == 0)
+			{
+				WriteBattleMessage("But it had no effect...");
+				return 0;
+			} //end if
 
-		//Check for accuracy
-		if (!battlers[toProcess.target].CheckAccuracy(DataContents.GetMoveAccuracy(battlers[toProcess.battler].
+			//Check for accuracy
+			if (!battlers[toProcess.target].CheckAccuracy(DataContents.GetMoveAccuracy(battlers[toProcess.battler].
 			GetMove(toProcess.selection)), battlers[toProcess.battler].GetStage(6), DataContents.GetMoveIcon(
-			   battlers[toProcess.battler].GetMove(toProcess.selection)), false))
-		{
-			WriteBattleMessage(battlers[toProcess.target].Nickname + "'s attack missed!");
-			return;
+				   currentAttack), DataContents.GetMoveCategory(currentAttack), false))
+			{
+				WriteBattleMessage(battlers[toProcess.battler].Nickname + "'s attack missed!");
+				return 0;
+			} //end if
+
+			//Check for critical
+			bool critical = ProcessCritical(toProcess);	
+
+			//Calculate damage mod
+			//Check for STAB
+			float damageMod = battlers[toProcess.battler].CheckSTAB(currentAttack) ?
+			1.5f : 1f;
+
+			//Apply typing
+			damageMod *= typeMod;
+
+			//Apply critical
+			damageMod *= critical ? 1.5f : 1f;
+
+			//Check for held items
+			damageMod *= 1f;
+
+			//Get random modifier between 0.85 and 1
+			damageMod *= (float)(GameManager.instance.RandomInt(85, 101)) / 100f;
+
+			//Get base attacker modifier
+			float damage = ((2f * (float)battlers[toProcess.battler].CurrentLevel + 10f) / 250f); 
+
+			//Decide attack and defence based on move category
+			if (moveCategory == (int)Categories.Physical)
+			{
+				damage *= ((float)battlers[toProcess.battler].Attack / (float)battlers[toProcess.target].Defense);
+			} //end if
+			else
+			{
+				damage *= ((float)battlers[toProcess.battler].SpecialA / (float)battlers[toProcess.target].SpecialD);
+			} //end else
+
+			//Modify damage based on base, then add 2
+			damage = damage * moveDamage + 2;
+
+			//Lastly, modify damage based on damage mod
+			damage = (int)(damage * damageMod);
+
+			//Return
+			return (int)damage;
 		} //end if
-
-		//Check for critical
-		bool critical = ProcessCritical(toProcess);		
-
-		//Resolve damage, item, ability, field
-		//Resolve recoil
-		//Check if either pokemon is fainted
-			//Resolve ability (aftermath)
-			//Resolve player targeted secondary effects
-			//If opponent is still alive, process opponent secondary effects
-		battlers[toProcess.battler].ProcessAttackEffect(battlers[toProcess.battler].GetMove(toProcess.selection));
-
-		WriteBattleMessage("This would go through");
-		return;
-
+		return 0;
 	} //end ProcessAttack(QueueEvent toProcess)
 
 	/***************************************
-	 * Name: ProcessQueue
-	 * Applies each queue action
+	 * Name: ProcessCritical
+	 * Determine if a critical can happen
 	 ***************************************/
 	bool ProcessCritical(QueueEvent toProcess)
 	{
@@ -3869,7 +4116,7 @@ public class BattleScene : MonoBehaviour
 		} //end else if
 
 		//Check for Frost Breath
-		else if (battlers[toProcess.battler].GetMove(toProcess.selection) == 199)
+		else if (currentAttack == 199)
 		{
 			return true;
 		} //end else if
@@ -3877,7 +4124,7 @@ public class BattleScene : MonoBehaviour
 		//Run battler critical check
 		else
 		{
-			int baseStage = DataContents.GetMoveFlag(battlers[toProcess.battler].GetMove(toProcess.selection), "h") ?
+			int baseStage = DataContents.GetMoveFlag(currentAttack, "h") ?
 				1 : 0;
 			return battlers[toProcess.battler].CheckCritical(baseStage);
 		} //end else
@@ -3891,54 +4138,99 @@ public class BattleScene : MonoBehaviour
 	{
 		for (int i = 0; i < queue.Count; i++)
 		{
-			switch (queue[i].action)
+			//Make sure user is still alive
+			if(battlers[queue[i].battler].CurrentHP > 0)
 			{
-				case 0:
-					WriteBattleMessage(string.Format("{0} used {1} on {2}!", battlers[queue[i].battler].Nickname, 
-						DataContents.GetMoveGameName(battlers[queue[i].battler].GetMove(queue[i].selection)), 
-						battlers[queue[i].target].Nickname));
-					yield return new WaitForSeconds(1.5f);
-					ProcessAttack(queue[i]);
-					break;
-				case 1:
-					if (queue[i].target < 900)
-					{
-						int item = combatants[queue[i].battler].GetItem(queue[i].selection)[0];
-						string effect = ItemEffects.BattleUseOnPokemon(combatants[queue[i].battler].Team[queue[i].target], 
-							                combatants[queue[i].battler].GetItem(queue[i].selection)[0]);
-						combatants[queue[i].battler].RemoveItem(item, 1);
-						WriteBattleMessage(string.Format("{0} used {1} on {2}! {3}", combatants[queue[i].battler].PlayerName,
-							DataContents.GetItemGameName(item),	combatants[queue[i].battler].Team[queue[i].target].Nickname, effect));
+				switch (queue[i].action)
+				{
+					case 0:
+						WriteBattleMessage(string.Format("{0} used {1} on {2}!", battlers[queue[i].battler].Nickname, 
+							DataContents.GetMoveGameName(battlers[queue[i].battler].GetMove(queue[i].selection)), 
+							battlers[queue[i].target].Nickname));
+						yield return new WaitForSeconds(1.5f);
+						int damage = ProcessAttack(queue[i]);
+
+						//Remove HP from target
+						battlers[queue[i].target].RemoveHP(damage);
+						FillInBattlerData();
+				
+						//Check if either pokemon is fainted
+						if (battlers[queue[i].target].CurrentHP < 1)
+						{
+							AbilityEffects.ResolveFaintedAbilities(battlers[queue[i].target].GetAbility(), currentAttack,
+								battlers[queue[i].battler]);
+							battlers[queue[i].target].FaintPokemon();
+							WriteBattleMessage(battlers[queue[i].target].Nickname + " fainted!");
+							yield return new WaitForSeconds(0.5f);
+						} //end if
+						else
+						{
+							battlers[queue[i].target].ProcessDefenderAttackEffect(currentAttack);
+						} //end else
+
+						if (battlers[queue[i].battler].CurrentHP < 1)
+						{
+							AbilityEffects.ResolveFaintedAbilities(battlers[queue[i].battler].GetAbility(), currentAttack,
+								battlers[queue[i].target]);
+							battlers[queue[i].battler].FaintPokemon();
+							WriteBattleMessage(battlers[queue[i].battler].Nickname + " fainted!");
+							yield return new WaitForSeconds(0.5f);
+						} //end if
+						else
+						{
+							battlers[queue[i].battler].ProcessAttackerAttackEffect(currentAttack);
+						} //end else
+										
+						//Reset current attack to none and process next event
+						currentAttack = -1;
+						break;
+					case 1:
+						if (queue[i].target < 900)
+						{
+							int item = combatants[queue[i].battler].GetItem(queue[i].selection)[0];
+							string effect = ItemEffects.BattleUseOnPokemon(combatants[queue[i].battler].Team[queue[i].target], 
+								                combatants[queue[i].battler].GetItem(queue[i].selection)[0]);
+							combatants[queue[i].battler].RemoveItem(item, 1);
+							WriteBattleMessage(string.Format("{0} used {1} on {2}! {3}", combatants[queue[i].battler].PlayerName,
+								DataContents.GetItemGameName(item),	combatants[queue[i].battler].Team[queue[i].target].Nickname, effect));
+							FillInBattlerData();
+							UpdateDisplayedTeam();
+						} //end if
+						else
+						{
+							string effect = ApplySpecialItem(queue[i]);
+							WriteBattleMessage(string.Format("{0} used {1} on {2}", combatants[queue[i].battler].PlayerName,
+								DataContents.GetItemGameName(combatants[queue[i].battler].GetItem(queue[i].selection)[0]), 
+								effect));
+						} //end else
+						break;
+					case 2:
+						WriteBattleMessage(string.Format("That's enough, {0}! Go, {1}!", battlers[queue[i].battler].Nickname,
+							combatants[queue[i].battler].Team[queue[i].target].Nickname));
+						battlers[queue[i].battler].SwitchInPokemon(combatants[queue[i].battler].Team[queue[i].target]);
+						combatants[queue[i].battler].Swap(0, queue[i].target);
+						if (queue[i].battler == 1)
+						{
+							battleField.ResetDefaultBoosts();
+						} //end if
 						FillInBattlerData();
 						UpdateDisplayedTeam();
-					} //end if
-					else
-					{
-						string effect = ApplySpecialItem(queue[i]);
-						WriteBattleMessage(string.Format("{0} used {1} on {2}", combatants[queue[i].battler].PlayerName,
-							DataContents.GetItemGameName(combatants[queue[i].battler].GetItem(queue[i].selection)[0]), 
-							effect));
-					} //end else
-					break;
-				case 2:
-					WriteBattleMessage(string.Format("That's enough, {0}! Go, {1}!", battlers[queue[i].battler].Nickname,
-						combatants[queue[i].battler].Team[queue[i].target].Nickname));
-					battlers[queue[i].battler].SwitchInPokemon(combatants[queue[i].battler].Team[queue[i].target]);
-					combatants[queue[i].battler].Swap(0, queue[i].target);
-					if (queue[i].battler == 1)
-					{
-						battleField.ResetDefaultBoosts();
-					} //end if
-					FillInBattlerData();
-					UpdateDisplayedTeam();
-					yield return new WaitForSeconds(1.5f);
-					StartCoroutine(ResolveFieldEntrance());
-					break;
-			} //end switch
+						yield return new WaitForSeconds(1.5f);
+						StartCoroutine(ResolveFieldEntrance());
+						break;
+				} //end switch
+			} //end if
 
+			//Event finished
+			QueueEvent finishedEvent = queue[i];
+			finishedEvent.success = true;
+			queue[i] = finishedEvent;
+
+			//Wait between queue events
 			yield return new WaitForSeconds(1.5f);
 		} //end for
-		ProcessEndOfRound();
+		processing = false;
+		battleState = Battle.ENDROUND;
 	} //end ProcessQueue
 
 	/***************************************
@@ -3946,13 +4238,41 @@ public class BattleScene : MonoBehaviour
 	 * Apply any end of round effects or
 	 * resets
 	 ***************************************/
-	void ProcessEndOfRound()
+	IEnumerator ProcessEndOfRound()
 	{
 		//Reset battler effects
 		for (int i = 0; i < battlers.Count; i++)
 		{
-			battlers[i].EndOfRoundReset();
+			//Make user pick a new pokemon if necessary
+			if (battlers[i].BattlerPokemon == null)
+			{
+				if (i == 0)
+				{
+					playerTeam.SetActive(true);
+					selectedChoice = playerTeam.transform.FindChild("Pokemon1").gameObject;
+					playerTeam.transform.FindChild("PartyInstructions").GetChild(0).GetComponent<Text>().text = 
+						"Choose a Pokemon to switch in.";
+					choiceNumber = 1;
+					replacePokemon = true;
+					battleState = Battle.USERPICKPOKEMON;
+					Debug.Log(battleState);
+					yield return new WaitUntil(() => battleState == Battle.ENDROUND);
+					Debug.Log(battleState);
+				} //end if
+				else
+				{
+					battleState = Battle.AIPICKPOKEMON;
+					yield return new WaitUntil(() => battleState == Battle.ENDROUND);
+				} //end if
+			} //end if
+			else
+			{
+				battlers[i].EndOfRoundReset();
+			} //end else
 		} //end for
+
+		//Resolve field entrance effects if necessary
+		StartCoroutine(ResolveFieldEntrance());
 
 		//Reset to beginning of round
 		queue.Clear();

@@ -1296,7 +1296,7 @@ public class Pokemon
 		} //end get
 		set
 		{
-			currentHP = ExtensionMethods.CapAtInt(value, totalHP);
+			currentHP = ExtensionMethods.WithinIntRange(value, 0, totalHP);
 		} //end set
 	}//end Current HP
 
@@ -1791,7 +1791,7 @@ public class Pokemon
      ***************************************/
     public int GetMovePP(int index)
     {
-        return ppReamaining [index];
+		return index < GetMoveCount() ? ppReamaining [index] : 0;
     } //end GetMovePP(int index)
     
     /***************************************

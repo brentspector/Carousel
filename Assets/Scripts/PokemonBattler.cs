@@ -67,6 +67,7 @@ public class PokemonBattler
 		lastMoveUsed = -1;
 		nickname = battler.Nickname;
 		moves = new List<int>();
+		ppRemaining = new List<int>();
 		types = new List<int>();
 		stages = new List<int>();
 		effects = new List<int>();
@@ -444,7 +445,7 @@ public class PokemonBattler
      * Checks if the move hits this target
      * or not
      ***************************************/
-	public bool CheckAccuracy(int moveAccuracy, int attackerAccuracyStage, int moveType, bool ignoreEvasion)
+	public bool CheckAccuracy(int moveAccuracy, int attackerAccuracyStage, int moveType, int moveCategory, bool ignoreEvasion)
 	{
 		//If move is guaranteed to hit
 		if (moveAccuracy == 0 || ((GameManager.instance.CheckMoveUsed() == "Flying Press" || GameManager.instance.CheckMoveUsed() == 
@@ -496,7 +497,7 @@ public class PokemonBattler
 		attackerAccuracy = attackerAccuracy > -1 ? ((attackerAccuracy + 3) * 100) / 3 : 300 / (3 - attackerAccuracy);
 
 		//Check for Wonder Skin
-		if (CheckAbility(190) && moveType == (int)Categories.Status && moveAccuracy > 50)
+		if (CheckAbility(190) && moveCategory == (int)Categories.Status && moveAccuracy > 50)
 		{
 			moveAccuracy = 50;
 		} //end if
@@ -553,17 +554,38 @@ public class PokemonBattler
 	} //end CheckCritical(int critStage)
 
 	/***************************************
-     * Name: ProcessAttackEffect
-     * Attempt to apply the effect of a move
-     * to this pokemon
+     * Name: CheckSTAB
+     * Check if the move used gets a same type
+     * attack bonus
      ***************************************/
-	public void ProcessAttackEffect(int moveNumber)
+	public bool CheckSTAB(int move)
 	{
+		return types.Contains(DataContents.GetMoveIcon(move)) ? true : false;
+	} //end CheckSTAB(int move)
+
+	/***************************************
+     * Name: ProcessAttackerAttackEffect
+     * Attempt to apply the effect of a move
+     * used by this pokemon to this pokemon
+     ***************************************/
+	public void ProcessAttackerAttackEffect(int moveNumber)
+	{
+		//Protect
 		if (moveNumber == 413)
 		{
 			effects[(int)LastingEffects.Protect] = 1;
 		} //end if
-	} //end ProcessAttackEffect(int moveNumber)
+	} //end ProcessAttackerAttackEffect(int moveNumber)
+
+	/***************************************
+     * Name: ProcessDefenderAttackEffect
+     * Attempt to apply the effect of a move
+     * used against this pokemon to this pokemon
+     ***************************************/
+	public void ProcessDefenderAttackEffect(int moveNumber)
+	{
+
+	} //end ProcessDefenderAttackEffect(int moveNumber)
 
 	/***************************************
      * Name: EndOfRoundReset
@@ -583,8 +605,19 @@ public class PokemonBattler
 		if (effects[(int)LastingEffects.HealBlock] == 0)
 		{
 			battler.CurrentHP += amount;
+			currentHP = battler.CurrentHP;
 		} //end if
 	} //end RestoreHP(int amount)
+
+	/***************************************
+     * Name: RemoveHP
+     * Attempts to remove HP
+     ***************************************/
+	public void RemoveHP(int amount)
+	{
+		battler.CurrentHP -= amount;
+		currentHP = battler.CurrentHP;
+	} //end RemoveHP(int amount)
 
 	/***************************************
      * Name: GetStage
@@ -763,6 +796,15 @@ public class PokemonBattler
 	} //end CheckAbility(int abilityToCheck)
 
 	/***************************************
+     * Name: GetAbility
+     * Returns ability value
+     ***************************************/
+	public int GetAbility()
+	{
+		return ability;
+	} //end GetAbility
+
+	/***************************************
      * Name: GetAbilityName
      * Returns ability name
      ***************************************/
@@ -813,6 +855,18 @@ public class PokemonBattler
 	{
 		return types.Contains(type) ? true : false;
 	} //end CheckType(int type)
+
+	/***************************************
+     * Name: FaintPokemon
+     * Sets values to nothing when battler 
+     * has fainted
+     ***************************************/
+	public void FaintPokemon()
+	{
+		battler.Status = (int)Status.FAINT;
+		battler.StatusCount = 0;
+		battler = null;
+	} //end FaintPokemon
 	#endregion
 
 	#region Properties

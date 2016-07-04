@@ -257,5 +257,15 @@ public static class AbilityEffects
 		//Nothing resolved, return false
 		return false;
 	} //end ResolveBlockingAbilities(int move)
+
+	/***************************************
+     * Name: ResolveFaintedAbilities
+     * Checks if an ability would activate
+     * once the battler faints
+     ***************************************/
+	public static void ResolveFaintedAbilities(int ability, int move, PokemonBattler target)
+	{
+
+	} //end ResolveFaintedAbilities(int ability, int move, PokemonBattler target)
 	#endregion
 } //end AbilityEffects class

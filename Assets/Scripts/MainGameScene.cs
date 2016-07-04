@@ -2803,9 +2803,7 @@ public class MainGameScene : MonoBehaviour
 
 		//Set the move category
 		moveScreen.FindChild("Category").GetComponent<Image>().sprite =
-			DataContents.categorySprites[Convert.ToInt32(Enum.Parse(typeof(Categories),
-			DataContents.ExecuteSQL<string>("SELECT category FROM Moves WHERE rowid=" +
-			myPokemon.GetMove(moveChoice))))];
+			DataContents.categorySprites[DataContents.GetMoveCategory(myPokemon.GetMove(moveChoice))];
 
 		//Set the move power
 		int temp = DataContents.ExecuteSQL<int>("SELECT baseDamage FROM Moves WHERE rowid=" +

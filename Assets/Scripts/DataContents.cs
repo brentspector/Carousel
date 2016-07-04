@@ -276,12 +276,21 @@ public static class DataContents : System.Object
 	} //end GetMovePriority(int moveNumber)
 
 	/***************************************
+     * Name: GetMoveDamage
+     * Returns base damage of given move
+     ***************************************/
+	public static int GetMoveDamage(int moveNumber)
+	{		
+		return moveNumber < 0 ? -1 : ExecuteSQL<int>("SELECT baseDamage FROM Moves WHERE rowid=" + moveNumber);
+	} //end GetMoveAccuracy(int moveNumber)
+
+	/***************************************
      * Name: GetMoveAccuracy
      * Returns base accuracy of given move
      ***************************************/
 	public static int GetMoveAccuracy(int moveNumber)
 	{		
-		return moveNumber < 0 ? -1 : ExecuteSQL<int>("SELECT priority FROM Moves WHERE rowid=" + moveNumber);
+		return moveNumber < 0 ? -1 : ExecuteSQL<int>("SELECT accuracy FROM Moves WHERE rowid=" + moveNumber);
 	} //end GetMoveAccuracy(int moveNumber)
 
 	/***************************************
@@ -292,6 +301,18 @@ public static class DataContents : System.Object
 	{		
 		return ExecuteSQL<string>("SELECT flags FROM Moves WHERE rowid=" + moveNumber).Contains(flag);
 	} //end GetMoveFlag(int moveNumber, string flag)
+
+	/***************************************
+     * Name: GetMoveCategory
+     * Returns numeric sprite location for 
+     * move given
+     ***************************************/
+	public static int GetMoveCategory(int moveNumber)
+	{
+		return Convert.ToInt32(Enum.Parse(typeof(Categories),
+			DataContents.ExecuteSQL<string>("SELECT category FROM Moves WHERE rowid=" +
+			moveNumber)));
+	} //end GetMoveCategory(int moveNumber)
 
     /***************************************
      * Name: GetItemID
