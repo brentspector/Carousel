@@ -432,7 +432,7 @@ public class PokemonBattler
 			} //end if
 			else
 			{
-				finalMod /= (float)mods[i];
+				finalMod *= 0.5f;
 			} //end else
 		} //end for
 

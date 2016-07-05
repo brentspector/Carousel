@@ -8,6 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Linq;
 #endregion
 
 [Serializable]
@@ -209,6 +210,16 @@ public class Trainer
     {
         team.Clear();
     } //end EmptyTeam
+
+	/***************************************
+     * Name: CheckRemaining
+     * Checks if trainer has any non-fainted
+     * pokemon
+     ***************************************/
+	public int CheckRemaining()
+	{
+		return team.Count(pokemon => pokemon.Status != (int)Status.FAINT);
+	} //end CheckRemaining
 
     /***************************************
      * Name: GetPC
