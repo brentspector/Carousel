@@ -4320,6 +4320,7 @@ public class BattleScene : MonoBehaviour
 					yield return new WaitUntil(() => battleState == Battle.ENDROUND);
 					FillInBattlerData();
 					UpdateDisplayedTeam();
+					trainerStands[0].GetComponent<Animator>().SetTrigger("SendOut");
 				} //end if
 				else
 				{
@@ -4327,6 +4328,7 @@ public class BattleScene : MonoBehaviour
 					waitingState = Battle.ENDROUND;
 					yield return new WaitUntil(() => battleState == Battle.ENDROUND);					
 					FillInBattlerData();
+					trainerStands[1].GetComponent<Animator>().SetTrigger("SendOut");
 				} //end if
 			} //end if
 			else
