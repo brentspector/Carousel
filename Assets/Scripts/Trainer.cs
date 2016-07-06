@@ -212,6 +212,21 @@ public class Trainer
     } //end EmptyTeam
 
 	/***************************************
+     * Name: HealTeam
+     * Restore all pokemon in team to full 
+     * health and status
+     ***************************************/
+	public void HealTeam()
+	{
+		for (int i = 0; i < team.Count; i++)
+		{
+			team[i].CurrentHP = team[i].TotalHP;
+			team[i].Status = 0;
+			team[i].StatusCount = 0;
+		} //end for
+	} //end HealTeam
+
+	/***************************************
      * Name: CheckRemaining
      * Checks if trainer has any non-fainted
      * pokemon

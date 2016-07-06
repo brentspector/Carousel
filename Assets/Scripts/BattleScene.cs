@@ -16,6 +16,7 @@ public class BattleScene : MonoBehaviour
 	#region Variables
 	public enum Battle
 	{
+		RESOLVEEFFECTS,
 		ROUNDSTART,
 		SELECTATTACK,
 		SELECTITEM,
@@ -35,6 +36,7 @@ public class BattleScene : MonoBehaviour
 	} //end Battle
 
 	Battle battleState;				//Current state of the battle scene
+	Battle waitingState;			//What was the previous state before resolving effects
 	int checkpoint = 0;				//Manage function progress
 	int commandInt;					//What choice is being selected on commandChoice
 	int choiceNumber;				//What choice is being selected on the relevant screen
@@ -103,6 +105,7 @@ public class BattleScene : MonoBehaviour
 
 			//Initialize references
 			battleState = Battle.ROUNDSTART;
+			waitingState = Battle.ROUNDSTART;
 			commandInt = 0;
 			choiceNumber = 0;
 			currentAttack = -1;
@@ -146,6 +149,7 @@ public class BattleScene : MonoBehaviour
 			for (int i = 0; i < combatants.Count; i++)
 			{
 				battlers.Add(new PokemonBattler(combatants[i].Team[0]));
+				battlers[i].JustEntered = true;
 				participants.Add(combatants[i].Team[0]);
 			} //end for
 
@@ -459,7 +463,11 @@ public class BattleScene : MonoBehaviour
 
 				while (combatants[1].Team[randomSelection].Status == (int)Status.FAINT)
 				{
-					randomSelection = GameManager.instance.RandomInt(0, combatants[1].Team.Count()-1);
+					randomSelection++;
+					if (randomSelection == combatants[1].Team.Count())
+					{
+						break;
+					} //end if
 				} //end while
 				battlers[1].SwitchInPokemon(combatants[1].Team[randomSelection]);
 				combatants[1].Swap(0, randomSelection);
@@ -2203,7 +2211,9 @@ public class BattleScene : MonoBehaviour
 								if (replacePokemon)
 								{
 									battlers[0].SwitchInPokemon(combatants[0].Team[choiceNumber - 1]);
+									battlers[0].JustEntered = true;
 									combatants[0].Swap(0, choiceNumber-1);
+									replacePokemon = false;
 									battleState = Battle.ENDROUND;
 								} //end if
 								else
@@ -2567,7 +2577,9 @@ public class BattleScene : MonoBehaviour
 								if (replacePokemon)
 								{
 									battlers[0].SwitchInPokemon(combatants[0].Team[choiceNumber - 1]);
+									battlers[0].JustEntered = true;
 									combatants[0].Swap(0, choiceNumber-1);
+									replacePokemon = false;
 									battleState = Battle.ENDROUND;
 								} //end if
 								else
@@ -3047,10 +3059,19 @@ public class BattleScene : MonoBehaviour
 	 ***************************************/
 	IEnumerator ResolveFieldEntrance()
 	{
-		WriteBattleMessage("There were no field entrance effects to process.");
-		battlers = battleField.ResolveFieldEntrance(battlers);
-		yield return new WaitForSeconds(1.5f);
-		StartCoroutine(EntranceAbilities());
+		battleState = Battle.RESOLVEEFFECTS;
+		//Only process if a battler just entered
+		if (battlers.Select(pokemon => pokemon.JustEntered).Contains(true))
+		{
+			WriteBattleMessage("There were no field entrance effects to process.");
+			battlers = battleField.ResolveFieldEntrance(battlers);
+			yield return new WaitForSeconds(1.5f);
+			StartCoroutine(EntranceAbilities());
+		} //end if
+		else
+		{
+			battleState = waitingState;
+		} //end else
 	} //end ResolveFieldEntrance
 
 	/***************************************
@@ -3060,6 +3081,7 @@ public class BattleScene : MonoBehaviour
 	 ***************************************/
 	IEnumerator EntranceAbilities()
 	{
+		//Process entrance abilities
 		WriteBattleMessage("There were no abilities to process.");
 		yield return new WaitForSeconds(1.5f);
 		StartCoroutine(EntranceItems());
@@ -3072,9 +3094,21 @@ public class BattleScene : MonoBehaviour
 	 ***************************************/
 	IEnumerator EntranceItems()
 	{
+		//Process entrance items
 		WriteBattleMessage("There were no items to process");
 		yield return new WaitForSeconds(1.5f);
-		checkpoint = 4;
+		battlers.ForEach(pokemon => pokemon.JustEntered = false);
+
+		//Reset to beginning of round
+		battleState = waitingState;
+		if (battleState != Battle.PROCESSQUEUE)
+		{
+			queue.Clear();
+			commandChoice.SetActive(true);
+			selectedChoice = commandChoice.transform.GetChild(commandInt).gameObject;
+			checkpoint = 4;
+		} //end if
+		//processing = false;
 	} //end EntranceItems
 
 	/***************************************
@@ -4008,8 +4042,8 @@ public class BattleScene : MonoBehaviour
 	 ***************************************/
 	int ProcessAttack(QueueEvent toProcess)
 	{
-		//Decrease PP of attack used
-		battlers[toProcess.battler].SetMovePP(toProcess.selection, battlers[toProcess.battler].GetMovePP(toProcess.selection) - 1);
+		//Get move user
+		currentAttacker = battlers[toProcess.battler];
 
 		//Get move used
 		currentAttack = battlers[toProcess.battler].GetMove(toProcess.selection);
@@ -4020,6 +4054,9 @@ public class BattleScene : MonoBehaviour
 		//Get move damage
 		int moveDamage = DataContents.GetMoveDamage(currentAttack);
 
+		//Decrease PP of attack used
+		currentAttacker.SetMovePP(toProcess.selection, currentAttacker.GetMovePP(toProcess.selection) - 1);
+
 		//Check for protect
 		if (battlers[toProcess.target].CheckEffect((int)LastingEffects.Protect))
 		{
@@ -4028,7 +4065,7 @@ public class BattleScene : MonoBehaviour
 		} //end if
 
 		//Check for negating abilities
-		if (AbilityEffects.ResolveBlockingAbilities(battlers[toProcess.battler].GetAbility(), currentAttack,
+		if (AbilityEffects.ResolveBlockingAbilities(battlers[toProcess.target].GetAbility(), currentAttack,
 			battlers[toProcess.target]))
 		{
 			return 0;
@@ -4038,8 +4075,8 @@ public class BattleScene : MonoBehaviour
 		if (moveCategory != (int)Categories.Status)
 		{
 			//Check for typing
-			float typeMod = battlers[toProcess.target].CheckDefenderTyping(DataContents.GetMoveIcon(battlers[toProcess.battler].
-			GetMove(toProcess.selection)), battlers[toProcess.battler]);
+			float typeMod = battlers[toProcess.target].CheckDefenderTyping(DataContents.GetMoveIcon(currentAttacker.
+			GetMove(toProcess.selection)), currentAttacker);
 			if (typeMod == 0)
 			{
 				WriteBattleMessage("But it had no effect...");
@@ -4047,11 +4084,11 @@ public class BattleScene : MonoBehaviour
 			} //end if
 
 			//Check for accuracy
-			if (!battlers[toProcess.target].CheckAccuracy(DataContents.GetMoveAccuracy(battlers[toProcess.battler].
-			GetMove(toProcess.selection)), battlers[toProcess.battler].GetStage(6), DataContents.GetMoveIcon(
+			if (!battlers[toProcess.target].CheckAccuracy(DataContents.GetMoveAccuracy(currentAttacker.
+			GetMove(toProcess.selection)), currentAttacker.GetStage(6), DataContents.GetMoveIcon(
 				   currentAttack), DataContents.GetMoveCategory(currentAttack), false))
 			{
-				WriteBattleMessage(battlers[toProcess.battler].Nickname + "'s attack missed!");
+				WriteBattleMessage(currentAttacker.Nickname + "'s attack missed!");
 				return 0;
 			} //end if
 
@@ -4060,7 +4097,7 @@ public class BattleScene : MonoBehaviour
 
 			//Calculate damage mod
 			//Check for STAB
-			float damageMod = battlers[toProcess.battler].CheckSTAB(currentAttack) ?
+			float damageMod = currentAttacker.CheckSTAB(currentAttack) ?
 			1.5f : 1f;
 			
 			//Apply typing
@@ -4076,16 +4113,16 @@ public class BattleScene : MonoBehaviour
 			damageMod *= (float)(GameManager.instance.RandomInt(85, 101)) / 100f;
 
 			//Get base attacker modifier
-			float damage = ((2f * (float)battlers[toProcess.battler].CurrentLevel + 10f) / 250f); 
+			float damage = ((2f * (float)currentAttacker.CurrentLevel + 10f) / 250f); 
 
 			//Decide attack and defence based on move category
 			if (moveCategory == (int)Categories.Physical)
 			{
-				damage *= ((float)battlers[toProcess.battler].Attack / (float)battlers[toProcess.target].Defense);
+				damage *= ((float)currentAttacker.Attack / (float)battlers[toProcess.target].Defense);
 			} //end if
 			else
 			{
-				damage *= ((float)battlers[toProcess.battler].SpecialA / (float)battlers[toProcess.target].SpecialD);
+				damage *= ((float)currentAttacker.SpecialA / (float)battlers[toProcess.target].SpecialD);
 			} //end else
 
 			//Modify damage based on base, then add 2
@@ -4108,8 +4145,8 @@ public class BattleScene : MonoBehaviour
 	{
 		//Check for Shell Armor and Battle Armor
 		if ((battlers[toProcess.target].CheckAbility(12) || battlers[toProcess.target].CheckAbility(139)) &&
-		    !battlers[toProcess.battler].CheckAbility(92) && !battlers[toProcess.battler].CheckAbility(170) &&
-		    !battlers[toProcess.battler].CheckAbility(178))
+		    !currentAttacker.CheckAbility(92) && !currentAttacker.CheckAbility(170) &&
+		    !currentAttacker.CheckAbility(178))
 		{
 			return false;
 		} //end if
@@ -4131,7 +4168,7 @@ public class BattleScene : MonoBehaviour
 		{
 			int baseStage = DataContents.GetMoveFlag(currentAttack, "h") ?
 				1 : 0;
-			return battlers[toProcess.battler].CheckCritical(baseStage);
+			return currentAttacker.CheckCritical(baseStage);
 		} //end else
 	} //end ProcessCritical(QueueEvent toProcess)
 
@@ -4162,14 +4199,16 @@ public class BattleScene : MonoBehaviour
 						//Check if either pokemon is fainted
 						if (battlers[queue[i].target].CurrentHP < 1)
 						{
+							trainerStands[queue[i].target].GetComponent<Animator>().SetTrigger("FoeFaint");
+							WriteBattleMessage(battlers[queue[i].target].Nickname + " fainted!");
+							yield return new WaitForSeconds(0.5f);
 							AbilityEffects.ResolveFaintedAbilities(battlers[queue[i].target].GetAbility(), currentAttack,
 								battlers[queue[i].battler]);
 							battlers[queue[i].target].FaintPokemon();
-							WriteBattleMessage(battlers[queue[i].target].Nickname + " fainted!");
-							yield return new WaitForSeconds(0.5f);
 							if (combatants[queue[i].target].CheckRemaining() == 0)
 							{
-								WriteBattleMessage("You are out of Pokemon!");
+								WriteBattleMessage(combatants[queue[i].target].PlayerName + " is out of Pokemon!");
+								combatants[queue[i].target].HealTeam();
 								yield return new WaitForSeconds(1f);
 								GameManager.instance.LoadScene("MainGame", true);
 							} //end if
@@ -4181,14 +4220,16 @@ public class BattleScene : MonoBehaviour
 
 						if (battlers[queue[i].battler].CurrentHP < 1)
 						{
+							trainerStands[queue[i].battler].GetComponent<Animator>().SetTrigger("FoeFaint");
+							WriteBattleMessage(battlers[queue[i].battler].Nickname + " fainted!");
+							yield return new WaitForSeconds(0.5f);
 							AbilityEffects.ResolveFaintedAbilities(battlers[queue[i].battler].GetAbility(), currentAttack,
 								battlers[queue[i].target]);
 							battlers[queue[i].battler].FaintPokemon();
-							WriteBattleMessage(battlers[queue[i].battler].Nickname + " fainted!");
 							yield return new WaitForSeconds(0.5f);
-							if (combatants[queue[i].target].CheckRemaining() == 0)
+							if (combatants[queue[i].battler].CheckRemaining() == 0)
 							{
-								WriteBattleMessage("Your opponent is out of Pokemon!");
+								WriteBattleMessage(combatants[queue[i].battler].PlayerName + " is out of Pokemon!");
 								yield return new WaitForSeconds(1f);
 								GameManager.instance.LoadScene("MainGame", true);
 							} //end if
@@ -4200,6 +4241,7 @@ public class BattleScene : MonoBehaviour
 										
 						//Reset current attack to none and process next event
 						currentAttack = -1;
+						currentAttacker = null;
 						break;
 					case 1:
 						if (queue[i].target < 900)
@@ -4232,8 +4274,10 @@ public class BattleScene : MonoBehaviour
 						} //end if
 						FillInBattlerData();
 						UpdateDisplayedTeam();
-						yield return new WaitForSeconds(1.5f);
+						yield return new WaitForSeconds(1f);
+						waitingState = Battle.PROCESSQUEUE;
 						StartCoroutine(ResolveFieldEntrance());
+						yield return new WaitUntil(() => battleState == Battle.PROCESSQUEUE);
 						break;
 				} //end switch
 			} //end if
@@ -4272,6 +4316,7 @@ public class BattleScene : MonoBehaviour
 					choiceNumber = 1;
 					replacePokemon = true;
 					battleState = Battle.USERPICKPOKEMON;
+					waitingState = Battle.ENDROUND;
 					yield return new WaitUntil(() => battleState == Battle.ENDROUND);
 					FillInBattlerData();
 					UpdateDisplayedTeam();
@@ -4279,6 +4324,7 @@ public class BattleScene : MonoBehaviour
 				else
 				{
 					battleState = Battle.AIPICKPOKEMON;
+					waitingState = Battle.ENDROUND;
 					yield return new WaitUntil(() => battleState == Battle.ENDROUND);					
 					FillInBattlerData();
 				} //end if
@@ -4290,7 +4336,9 @@ public class BattleScene : MonoBehaviour
 		} //end for
 
 		//Resolve field entrance effects if necessary
+		waitingState = Battle.ENDROUND;
 		StartCoroutine(ResolveFieldEntrance());
+		yield return new WaitUntil(() => battleState == Battle.ENDROUND);
 
 		//Reset to beginning of round
 		queue.Clear();
