@@ -655,6 +655,26 @@ public class GameManager : MonoBehaviour
 	} //end OpenScene(int targetCheckpoint)
 
 	/***************************************
+     * Name: ShowFoeParty
+     * Plays animation for the foe's party to
+     * appear
+     ***************************************/
+	public void ShowFoeParty()
+	{
+		anim.ShowFoeParty();
+	} //end ShowFoeParty
+
+	/***************************************
+     * Name: ShowPlayerParty
+     * Plays animation for the player's party 
+     * to appear
+     ***************************************/
+	public void ShowPlayerParty()
+	{
+		anim.ShowPlayerParty();
+	} //end ShowPlayerParty
+
+	/***************************************
 	 * Name: IsProcessing
 	 * Whether there is an animation in
 	 * progress

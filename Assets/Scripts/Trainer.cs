@@ -35,6 +35,8 @@ public class Trainer
 	Inventory bag;		  //The player's item bag
 	[OptionalField(VersionAdded=2)]
 	Shop shop;			  //The status of the shop for the player
+	[OptionalField(VersionAdded=2)]
+	List<int> leaderWins; //How many wins has the player scored against the leader mode
 
     //Gym Battle count
     //Kalos
@@ -130,6 +132,9 @@ public class Trainer
             pHours = 0;
             pMinutes = 0;
             pSeconds = 0;
+
+			//Trainer has no wins yet
+			leaderWins = Enumerable.Repeat(0, 234).ToList();
         } //end if
     } //end Trainer
 
@@ -641,6 +646,21 @@ public class Trainer
             owned = value;
         } //end set
     } //end Owned
+
+	/***************************************
+     * Name: LeaderWins
+     ***************************************/
+	public List<int> LeaderWins
+	{
+		get
+		{
+			return leaderWins;
+		} //end get
+		set
+		{
+			leaderWins = value;
+		} //end set
+	} //end Owned
 
     /***************************************
      * Name: BackUps

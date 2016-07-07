@@ -4207,11 +4207,21 @@ public class BattleScene : MonoBehaviour
 							battlers[queue[i].target].FaintPokemon();
 							if (combatants[queue[i].target].CheckRemaining() == 0)
 							{
-								WriteBattleMessage(combatants[queue[i].target].PlayerName + " is out of Pokemon!");
-								combatants[queue[i].target].HealTeam();
-								yield return new WaitForSeconds(1f);
-								GameManager.instance.LoadScene("MainGame", true);
+								battleState = Battle.ENDFIGHT;
+								StartCoroutine(ProcessEndOfBattle(queue[i].target));
 							} //end if
+							else
+							{
+								//Show the appropriate party
+								if (queue[i].target == 0)
+								{
+									GameManager.instance.ShowPlayerParty();
+								} //end if
+								else
+								{
+									GameManager.instance.ShowFoeParty();
+								} //end else
+							} //end else
 						} //end if
 						else
 						{
@@ -4229,10 +4239,21 @@ public class BattleScene : MonoBehaviour
 							yield return new WaitForSeconds(0.5f);
 							if (combatants[queue[i].battler].CheckRemaining() == 0)
 							{
-								WriteBattleMessage(combatants[queue[i].battler].PlayerName + " is out of Pokemon!");
-								yield return new WaitForSeconds(1f);
-								GameManager.instance.LoadScene("MainGame", true);
+								battleState = Battle.ENDFIGHT;
+								StartCoroutine(ProcessEndOfBattle(queue[i].battler));
 							} //end if
+							else
+							{
+								//Show the appropriate party
+								if (queue[i].target == 0)
+								{
+									GameManager.instance.ShowPlayerParty();
+								} //end if
+								else
+								{
+									GameManager.instance.ShowFoeParty();
+								} //end else
+							} //end else
 						} //end if
 						else
 						{
@@ -4349,6 +4370,47 @@ public class BattleScene : MonoBehaviour
 		battleState = Battle.ROUNDSTART;
 		processing = false;
 	} //end ProcessEndOfRound
+
+	/***************************************
+     * Name: ProcessEndOfBattle
+     * Apply any end of battle effects
+     ***************************************/
+	IEnumerator ProcessEndOfBattle(int condition)
+	{
+		//If the player lost
+		if (condition == 0)
+		{
+			//Display who lost
+			WriteBattleMessage(combatants[condition].PlayerName + " is out of Pokemon!");
+			yield return new WaitForSeconds(0.75f);
+
+			//Heal team and return to main
+			combatants[0].HealTeam();
+			GameManager.instance.LoadScene("MainGame", true);
+		} //end if
+		else if (condition == 1)
+		{
+			//Display who lost
+			WriteBattleMessage(combatants[condition].PlayerName + " is out of Pokemon!");
+			yield return new WaitForSeconds(0.75f);
+
+			//Display losing speech
+			WriteBattleMessage("Well, it looks like I lost. Great job, " + combatants[0].PlayerName + "!");
+			yield return new WaitForSeconds(1.5f);
+
+			//Give points
+			PrizeList.PointsPrize(GameManager.instance.GetTrainer(), combatants[1].PlayerID);
+			yield return new WaitForSeconds(1.5f);
+
+			//Give items
+			PrizeList.ItemsPrize(GameManager.instance.GetTrainer(), combatants[1].PlayerID);
+			yield return new WaitForSeconds(1.5f);
+
+			//Heal team and return to main
+			combatants[condition].HealTeam();
+			GameManager.instance.LoadScene("MainGame", true);
+		} //end else if			
+	} //end ProcessEndOfBattle(int condition)
 
 	/***************************************
      * Name: SetSummaryPage

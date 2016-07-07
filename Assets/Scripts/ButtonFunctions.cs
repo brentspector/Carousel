@@ -498,6 +498,7 @@ public class ButtonFunctions : MonoBehaviour
 			for(int i = 1; i < enemiesGiven.Length; i++)
 			{
 				Trainer newTrainer = new Trainer();
+				newTrainer.PlayerID = int.Parse(enemiesGiven[i]);
 				newTrainer.PlayerName = DataContents.ExecuteSQL<string>("SELECT name FROM Trainers WHERE rowid=" + enemiesGiven[i]);
 				newTrainer.PlayerImage = DataContents.ExecuteSQL<int>("SELECT image FROM Trainers WHERE rowid=" + enemiesGiven[i]);
 				string[] items = DataContents.ExecuteSQL<string>("SELECT items FROM Trainers WHERE rowid=" + enemiesGiven[i]).Split(',');
