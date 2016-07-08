@@ -3625,9 +3625,7 @@ public class PCScene : MonoBehaviour
 				//Set the move type
 				moveScreen.FindChild("Move" + (i + 1)).gameObject.SetActive(true);
 				moveScreen.FindChild("Move" + (i + 1)).GetChild(0).GetComponent<Image>().sprite =
-					DataContents.typeSprites[Convert.ToInt32(Enum.Parse(typeof(Types),
-						DataContents.ExecuteSQL<string>("SELECT type FROM Moves WHERE rowid=" +
-							myPokemon.GetMove(i))))];
+					DataContents.typeSprites[DataContents.GetMoveIcon(myPokemon.GetMove(i))];
 
 				//Set the move name
 				moveScreen.FindChild("Move" + (i + 1)).GetChild(1).GetComponent<Text>().text =
@@ -3636,7 +3634,7 @@ public class PCScene : MonoBehaviour
 
 				//Set the move PP
 				moveScreen.FindChild("Move" + (i + 1)).GetChild(2).GetComponent<Text>().text = "PP " +
-				myPokemon.GetMovePP(i).ToString() + "/" + myPokemon.GetMovePP(i).ToString() + "/" + myPokemon.GetMovePPMax(i);
+				myPokemon.GetMovePP(i).ToString() + "/" + myPokemon.GetMovePPMax(i);
 			} //end if
 			else
 			{
@@ -3665,9 +3663,7 @@ public class PCScene : MonoBehaviour
 
 		//Set the move category
 		moveScreen.FindChild("Category").GetComponent<Image>().sprite =
-			DataContents.categorySprites[Convert.ToInt32(Enum.Parse(typeof(Categories),
-				DataContents.ExecuteSQL<string>("SELECT category FROM Moves WHERE rowid=" +
-					myPokemon.GetMove(moveChoice))))];
+			DataContents.categorySprites[DataContents.GetMoveCategory(myPokemon.GetMove(moveChoice))];
 
 		//Set the move power
 		int temp = DataContents.ExecuteSQL<int>("SELECT baseDamage FROM Moves WHERE rowid=" +
@@ -3875,7 +3871,7 @@ public class PCScene : MonoBehaviour
 				summaryScreen.transform.GetChild(1).FindChild("CaughtDate").GetComponent<Text>().text =
 					pokemonChoice.ObtainTime.ToLongDateString() + " at " + pokemonChoice.ObtainTime.ToShortTimeString();
 				summaryScreen.transform.GetChild(1).FindChild("CaughtType").GetComponent<Text>().text =
-					((ObtainType)pokemonChoice.ObtainType).ToString() + " from " + ((ObtainFrom)pokemonChoice.ObtainFrom).
+					((ObtainTypeEnum)pokemonChoice.ObtainType).ToString() + " from " + ((ObtainFromEnum)pokemonChoice.ObtainFrom).
 					ToString();
 				summaryScreen.transform.GetChild(1).FindChild("CaughtLevel").GetComponent<Text>().text =
 					"Found at level " + pokemonChoice.ObtainLevel;

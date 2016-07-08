@@ -16,6 +16,7 @@ public class AnimationManager : MonoBehaviour
 
 	//Scene tools variables
 	Image fade;						//The fade screen
+	GameObject openScene;			//Opens or closes scene between center and top/bottom
 	#endregion
 
 	#region Methods
@@ -27,6 +28,7 @@ public class AnimationManager : MonoBehaviour
 	{
 		processing = false;
 		fade = GameManager.tools.transform.FindChild("Fade").GetComponent<Image>();
+		openScene = GameManager.tools.transform.FindChild("SceneOpen").gameObject;
 	} //end Awake
 
 	/***************************************
@@ -52,7 +54,7 @@ public class AnimationManager : MonoBehaviour
 
 		//Lerp color for specified time
 		while(fade.color.a != 0)
-		{
+		{			
 			fade.color = Color.Lerp(startColor, endColor, 2 * elapsedTime);
 			elapsedTime+= Time.deltaTime;
 			yield return null;
@@ -189,6 +191,136 @@ public class AnimationManager : MonoBehaviour
 		//End fade animation
 		processing = false;
 	} //end FadeObjectOut(Image[] targetObject, int targetCheckpoint)
+
+	/***************************************
+     * Name: OpenScene
+     * Scales top and bottom images to 0 to
+     * create a "shutter open" effect
+     ***************************************/
+	public IEnumerator OpenScene(int targetCheckpoint)
+	{
+		//Begin animation
+		processing = true;
+
+		//Turn off fade, turn on openScene
+		fade.gameObject.SetActive(false);
+		openScene.SetActive(true);
+
+		//Initialize starting position of objects
+		openScene.transform.GetChild(0).GetComponent<RectTransform>().localScale = Vector3.one;
+		openScene.transform.GetChild(1).GetComponent<RectTransform>().localScale = Vector3.one;
+
+		//Internal elapsed time
+		float elapsedTime = 0f;
+
+		Vector3 endScale = new Vector3(1, 0, 0);
+
+		//Lerp shutters for specified time
+		while (openScene.transform.GetChild(0).GetComponent<RectTransform>().localScale.y > 0)
+		{
+			openScene.transform.GetChild(0).GetComponent<RectTransform>().localScale =
+				Vector3.Lerp(Vector3.one, endScale, elapsedTime);
+			openScene.transform.GetChild(1).GetComponent<RectTransform>().localScale =
+				Vector3.Lerp(Vector3.one, endScale, elapsedTime);
+			elapsedTime += Time.deltaTime;
+			yield return null;
+		} //end while
+
+		//Move to target checkpoint
+		GameManager.instance.ChangeCheckpoint(targetCheckpoint);
+
+		//End scene open
+		processing = false;
+	} //end OpenScene(int targetCheckpoint)
+
+	/***************************************
+     * Name: ShowFoeParty
+     * Plays animation for the foe's party to
+     * appear
+     ***************************************/
+	public void ShowFoeParty()
+	{
+		GameObject.Find("FoePartyLineup").GetComponent<Animator>().SetTrigger("ShowParty");
+	} //end ShowFoeParty
+
+	/***************************************
+     * Name: ShowPlayerParty
+     * Plays animation for the player's party 
+     * to appear
+     ***************************************/
+	public void ShowPlayerParty()
+	{
+		GameObject.Find("PlayerPartyLineup").GetComponent<Animator>().SetTrigger("ShowParty");
+	} //end ShowPlayerParty
+
+	/***************************************
+     * Name: HideFoeParty
+     * Plays animation for the foe's party to
+     * disappear
+     ***************************************/
+	public void HideFoeParty()
+	{
+		GameObject.Find("FoePartyLineup").GetComponent<Animator>().SetTrigger("HideParty");
+	} //end HideFoeParty
+
+	/***************************************
+     * Name: HidePlayerParty
+     * Plays animation for the player's party 
+     * to disappear
+     ***************************************/
+	public void HidePlayerParty()
+	{
+		GameObject.Find("PlayerPartyLineup").GetComponent<Animator>().SetTrigger("HideParty");
+	} //end HidePlayerParty
+
+	/***************************************
+     * Name: ShowFoeBox
+     * Plays animation for the foe's pokemon
+     * status box to appear
+     ***************************************/
+	public void ShowFoeBox()
+	{
+		GameObject.Find("FoeBox").GetComponent<Animator>().SetTrigger("ShowBox");
+	} //end ShowFoeBox
+
+	/***************************************
+     * Name: ShowPlayerBox
+     * Plays animation for the player's 
+     * pokemon box to appear
+     ***************************************/
+	public void ShowPlayerBox()
+	{
+		GameObject.Find("PlayerBox").GetComponent<Animator>().SetTrigger("ShowBox");
+	} //end ShowPlayerBox
+
+	/***************************************
+     * Name: HideFoeBox
+     * Plays animation for the foe's pokemon
+     * status box to disappear
+     ***************************************/
+	public void HideFoeBox()
+	{
+		GameObject.Find("FoeBox").GetComponent<Animator>().SetTrigger("HideBox");
+	} //end HideFoeBox
+
+	/***************************************
+     * Name: HidePlayerBox
+     * Plays animation for the player's 
+     * pokemon box to disappear
+     ***************************************/
+	public void HidePlayerBox()
+	{
+		GameObject.Find("PlayerBox").GetComponent<Animator>().SetTrigger("HideBox");
+	} //end HidePlayerBox
+
+	/***************************************
+     * Name: Flash
+     * Plays animation of a bright flash
+     ***************************************/
+	public void Flash()
+	{
+		GameObject.Find("Flash").GetComponent<Animator>().SetTrigger("Flash");
+	} //end Flash
 
 	/***************************************
 	 * Name: IsProcessing

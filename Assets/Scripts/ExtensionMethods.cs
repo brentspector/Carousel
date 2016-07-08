@@ -123,5 +123,27 @@ public static class ExtensionMethods
 
         return theList;
     } //end ToggleList<T>(List<Test> theList, T toToggle)
+
+	/***************************************
+     * Name: Swap
+     * Swaps two elements in a list
+     ***************************************/
+	public static IList<T> Swap<T>(IList<T> list, int firstIndex, int secondIndex)
+	{
+		//Verify the parameters are valid
+		if (list.IsReadOnly || (firstIndex == secondIndex) || list == null || firstIndex < 0 || firstIndex > list.Count-1 ||
+			secondIndex < 0 || secondIndex > list.Count-1)
+		{			
+			return list;
+		} //end if
+
+		//Swap the elements
+		T temp = list[firstIndex];
+		list[firstIndex] = list[secondIndex];
+		list[secondIndex] = temp;
+
+		//Return the swapped list
+		return list;
+	} //end Swap<T>(IList<T> list, int firstIndex, int secondIndex)
     #endregion
 } //end class ExtensionMethods

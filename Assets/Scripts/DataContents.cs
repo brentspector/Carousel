@@ -35,6 +35,11 @@ public static class DataContents : System.Object
     public static Sprite[] ribbonSprites;           //Sprites for each ribbon
     public static Sprite[] badgeSprites;            //Sprites for each badge
     public static Sprite[] trainerCardSprites;      //Sprites for full trainer for trainer card
+	public static Sprite[] trainerBacks;			//Sprites for back of trainers for battle scene
+	public static Sprite[] versusImages;			//Sprites for Versus images
+	public static Sprite[] leaderSprites;			//Sprites for leaders in battle
+	public static Sprite[] attackNonSelSprites;		//Sprites for attack backgrounds that are not selected
+	public static Sprite[] attackSelSprites;		//Sprites for attack backgrounds that are selected
 
     //Shorthand for main data path
     static string dataLocation;                     
@@ -82,59 +87,6 @@ public static class DataContents : System.Object
             return false;
         } //end if
 
-		/*SystemManager sysm = new SystemManager();
-		sysm.GetContents (dataLocation + "items.txt");
-		dbCommand.CommandText = "DROP TABLE Items";
-		dbCommand.ExecuteNonQuery();
-		dbCommand.CommandText = "CREATE TABLE Items(id int,internalName text,gameName text,bagNumber int,cost int,outsideUse int,battleUse int,description text)";
-		dbCommand.ExecuteNonQuery();
-		for (int i = 0; i < 440; i++)
-		{
-			string[] contents = sysm.ReadCSV(i);
-			dbCommand.CommandText = "INSERT INTO Items(id,internalName,gameName,bagNumber,cost,outsideUse,battleUse,description) VALUES " +
-				"(@id,@in,@gn,@bg,@cs,@ou,@bu,@desc)";
-			dbCommand.Parameters.Add(new SqliteParameter("@id", contents[0]));
-			dbCommand.Parameters.Add(new SqliteParameter("@in", contents[1]));
-			dbCommand.Parameters.Add(new SqliteParameter("@gn", contents[2]));
-			dbCommand.Parameters.Add(new SqliteParameter("@bg", contents[3]));
-			dbCommand.Parameters.Add(new SqliteParameter("@cs", contents[4]));
-			dbCommand.Parameters.Add(new SqliteParameter("@ou", contents[5]));
-			dbCommand.Parameters.Add(new SqliteParameter("@bu", contents[6]));
-			string temp = contents[7].Replace("\"", "");
-			for(int j = 8; j < contents.Length-1; j++)
-			{
-				temp += "," + contents[j].Replace("\"", "");
-			} //end for
-			dbCommand.Parameters.Add(new SqliteParameter("@desc", temp));
-			Debug.Log(temp);
-			dbCommand.Prepare();
-			dbCommand.ExecuteNonQuery();
-			dbCommand.Parameters.Clear();
-		} //end for
-
-		sysm.GetContents(dataLocation + "KalosShop.txt");
-		dbCommand.CommandText = "DELETE FROM Shop";
-		dbCommand.ExecuteNonQuery();
-		dbCommand.CommandText = "INSERT INTO Shop(region,tier1,tier2,tier3,tier4,tier5,held,megastones,evolution,medicine,tms,berries," +
-			"battle,key) VALUES " +
-			"(@rg,@t1,@t2,@t3,@t4,@t5,@hd,@ms,@ev,@md,@tm,@br,@bt,@key)";
-		dbCommand.Parameters.Add(new SqliteParameter("@rg", string.Join(",",sysm.ReadCSV(0))));
-		dbCommand.Parameters.Add(new SqliteParameter("@t1", string.Join(",",sysm.ReadCSV(1))));
-		dbCommand.Parameters.Add(new SqliteParameter("@t2", string.Join(",",sysm.ReadCSV(2))));
-		dbCommand.Parameters.Add(new SqliteParameter("@t3", string.Join(",",sysm.ReadCSV(3))));
-		dbCommand.Parameters.Add(new SqliteParameter("@t4", string.Join(",",sysm.ReadCSV(4))));
-		dbCommand.Parameters.Add(new SqliteParameter("@t5", string.Join(",",sysm.ReadCSV(5))));
-		dbCommand.Parameters.Add(new SqliteParameter("@hd", string.Join(",",sysm.ReadCSV(6))));
-		dbCommand.Parameters.Add(new SqliteParameter("@ms", string.Join(",",sysm.ReadCSV(7))));
-		dbCommand.Parameters.Add(new SqliteParameter("@ev", string.Join(",",sysm.ReadCSV(8))));
-		dbCommand.Parameters.Add(new SqliteParameter("@md", string.Join(",",sysm.ReadCSV(9))));
-		dbCommand.Parameters.Add(new SqliteParameter("@tm", string.Join(",",sysm.ReadCSV(10))));
-		dbCommand.Parameters.Add(new SqliteParameter("@br", string.Join(",",sysm.ReadCSV(11))));
-		dbCommand.Parameters.Add(new SqliteParameter("@bt", string.Join(",",sysm.ReadCSV(12))));
-		dbCommand.Parameters.Add(new SqliteParameter("@key", string.Join(",",sysm.ReadCSV(13))));
-		dbCommand.Prepare();
-		dbCommand.ExecuteNonQuery();*/
-
         //Initialize markings
         markingCharacters = new char[] {'●','■','▲','♥','♦','☻'};
 
@@ -160,6 +112,11 @@ public static class DataContents : System.Object
         ribbonSprites       = Resources.LoadAll<Sprite> ("Sprites/Icons/ribbons");
         badgeSprites        = Resources.LoadAll<Sprite> ("Sprites/Icons/Badges");
         trainerCardSprites  = Resources.LoadAll<Sprite> ("Sprites/Menus/FullTrainers");
+		trainerBacks        = Resources.LoadAll<Sprite>("Sprites/Battle/TrainerBack");
+		versusImages 		= Resources.LoadAll<Sprite>("Sprites/Battle/Leaders");
+		leaderSprites 		= Resources.LoadAll<Sprite>("Sprites/Battle/FullLeaders");
+		attackNonSelSprites	= Resources.LoadAll<Sprite>("Sprites/Battle/battleFightButtons");
+		attackSelSprites 	= Resources.LoadAll<Sprite>("Sprites/Battle/battleFightButtonsSelect");
 
         return true;
     } //end InitDataContents()
@@ -297,6 +254,65 @@ public static class DataContents : System.Object
             return moveName;
         } //end else
     } //end GetMoveGameName(int moveNumber)
+
+	/***************************************
+     * Name: GetMoveIcon
+     * Returns numeric sprite location for 
+     * move given
+     ***************************************/
+	public static int GetMoveIcon(int moveNumber)
+	{		
+		return moveNumber < 0 ? -1 : Convert.ToInt32(Enum.Parse(typeof(Types), 
+			DataContents.ExecuteSQL<string>("SELECT type FROM Moves WHERE rowid=" + moveNumber)));
+	} //end GetMoveIcon(int moveNumber)
+
+	/***************************************
+     * Name: GetMovePriority
+     * Returns priority of given move
+     ***************************************/
+	public static int GetMovePriority(int moveNumber)
+	{		
+		return moveNumber < 0 ? -1 : ExecuteSQL<int>("SELECT priority FROM Moves WHERE rowid=" + moveNumber);
+	} //end GetMovePriority(int moveNumber)
+
+	/***************************************
+     * Name: GetMoveDamage
+     * Returns base damage of given move
+     ***************************************/
+	public static int GetMoveDamage(int moveNumber)
+	{		
+		return moveNumber < 0 ? -1 : ExecuteSQL<int>("SELECT baseDamage FROM Moves WHERE rowid=" + moveNumber);
+	} //end GetMoveAccuracy(int moveNumber)
+
+	/***************************************
+     * Name: GetMoveAccuracy
+     * Returns base accuracy of given move
+     ***************************************/
+	public static int GetMoveAccuracy(int moveNumber)
+	{		
+		return moveNumber < 0 ? -1 : ExecuteSQL<int>("SELECT accuracy FROM Moves WHERE rowid=" + moveNumber);
+	} //end GetMoveAccuracy(int moveNumber)
+
+	/***************************************
+     * Name: GetMoveFlag
+     * Returns if a flag exists
+     ***************************************/
+	public static bool GetMoveFlag(int moveNumber, string flag)
+	{		
+		return ExecuteSQL<string>("SELECT flags FROM Moves WHERE rowid=" + moveNumber).Contains(flag);
+	} //end GetMoveFlag(int moveNumber, string flag)
+
+	/***************************************
+     * Name: GetMoveCategory
+     * Returns numeric sprite location for 
+     * move given
+     ***************************************/
+	public static int GetMoveCategory(int moveNumber)
+	{
+		return Convert.ToInt32(Enum.Parse(typeof(Categories),
+			DataContents.ExecuteSQL<string>("SELECT category FROM Moves WHERE rowid=" +
+			moveNumber)));
+	} //end GetMoveCategory(int moveNumber)
 
     /***************************************
      * Name: GetItemID
@@ -828,7 +844,7 @@ public class TypeChart
         typeMatches[15].resistances = new int[]{15};
         typeMatches[15].immunities = new int[]{};
         //DRAGON  = 16
-        typeMatches[16].weaknesses = new int[]{16,18};
+        typeMatches[16].weaknesses = new int[]{15,16,18};
         typeMatches[16].resistances = new int[]{10,11,12,13};
         typeMatches[16].immunities = new int[]{};
         //DARK    = 17
@@ -915,6 +931,34 @@ public class TypeChart
 
         return resistList;
     } //end DetermineWeaknesses(int type1, int type2=-1)
+
+	/***************************************
+     * Name: DetermineTyping
+     * Returns the modifier the move will have
+     * on the list of types
+     ***************************************/
+	public int DetermineTyping(int moveType, int type)
+	{
+		//Check if immune
+		if (typeMatches[type].immunities.Contains(moveType))
+		{
+			return 0;
+		} //end if
+
+		//Check if weak
+		else if (typeMatches[type].weaknesses.Contains(moveType))
+		{
+			return 2;
+		} //end else if
+
+		//Check if resists
+		else if (typeMatches[type].resistances.Contains(moveType))
+		{
+			return -1;
+		} //end else if
+
+		return 1;
+	} //end DetermineTyping(int moveType, int type)
 } //end ExperienceTable class
 
 /***************************************************************************************** 
@@ -1115,15 +1159,15 @@ public enum Categories
 } //end Categories enum
 
 /***************************************************************************************** 
- * Enum:    ObtainType
+ * Enum:    ObtainTypeEnum
  * Summary: Lists and organizes obtain methods for integer reference
  *****************************************************************************************/ 
 [Serializable]
 /***************************************
- * Name: ObtainType
+ * Name: ObtainTypeEnum
  * List of methods pokemon can be obtained
  ***************************************/
-public enum ObtainType
+public enum ObtainTypeEnum
 {
     Bought  = 0,
     Traded  = 1,
@@ -1133,18 +1177,18 @@ public enum ObtainType
     Function= 5,
     Unknown = 6,
     COUNT   = 7
-} //end ObtainType enum
+} //end ObtainTypeEnum enum
 
 /***************************************************************************************** 
- * Enum:    ObtainFrom
+ * Enum:    ObtainFromEnum
  * Summary: Lists and organizes obtain locations for integer reference
  *****************************************************************************************/ 
 [Serializable]
 /***************************************
- * Name: ObtainFrom
+ * Name: ObtainFromEnum
  * List of locations pokemon can be obtained
  ***************************************/
-public enum ObtainFrom
+public enum ObtainFromEnum
 {
     Shop         = 0,
     MysteryEvent = 1,
@@ -1152,4 +1196,163 @@ public enum ObtainFrom
     Debug        = 3,
     UnknownSource= 4,
     COUNT        = 5
-} //end ObtainFrom enum
+} //end ObtainFromEnum enum
+
+/***************************************************************************************** 
+ * Enum:    LastingEffects
+ * Summary: Lists and organizes lingering attack or field effects for integer reference
+ *****************************************************************************************/ 
+[Serializable]
+/***************************************
+ * Name: LastingEffects
+ * LIst of effects a pokemon can be under
+ ***************************************/
+public enum LastingEffects
+{
+	AquaRing          = 0,
+	Attract           = 1,
+	Bide              = 2,
+	BideDamage        = 3,
+	BideTarget        = 4,
+	Charge            = 5,
+	Choice        	  = 6,
+	Confusion         = 7,
+	Counter           = 8,
+	CounterTarget     = 9,
+	Curse             = 10,
+	DefenseCurl       = 11,
+	DestinyBond       = 12,
+	Disable           = 13,
+	DisableMove       = 14,
+	EchoedVoice       = 15,
+	Embargo           = 16,
+	Encore            = 17,
+	EncoreIndex       = 18,
+	EncoreMove        = 19,
+	Endure            = 20,
+	FlashFire         = 21,
+	Flinch            = 22,
+	FocusEnergy       = 23,
+	FollowMe          = 24,
+	Foresight         = 25,
+	FuryCutter        = 26,
+	FutureSight       = 27,
+	FutureSightDamage = 28,
+	FutureSightMove   = 29,
+	FutureSightUser   = 30,
+	GastroAcid        = 31,
+	Grudge            = 32,
+	HealBlock         = 33,
+	HealingWish       = 34,
+	HelpingHand       = 35,
+	HyperBeam         = 36,
+	Imprison          = 37,
+	Ingrain           = 38,
+	LeechSeed         = 39,
+	LockOn            = 40,
+	LockOnPos         = 41,
+	LunarDance        = 42,
+	MagicCoat         = 43,
+	MagnetRise        = 44,
+	MeanLook          = 45,
+	Metronome         = 46,
+	Minimize          = 47,
+	MiracleEye        = 48,
+	MirrorCoat        = 49,
+	MirrorCoatTarget  = 50,
+	MeFirst           = 51,
+	MultiTurn         = 52,
+	MultiTurnAttack   = 53,
+	MultiTurnUser     = 54,
+	Nightmare         = 55,
+	Outrage           = 56,
+	PerishSong        = 57,
+	PerishSongUser    = 58,
+	Pinch             = 59,
+	PowerTrick        = 60,
+	Protect           = 61,
+	ProtectNegation   = 62,
+	ProtectRate       = 63,
+	Pursuit           = 64,
+	Rage              = 65,
+	Revenge           = 66,
+	Rollout           = 67,
+	Roost             = 68,
+	SkyDrop           = 69,
+	SmackDown         = 70,
+	Snatch            = 71,
+	Stockpile         = 72,
+	StockpileDef      = 73,
+	StockpileSpDef    = 74,
+	Substitute        = 75,
+	Taunt             = 76,
+	Telekinesis       = 77,
+	Torment           = 78,
+	Toxic             = 79,
+	Trace             = 80,
+	Transform         = 81,
+	Truant            = 82,
+	TwoTurnAttack     = 83,
+	Uproar            = 84,
+	Electrify		  = 85,
+	WeightDivisor 	  = 86,
+	Wish              = 87,
+	WishAmount        = 88,
+	WishMaker         = 89,
+	Yawn              = 90,
+	Illusion          = 91,
+	StickyWeb         = 92,
+	KingsShield       = 93,
+	SpikyShield       = 94,
+	FairyLockRate     = 95,
+	ParentalBond      = 96,
+	Round             = 97,
+	Powder            = 98,
+	MeanLookTarget    = 99,
+	COUNT			  = 100
+} //end LastingEffects enum
+
+/***************************************************************************************** 
+ * Enum:    FieldEffects
+ * Summary: Lists and organizes field effects for integer reference
+ *****************************************************************************************/ 
+[Serializable]
+/***************************************
+ * Name: Fie;dEffects
+ * List of effects that can affect one side
+ * of the field
+ ***************************************/
+public enum FieldEffects
+{
+	LightScreen   = 0,
+	LuckyChant    = 1,
+	Mist          = 2,
+	Reflect       = 3,
+	Safeguard     = 4,
+	Spikes        = 5,
+	StealthRock   = 6,
+	Tailwind      = 7,
+	ToxicSpikes   = 8,
+	WideGuard     = 9,
+	QuickGuard    = 10,
+	Retaliate     = 11,
+	CraftyShield  = 12,
+	MatBlock      = 13,
+	Gravity       = 14,
+	MagicRoom     = 15,
+	TrickRoom     = 16,
+	WonderRoom    = 17,
+	Terrain       = 18,
+	FairyLock     = 19,  
+	IonDeluge     = 20,
+	HarshSunlight = 21,
+	HeavyRain     = 22,
+	MudSport      = 23,
+	WaterSport    = 24,
+	Rain		  = 25,
+	Sun			  = 26,
+	Sand		  = 27,
+	Hail    	  = 28,
+	StrongWinds   = 29,
+	COUNT         = 30
+} //end FieldEffects enum

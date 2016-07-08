@@ -548,8 +548,8 @@ public class PokedexScene : MonoBehaviour
                     DataContents.ExecuteSQL<string> ("SELECT name FROM Pokemon WHERE rowid=" + chosenPoke);
                 child.FindChild ("Ball").GetComponent<Image> ().sprite = 
                     GameManager.instance.GetTrainer ().Owned.Contains (chosenPoke) ? 
-                Resources.Load<Sprite> ("Sprites/Icons/ballnormal") :
-                Resources.Load<Sprite> ("Sprites/Icons/ballfainted");
+                Resources.Load<Sprite> ("Sprites/Battle/ballnormal") :
+                Resources.Load<Sprite> ("Sprites/Battle/ballfainted");
 				child.FindChild("Icon").GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/icon" + 
 					chosenPoke.ToString("000"));
             } //end for

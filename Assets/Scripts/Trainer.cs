@@ -8,6 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Linq;
 #endregion
 
 [Serializable]
@@ -34,6 +35,8 @@ public class Trainer
 	Inventory bag;		  //The player's item bag
 	[OptionalField(VersionAdded=2)]
 	Shop shop;			  //The status of the shop for the player
+	[OptionalField(VersionAdded=2)]
+	List<int> leaderWins; //How many wins has the player scored against the leader mode
 
     //Gym Battle count
     //Kalos
@@ -129,6 +132,9 @@ public class Trainer
             pHours = 0;
             pMinutes = 0;
             pSeconds = 0;
+
+			//Trainer has no wins yet
+			leaderWins = Enumerable.Repeat(0, 234).ToList();
         } //end if
     } //end Trainer
 
@@ -209,6 +215,31 @@ public class Trainer
     {
         team.Clear();
     } //end EmptyTeam
+
+	/***************************************
+     * Name: HealTeam
+     * Restore all pokemon in team to full 
+     * health and status
+     ***************************************/
+	public void HealTeam()
+	{
+		for (int i = 0; i < team.Count; i++)
+		{
+			team[i].CurrentHP = team[i].TotalHP;
+			team[i].Status = 0;
+			team[i].StatusCount = 0;
+		} //end for
+	} //end HealTeam
+
+	/***************************************
+     * Name: CheckRemaining
+     * Checks if trainer has any non-fainted
+     * pokemon
+     ***************************************/
+	public int CheckRemaining()
+	{
+		return team.Count(pokemon => pokemon.Status != (int)Status.FAINT);
+	} //end CheckRemaining
 
     /***************************************
      * Name: GetPC
@@ -615,6 +646,21 @@ public class Trainer
             owned = value;
         } //end set
     } //end Owned
+
+	/***************************************
+     * Name: LeaderWins
+     ***************************************/
+	public List<int> LeaderWins
+	{
+		get
+		{
+			return leaderWins;
+		} //end get
+		set
+		{
+			leaderWins = value;
+		} //end set
+	} //end Owned
 
     /***************************************
      * Name: BackUps

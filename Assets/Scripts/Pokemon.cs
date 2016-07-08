@@ -66,6 +66,14 @@ public class Pokemon
 	int[] ppMax;			//The amount of uses each move has total
 	[OptionalField(VersionAdded=2)]
 	int[] ppUps;			//How many PP Ups and Maxes have been used
+	[OptionalField(VersionAdded=2)]
+	int itemRecycle;		//Stores an item valid to recycle
+	[OptionalField(VersionAdded=2)]
+	int type1;				//The primary type of this pokemon
+	[OptionalField(VersionAdded=2)]
+	int type2;				//The secondary type (if any) of this pokemon
+	[OptionalField(VersionAdded=2)]
+	int expForLevel;		//The amount of EXP needed for the next level
     #endregion
 
     #region Methods
@@ -74,7 +82,7 @@ public class Pokemon
      * Contructor for pokemon encounters
      ***************************************/
 	public Pokemon(int species = 0, int tID = 0, int level = 5, int item = 0, int ball = 0, 
-				   int oType = 6, int oWhere = 4, int ability = -1, int gender = -1, int form = 0,
+				   int oType = -1, int oWhere = -1, int ability = -1, int gender = -1, int form = 0,
 	               int nature = -1, int happy = 70, bool pokerus = false, bool shiny = false)
 	{
 		//Set data fields
@@ -218,6 +226,26 @@ public class Pokemon
             Ability = CheckAbility(ability) ? ability : 0;
         } //end else
 
+		//Set obtain type
+		if (oType > -1)
+		{
+			obtainType = oType;
+		} //end if
+		else
+		{
+			obtainType = (int)ObtainTypeEnum.COUNT - 1;
+		} //end else
+
+		//Set obtain from
+		if (oWhere > -1)
+		{
+			obtainFrom = oWhere;
+		} //end if
+		else
+		{
+			obtainFrom = (int)ObtainFromEnum.COUNT - 1;
+		} //end else
+
         //Give pokemon a random ID
         personalID = (uint)GameManager.instance.RandomInt (0,256);
         personalID |= (uint)GameManager.instance.RandomInt (0,256) << 8;
@@ -229,9 +257,7 @@ public class Pokemon
 		remainingEXP = CalculateRemainingEXP (currentLevel);
 		Item = item;
 		ballUsed = ball;
-		obtainType = oType;
 		obtainLevel = currentLevel;
-        obtainFrom = oWhere;
 		string formString = DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=" + natSpecies);
 		int formCount = formString.Split(',').Count();
 		formNumber = ExtensionMethods.WithinIntRange(form, 0, formCount);
@@ -275,6 +301,7 @@ public class Pokemon
         //Initialize any values that can be given from data
         ChangeIVs (new int[] {-1});
         CalculateStats ();
+		SetTypes();
         currentHP = totalHP;
         GiveInitialMoves (new int[] {-1, -1, -1, -1});
 	} //end Pokemon constructor
@@ -724,6 +751,7 @@ public class Pokemon
                 firstMoves[i] = values[i];
                 ppReamaining[i] = DataContents.ExecuteSQL<int> 
                     ("SELECT totalPP FROM Moves WHERE rowid=" + moves[i]);
+				ppMax[i] = ppReamaining[i];
             } //end if
             //If it equals -1, give level up move
             else
@@ -746,6 +774,7 @@ public class Pokemon
                         firstMoves[j] = moveID;
                         ppReamaining[j] = DataContents.ExecuteSQL<int> 
                             ("SELECT totalPP FROM Moves WHERE rowid=" + moves[j]);
+						ppMax[j] = ppReamaining[j];
                     } //end if
                     else
                     {
@@ -758,6 +787,30 @@ public class Pokemon
             } //end else
         } //end for
     } //end GiveInitialMoves(int[] moves)
+
+	/***************************************
+     * Name: SetTypes
+     * Sets the pokemon's types
+     ***************************************/
+	void SetTypes()
+	{
+		//Set the primary (first) type
+		type1 = Convert.ToInt32(Enum.Parse(typeof(Types),
+			DataContents.ExecuteSQL<string>("SELECT type1 FROM Pokemon WHERE rowid=" + natSpecies)));
+
+		//Get the string for the secondary type
+		string type2SQL = DataContents.ExecuteSQL<string>("SELECT type2 FROM Pokemon WHERE rowid=" + natSpecies);
+
+		//If a second type exists, set it
+		if (!String.IsNullOrEmpty(type2SQL))
+		{
+			type2 = Convert.ToInt32(Enum.Parse(typeof(Types), type2SQL));
+		} //end if
+		else
+		{
+			type2 = -1;
+		} //end else
+	} //end SetTypes
 
     /***************************************
      * Name: ChangeRibbons
@@ -801,10 +854,14 @@ public class Pokemon
      ***************************************/
     int CalculateRemainingEXP(int level)
     {
-        int nextLevelEXP = DataContents.experienceTable.GetNextValue (
+		int nextLevel = DataContents.experienceTable.GetNextValue (
             DataContents.ExecuteSQL<string>("SELECT growthRate FROM Pokemon WHERE rowid=" + natSpecies),
             level);
-		return ExtensionMethods.BindToInt(nextLevelEXP - CurrentEXP, 0);
+		int thisLevel = DataContents.experienceTable.GetCurrentValue (
+			DataContents.ExecuteSQL<string>("SELECT growthRate FROM Pokemon WHERE rowid=" + natSpecies),
+			level);
+		expForLevel = nextLevel - thisLevel;
+		return ExtensionMethods.BindToInt(nextLevel - CurrentEXP, 0);
     } //end CalculateRemainingEXP(int level)
 
     /***************************************
@@ -879,6 +936,9 @@ public class Pokemon
         speed = results[2];
         specialA = results[3];
         specialD = results[4];
+
+		//Calculate EXP
+		remainingEXP = CalculateRemainingEXP(currentLevel);
     } //end CalculateStat
 
     /***************************************
@@ -1236,7 +1296,7 @@ public class Pokemon
 		} //end get
 		set
 		{
-			currentHP = value;
+			currentHP = ExtensionMethods.WithinIntRange(value, 0, totalHP);
 		} //end set
 	}//end Current HP
 
@@ -1452,6 +1512,21 @@ public class Pokemon
             remainingEXP = value;
         } //end set
     }//end RemainingEXP 
+
+	/***************************************
+     * Name: EXPForLevel
+     ***************************************/
+	public int EXPForLevel
+	{
+		get
+		{
+			return expForLevel;
+		} //end get
+		set
+		{
+			expForLevel = value;
+		} //end set
+	}//end EXPForLevel 
 
     /***************************************
      * Name: CurrentLevel
@@ -1716,7 +1791,7 @@ public class Pokemon
      ***************************************/
     public int GetMovePP(int index)
     {
-        return ppReamaining [index];
+		return index < GetMoveCount() ? ppReamaining [index] : 0;
     } //end GetMovePP(int index)
     
     /***************************************
@@ -1758,6 +1833,43 @@ public class Pokemon
 	{
 		ppUps [index] = value;
 	} //end SetMovePPUps(int index, int value)
+
+	/***************************************
+     * Name: Type1
+     ***************************************/
+	public int Type1
+	{
+		get
+		{
+			return type1;
+		} //end get
+	} //end Type1
+
+	/***************************************
+     * Name: Type2
+     ***************************************/
+	public int Type2
+	{
+		get
+		{
+			return type2;
+		} //end get
+	} //end Type2
+
+	/***************************************
+     * Name: ItemRecycle
+     ***************************************/
+	public int ItemRecycle
+	{
+		get
+		{
+			return itemRecycle;
+		} //end get
+		set
+		{
+			itemRecycle = value;
+		} //end set
+	} //end ItemRecycle
 
     /***************************************
      * Name: HasPokerus

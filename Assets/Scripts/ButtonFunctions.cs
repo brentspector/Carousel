@@ -6,6 +6,8 @@
 #region Using
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 #endregion
 
 public class ButtonFunctions : MonoBehaviour 
@@ -480,6 +482,61 @@ public class ButtonFunctions : MonoBehaviour
 			GameManager.instance.LogErrorMessage (e.ToString());
 		} //end catch
 	} //end CancelPurchase
+
+	/***************************************
+     * Name: BeginBattle
+     * Begins a battle 
+     ***************************************/ 
+	public void BeginBattle(string battleData)
+	{	
+		//String should be ordered bType,enemyTrainerInts
+		try
+		{
+			List<Trainer> battlerList = new List<Trainer>();
+			battlerList.Add(GameManager.instance.GetTrainer());
+			string[] enemiesGiven = battleData.Split(',');
+			for(int i = 1; i < enemiesGiven.Length; i++)
+			{
+				Trainer newTrainer = new Trainer();
+				newTrainer.PlayerID = int.Parse(enemiesGiven[i]);
+				newTrainer.PlayerName = DataContents.ExecuteSQL<string>("SELECT name FROM Trainers WHERE enemyID=" + enemiesGiven[i]);
+				newTrainer.PlayerImage = DataContents.ExecuteSQL<int>("SELECT image FROM Trainers WHERE enemyID=" + enemiesGiven[i]);
+				string[] items = DataContents.ExecuteSQL<string>("SELECT items FROM Trainers WHERE enemyID=" + enemiesGiven[i]).Split(',');
+				for(int j = 0; j < items.Length; j++)
+				{
+					//If the item isn't empty, add it
+					if(!string.IsNullOrEmpty(items[j]))
+					{
+						newTrainer.AddItem(int.Parse(items[j]), 1, 0);
+					} //end if
+				} //end for		
+				newTrainer.EmptyTeam();
+				for(int j = 1; j < 7; j++)
+				{
+					string[] pokemon = DataContents.ExecuteSQL<string>("SELECT pokemon" + j + " FROM TRAINERS WHERE enemyID=" + 
+						enemiesGiven[i]).Split(',');
+					if(pokemon.Length > 1)
+					{
+						Pokemon newPokemon = new Pokemon(species: int.Parse(pokemon[0]),level: int.Parse(pokemon[1]),
+							ability: int.Parse(pokemon[2]),item:  int.Parse(pokemon[3]));
+						List<int> moveSet = new List<int>();
+						for(int k = 4; k < pokemon.Length; k++)
+						{
+							moveSet.Add(DataContents.GetMoveID((pokemon[k])));
+						} //end for
+						newPokemon.ChangeMoves(moveSet.ToArray());
+						newTrainer.AddPokemon(newPokemon);
+					} //end if
+				} //end for
+				battlerList.Add(newTrainer);					
+			} //end for
+			GameManager.instance.InitializeBattle(int.Parse(enemiesGiven[0]), battlerList);
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end BeginBattle(string battleData)
 
     /***************************************
      * Name: Persist

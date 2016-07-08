@@ -44,6 +44,7 @@ public class GameManager : MonoBehaviour
 	PokedexScene pokedex;					//Pokedex scene script
 	InventoryScene inventory;				//Inventory scene script
 	ShopScene shop;							//Shop scene script
+	BattleScene battle;						//Battle scene script
 
 	//Scene variables
     SystemManager sysm;                     //Manages system features
@@ -125,6 +126,7 @@ public class GameManager : MonoBehaviour
 		pokedex = GetComponent<PokedexScene>();
 		inventory = GetComponent<InventoryScene>();
 		shop = GetComponent<ShopScene>();
+		battle = GetComponent<BattleScene>();
 	} //end Awake
 	
     /***************************************
@@ -156,8 +158,8 @@ public class GameManager : MonoBehaviour
 				confirmDisplayed = sysm.ManageConfirm();
 			} //end else if confirmDisplayed
 
-			//Don't update game while a scene is loading
-			else if(loadingLevel)
+			//Don't update game while a scene is loading or an animation is playing
+			else if(loadingLevel || anim.IsProcessing())
 			{
 				return;
 			} //end else if loadingLevel
@@ -227,6 +229,12 @@ public class GameManager : MonoBehaviour
 			else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Shop")
 			{
 				shop.RunShop();
+			} //end else if
+
+			//Battle scene
+			else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Battle")
+			{
+				battle.RunBattle();
 			} //end else if
 		} //end try
 
@@ -333,6 +341,10 @@ public class GameManager : MonoBehaviour
 		{
 			StartCoroutine(pc.SetSummaryPage(summaryPage));
 		} //end else if
+		else if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Battle")
+		{
+			StartCoroutine(battle.SetSummaryPage(summaryPage));
+		} //end else if
     } //end SummaryChange(int summaryPage)
 
     /***************************************
@@ -360,7 +372,18 @@ public class GameManager : MonoBehaviour
 	public void ChangePocket(int requested)
 	{
 		sysm.PlayerTrainer.ChangePocket(requested);
-		ChangeCheckpoint(1);
+		if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Inventory")
+		{
+			ChangeCheckpoint(1);
+		} //end if
+		else if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Battle")
+		{
+			StartCoroutine(battle.FadeInBagPocket());
+		} //end else if
+		else if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainGame")
+		{
+			StartCoroutine(mainGame.FadeInBagPocket());
+		} //end else if
 	} //end ChangePocket(int requested)
 
 	/***************************************
@@ -370,7 +393,14 @@ public class GameManager : MonoBehaviour
 	 ***************************************/
 	public void SetupPickMove()
 	{
-		inventory.SetupPickMove();
+		if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Inventory")
+		{
+			inventory.SetupPickMove();
+		} //end if
+		else if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Battle")
+		{
+			battle.SetupPickMove();
+		} //end else if
 	} //end SetupPickMove
 
 	/***************************************
@@ -456,6 +486,54 @@ public class GameManager : MonoBehaviour
 	{
 		StartCoroutine(shop.CancelPurchase());
 	} //end CancelPurchase
+
+	/***************************************
+	 * Name: CheckEffect
+	 * Checks if an effect is in place on
+	 * the field
+	 ***************************************/
+	public bool CheckEffect(int effect, int target)
+	{
+		return battle.CheckEffect(effect, target);
+	} //end CheckEffect(int effect, int target)
+
+	/***************************************
+	 * Name: CheckMoveUser
+	 * Returns the pokemon using the move
+	 ***************************************/
+	public PokemonBattler CheckMoveUser()
+	{
+		return battle.CheckMoveUser();
+	} //end CheckMoveUser
+
+	/***************************************
+	 * Name: CheckMoveUsed
+	 * Retrieves name of the attack used
+	 ***************************************/
+	public string CheckMoveUsed()
+	{
+		return battle.CheckMoveUsed();
+	} //end CheckMoveUsed
+
+	/***************************************
+	 * Name: WriteBattleMessage
+	 * Writes a message to the battle window
+	 ***************************************/
+	public void WriteBattleMessage(string message)
+	{
+		battle.WriteBattleMessage(message);
+	} //end WriteBattleMessage(string message)
+
+	/***************************************
+	 * Name: InitializeBattle
+	 * Sets battle as a Single, Double, Triple
+	 * or other type and the trainers 
+	 ***************************************/
+	public void InitializeBattle(int bType, List<Trainer> trainers)
+	{
+		battle.InitializeBattle(bType, trainers);
+		LoadScene("Battle", true);
+	} //end InitializeBattle(int bType)
     #endregion
 
 	//System Manager functions
@@ -565,6 +643,56 @@ public class GameManager : MonoBehaviour
 	{
 		StartCoroutine(anim.FadeObjectIn(objects, targetCheckpoint));
 	} //end FadeInObjects(Image[] objects, int targetCheckpoint)
+
+	/***************************************
+     * Name: OpenScene
+     * Scales top and bottom images to 0 to
+     * create a "shutter open" effect
+     ***************************************/
+	public void OpenScene(int targetCheckpoint)
+	{
+		StartCoroutine(anim.OpenScene(targetCheckpoint));
+	} //end OpenScene(int targetCheckpoint)
+
+	/***************************************
+     * Name: ShowFoeParty
+     * Plays animation for the foe's party to
+     * appear
+     ***************************************/
+	public void ShowFoeParty()
+	{
+		anim.ShowFoeParty();
+	} //end ShowFoeParty
+
+	/***************************************
+     * Name: HideFoeBox
+     * Plays animation for the foe's pokemon
+     * status box to disappear
+     ***************************************/
+	public void HideFoeBox()
+	{
+		GameObject.Find("FoeBox").GetComponent<Animator>().SetTrigger("HideBox");
+	} //end HideFoeBox
+
+	/***************************************
+     * Name: ShowFoeBox
+     * Plays animation for the foe's pokemon
+     * status box to appear
+     ***************************************/
+	public void ShowFoeBox()
+	{
+		GameObject.Find("FoeBox").GetComponent<Animator>().SetTrigger("ShowBox");
+	} //end ShowFoeBox
+
+	/***************************************
+     * Name: ShowPlayerBox
+     * Plays animation for the player's 
+     * pokemon box to appear
+     ***************************************/
+	public void ShowPlayerBox()
+	{
+		GameObject.Find("PlayerBox").GetComponent<Animator>().SetTrigger("ShowBox");
+	} //end ShowPlayerBox
 
 	/***************************************
 	 * Name: IsProcessing
