@@ -406,12 +406,16 @@ public class CodeWarehouse : MonoBehaviour
 		//Load trainers
 		SystemManager sysm = new SystemManager();
 		sysm.GetContents(dataLocation + "trainers.txt");
-		dbCommand.CommandText = "DELETE FROM Trainers";
+		dbCommand.CommandText = "DROP TABLE Trainers";
 		dbCommand.ExecuteNonQuery();
-		for (int i = 1; i < 14; i++)
+		dbCommand.CommandText = "CREATE TABLE Trainers(enemyID int,name text,battle int,image int,items text,pokemon1 text," +
+		"pokemon2 text,pokemon3 text,pokemon4 text,pokemon5 text,pokemon6 text)";
+		dbCommand.ExecuteNonQuery();
+		for (int i = 196; i < 235; i++)
 		{
-			dbCommand.CommandText = "INSERT INTO Trainers(name,battle,image,items,pokemon1,pokemon2,pokemon3,pokemon4,pokemon5,pokemon6) " +
-				"VALUES (@nm,@bt,@im,@it,@p1,@p2,@p3,@p4,@p5,@p6)";
+			dbCommand.CommandText = "INSERT INTO Trainers(enemyID,name,battle,image,items,pokemon1,pokemon2,pokemon3,pokemon4,pokemon5," +
+				"pokemon6) VALUES (@ei,@nm,@bt,@im,@it,@p1,@p2,@p3,@p4,@p5,@p6)";
+			dbCommand.Parameters.Add(new SqliteParameter("@ei",i.ToString()));
 			dbCommand.Parameters.Add(new SqliteParameter("@nm",sysm.ReadINI<string>(i.ToString(),"Name")));
 			dbCommand.Parameters.Add(new SqliteParameter("@bt",sysm.ReadINI<int>(i.ToString(),"Battle")));
 			dbCommand.Parameters.Add(new SqliteParameter("@im",sysm.ReadINI<int>(i.ToString(),"Image")));

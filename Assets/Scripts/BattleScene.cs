@@ -197,31 +197,8 @@ public class BattleScene : MonoBehaviour
 			trainerStands[1].transform.FindChild("Trainer").GetComponent<Image>().sprite =
 				DataContents.leaderSprites[combatants[1].PlayerImage];
 
-			//Set player party lineup
-			for (int i = 0; i < combatants[0].Team.Count; i++)
-			{
-				if (combatants[0].Team[i].Status == (int)Status.FAINT)
-				{
-					partyLineups[0].transform.GetChild(i + 1).GetComponent<Image>().sprite = Resources.
-						Load<Sprite>("Sprites/Battle/ballfainted");
-				} //end if
-				else if (combatants[0].Team[i].Status == (int)Status.HEALTHY)
-				{
-					partyLineups[0].transform.GetChild(i + 1).GetComponent<Image>().sprite = Resources.
-						Load<Sprite>("Sprites/Battle/ballnormal");
-				} //end else if
-				else
-				{
-					partyLineups[0].transform.GetChild(i + 1).GetComponent<Image>().sprite = Resources.
-						Load<Sprite>("Sprites/Battle/ballstatus");
-				} //end else
-			} //end for
-
-			//Set foe party lineup
-			for (int i = 0; i < combatants[1].Team.Count; i++)
-			{
-				partyLineups[1].transform.GetChild(i + 1).GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Battle/ballnormal");
-			} //end for
+			//Set player and foe party lineup
+			FillPartyLineup();
 
 			//Fill in sprites and battler box data
 			FillInBattlerData();
@@ -473,7 +450,8 @@ public class BattleScene : MonoBehaviour
 				combatants[1].Swap(0, randomSelection);
 				battleField.ResetDefaultBoosts();
 				FillInBattlerData();
-				battleState = Battle.ENDROUND;
+				GameManager.instance.DisplayConfirm(string.Format("{0} is about to send out {1}. Do you want to switch pokemon?", 
+					combatants[1].PlayerName, battlers[1].Nickname), 0, true);
 			} //end else if
 			/* Done - Start of Battle
 			 * ++++++-Display trainers
@@ -599,8 +577,8 @@ public class BattleScene : MonoBehaviour
 							GetComponent<Image>().sprite)];
 
 					//Update PP for new selection
-					attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
-						GetMovePP(choiceNumber) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(choiceNumber);
+					attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].GetMovePP(choiceNumber) + 
+						"/" + battlers[0].GetMovePPMax(choiceNumber);
 
 					//Update selection reference
 					selectedChoice = attackSelection.transform.GetChild(choiceNumber).gameObject;
@@ -755,8 +733,8 @@ public class BattleScene : MonoBehaviour
 							GetComponent<Image>().sprite)];
 				
 					//Update PP for new selection
-					attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
-						GetMovePP(choiceNumber) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(choiceNumber);
+					attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].GetMovePP(choiceNumber) + 
+						"/" + battlers[0].GetMovePPMax(choiceNumber);
 					
 					//Update selection reference
 					selectedChoice = attackSelection.transform.GetChild(choiceNumber).gameObject;
@@ -912,8 +890,8 @@ public class BattleScene : MonoBehaviour
 							GetComponent<Image>().sprite)];
 				
 					//Update PP for new selection
-					attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
-						GetMovePP(choiceNumber) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(choiceNumber);
+					attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].GetMovePP(choiceNumber) + 
+						"/" + battlers[0].GetMovePPMax(choiceNumber);
 					
 					//Update selection reference
 					selectedChoice = attackSelection.transform.GetChild(choiceNumber).gameObject;
@@ -1135,8 +1113,8 @@ public class BattleScene : MonoBehaviour
 							GetComponent<Image>().sprite)];
 				
 					//Update PP for new selection
-					attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
-						GetMovePP(choiceNumber) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(choiceNumber);
+					attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].GetMovePP(choiceNumber) + 
+						"/" + battlers[0].GetMovePPMax(choiceNumber);
 					
 					//Update selection reference
 					selectedChoice = attackSelection.transform.GetChild(choiceNumber).gameObject;
@@ -1362,8 +1340,8 @@ public class BattleScene : MonoBehaviour
 								GetComponent<Image>().sprite)];
 				
 						//Update PP for new selection
-						attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
-							GetMovePP(choiceNumber) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(choiceNumber);
+						attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].GetMovePP(choiceNumber) + 
+							"/" + battlers[0].GetMovePPMax(choiceNumber);
 						
 						//Update selection reference
 						selectedChoice = attackSelection.transform.GetChild(choiceNumber).gameObject;
@@ -1473,8 +1451,8 @@ public class BattleScene : MonoBehaviour
 								GetComponent<Image>().sprite)];
 				
 						//Update PP for new selection
-						attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
-							GetMovePP(choiceNumber) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(choiceNumber);
+						attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].GetMovePP(choiceNumber) + 
+							"/" + battlers[0].GetMovePPMax(choiceNumber);
 						
 						//Update selection reference
 						selectedChoice = attackSelection.transform.GetChild(choiceNumber).gameObject;
@@ -1585,8 +1563,8 @@ public class BattleScene : MonoBehaviour
 								GetComponent<Image>().sprite)];
 				
 						//Update PP for new selection
-						attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
-							GetMovePP(choiceNumber) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(choiceNumber);
+						attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].GetMovePP(choiceNumber) + 
+							"/" + battlers[0].GetMovePPMax(choiceNumber);
 						
 						//Update selection reference
 						selectedChoice = attackSelection.transform.GetChild(choiceNumber).gameObject;
@@ -1773,8 +1751,8 @@ public class BattleScene : MonoBehaviour
 								GetComponent<Image>().sprite)];
 				
 						//Update PP for new selection
-						attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
-							GetMovePP(choiceNumber) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(choiceNumber);
+						attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].GetMovePP(choiceNumber) + 
+							"/" + battlers[0].GetMovePPMax(choiceNumber);
 						
 						//Update selection reference
 						selectedChoice = attackSelection.transform.GetChild(choiceNumber).gameObject;
@@ -2047,7 +2025,7 @@ public class BattleScene : MonoBehaviour
 					return;
 				} //end if
 				processing = true;
-				trainerStands[1].GetComponent<Animator>().SetTrigger("FadeEnemy");
+				trainerStands[1].GetComponent<Animator>().SetTrigger("FadeEnemyOut");
 				WriteBattleMessage(combatants[1].PlayerName + " sent out " + battlers[1].Nickname + "!");
 				StartCoroutine(FadePlayer());
 			} //end if
@@ -2086,8 +2064,8 @@ public class BattleScene : MonoBehaviour
 							attackSelection.transform.GetChild(choiceNumber).GetComponent<Image>().sprite = DataContents.attackSelSprites[
 								Array.IndexOf(DataContents.attackNonSelSprites, attackSelection.transform.GetChild(choiceNumber).
 									GetComponent<Image>().sprite)];
-							attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
-								GetMovePP(choiceNumber) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(choiceNumber);
+							attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].GetMovePP(choiceNumber) + 
+								"/" + battlers[0].GetMovePPMax(choiceNumber);
 							selectedChoice = attackSelection.transform.GetChild(choiceNumber).gameObject;
 							battleState = Battle.SELECTATTACK;
 							break;
@@ -2214,6 +2192,10 @@ public class BattleScene : MonoBehaviour
 									battlers[0].JustEntered = true;
 									combatants[0].Swap(0, choiceNumber-1);
 									replacePokemon = false;
+									FillInBattlerData();
+									UpdateDisplayedTeam();
+									trainerStands[0].GetComponent<Animator>().SetTrigger("SendOut");
+									GameManager.instance.ShowPlayerBox();
 									battleState = Battle.ENDROUND;
 								} //end if
 								else
@@ -2413,7 +2395,7 @@ public class BattleScene : MonoBehaviour
 					return;
 				} //end if
 				processing = true;
-				trainerStands[1].GetComponent<Animator>().SetTrigger("FadeEnemy");
+				trainerStands[1].GetComponent<Animator>().SetTrigger("FadeEnemyOut");
 				WriteBattleMessage(combatants[1].PlayerName + " sent out " + battlers[1].Nickname + "!");
 				StartCoroutine(FadePlayer());
 			} //end if
@@ -2452,8 +2434,8 @@ public class BattleScene : MonoBehaviour
 							attackSelection.transform.GetChild(choiceNumber).GetComponent<Image>().sprite = DataContents.attackSelSprites[
 								Array.IndexOf(DataContents.attackNonSelSprites, attackSelection.transform.GetChild(choiceNumber).
 									GetComponent<Image>().sprite)];
-							attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].BattlerPokemon.
-								GetMovePP(choiceNumber) + "/" + battlers[0].BattlerPokemon.GetMovePPMax(choiceNumber);
+							attackSelection.transform.GetChild(4).GetComponent<Text>().text = "PP\n" + battlers[0].GetMovePP(choiceNumber) + 
+								"/" + battlers[0].GetMovePPMax(choiceNumber);
 							selectedChoice = attackSelection.transform.GetChild(choiceNumber).gameObject;
 							battleState = Battle.SELECTATTACK;
 							break;
@@ -2580,6 +2562,10 @@ public class BattleScene : MonoBehaviour
 									battlers[0].JustEntered = true;
 									combatants[0].Swap(0, choiceNumber-1);
 									replacePokemon = false;
+									FillInBattlerData();
+									UpdateDisplayedTeam();
+									trainerStands[0].GetComponent<Animator>().SetTrigger("SendOut");
+									GameManager.instance.ShowPlayerBox();
 									battleState = Battle.ENDROUND;
 								} //end if
 								else
@@ -4037,6 +4023,38 @@ public class BattleScene : MonoBehaviour
 	} //end FillInChoices
 
 	/***************************************
+	 * Name: FillPartyLineup
+	 * Updates party lineup balls to match
+	 * current team condition
+	 ***************************************/
+	void FillPartyLineup()
+	{
+		//Loop through combatants
+		for(int i = 0; i < combatants.Count; i++)
+		{
+			//Loop through team
+			for (int j = 0; j < combatants[i].Team.Count; j++)
+			{
+				if (combatants[i].Team[j].Status == (int)Status.FAINT)
+				{
+					partyLineups[i].transform.GetChild(j + 1).GetComponent<Image>().sprite = Resources.
+						Load<Sprite>("Sprites/Battle/ballfainted");
+				} //end if
+				else if (combatants[i].Team[j].Status == (int)Status.HEALTHY)
+				{
+					partyLineups[i].transform.GetChild(j + 1).GetComponent<Image>().sprite = Resources.
+						Load<Sprite>("Sprites/Battle/ballnormal");
+				} //end else if
+				else
+				{
+					partyLineups[i].transform.GetChild(j + 1).GetComponent<Image>().sprite = Resources.
+						Load<Sprite>("Sprites/Battle/ballstatus");
+				} //end else
+			} //end for
+		} //end for
+	} //end FillPartyLineup
+
+	/***************************************
 	 * Name: ProcessAttack
 	 * Processes effect of an attack
 	 ***************************************/
@@ -4168,7 +4186,15 @@ public class BattleScene : MonoBehaviour
 		{
 			int baseStage = DataContents.GetMoveFlag(currentAttack, "h") ?
 				1 : 0;
-			return currentAttacker.CheckCritical(baseStage);
+			if (currentAttacker.CheckCritical(baseStage))
+			{
+				WriteBattleMessage("A critical hit!");
+				return true;
+			} //end if
+			else
+			{
+				return false;
+			} //end else
 		} //end else
 	} //end ProcessCritical(QueueEvent toProcess)
 
@@ -4189,38 +4215,41 @@ public class BattleScene : MonoBehaviour
 						WriteBattleMessage(string.Format("{0} used {1} on {2}!", battlers[queue[i].battler].Nickname, 
 							DataContents.GetMoveGameName(battlers[queue[i].battler].GetMove(queue[i].selection)), 
 							battlers[queue[i].target].Nickname));
-						yield return new WaitForSeconds(1.5f);
+						yield return new WaitForSeconds(1f);
 						int damage = ProcessAttack(queue[i]);
+						yield return new WaitForSeconds(0.75f);
 
 						//Remove HP from target
 						battlers[queue[i].target].RemoveHP(damage);
 						FillInBattlerData();
+						yield return new WaitForSeconds(0.5f);
 				
 						//Check if either pokemon is fainted
 						if (battlers[queue[i].target].CurrentHP < 1)
-						{
-							trainerStands[queue[i].target].GetComponent<Animator>().SetTrigger("FoeFaint");
-							WriteBattleMessage(battlers[queue[i].target].Nickname + " fainted!");
-							yield return new WaitForSeconds(0.5f);
+						{			
 							AbilityEffects.ResolveFaintedAbilities(battlers[queue[i].target].GetAbility(), currentAttack,
 								battlers[queue[i].battler]);
 							battlers[queue[i].target].FaintPokemon();
+							WriteBattleMessage(battlers[queue[i].target].Nickname + " fainted!");
 							if (combatants[queue[i].target].CheckRemaining() == 0)
-							{
+							{	
 								battleState = Battle.ENDFIGHT;
+								StopAllCoroutines();
 								StartCoroutine(ProcessEndOfBattle(queue[i].target));
 							} //end if
 							else
 							{
-								//Show the appropriate party
-								if (queue[i].target == 0)
-								{
-									GameManager.instance.ShowPlayerParty();
-								} //end if
-								else
+								trainerStands[queue[i].target].GetComponent<Animator>().SetTrigger("FoeFaint");
+								yield return new WaitForSeconds(0.5f);
+
+								//Fix both players lineups
+								FillPartyLineup();
+
+								//Show the opponent's party if necessary
+								if (queue[i].target != 0)
 								{
 									GameManager.instance.ShowFoeParty();
-								} //end else
+								} //end if
 							} //end else
 						} //end if
 						else
@@ -4230,29 +4259,29 @@ public class BattleScene : MonoBehaviour
 
 						if (battlers[queue[i].battler].CurrentHP < 1)
 						{
-							trainerStands[queue[i].battler].GetComponent<Animator>().SetTrigger("FoeFaint");
-							WriteBattleMessage(battlers[queue[i].battler].Nickname + " fainted!");
-							yield return new WaitForSeconds(0.5f);
 							AbilityEffects.ResolveFaintedAbilities(battlers[queue[i].battler].GetAbility(), currentAttack,
 								battlers[queue[i].target]);
 							battlers[queue[i].battler].FaintPokemon();
-							yield return new WaitForSeconds(0.5f);
 							if (combatants[queue[i].battler].CheckRemaining() == 0)
 							{
 								battleState = Battle.ENDFIGHT;
+								StopAllCoroutines();
 								StartCoroutine(ProcessEndOfBattle(queue[i].battler));
 							} //end if
 							else
 							{
-								//Show the appropriate party
-								if (queue[i].target == 0)
-								{
-									GameManager.instance.ShowPlayerParty();
-								} //end if
-								else
+								WriteBattleMessage(battlers[queue[i].battler].Nickname + " fainted!");
+								trainerStands[queue[i].battler].GetComponent<Animator>().SetTrigger("FoeFaint");
+								yield return new WaitForSeconds(0.5f);
+
+								//Fix both players lineups
+								FillPartyLineup();
+
+								//Show the opponent's party if needed
+								if (queue[i].target != 0)
 								{
 									GameManager.instance.ShowFoeParty();
-								} //end else
+								} //end if
 							} //end else
 						} //end if
 						else
@@ -4289,12 +4318,19 @@ public class BattleScene : MonoBehaviour
 							combatants[queue[i].battler].Team[queue[i].target].Nickname));
 						battlers[queue[i].battler].SwitchInPokemon(combatants[queue[i].battler].Team[queue[i].target]);
 						combatants[queue[i].battler].Swap(0, queue[i].target);
-						if (queue[i].battler == 1)
-						{
-							battleField.ResetDefaultBoosts();
-						} //end if
 						FillInBattlerData();
 						UpdateDisplayedTeam();
+						if (queue[i].battler == 0)
+						{
+							trainerStands[0].GetComponent<Animator>().SetTrigger("SendOut");
+							GameManager.instance.ShowPlayerBox();
+						} //end if
+						else if (queue[i].battler == 1)
+						{
+							trainerStands[1].GetComponent<Animator>().SetTrigger("SendOut");
+							GameManager.instance.ShowFoeBox();
+							battleField.ResetDefaultBoosts();
+						} //end else if
 						yield return new WaitForSeconds(1f);
 						waitingState = Battle.PROCESSQUEUE;
 						StartCoroutine(ResolveFieldEntrance());
@@ -4339,9 +4375,6 @@ public class BattleScene : MonoBehaviour
 					battleState = Battle.USERPICKPOKEMON;
 					waitingState = Battle.ENDROUND;
 					yield return new WaitUntil(() => battleState == Battle.ENDROUND);
-					FillInBattlerData();
-					UpdateDisplayedTeam();
-					trainerStands[0].GetComponent<Animator>().SetTrigger("SendOut");
 				} //end if
 				else
 				{
@@ -4359,6 +4392,7 @@ public class BattleScene : MonoBehaviour
 		} //end for
 
 		//Resolve field entrance effects if necessary
+		yield return new WaitForSeconds(0.5f);
 		waitingState = Battle.ENDROUND;
 		StartCoroutine(ResolveFieldEntrance());
 		yield return new WaitUntil(() => battleState == Battle.ENDROUND);
@@ -4376,7 +4410,7 @@ public class BattleScene : MonoBehaviour
      * Apply any end of battle effects
      ***************************************/
 	IEnumerator ProcessEndOfBattle(int condition)
-	{
+	{		
 		//If the player lost
 		if (condition == 0)
 		{
@@ -4390,12 +4424,17 @@ public class BattleScene : MonoBehaviour
 		} //end if
 		else if (condition == 1)
 		{
+			//Fade enemy in
+			trainerStands[1].GetComponent<Animator>().SetTrigger("FadeEnemyIn");
+			GameManager.instance.HideFoeBox();
+			yield return new WaitForSeconds(0.5f);
+
 			//Display who lost
 			WriteBattleMessage(combatants[condition].PlayerName + " is out of Pokemon!");
 			yield return new WaitForSeconds(0.75f);
 
 			//Display losing speech
-			WriteBattleMessage("Well, it looks like I lost. Great job, " + combatants[0].PlayerName + "!");
+			PrizeList.LosingSpeech(GameManager.instance.GetTrainer(), combatants[1].PlayerID);
 			yield return new WaitForSeconds(1.5f);
 
 			//Give points
@@ -4404,7 +4443,7 @@ public class BattleScene : MonoBehaviour
 
 			//Give items
 			PrizeList.ItemsPrize(GameManager.instance.GetTrainer(), combatants[1].PlayerID);
-			yield return new WaitForSeconds(1.5f);
+			yield return new WaitForSeconds(3f);
 
 			//Heal team and return to main
 			combatants[condition].HealTeam();
@@ -4467,9 +4506,9 @@ public class BattleScene : MonoBehaviour
 		newController["StopPlayerFade"] = Resources.Load<AnimationClip>("Animations/TrainerBack" + 
 			combatants[0].PlayerImage.ToString());
 		trainerStands[0].GetComponent<Animator>().runtimeAnimatorController = newController;
-		trainerStands[0].GetComponent<Animator>().SetTrigger("FadeEnemy");
+		trainerStands[0].GetComponent<Animator>().SetTrigger("FadeEnemyOut");
 		WriteBattleMessage("Go, " + battlers[0].Nickname + "!");
-		yield return new WaitForSeconds(newController["StopPlayerFade"].length+0.5f);
+		yield return new WaitForSeconds(newController["StopPlayerFade"].length+1f);
 		checkpoint = 3;
 		processing = false;
 	} //end FadePlayer
@@ -4607,17 +4646,29 @@ public class BattleScene : MonoBehaviour
 		if (e.Choice == 0)
 		{
 			//Run choice
-			if (checkpoint == 4)
+			if (battleState == Battle.ROUNDSTART)
 			{
 				GameManager.instance.LoadScene("MainGame", true);
 			} //end if
+
+			//Switch AI
+			else if (battleState == Battle.AIPICKPOKEMON)
+			{
+				playerTeam.SetActive(true);
+				selectedChoice = playerTeam.transform.FindChild("Pokemon1").gameObject;
+				playerTeam.transform.FindChild("PartyInstructions").GetChild(0).GetComponent<Text>().text = 
+					"Choose a Pokemon to switch in.";
+				choiceNumber = 1;
+				replacePokemon = true;
+				battleState = Battle.USERPICKPOKEMON;
+			} //end else if
 		} //end if
 
 		//No selected
 		else if(e.Choice== 1)
 		{
 			//Run choice
-			if (checkpoint == 4)
+			if (battleState == Battle.ROUNDSTART)
 			{
 				//Set font color for current option to white
 				commandChoice.transform.GetChild(commandInt).GetChild(0).GetComponent<Text>().color = Color.white;
@@ -4631,6 +4682,12 @@ public class BattleScene : MonoBehaviour
 				//Update selection reference
 				selectedChoice = commandChoice.transform.GetChild(commandInt).gameObject;
 			} //end if
+
+			//Switch AI
+			else if(battleState == Battle.AIPICKPOKEMON)
+			{
+				battleState = Battle.ENDROUND;
+			} //end else if
 		} //end else			
 	} //end ApplyConfirm(ConfirmChoice e)
 

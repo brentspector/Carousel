@@ -32,6 +32,7 @@ public class PokemonBattler
 	string nickname;		//The current name of the pokemon (for Illusion)
 	List<int> moves;		//What moves does this pokemon currently have
 	List<int> ppRemaining;	//How many uses does this move have remaining
+	List<int> ppMax;		//The amount of uses each move has total
 	List<int> types;		//What types does this pokemon have
 	List<int> stages;		//Buffs and debuffs to the stats of the pokemon
 	List<int> effects;		//Attack effects this pokemon is under
@@ -68,6 +69,7 @@ public class PokemonBattler
 		nickname = battler.Nickname;
 		moves = new List<int>();
 		ppRemaining = new List<int>();
+		ppMax = new List<int>();
 		types = new List<int>();
 		stages = new List<int>();
 		effects = new List<int>();
@@ -81,11 +83,13 @@ public class PokemonBattler
 			{
 				moves.Add(battler.GetMove(i));
 				ppRemaining.Add(battler.GetMovePP(i));
+				ppMax.Add(battler.GetMovePPMax(i));
 			} //end if
 			else
 			{
 				moves.Add(-1);
 				ppRemaining.Add(0);
+				ppMax.Add(0);
 			} //end else
 		} //end for
 
@@ -195,11 +199,13 @@ public class PokemonBattler
 			{
 				moves[i] = battler.GetMove(i);
 				ppRemaining[i] = battler.GetMovePP(i);
+				ppMax[i] = battler.GetMovePPMax(i);
 			} //end if
 			else
 			{
 				moves[i] = -1;
 				ppRemaining[i] = 0;
+				ppMax[i] = 0;
 			} //end else
 		} //end for
 
@@ -541,11 +547,14 @@ public class PokemonBattler
 		switch (cHit)
 		{
 			case 0:
-				return GameManager.instance.RandomInt(0, 16) == 0;
+				int store = GameManager.instance.RandomInt(0, 16);
+				return store == 0;
 			case 1:
-				return GameManager.instance.RandomInt(0, 8) == 0;
+				store = GameManager.instance.RandomInt(0, 8);
+				return store == 0;
 			case 2:
-				return GameManager.instance.RandomInt(0, 2) == 0;
+				store = GameManager.instance.RandomInt(0, 2);
+				return store == 0;
 			case 3:
 				return true;
 			default:
@@ -1091,7 +1100,29 @@ public class PokemonBattler
 	public void SetMovePP(int index, int amount)
 	{
 		ppRemaining [index] = amount;
+
+		//Update battler if possible
+		if (moves[index] == battler.GetMove(index))
+		{
+			battler.SetMovePP(index, battler.GetMovePP(index) - 1);
+		} //end if
 	} //end SetMovePP(int index, int amount)
+
+	/***************************************
+     * Name: GetMovePPMax
+     ***************************************/
+	public int GetMovePPMax(int index)
+	{
+		return ppMax [index];
+	} //end GetMovePPMax(int index)
+
+	/***************************************
+     * Name: SetMovePPMax
+     ***************************************/
+	public void SetMovePPMax(int index, int value)
+	{
+		ppMax [index] = value;
+	} //end SetMovePPMax(int index, int value)
 
 	/***************************************
      * Name: IsMega

@@ -499,9 +499,9 @@ public class ButtonFunctions : MonoBehaviour
 			{
 				Trainer newTrainer = new Trainer();
 				newTrainer.PlayerID = int.Parse(enemiesGiven[i]);
-				newTrainer.PlayerName = DataContents.ExecuteSQL<string>("SELECT name FROM Trainers WHERE rowid=" + enemiesGiven[i]);
-				newTrainer.PlayerImage = DataContents.ExecuteSQL<int>("SELECT image FROM Trainers WHERE rowid=" + enemiesGiven[i]);
-				string[] items = DataContents.ExecuteSQL<string>("SELECT items FROM Trainers WHERE rowid=" + enemiesGiven[i]).Split(',');
+				newTrainer.PlayerName = DataContents.ExecuteSQL<string>("SELECT name FROM Trainers WHERE enemyID=" + enemiesGiven[i]);
+				newTrainer.PlayerImage = DataContents.ExecuteSQL<int>("SELECT image FROM Trainers WHERE enemyID=" + enemiesGiven[i]);
+				string[] items = DataContents.ExecuteSQL<string>("SELECT items FROM Trainers WHERE enemyID=" + enemiesGiven[i]).Split(',');
 				for(int j = 0; j < items.Length; j++)
 				{
 					//If the item isn't empty, add it
@@ -513,7 +513,7 @@ public class ButtonFunctions : MonoBehaviour
 				newTrainer.EmptyTeam();
 				for(int j = 1; j < 7; j++)
 				{
-					string[] pokemon = DataContents.ExecuteSQL<string>("SELECT pokemon" + j + " FROM TRAINERS WHERE rowid=" + 
+					string[] pokemon = DataContents.ExecuteSQL<string>("SELECT pokemon" + j + " FROM TRAINERS WHERE enemyID=" + 
 						enemiesGiven[i]).Split(',');
 					if(pokemon.Length > 1)
 					{
