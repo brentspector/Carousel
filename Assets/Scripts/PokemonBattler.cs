@@ -283,6 +283,10 @@ public class PokemonBattler
      ***************************************/
 	public void UpdateActiveBattler()
 	{
+		if (battler == null)
+		{
+			return;
+		} //end if
 		currentHP = battler.CurrentHP;
 		totalHP = battler.TotalHP;
 		status = battler.Status;

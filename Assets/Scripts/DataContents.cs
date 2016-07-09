@@ -389,6 +389,34 @@ public static class DataContents : System.Object
 		//Return location of pokemon, or -1 if not found
 		return pokemonID;
 	} //end GetPokemonID(string pokemonName)
+
+	/***************************************
+     * Name: GetEVList
+     * Returns a list of ints containing the
+     * EVs a pokemon gives
+     ***************************************/
+	public static List<int> GetEVList(int pokemonID)
+	{
+		//Create list
+		List<int> evList = new List<int>();
+
+		//Return blank list if a number goes beyond list boundaries
+		if (pokemonID < 1 || pokemonID > speciesCount)
+		{
+			return evList;
+		} //end if
+		//Return EV list
+		else
+		{
+			evList.Add(ExecuteSQL<int>("SELECT hpEffort FROM Pokemon WHERE rowid=" + pokemonID));
+			evList.Add(ExecuteSQL<int>("SELECT attackEffort FROM Pokemon WHERE rowid=" + pokemonID));
+			evList.Add(ExecuteSQL<int>("SELECT defenceEffort FROM Pokemon WHERE rowid=" + pokemonID));
+			evList.Add(ExecuteSQL<int>("SELECT speedEffort FROM Pokemon WHERE rowid=" + pokemonID));
+			evList.Add(ExecuteSQL<int>("SELECT specialAttackEffort FROM Pokemon WHERE rowid=" + pokemonID));
+			evList.Add(ExecuteSQL<int>("SELECT specialDefenceEffort FROM Pokemon WHERE rowid=" + pokemonID));
+			return evList;
+		} //end else
+	} //end GetEVList(int pokemonID)
     #endregion
 } //end DataContents class
 

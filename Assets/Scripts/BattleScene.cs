@@ -26,6 +26,8 @@ public class BattleScene : MonoBehaviour
 		POKEMONRIBBONS,
 		ITEMUSE,
 		PICKMOVE,
+		REPLACEMOVE,
+		GETNEWMOVECHOICE,
 		MOVESWITCH,
 		GETAICHOICE,
 		PROCESSQUEUE,
@@ -53,8 +55,9 @@ public class BattleScene : MonoBehaviour
 	int detailsSize;                //Font size for move description
 	int ribbonChoice;               //The ribbon currently shown
 	int previousRibbonChoice;       //The ribbon last highlighted for reading
+	int moveToLearn = -1;			//What move is the pokemon trying to learn
 	bool processing = false;		//Whether a function is already processing something
-	bool pickMove = false;			//Whether the player must pick a move to use an item on
+	bool pickMove = false;			//Whether the player must pick a move
 	bool replacePokemon = false;	//Whether the player must replace the active battler
 	bool pocketChange;				//Is the pocket currently changing
 	Field battleField;				//The active battle field
@@ -150,7 +153,6 @@ public class BattleScene : MonoBehaviour
 			{
 				battlers.Add(new PokemonBattler(combatants[i].Team[0]));
 				battlers[i].JustEntered = true;
-				participants.Add(combatants[i].Team[0]);
 			} //end for
 
 			//Initialize battler boxes
@@ -232,6 +234,9 @@ public class BattleScene : MonoBehaviour
 
 			//Begin processing
 			processing = true;
+
+			//Add in the player's battler to participants
+			participants.Add(battlers[0].BattlerPokemon);
 
 			//Check field effect, abilities, and items
 			StartCoroutine(ResolveFieldEntrance());
@@ -2132,22 +2137,34 @@ public class BattleScene : MonoBehaviour
 				//Pick Move Processing
 				else if (battleState == Battle.PICKMOVE)
 				{
-					int itemNumber = combatants[0].GetItem(choiceNumber)[0];
-					QueueEvent newEvent = new QueueEvent();
-					newEvent.battler = 0;
-					newEvent.action = 1;
-					newEvent.selection = choiceNumber;
-					newEvent.target = DetermineTarget(0, 1, choiceNumber);
-					newEvent.priority = 7;
-					if (bool.Parse(ApplySpecialItem(newEvent, true)))
+					if (moveToLearn == -1)
 					{
-						selection.SetActive(false);
-						choices.SetActive(false);
-						playerTeam.SetActive(false);
-						commandChoice.SetActive(false);
-						AddToQueue(0, commandInt, choiceNumber, DetermineTarget(0, 1, itemNumber), DeterminePriority(0, 1, itemNumber));
-						battleState = Battle.GETAICHOICE;
+						int itemNumber = combatants[0].GetItem(choiceNumber)[0];
+						QueueEvent newEvent = new QueueEvent();
+						newEvent.battler = 0;
+						newEvent.action = 1;
+						newEvent.selection = choiceNumber;
+						newEvent.target = DetermineTarget(0, 1, choiceNumber);
+						newEvent.priority = 7;
+						if (bool.Parse(ApplySpecialItem(newEvent, true)))
+						{
+							selection.SetActive(false);
+							choices.SetActive(false);
+							playerTeam.SetActive(false);
+							commandChoice.SetActive(false);
+							AddToQueue(0, commandInt, choiceNumber, DetermineTarget(0, 1, itemNumber), DeterminePriority(0, 1, itemNumber));
+							battleState = Battle.GETAICHOICE;
+						} //end if
 					} //end if
+					else
+					{
+						combatants[0].Team[choiceTarget-1].ChangeMoves(new int[]{ moveToLearn }, subMenuChoice);
+						WriteBattleMessage(string.Format("{0} learned {1}!", combatants[0].Team[choiceTarget-1].Nickname, 
+							DataContents.GetMoveGameName(moveToLearn)));
+						choices.SetActive(false);
+						selection.SetActive(false);
+						battleState = Battle.REPLACEMOVE;
+					} //end else
 				} //end else if
 
 				//Pokemon selection
@@ -2193,7 +2210,6 @@ public class BattleScene : MonoBehaviour
 									combatants[0].Swap(0, choiceNumber-1);
 									replacePokemon = false;
 									FillInBattlerData();
-									UpdateDisplayedTeam();
 									trainerStands[0].GetComponent<Animator>().SetTrigger("SendOut");
 									GameManager.instance.ShowPlayerBox();
 									battleState = Battle.ENDROUND;
@@ -2563,7 +2579,6 @@ public class BattleScene : MonoBehaviour
 									combatants[0].Swap(0, choiceNumber-1);
 									replacePokemon = false;
 									FillInBattlerData();
-									UpdateDisplayedTeam();
 									trainerStands[0].GetComponent<Animator>().SetTrigger("SendOut");
 									GameManager.instance.ShowPlayerBox();
 									battleState = Battle.ENDROUND;
@@ -2762,7 +2777,11 @@ public class BattleScene : MonoBehaviour
 	{
 		battleType = bType;
 		combatants = trainers;
-		originalOrder = trainers[0].Team;
+		originalOrder = new List<Pokemon>();
+		foreach (Pokemon pokemon in combatants[0].Team)
+		{
+			originalOrder.Add(pokemon);
+		} //end foreach	
 	} //end InitializeBattle(int bType)
 
 	/***************************************
@@ -3048,7 +3067,7 @@ public class BattleScene : MonoBehaviour
 		battleState = Battle.RESOLVEEFFECTS;
 		//Only process if a battler just entered
 		if (battlers.Select(pokemon => pokemon.JustEntered).Contains(true))
-		{
+		{			
 			WriteBattleMessage("There were no field entrance effects to process.");
 			battlers = battleField.ResolveFieldEntrance(battlers);
 			yield return new WaitForSeconds(1.5f);
@@ -4324,6 +4343,7 @@ public class BattleScene : MonoBehaviour
 						{
 							trainerStands[0].GetComponent<Animator>().SetTrigger("SendOut");
 							GameManager.instance.ShowPlayerBox();
+							participants.Add(battlers[0].BattlerPokemon);
 						} //end if
 						else if (queue[i].battler == 1)
 						{
@@ -4375,13 +4395,43 @@ public class BattleScene : MonoBehaviour
 					battleState = Battle.USERPICKPOKEMON;
 					waitingState = Battle.ENDROUND;
 					yield return new WaitUntil(() => battleState == Battle.ENDROUND);
+					participants.Add(battlers[0].BattlerPokemon);
 				} //end if
 				else
 				{
+					//Give XP and EV
+					List<int> earners = participants.Select(pokemon => pokemon.Status != (int)Status.FAINT ? pokemon.PersonalID : -1).
+						Where(id=> id != -1).ToList();
+					int level = combatants[1].Team[0].CurrentLevel;
+					int expEarned = 3 * DataContents.ExecuteSQL<int>("SELECT baseExp FROM Pokemon WHERE rowid=" +
+						combatants[1].Team[0].NatSpecies) * level;
+					expEarned /= 10;
+					foreach (int location in earners)
+					{
+						choiceTarget = combatants[0].Team.FindIndex(pokemon => pokemon.PersonalID == location) + 1;	
+						combatants[0].Team[choiceTarget - 1].ChangeEVs(DataContents.GetEVList(combatants[1].Team[0].NatSpecies).ToArray());
+						WriteBattleMessage(combatants[0].Team[choiceTarget-1].Nickname + " gained " +
+							expEarned / earners.Count + " experience points!");
+						int overflow = combatants[0].Team[choiceTarget-1].GiveEXP(expEarned / 
+							earners.Count);		
+						while (overflow > 0)
+						{
+							combatants[0].Team[choiceTarget-1].PerformLevelUp();
+							yield return new WaitUntil(() => battleState == Battle.ENDROUND);
+							overflow = combatants[0].Team[choiceTarget-1].GiveEXP(overflow);	
+						} //end if
+						yield return new WaitForSeconds(1f);
+					} //end foreach
+
+					//Clear participants
+					participants.Clear();
+
+					//Choose replacement battler
 					battleState = Battle.AIPICKPOKEMON;
 					waitingState = Battle.ENDROUND;
 					yield return new WaitUntil(() => battleState == Battle.ENDROUND);					
 					FillInBattlerData();
+					participants.Add(battlers[0].BattlerPokemon);
 					trainerStands[1].GetComponent<Animator>().SetTrigger("SendOut");
 				} //end if
 			} //end if
@@ -4401,6 +4451,7 @@ public class BattleScene : MonoBehaviour
 		queue.Clear();
 		commandChoice.SetActive(true);
 		selectedChoice = commandChoice.transform.GetChild(commandInt).gameObject;
+		UpdateDisplayedTeam();
 		battleState = Battle.ROUNDSTART;
 		processing = false;
 	} //end ProcessEndOfRound
@@ -4418,6 +4469,15 @@ public class BattleScene : MonoBehaviour
 			WriteBattleMessage(combatants[condition].PlayerName + " is out of Pokemon!");
 			yield return new WaitForSeconds(0.75f);
 
+			//Return team to original order
+			for (int i = 0; i < 6; i++)
+			{
+				//Find the pokemon that matches
+				int position = combatants[0].Team.FindIndex(pokemon => pokemon.Equals(originalOrder[i]));
+
+				GameManager.instance.GetTrainer().Swap(i, position);
+			} //end for
+
 			//Heal team and return to main
 			combatants[0].HealTeam();
 			GameManager.instance.LoadScene("MainGame", true);
@@ -4428,6 +4488,32 @@ public class BattleScene : MonoBehaviour
 			trainerStands[1].GetComponent<Animator>().SetTrigger("FadeEnemyIn");
 			GameManager.instance.HideFoeBox();
 			yield return new WaitForSeconds(0.5f);
+
+			//Give XP
+			List<int> earners = participants.Select(pokemon => pokemon.Status != (int)Status.FAINT ? pokemon.PersonalID : -1).
+				Where(id=> id != -1).ToList();
+			int level = combatants[1].Team[0].CurrentLevel;
+			int expEarned = 3 * DataContents.ExecuteSQL<int>("SELECT baseExp FROM Pokemon WHERE rowid=" +
+				combatants[1].Team[0].NatSpecies) * level;
+			expEarned /= 10;
+			foreach (int location in earners)
+			{
+				choiceTarget = combatants[0].Team.FindIndex(pokemon => pokemon.PersonalID == location) + 1;					
+				WriteBattleMessage(combatants[0].Team[choiceTarget-1].Nickname + " gained " +
+					expEarned / earners.Count + " experience points!");
+				int overflow = combatants[0].Team[choiceTarget-1].GiveEXP(expEarned / 
+					earners.Count);		
+				while (overflow > 0)
+				{
+					combatants[0].Team[choiceTarget-1].PerformLevelUp();
+					yield return new WaitUntil(() => battleState == Battle.ENDROUND);
+					overflow = combatants[0].Team[choiceTarget-1].GiveEXP(overflow);	
+				} //end if
+				yield return new WaitForSeconds(1f);
+			} //end foreach
+
+			//Clear participants
+			participants.Clear();
 
 			//Display who lost
 			WriteBattleMessage(combatants[condition].PlayerName + " is out of Pokemon!");
@@ -4445,8 +4531,16 @@ public class BattleScene : MonoBehaviour
 			PrizeList.ItemsPrize(GameManager.instance.GetTrainer(), combatants[1].PlayerID);
 			yield return new WaitForSeconds(3f);
 
+			//Return team to original order
+			for (int i = 0; i < 6; i++)
+			{
+				//Find the pokemon that matches
+				int position = combatants[0].Team.FindIndex(pokemon => pokemon.PersonalID == originalOrder[i].PersonalID);
+				GameManager.instance.GetTrainer().Swap(i, position);
+			} //end for
+
 			//Heal team and return to main
-			combatants[condition].HealTeam();
+			combatants[0].HealTeam();
 			GameManager.instance.LoadScene("MainGame", true);
 		} //end else if			
 	} //end ProcessEndOfBattle(int condition)
@@ -4637,6 +4731,41 @@ public class BattleScene : MonoBehaviour
 	} //end SetupPickMove
 
 	/***************************************
+	 * Name: SetupLearnMove
+	 * Sets up screen for player allow a
+	 * pokemon to learn a move
+	 ***************************************/
+	public IEnumerator SetupLearnMove(List<int> toLearn, Pokemon leveledPokemon)
+	{
+		battleState = Battle.REPLACEMOVE;
+		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonUp(0));
+		for (int i = 0; i < toLearn.Count; i++)
+		{
+			//If pokemon has max moves
+			if (leveledPokemon.GetMoveCount() == 4)
+			{
+				moveToLearn = toLearn[i];
+				GameManager.instance.DisplayConfirm(string.Format("Should {0} learn {1}?", leveledPokemon.Nickname, 
+					DataContents.GetMoveGameName(toLearn[i])), 0, true);
+				battleState = Battle.GETNEWMOVECHOICE;
+				yield return new WaitUntil(() => battleState == Battle.REPLACEMOVE);
+				yield return new WaitForSeconds(0.5f);
+			} //end if
+			else
+			{
+				leveledPokemon.ChangeMoves(new int[]{toLearn[i]}, leveledPokemon.GetMoveCount());
+				WriteBattleMessage(string.Format("{0} learned {1}!", leveledPokemon.Nickname, 
+					DataContents.GetMoveGameName(toLearn[i])));
+				yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonUp(0));
+			} //end else
+		} //end for
+		pickMove = false;
+		moveToLearn = -1;
+		yield return null;
+		battleState = Battle.ENDROUND;
+	} //end SetupLearnMove(List<int> toLearn, Pokemon leveledPokemon)
+
+	/***************************************
 	 * Name: ApplyConfirm
 	 * Applies the confirm choice
 	 ***************************************/
@@ -4661,6 +4790,18 @@ public class BattleScene : MonoBehaviour
 				choiceNumber = 1;
 				replacePokemon = true;
 				battleState = Battle.USERPICKPOKEMON;
+			} //end else if
+
+			//Replace move
+			else if (battleState == Battle.GETNEWMOVECHOICE)
+			{
+				pickMove = true;
+				FillInChoices();
+				StartCoroutine(WaitForResize());
+				choices.SetActive(true);
+				subMenuChoice = 0;
+				WriteBattleMessage("Pick a move to replace.");
+				battleState = Battle.PICKMOVE;
 			} //end else if
 		} //end if
 
@@ -4687,6 +4828,13 @@ public class BattleScene : MonoBehaviour
 			else if(battleState == Battle.AIPICKPOKEMON)
 			{
 				battleState = Battle.ENDROUND;
+			} //end else if
+
+			//Replace move
+			else if (battleState == Battle.GETNEWMOVECHOICE)
+			{
+				WriteBattleMessage("Did not learn " + DataContents.GetMoveGameName(moveToLearn) + ".");
+				battleState = Battle.REPLACEMOVE;
 			} //end else if
 		} //end else			
 	} //end ApplyConfirm(ConfirmChoice e)
