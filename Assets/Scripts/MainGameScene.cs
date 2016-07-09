@@ -3471,7 +3471,7 @@ public class MainGameScene : MonoBehaviour
             {
                 evFields [i] = int.Parse (pokemonRightRegion.transform.FindChild ("EV").GetChild (i).GetComponent<InputField> ().text);
             } //end for
-            newPokemon.ChangeEVs(evFields);
+			newPokemon.ChangeEVs(evFields, adjust:false);
             newPokemon.CalculateStats ();
 
             //Update Ribbons

@@ -405,19 +405,19 @@ public class Pokemon
      ***************************************/
     /* NOTE: 
      * TotalEVs maximum is 510.
-     * Individual EVs maximum is 255.
+     * Individual EVs maximum is 252.
      * ---When providing 1 value---
      * Negative value with index sets that index to a random EV
      * Negative value without index sets all EVs to different random EVs
      * Excessive value with index sets that index to standard 85
      * Excessive value without index sets all EVs to 85
-     * Acceptable value with index sets that index to that value
-     * Acceptable value without index sets all EVs to that value
+     * Acceptable value with index sets that index to that value, or increments
+     * Acceptable value without index sets all EVs to that value, or increments
      * ---When providing more than 1 value---
      * If less than 6 values given, a 0 will be placed in empty slots
      * Otherwise it follows single EV methods, except ignores index param
      */
-    public void ChangeEVs(int[] values, int index = -1)
+	public void ChangeEVs(int[] values, int index = -1, bool adjust = true)
     {
         //1 value provided
         if (values.Length == 1)
@@ -478,7 +478,7 @@ public class Pokemon
                 } //end else
             } //end if
             //Standard amount of 85 to be given
-            else if(values[0] > 255)
+            else if(values[0] > 252)
             {
                 //If a valid index is given
                 if(index > -1 && index < 6)
@@ -514,19 +514,37 @@ public class Pokemon
                 //If a valid index was given
                 if(index > -1 && index < 6)
                 {
-                    int tempCount = totalEV - EV[index];
-                    //Make sure value doesn't exceed 510
-                    if((tempCount + values[0]) <= 510)
-                    {
-                        totalEV += values[0] - EV[index];
-                        EV[index] = values[0];
-                    } //end if
-                    else
-                    {
-                        int tempNum = 510 - totalEV; 
-                        totalEV = 510;
-                        EV[index] = tempNum;
-                    } //end else
+					//If adjusting
+					if (adjust)
+					{
+						//Make sure value doesn't exceed 510 total or 252 individual
+						if (totalEV + values[0] > 510)
+						{
+							values[0] = 510 - totalEV;
+						} //end if
+						if (EV[index] + values[0] > 252)
+						{
+							values[0] = 252 - EV[index];
+						} //end if
+						totalEV += values[0];
+						EV[index] += values[0];
+					} //end if
+					else
+					{
+                    	int tempCount = totalEV - EV[index];
+                   		//Make sure value doesn't exceed 510
+                   		if((tempCount + values[0]) <= 510)
+                   		{						
+                   		    totalEV += values[0] - EV[index];
+                   		    EV[index] = values[0];
+                   		} //end if
+                   		else
+                   		{
+                   		    int tempNum = 510 - totalEV; 
+                   		    totalEV = 510;
+                   		    EV[index] = tempNum;
+                   		} //end else
+					} //end else
                 } //end if
                 //No vald index given
                 else
@@ -577,10 +595,10 @@ public class Pokemon
                     fixedValues[i] = values[i];
                 } //end for
                 
-                //Fill in rest with a random number
+                //Fill in rest with 0
                 for(int i = values.Length; i < 6; i++)
                 {
-                    fixedValues[i] = GameManager.instance.RandomInt(0, 256);
+                    fixedValues[i] = 0;
                 } //end for
                 
                 values = fixedValues;
@@ -616,7 +634,7 @@ public class Pokemon
                     } //end else
                 } //end if
                 //If the value is invalid
-                else if(values[i] > 255)
+                else if(values[i] > 252)
                 {
                     //Make sure value is within maximum value
                     int tempCount = totalEV;
@@ -643,12 +661,21 @@ public class Pokemon
                 //The value is valid
                 else
                 {
-                    //Make sure value doesn't exceed maximum
-                    if((totalEV + values[i]) <= 510)
-                    {
-                        totalEV += values[i];
-                        EV[i] = values[i];
-                    } //end if
+					//If adjusting
+					if (adjust)
+					{
+						//Make sure value doesn't exceed 510 total or 252 individual
+						if (totalEV + values[i] > 510)
+						{
+							values[i] = 510 - totalEV;
+						} //end if
+						if (EV[i] + values[i] > 252)
+						{
+							values[i] = 252 - EV[index];
+						} //end if
+						totalEV += values[i];
+						EV[i] += values[i];
+					} //end if
                     else
                     {
                         int tempNum = 510 - totalEV;
@@ -834,7 +861,48 @@ public class Pokemon
             ribbons[index] = value;
         } //end else if
     } //end ChangeRibbons(int value, int index = -1)
-        
+    
+	/***************************************
+     * Name: PerformLevelUp
+     * Adds one level to the pokemon and 
+     * resolves any new moves
+     ***************************************/
+	public void PerformLevelUp()
+	{
+		//Add one level
+		currentLevel++;
+		GameManager.instance.DisplayText(nickname + " grew to level " + currentLevel + "!", false);
+		CalculateStats();
+
+		//Check for any level-up moves
+		string moveList = DataContents.ExecuteSQL<string>("SELECT moves FROM Pokemon WHERE rowid=" + natSpecies);
+		string[] arrayList = moveList.Split(',');
+		List<int> attacks = arrayList.Select((level, i) => object.Equals(level, currentLevel.ToString()) ? DataContents.
+			GetMoveID(arrayList[i+1]) : -1).Where(i => i != -1).ToList();
+		GameManager.instance.SetupLearnMove(attacks, this);
+	} //end PerformLevelUp
+
+	/***************************************
+     * Name: GiveEXP
+     * Gives an amount of XP, and returns
+     * remaining if a level up occurs
+     ***************************************/
+	public int GiveEXP(int amount)
+	{
+		//Decide if anything needs to be returned
+		if (amount > remainingEXP)
+		{
+			currentEXP += remainingEXP;
+			return amount - remainingEXP;
+		} //end if
+		else
+		{
+			currentEXP += amount;
+			remainingEXP = CalculateRemainingEXP(currentLevel);
+			return 0;
+		} //end else
+	} //end GiveEXP(int amount)
+
     /***************************************
      * Name: CalculateEXP
      * Determines the initial EXP for the 
@@ -939,7 +1007,7 @@ public class Pokemon
 
 		//Calculate EXP
 		remainingEXP = CalculateRemainingEXP(currentLevel);
-    } //end CalculateStat
+    } //end CalculateStats
 
     /***************************************
      * Name: SwitchMoves

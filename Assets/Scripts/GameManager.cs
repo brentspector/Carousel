@@ -148,7 +148,7 @@ public class GameManager : MonoBehaviour
 
             //Don't continue updating game until text box is gone
             if(textDisplayed)
-            {
+            {				
                 textDisplayed = sysm.ManageTextbox(continueImmediate);
             } //end if textDisplayed
 
@@ -523,6 +523,16 @@ public class GameManager : MonoBehaviour
 	{
 		battle.WriteBattleMessage(message);
 	} //end WriteBattleMessage(string message)
+
+	/***************************************
+	 * Name: SetupLearnMove
+	 * Sets up screen for player allow a
+	 * pokemon to learn a move
+	 ***************************************/
+	public void SetupLearnMove(List<int> toLearn, Pokemon leveledPokemon)
+	{
+		StartCoroutine(battle.SetupLearnMove(toLearn, leveledPokemon));
+	} //end SetupLearnMove(List<int> toLearn, Pokemon leveledPokemon)
 
 	/***************************************
 	 * Name: InitializeBattle
