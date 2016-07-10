@@ -34,6 +34,7 @@ public class BattleScene : MonoBehaviour
 		ENDROUND,
 		USERPICKPOKEMON,
 		AIPICKPOKEMON,
+		EVOLVEPOKEMON,
 		ENDFIGHT
 	} //end Battle
 
@@ -55,6 +56,7 @@ public class BattleScene : MonoBehaviour
 	int detailsSize;                //Font size for move description
 	int ribbonChoice;               //The ribbon currently shown
 	int previousRibbonChoice;       //The ribbon last highlighted for reading
+	float typeMod;					//The type modification value
 	int moveToLearn = -1;			//What move is the pokemon trying to learn
 	bool processing = false;		//Whether a function is already processing something
 	bool pickMove = false;			//Whether the player must pick a move
@@ -2345,7 +2347,7 @@ public class BattleScene : MonoBehaviour
 				{
 					commandChoice.SetActive(true);
 					playerTeam.SetActive(false);
-					battleState = Battle.ROUNDSTART;
+					battleState = replacePokemon ? Battle.ENDROUND : Battle.ROUNDSTART;
 				} //end else if
 
 				//Pokemon submenu
@@ -2518,22 +2520,34 @@ public class BattleScene : MonoBehaviour
 				//Pick Move Processing
 				else if (battleState == Battle.PICKMOVE)
 				{
-					int itemNumber = combatants[0].GetItem(choiceNumber)[0];
-					QueueEvent newEvent = new QueueEvent();
-					newEvent.battler = 0;
-					newEvent.action = 1;
-					newEvent.selection = choiceNumber;
-					newEvent.target = DetermineTarget(0, 1, choiceNumber);
-					newEvent.priority = 7;
-					if (bool.Parse(ApplySpecialItem(newEvent, true)))
+					if (moveToLearn == -1)
 					{
-						selection.SetActive(false);
-						choices.SetActive(false);
-						playerTeam.SetActive(false);
-						commandChoice.SetActive(false);
-						AddToQueue(0, commandInt, choiceNumber, DetermineTarget(0, 1, itemNumber), DeterminePriority(0, 1, itemNumber));
-						battleState = Battle.GETAICHOICE;
+						int itemNumber = combatants[0].GetItem(choiceNumber)[0];
+						QueueEvent newEvent = new QueueEvent();
+						newEvent.battler = 0;
+						newEvent.action = 1;
+						newEvent.selection = choiceNumber;
+						newEvent.target = DetermineTarget(0, 1, choiceNumber);
+						newEvent.priority = 7;
+						if (bool.Parse(ApplySpecialItem(newEvent, true)))
+						{
+							selection.SetActive(false);
+							choices.SetActive(false);
+							playerTeam.SetActive(false);
+							commandChoice.SetActive(false);
+							AddToQueue(0, commandInt, choiceNumber, DetermineTarget(0, 1, itemNumber), DeterminePriority(0, 1, itemNumber));
+							battleState = Battle.GETAICHOICE;
+						} //end if
 					} //end if
+					else
+					{
+						combatants[0].Team[choiceTarget-1].ChangeMoves(new int[]{ moveToLearn }, subMenuChoice);
+						WriteBattleMessage(string.Format("{0} learned {1}!", combatants[0].Team[choiceTarget-1].Nickname, 
+							DataContents.GetMoveGameName(moveToLearn)));
+						choices.SetActive(false);
+						selection.SetActive(false);
+						battleState = Battle.REPLACEMOVE;
+					} //end else
 				} //end else if
 
 				//Pokemon selection
@@ -2714,7 +2728,7 @@ public class BattleScene : MonoBehaviour
 				{
 					commandChoice.SetActive(true);
 					playerTeam.SetActive(false);
-					battleState = Battle.ROUNDSTART;
+					battleState = replacePokemon ? Battle.ENDROUND : Battle.ROUNDSTART;
 				} //end else if
 
 				//Pokemon submenu
@@ -4112,7 +4126,7 @@ public class BattleScene : MonoBehaviour
 		if (moveCategory != (int)Categories.Status)
 		{
 			//Check for typing
-			float typeMod = battlers[toProcess.target].CheckDefenderTyping(DataContents.GetMoveIcon(currentAttacker.
+			typeMod = battlers[toProcess.target].CheckDefenderTyping(DataContents.GetMoveIcon(currentAttacker.
 			GetMove(toProcess.selection)), currentAttacker);
 			if (typeMod == 0)
 			{
@@ -4236,12 +4250,33 @@ public class BattleScene : MonoBehaviour
 							battlers[queue[i].target].Nickname));
 						yield return new WaitForSeconds(1f);
 						int damage = ProcessAttack(queue[i]);
-						yield return new WaitForSeconds(0.75f);
 
 						//Remove HP from target
 						battlers[queue[i].target].RemoveHP(damage);
 						FillInBattlerData();
-						yield return new WaitForSeconds(0.5f);
+						yield return new WaitForSeconds(0.75f);
+
+						//Display effectiveness if possible
+						if (typeMod == 4f)
+						{
+							WriteBattleMessage("It was Ultra Effective!");
+							yield return new WaitForSeconds(0.5f);
+						} //end if
+						else if (typeMod == 2f)
+						{
+							WriteBattleMessage("It was Super Effective!");
+							yield return new WaitForSeconds(0.5f);
+						} //end else if
+						else if (typeMod == 0.5f)
+						{
+							WriteBattleMessage("It wasn't very effective...");
+							yield return new WaitForSeconds(0.5f);
+						} //end else if
+						else if (typeMod == 0.25f)
+						{
+							WriteBattleMessage("It was extremely ineffective...");
+							yield return new WaitForSeconds(0.5f);
+						} //end else
 				
 						//Check if either pokemon is fainted
 						if (battlers[queue[i].target].CurrentHP < 1)
@@ -4423,8 +4458,9 @@ public class BattleScene : MonoBehaviour
 						yield return new WaitForSeconds(1f);
 					} //end foreach
 
-					//Clear participants
+					//Update team and clear participants
 					participants.Clear();
+					UpdateDisplayedTeam();
 
 					//Choose replacement battler
 					battleState = Battle.AIPICKPOKEMON;
@@ -4469,12 +4505,28 @@ public class BattleScene : MonoBehaviour
 			WriteBattleMessage(combatants[condition].PlayerName + " is out of Pokemon!");
 			yield return new WaitForSeconds(0.75f);
 
+			//Check for evolutions
+			for (int i = 0; i < combatants[0].Team.Count; i++)
+			{
+				int evolutionID = combatants[0].Team[i].CheckEvolution();
+				if (evolutionID != -1)
+				{
+					choiceNumber = i;
+					choiceTarget = evolutionID;
+					GameManager.instance.DisplayConfirm(string.Format("Do you want {0} to evolve into {1}?", 
+						combatants[0].Team[i].Nickname, DataContents.ExecuteSQL<string>("SELECT name FROM Pokemon " +
+					"WHERE rowid=" + evolutionID)), 0, false);
+					battleState = Battle.EVOLVEPOKEMON;
+					yield return new WaitUntil(() => battleState == Battle.ENDFIGHT);
+					yield return new WaitForSeconds(0.5f);
+				} //end if
+			} //end for
+
 			//Return team to original order
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < originalOrder.Count; i++)
 			{
 				//Find the pokemon that matches
 				int position = combatants[0].Team.FindIndex(pokemon => pokemon.Equals(originalOrder[i]));
-
 				GameManager.instance.GetTrainer().Swap(i, position);
 			} //end for
 
@@ -4489,7 +4541,7 @@ public class BattleScene : MonoBehaviour
 			GameManager.instance.HideFoeBox();
 			yield return new WaitForSeconds(0.5f);
 
-			//Give XP
+			//Give XP and EV
 			List<int> earners = participants.Select(pokemon => pokemon.Status != (int)Status.FAINT ? pokemon.PersonalID : -1).
 				Where(id=> id != -1).ToList();
 			int level = combatants[1].Team[0].CurrentLevel;
@@ -4498,7 +4550,8 @@ public class BattleScene : MonoBehaviour
 			expEarned /= 10;
 			foreach (int location in earners)
 			{
-				choiceTarget = combatants[0].Team.FindIndex(pokemon => pokemon.PersonalID == location) + 1;					
+				choiceTarget = combatants[0].Team.FindIndex(pokemon => pokemon.PersonalID == location) + 1;	
+				combatants[0].Team[choiceTarget - 1].ChangeEVs(DataContents.GetEVList(combatants[1].Team[0].NatSpecies).ToArray());
 				WriteBattleMessage(combatants[0].Team[choiceTarget-1].Nickname + " gained " +
 					expEarned / earners.Count + " experience points!");
 				int overflow = combatants[0].Team[choiceTarget-1].GiveEXP(expEarned / 
@@ -4530,6 +4583,23 @@ public class BattleScene : MonoBehaviour
 			//Give items
 			PrizeList.ItemsPrize(GameManager.instance.GetTrainer(), combatants[1].PlayerID);
 			yield return new WaitForSeconds(3f);
+
+			//Check for evolutions
+			for (int i = 0; i < combatants[0].Team.Count; i++)
+			{
+				int evolutionID = combatants[0].Team[i].CheckEvolution();
+				if (evolutionID != -1)
+				{
+					choiceNumber = i;
+					choiceTarget = evolutionID;
+					GameManager.instance.DisplayConfirm(string.Format("Do you want {0} to evolve into {1}?", 
+						combatants[0].Team[i].Nickname, DataContents.ExecuteSQL<string>("SELECT name FROM Pokemon " +
+							"WHERE rowid=" + evolutionID)), 0, true);
+					battleState = Battle.EVOLVEPOKEMON;
+					yield return new WaitUntil(() => battleState == Battle.ENDFIGHT);
+					yield return new WaitForSeconds(0.5f);
+				} //end if
+			} //end for
 
 			//Return team to original order
 			for (int i = 0; i < 6; i++)
@@ -4777,6 +4847,13 @@ public class BattleScene : MonoBehaviour
 			//Run choice
 			if (battleState == Battle.ROUNDSTART)
 			{
+				//Return team to original order
+				for (int i = 0; i < originalOrder.Count; i++)
+				{
+					//Find the pokemon that matches
+					int position = combatants[0].Team.FindIndex(pokemon => pokemon.Equals(originalOrder[i]));
+					GameManager.instance.GetTrainer().Swap(i, position);
+				} //end for
 				GameManager.instance.LoadScene("MainGame", true);
 			} //end if
 
@@ -4789,7 +4866,7 @@ public class BattleScene : MonoBehaviour
 					"Choose a Pokemon to switch in.";
 				choiceNumber = 1;
 				replacePokemon = true;
-				battleState = Battle.USERPICKPOKEMON;
+				battleState = Battle.SELECTPOKEMON;
 			} //end else if
 
 			//Replace move
@@ -4802,6 +4879,16 @@ public class BattleScene : MonoBehaviour
 				subMenuChoice = 0;
 				WriteBattleMessage("Pick a move to replace.");
 				battleState = Battle.PICKMOVE;
+			} //end else if
+
+			//Evolve pokemon
+			else if (battleState == Battle.EVOLVEPOKEMON)
+			{
+				combatants[0].Team[choiceNumber].EvolvePokemon(choiceTarget);
+				WriteBattleMessage(string.Format("Congratulations! Your {0} evolved into {1}!", combatants[0].
+					Team[choiceNumber].Nickname, DataContents.ExecuteSQL<string>("SELECT name FROM Pokemon WHERE rowid=" +
+						choiceTarget)));
+				battleState = Battle.ENDFIGHT;
 			} //end else if
 		} //end if
 
@@ -4825,7 +4912,7 @@ public class BattleScene : MonoBehaviour
 			} //end if
 
 			//Switch AI
-			else if(battleState == Battle.AIPICKPOKEMON)
+			else if (battleState == Battle.AIPICKPOKEMON)
 			{
 				battleState = Battle.ENDROUND;
 			} //end else if
@@ -4835,6 +4922,15 @@ public class BattleScene : MonoBehaviour
 			{
 				WriteBattleMessage("Did not learn " + DataContents.GetMoveGameName(moveToLearn) + ".");
 				battleState = Battle.REPLACEMOVE;
+			} //end else if
+
+			//Evolve pokemon
+			else if (battleState == Battle.EVOLVEPOKEMON)
+			{
+				WriteBattleMessage(string.Format("Decided not to evolve {0} into {1}.", combatants[0].
+					Team[choiceNumber].Nickname, DataContents.ExecuteSQL<string>("SELECT name FROM Pokemon WHERE rowid=" +
+						choiceTarget)));
+				battleState = Battle.ENDFIGHT;
 			} //end else if
 		} //end else			
 	} //end ApplyConfirm(ConfirmChoice e)
