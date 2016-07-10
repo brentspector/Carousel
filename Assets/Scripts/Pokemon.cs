@@ -81,7 +81,7 @@ public class Pokemon
      * Name: Pokemon
      * Contructor for pokemon encounters
      ***************************************/
-	public Pokemon(int species = 0, int tID = 0, int level = 5, int item = 0, int ball = 0, 
+	public Pokemon(int species = 0, int tID = 0, int level = 10, int item = 0, int ball = 0, 
 				   int oType = -1, int oWhere = -1, int ability = -1, int gender = -1, int form = 0,
 	               int nature = -1, int happy = 70, bool pokerus = false, bool shiny = false)
 	{
@@ -1170,6 +1170,29 @@ public class Pokemon
 		//Non Item-based evolution
 		if (usedItem == 0)
 		{
+			//Check if current level is greater than or equal to evolution level
+			for (int i = 1; i < arrayList.Length; i += 3)
+			{
+				//Check if any forms evolve by level up
+				if (arrayList[i] == "Level" && currentLevel >= int.Parse(arrayList[i+1]))
+				{
+					return DataContents.GetPokemonID(arrayList[i - 1]);
+				} //end if
+
+				//Check for explicitly female evolution
+				else if (arrayList[i] == "LevelFemale" && gender == 1 && currentLevel >= int.Parse(arrayList[i+1]))
+				{
+					return DataContents.GetPokemonID(arrayList[i - 1]);
+				} //end else if
+
+				//Check for explicitly male evolution
+				else if (arrayList[i] == "LevelMale" && gender == 0 && currentLevel >= int.Parse(arrayList[i+1]))
+				{
+					return DataContents.GetPokemonID(arrayList[i - 1]);
+				} //end else if
+			} //end for
+
+			//Otherwise no evolution found
 			return -1;
 		} //end if
 	
