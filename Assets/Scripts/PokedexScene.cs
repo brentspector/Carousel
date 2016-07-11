@@ -549,7 +549,9 @@ public class PokedexScene : MonoBehaviour
                 child.FindChild ("Ball").GetComponent<Image> ().sprite = 
                     GameManager.instance.GetTrainer ().Owned.Contains (chosenPoke) ? 
                 Resources.Load<Sprite> ("Sprites/Battle/ballnormal") :
-                Resources.Load<Sprite> ("Sprites/Battle/ballfainted");
+					GameManager.instance.GetTrainer().Seen.Contains (chosenPoke) ?
+                Resources.Load<Sprite> ("Sprites/Battle/ballfainted") :
+					Resources.Load<Sprite> ("Sprites/Battle/ballempty");
 				child.FindChild("Icon").GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/icon" + 
 					chosenPoke.ToString("000"));
             } //end for

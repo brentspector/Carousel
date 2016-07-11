@@ -2870,6 +2870,16 @@ public class MainGameScene : MonoBehaviour
 					pokemonChoice.CurrentEXP.ToString();
 				summaryScreen.transform.GetChild(0).FindChild("RemainingXP").GetComponent<Text>().text =
 					pokemonChoice.RemainingEXP.ToString();
+				if (pokemonChoice.CurrentLevel != 100)
+				{
+					summaryScreen.transform.GetChild(0).FindChild("XPBar").GetComponent<RectTransform>().localScale = new Vector3(
+						(float)(pokemonChoice.EXPForLevel - pokemonChoice.RemainingEXP) /
+						(float)pokemonChoice.EXPForLevel, 1, 1);
+				} //end if
+				else
+				{
+					summaryScreen.transform.GetChild(0).FindChild("XPBar").GetComponent<RectTransform>().localScale = new Vector3(0, 1, 1);
+				} //end else
 				SetTypeSprites(summaryScreen.transform.GetChild(0).FindChild("Types").GetChild(0).GetComponent<Image>(),
 					summaryScreen.transform.GetChild(0).FindChild("Types").GetChild(1).GetComponent<Image>(), 
 					pokemonChoice.NatSpecies);
