@@ -535,6 +535,15 @@ public class GameManager : MonoBehaviour
 	} //end SetupLearnMove(List<int> toLearn, Pokemon leveledPokemon)
 
 	/***************************************
+	 * Name: QueueBattleItem
+	 * Queues the use of a battle item
+	 ***************************************/
+	public bool QueueBattleItem(int item)
+	{
+		return battle.QueueBattleItem(item);
+	} //end QueueBattleItem(int item)
+
+	/***************************************
 	 * Name: InitializeBattle
 	 * Sets battle as a Single, Double, Triple
 	 * or other type and the trainers 

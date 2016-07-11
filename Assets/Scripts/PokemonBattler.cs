@@ -27,6 +27,7 @@ public class PokemonBattler
 	int lastHPLost;			//The last mount of HP this pokemon lost
 	int lastMoveUsed;		//The last attack this pokemon used
 	int sideOn;				//What side the pokemon is on
+	int item;				//What is the currently held item
 	int gender;				//The displayed gender of the pokemon (for  Illusion)
 	int currentLevel;		//The current level for the pokemon (for Illusion)
 	string nickname;		//The current name of the pokemon (for Illusion)
@@ -1013,6 +1014,21 @@ public class PokemonBattler
 			speed = value;
 		} //end set
 	} //end Speed
+
+	/***************************************
+     * Name: Item
+     ***************************************/
+	public int Item
+	{
+		get
+		{
+			return item;
+		} //end get
+		set
+		{
+			item = value;
+		} //end set
+	} //end Item
 
 	/***************************************
      * Name: BattlerStatus

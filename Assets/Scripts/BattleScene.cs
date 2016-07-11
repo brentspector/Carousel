@@ -240,6 +240,10 @@ public class BattleScene : MonoBehaviour
 			//Add in the player's battler to participants
 			participants.Add(battlers[0].BattlerPokemon);
 
+			//Add opponent's pokemon to the player's seen list
+			GameManager.instance.GetTrainer().Seen = 
+				ExtensionMethods.AddUnique<int>(GameManager.instance.GetTrainer().Seen, battlers[1].BattlerPokemon.NatSpecies);
+
 			//Check field effect, abilities, and items
 			StartCoroutine(ResolveFieldEntrance());
 		} //end else if
@@ -460,71 +464,6 @@ public class BattleScene : MonoBehaviour
 				GameManager.instance.DisplayConfirm(string.Format("{0} is about to send out {1}. Do you want to switch pokemon?", 
 					combatants[1].PlayerName, battlers[1].Nickname), 0, true);
 			} //end else if
-			/* Done - Start of Battle
-			 * ++++++-Display trainers
-			 * ++++++-AI sends out first pokemon in roster
-			 * ++++++-Player sends out first pokemon in roster
-			 * 
-			 * Done - On Entry
-			 * ++++++-Resolve field
-			 * ++++++-Resolve ability (intimidate,levitate,frisk)
-			 * ++++++-Resolve item(air balloon)
-			 * 
-			 * Beginning of round
-			 * ++++++-Player picks Fight/Bag/Pokemon/Run
-			 * ++++++--Fight
-			 * ++++++----Display pokemon attacks
-			 * ++++++----Player picks an attack or cancels back to main
-			 * ++++++--Bag
-			 * ++++++----Display inventory
-			 * ++++++----Player picks an item with a battle use
-			 * ++++++----Player picks pokemon to use it on
-			 * ++++++--Pokemon
-			 * ++++++----Team roster is shown
-			 * ++++++----Player picks a pokemon
-			 * ++++++----If switch is chosen, queue it
-			 * ++++++----Player can view summary or cancel back to main
-			 * ++++++--Run
-			 * ++++++----End the fight and return any variables to start
-			 * ++++++----Return to battle menu
-			 * -AI picks Fight/Item/Switch
-			 * 
-			 * Done - End of Choice
-			 * ++++++-Queue events
-			 * ++++++--Switch (fastest goes first)
-			 * ++++++---Resolve OnEntry
-			 * ++++++--Item (fastest goes first)
-			 * ++++++--Attack
-			 * ++++++---Sort by Priority, then Speed
-			 * ++++++---Queue with flag indentifying the pokemon who used it
-			 * 
-			 * Done - Middle of round
-			 * ++++++-Resolve Queue
-			 * ++++++--Attack
-			 * ++++++----Resolve protect
-			 * ++++++----Resolve blocking abilities (Bulletproof & Telepathy)
-			 * ++++++----Resolve typing
-			 * ++++++----Resolve accuracy
-			 * ++++++----Resolve critical
-			 * ++++++----Resolve damage, item, ability, field
-			 * ++++++----Resolve recoil
-			 * ++++++----Check if either pokemon is fainted
-			 * ++++++-----Resolve ability (aftermath)
-			 * ++++++-----Resolve player targeted secondary effects
-			 * ++++++-----If opponent is still alive, process opponent secondary effects
-			 * ++++++--Loop until queue is empty
-			 * 
-			 * Done - End of round
-			 * +++++-Resolve field & item
-			 * +++++-Replace missing pokemon
-			 * +++++-Loop to beginning of round
-			 * 
-			 * End of Battle
-			 * -Give badge if needed
-			 * -Give points
-			 * -Give item
-			 */
-
 		} //end else if
 	} //end RunBattle
 
@@ -2201,25 +2140,33 @@ public class BattleScene : MonoBehaviour
 						case 1:
 							if (combatants[0].Team[choiceNumber - 1].Status != (int)Status.FAINT)
 							{
-								selection.SetActive(false);
-								choices.SetActive(false);
-								playerTeam.SetActive(false);
-								commandChoice.SetActive(false);
-								if (replacePokemon)
+								if (combatants[0].Team[choiceNumber - 1] != battlers[0].BattlerPokemon)
 								{
-									battlers[0].SwitchInPokemon(combatants[0].Team[choiceNumber - 1]);
-									battlers[0].JustEntered = true;
-									combatants[0].Swap(0, choiceNumber-1);
-									replacePokemon = false;
-									FillInBattlerData();
-									trainerStands[0].GetComponent<Animator>().SetTrigger("SendOut");
-									GameManager.instance.ShowPlayerBox();
-									battleState = Battle.ENDROUND;
+									selection.SetActive(false);
+									choices.SetActive(false);
+									playerTeam.SetActive(false);
+									commandChoice.SetActive(false);
+									if (replacePokemon)
+									{
+										battlers[0].SwitchInPokemon(combatants[0].Team[choiceNumber - 1]);
+										battlers[0].JustEntered = true;
+										combatants[0].Swap(0, choiceNumber - 1);
+										replacePokemon = false;
+										FillInBattlerData();
+										trainerStands[0].GetComponent<Animator>().SetTrigger("SendOut");
+										GameManager.instance.ShowPlayerBox();
+										battleState = Battle.ENDROUND;
+									} //end if
+									else
+									{
+										AddToQueue(0, commandInt, 0, choiceNumber - 1, DeterminePriority(0, 2, choiceNumber));
+										battleState = Battle.GETAICHOICE;
+									} //end else
 								} //end if
 								else
 								{
-									AddToQueue(0, commandInt, 0, choiceNumber - 1, DeterminePriority(0, 2, choiceNumber));
-									battleState = Battle.GETAICHOICE;
+									GameManager.instance.DisplayText(combatants[0].Team[choiceNumber - 1].Nickname +
+										" is already in battle. Pick a different Pokemon or return to battle.", true);
 								} //end else
 							} //end if
 							else
@@ -2582,25 +2529,33 @@ public class BattleScene : MonoBehaviour
 						case 1:
 							if (combatants[0].Team[choiceNumber - 1].Status != (int)Status.FAINT)
 							{
-								selection.SetActive(false);
-								choices.SetActive(false);
-								playerTeam.SetActive(false);
-								commandChoice.SetActive(false);
-								if (replacePokemon)
+								if (combatants[0].Team[choiceNumber - 1] != battlers[0].BattlerPokemon)
 								{
-									battlers[0].SwitchInPokemon(combatants[0].Team[choiceNumber - 1]);
-									battlers[0].JustEntered = true;
-									combatants[0].Swap(0, choiceNumber-1);
-									replacePokemon = false;
-									FillInBattlerData();
-									trainerStands[0].GetComponent<Animator>().SetTrigger("SendOut");
-									GameManager.instance.ShowPlayerBox();
-									battleState = Battle.ENDROUND;
+									selection.SetActive(false);
+									choices.SetActive(false);
+									playerTeam.SetActive(false);
+									commandChoice.SetActive(false);
+									if (replacePokemon)
+									{
+										battlers[0].SwitchInPokemon(combatants[0].Team[choiceNumber - 1]);
+										battlers[0].JustEntered = true;
+										combatants[0].Swap(0, choiceNumber - 1);
+										replacePokemon = false;
+										FillInBattlerData();
+										trainerStands[0].GetComponent<Animator>().SetTrigger("SendOut");
+										GameManager.instance.ShowPlayerBox();
+										battleState = Battle.ENDROUND;
+									} //end if
+									else
+									{
+										AddToQueue(0, commandInt, 0, choiceNumber - 1, DeterminePriority(0, 2, choiceNumber));
+										battleState = Battle.GETAICHOICE;
+									} //end else
 								} //end if
 								else
 								{
-									AddToQueue(0, commandInt, 0, choiceNumber - 1, DeterminePriority(0, 2, choiceNumber));
-									battleState = Battle.GETAICHOICE;
+									GameManager.instance.DisplayText(combatants[0].Team[choiceNumber - 1].Nickname +
+										" is already in battle. Pick a different Pokemon or return to battle.", true);
 								} //end else
 							} //end if
 							else
@@ -2795,6 +2750,7 @@ public class BattleScene : MonoBehaviour
 		foreach (Pokemon pokemon in combatants[0].Team)
 		{
 			originalOrder.Add(pokemon);
+			pokemon.CanEvolve = false;
 		} //end foreach	
 	} //end InitializeBattle(int bType)
 
@@ -2916,7 +2872,7 @@ public class BattleScene : MonoBehaviour
 				//Check for Leppa Berry/Ether/MaxEther
 				if (item == 83 || item == 148 || item == 169)
 				{
-					return int.Parse("9" + (choiceTarget-1).ToString() + subMenuChoice.ToString());
+					return int.Parse("9" + (choiceTarget - 1).ToString() + subMenuChoice.ToString());
 				} //end if
 
 				//Otherwise return battler
@@ -3072,6 +3028,51 @@ public class BattleScene : MonoBehaviour
 	} //end ApplySpecialItem(QueueEvent toProcess, bool check = false)
 
 	/***************************************
+	 * Name: QueueBattleItem
+	 * Queues the use of a battle item
+	 ***************************************/
+	public bool QueueBattleItem(int item)
+	{
+		//Switch to appropriate effect
+		switch (item)
+		{
+			//Dire Hit
+			case 66:
+				//Make sure it's usable
+				if (battlers[0].CheckEffect((int)LastingEffects.FocusEnergy))
+				{
+					return false;
+				} //end if
+				playerTeam.SetActive(false);
+				commandChoice.SetActive(false);
+				AddToQueue(0, commandInt, choiceNumber, 0, DeterminePriority(0, 1, item));
+				battleState = Battle.GETAICHOICE;
+				return true;
+			default:
+				return false;
+		} //end switch
+	} //end QueueBattleItem(int item)
+
+	/***************************************
+	 * Name: ApplyBattleItem
+	 * Applies items that only works on the
+	 * active battler
+	 ***************************************/
+	string ApplyBattleItem(int item)
+	{
+		//Switch to approriate effect
+		switch (item)
+		{
+			//Dire Hit
+			case 66: 
+				battlers[0].ApplyEffect((int)LastingEffects.FocusEnergy, 1);
+				return battlers[0].Nickname + " is getting pumped!";
+			default:
+				return DataContents.GetItemGameName(item) + " has no listed effect yet.";
+		} //end switch
+	} //end ApplyBattleItem(int item)
+
+	/***************************************
 	 * Name: ResolveFieldEntrance
 	 * Activates entrance effects of fields,
 	 * abilities, and items
@@ -3101,8 +3102,14 @@ public class BattleScene : MonoBehaviour
 	IEnumerator EntranceAbilities()
 	{
 		//Process entrance abilities
-		WriteBattleMessage("There were no abilities to process.");
-		yield return new WaitForSeconds(1.5f);
+		foreach (PokemonBattler battler in battlers)
+		{
+			if (battler.JustEntered)
+			{				
+				//yield return new WaitForSeconds(1f);
+			} //end if
+		} //end foreach
+		yield return null;
 		StartCoroutine(EntranceItems());
 	} //end EntranceAbilities
 
@@ -3114,8 +3121,15 @@ public class BattleScene : MonoBehaviour
 	IEnumerator EntranceItems()
 	{
 		//Process entrance items
-		WriteBattleMessage("There were no items to process");
-		yield return new WaitForSeconds(1.5f);
+		foreach (PokemonBattler battler in battlers)
+		{
+			if (battler.JustEntered)
+			{				
+				//yield return new WaitForSeconds(1f);
+			} //end if
+		} //end foreach
+
+		//Disable just entered
 		battlers.ForEach(pokemon => pokemon.JustEntered = false);
 
 		//Reset to beginning of round
@@ -3127,7 +3141,7 @@ public class BattleScene : MonoBehaviour
 			selectedChoice = commandChoice.transform.GetChild(commandInt).gameObject;
 			checkpoint = 4;
 		} //end if
-		//processing = false;
+		yield return null;
 	} //end EntranceItems
 
 	/***************************************
@@ -3844,6 +3858,16 @@ public class BattleScene : MonoBehaviour
 					pokemonChoice.CurrentEXP.ToString();
 				summaryScreen.transform.GetChild(0).FindChild("RemainingXP").GetComponent<Text>().text =
 					pokemonChoice.RemainingEXP.ToString();
+				if (pokemonChoice.CurrentLevel != 100)
+				{
+					summaryScreen.transform.GetChild(0).FindChild("XPBar").GetComponent<RectTransform>().localScale = new Vector3(
+						(float)(pokemonChoice.EXPForLevel - pokemonChoice.RemainingEXP) /
+						(float)pokemonChoice.EXPForLevel, 1, 1);
+				} //end if
+				else
+				{
+					summaryScreen.transform.GetChild(0).FindChild("XPBar").GetComponent<RectTransform>().localScale = new Vector3(0, 1, 1);
+				} //end else
 				SetTypeSprites(summaryScreen.transform.GetChild(0).FindChild("Types").GetChild(0).GetComponent<Image>(),
 					summaryScreen.transform.GetChild(0).FindChild("Types").GetChild(1).GetComponent<Image>(), 
 					pokemonChoice.NatSpecies);
@@ -4158,7 +4182,7 @@ public class BattleScene : MonoBehaviour
 			damageMod *= critical ? 1.5f : 1f;
 
 			//Check for held items
-			damageMod *= 1f;
+			damageMod *= ItemEffects.ItemDamageBoost(currentAttacker.Item, DataContents.GetMoveIcon(currentAttack));
 
 			//Get random modifier between 0.85 and 1
 			damageMod *= (float)(GameManager.instance.RandomInt(85, 101)) / 100f;
@@ -4385,6 +4409,11 @@ public class BattleScene : MonoBehaviour
 							trainerStands[1].GetComponent<Animator>().SetTrigger("SendOut");
 							GameManager.instance.ShowFoeBox();
 							battleField.ResetDefaultBoosts();
+
+							//Add opponent's pokemon to the player's seen list
+							GameManager.instance.GetTrainer().Seen = 
+								ExtensionMethods.AddUnique<int>(GameManager.instance.GetTrainer().Seen, battlers[1].
+									BattlerPokemon.NatSpecies);
 						} //end else if
 						yield return new WaitForSeconds(1f);
 						waitingState = Battle.PROCESSQUEUE;
@@ -4469,6 +4498,10 @@ public class BattleScene : MonoBehaviour
 					FillInBattlerData();
 					participants.Add(battlers[0].BattlerPokemon);
 					trainerStands[1].GetComponent<Animator>().SetTrigger("SendOut");
+
+					//Add opponent's pokemon to the player's seen list
+					GameManager.instance.GetTrainer().Seen = 
+						ExtensionMethods.AddUnique<int>(GameManager.instance.GetTrainer().Seen, battlers[1].BattlerPokemon.NatSpecies);
 				} //end if
 			} //end if
 			else
@@ -4509,17 +4542,18 @@ public class BattleScene : MonoBehaviour
 			for (int i = 0; i < combatants[0].Team.Count; i++)
 			{
 				int evolutionID = combatants[0].Team[i].CheckEvolution();
-				if (evolutionID != -1)
+				if (evolutionID != -1 && combatants[0].Team[i].Status != (int)Status.FAINT && combatants[0].Team[i].CanEvolve)
 				{
 					choiceNumber = i;
 					choiceTarget = evolutionID;
 					GameManager.instance.DisplayConfirm(string.Format("Do you want {0} to evolve into {1}?", 
 						combatants[0].Team[i].Nickname, DataContents.ExecuteSQL<string>("SELECT name FROM Pokemon " +
-					"WHERE rowid=" + evolutionID)), 0, false);
+							"WHERE rowid=" + evolutionID)), 0, true);
 					battleState = Battle.EVOLVEPOKEMON;
 					yield return new WaitUntil(() => battleState == Battle.ENDFIGHT);
-					yield return new WaitForSeconds(0.5f);
+					yield return new WaitForSeconds(0.6f);
 				} //end if
+				combatants[0].Team[i].CanEvolve = false;
 			} //end for
 
 			//Return team to original order
@@ -4588,7 +4622,7 @@ public class BattleScene : MonoBehaviour
 			for (int i = 0; i < combatants[0].Team.Count; i++)
 			{
 				int evolutionID = combatants[0].Team[i].CheckEvolution();
-				if (evolutionID != -1)
+				if (evolutionID != -1 && combatants[0].Team[i].Status != (int)Status.FAINT && combatants[0].Team[i].CanEvolve)
 				{
 					choiceNumber = i;
 					choiceTarget = evolutionID;
@@ -4597,8 +4631,9 @@ public class BattleScene : MonoBehaviour
 							"WHERE rowid=" + evolutionID)), 0, true);
 					battleState = Battle.EVOLVEPOKEMON;
 					yield return new WaitUntil(() => battleState == Battle.ENDFIGHT);
-					yield return new WaitForSeconds(0.5f);
+					yield return new WaitForSeconds(0.6f);
 				} //end if
+				combatants[0].Team[i].CanEvolve = false;
 			} //end for
 
 			//Return team to original order

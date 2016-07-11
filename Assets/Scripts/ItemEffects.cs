@@ -952,6 +952,16 @@ public static class ItemEffects
 			} //end else
 		} //end else if Cheri Berry, Paralyz Heal
 
+		//Dire Hit
+		else if(item == 66)
+		{
+			if (!GameManager.instance.QueueBattleItem(66))
+			{
+				GameManager.instance.DisplayText("The active Pokemon is already under Focus Energy. It won't have any effect.", true);
+			} //end if
+			return bool.FalseString;
+		} //end else if Dire Hit
+
 		//Elixir
 		else if (item == 79)
 		{
@@ -1530,5 +1540,190 @@ public static class ItemEffects
 			return false;
 		} //end else
 	} //end ApplyHappyBerry(Pokemon selectedPokemon, int EVTarget)
+
+	/***************************************
+     * Name: ItemDamageBoost
+     * Checks if the held item modifies 
+     * damage
+     ***************************************/ 
+	public static float ItemDamageBoost(int item, int moveType)
+	{
+		//Switch base don held item
+		switch (item)
+		{
+			//Black Belt
+			case 27:
+				return moveType == (int)Types.FIGHTING ? 1.2f : 1f;
+			//Blackglasses
+			case 29:
+				return moveType == (int)Types.DARK ? 1.2f : 1f;
+			//Charcoal
+			case 42:
+				return moveType == (int)Types.FIRE ? 1.2f : 1f;
+			//Dragon Fang
+			case 71:
+				return moveType == (int)Types.DRAGON ? 1.2f : 1f;
+			//Hard Stone
+			case 113:
+				return moveType == (int)Types.ROCK ? 1.2f : 1f;
+			//Magnet
+			case 163:
+				return moveType == (int)Types.ELECTRIC ? 1.2f : 1f;
+			//Metal Coat
+			case 177:
+				return moveType == (int)Types.STEEL ? 1.2f : 1f;
+			//Miracle Seed
+			case 184:
+				return moveType == (int)Types.GRASS ? 1.2f : 1f;
+			//Mystic Water
+			case 189:
+				return moveType == (int)Types.WATER ? 1.2f : 1f;
+			//Nevermeltice
+			case 190:
+				return moveType == (int)Types.ICE ? 1.2f : 1f;
+			//Poison Barb
+			case 205:
+				return moveType == (int)Types.POISON ? 1.2f : 1f;
+			//Sharp Beak
+			case 254:
+				return moveType == (int)Types.FLYING ? 1.2f : 1f;
+			//Silk Scarf
+			case 261:
+				return moveType == (int)Types.NORMAL ? 1.2f : 1f;
+			//Silverpowder
+			case 262:
+				return moveType == (int)Types.BUG ? 1.2f : 1f;
+			//Soft Sand
+			case 269:
+				return moveType == (int)Types.GROUND ? 1.2f : 1f;
+			//Spell Tag
+			case 272:
+				return moveType == (int)Types.GHOST ? 1.2f : 1f;
+			//TwistedSpoon
+			case 397:
+				return moveType == (int)Types.PSYCHIC ? 1.2f : 1f;
+			default:
+				return 1f;
+		} //end switch
+	} //end ItemDamageBoost(int item, int moveType)
+
+	/***************************************
+     * Name: PinchUseItem
+     * Checks if the held item can be used
+     * if the pokemon is in a pinch
+     ***************************************/ 
+	public static string PinchUseItem(Pokemon user)
+	{
+		//Switch to appropriate effect
+		switch (user.Item)
+		{
+			//Aspear Berry
+			case 17:
+				if (user.Status == (int)Status.FREEZE)
+				{
+					user.Status = (int)Status.HEALTHY;
+					user.StatusCount = 0;
+					return user.Nickname + " was thawed out by using its held Aspear Berry!";
+				} //end if
+				return bool.FalseString;
+			//Cheri Berry
+			case 47:
+				if (user.Status == (int)Status.PARALYZE)
+				{
+					user.Status = (int)Status.HEALTHY;
+					user.StatusCount = 0;
+					return user.Nickname + " was cured of paralysis using its held Cheri Berry!";
+				} //end if
+				return bool.FalseString;
+			//Chesto Berry
+			case 48:
+				if (user.Status == (int)Status.SLEEP)
+				{
+					user.Status = (int)Status.HEALTHY;
+					user.StatusCount = 0;
+					return user.Nickname + " woke up using its held Chesto Berry!";
+				} //end if
+				return bool.FalseString;
+			//Lum Berry
+			case 158:
+				if (user.Status != (int)Status.HEALTHY && user.Status != (int)Status.FAINT)
+				{
+					user.Status = (int)Status.HEALTHY;
+					user.StatusCount = 0;
+					return user.Nickname + " was cured of its affliction using its held Lum Berry!";
+				} //end if
+				return bool.FalseString;
+			//Pecha Berry
+			case 199:
+				if (user.Status == (int)Status.POISON)
+				{
+					user.Status = (int)Status.HEALTHY;
+					user.StatusCount = 0;
+					return user.Nickname + " was cured of its poisoning using its held Pecha Berry!";
+				} //end if
+				return bool.FalseString;
+			//Rawst Berry
+			case 226:
+				if (user.Status == (int)Status.BURN)
+				{
+					user.Status = (int)Status.HEALTHY;
+					user.StatusCount = 0;
+					return user.Nickname + "'s burn was healed using its held Pecha Berry!";
+				} //end if
+				return bool.FalseString;
+			default:
+				return bool.FalseString;
+		} //end switch
+	} //end PinchUseItem(Pokemon user)
+
+	/***************************************
+     * Name: EndRoundItem
+     * Checks if the held item can be used
+     * at the end of the round
+     ***************************************/ 
+	public static string EndRoundItem(Pokemon user)
+	{
+		//Switch to appropriate effect
+		switch (user.Item)
+		{
+			//Berry Juice
+			case 24:
+				if (user.CurrentHP < user.TotalHP / 2)
+				{
+					return "Using its held Berry Juice, " + BattleHealPokemon(user, 20);
+				} //end if
+				return bool.FalseString;
+			//Leppa Berry
+			case 148:
+				for (int i = 0; i < user.GetMoveCount(); i++)
+				{
+					//Check if any move is at 0
+					if (user.GetMovePP(i) == 0)
+					{
+						int amountRestored = ExtensionMethods.CapAtInt(10, user.GetMovePPMax(i));
+						user.SetMovePP(i, amountRestored);
+						return string.Format("Using its held Leppa Berry, {0} restored {1} by {2}!", user.Nickname,
+							DataContents.GetMoveGameName(user.GetMove(i)), amountRestored);
+					} //end if
+				} //end for
+				return bool.FalseString;
+			//Oran Berry
+			case 194:
+				if (user.CurrentHP < user.TotalHP / 2)
+				{
+					return "Using its held Oran Berry, " + BattleHealPokemon(user, 10);
+				} //end if
+				return bool.FalseString;
+			//Sitrus Berry
+			case 263:
+				if (user.CurrentHP < user.TotalHP / 2)
+				{
+					return "Using its held Sitrus Berry, " + BattleHealPokemon(user, user.TotalHP/4);
+				} //end if
+				return bool.FalseString;
+			default:
+				return bool.FalseString;
+		} //end switch
+	} //end EndRoundItem(Pokemon user)
 	#endregion
 } //end ItemEffects class

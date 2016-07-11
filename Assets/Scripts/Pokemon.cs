@@ -74,6 +74,8 @@ public class Pokemon
 	int type2;				//The secondary type (if any) of this pokemon
 	[OptionalField(VersionAdded=2)]
 	int expForLevel;		//The amount of EXP needed for the next level
+	[OptionalField(VersionAdded=2)]
+	bool canEvolve;			//Is this pokemon able to evolve at the end of battle
     #endregion
 
     #region Methods
@@ -874,6 +876,9 @@ public class Pokemon
 		GameManager.instance.DisplayText(nickname + " grew to level " + currentLevel + "!", false);
 		CalculateStats();
 
+		//Flag pokemon as evolvable
+		canEvolve = true;
+
 		//Check for any level-up moves
 		string moveList = DataContents.ExecuteSQL<string>("SELECT moves FROM Pokemon WHERE rowid=" + natSpecies);
 		string[] arrayList = moveList.Split(',');
@@ -1008,6 +1013,16 @@ public class Pokemon
 		//Calculate EXP
 		remainingEXP = CalculateRemainingEXP(currentLevel);
     } //end CalculateStats
+
+	/***************************************
+     * Name: HasMove
+     * Returns whether pokemon has the move 
+     * requested or not
+     ***************************************/
+	public bool HasMove(int moveNumber)
+	{
+		return moves.Contains(moveNumber);
+	} //end bool HasMove(int moveNumber)
 
     /***************************************
      * Name: SwitchMoves
@@ -1991,6 +2006,21 @@ public class Pokemon
 			isShiny = value;
 		} //end set
 	} //end IsShiny
+
+	/***************************************
+     * Name: CanEvolve
+     ***************************************/
+	public bool CanEvolve
+	{
+		get
+		{
+			return canEvolve;
+		} //end get
+		set
+		{
+			canEvolve = value;
+		} //end set
+	} //end CanEvolve
 
     /***************************************
      * Name: GetMarkings

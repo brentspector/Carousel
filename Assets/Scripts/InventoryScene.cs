@@ -1470,10 +1470,23 @@ public class InventoryScene : MonoBehaviour
 				//TMs
 				else if (item > 288 && item < 395)
 				{
+					//Get target move
 					string[] contents = DataContents.ExecuteSQL<string>("SELECT description FROM Items WHERE rowid=" + item).Split(',');
-					GameManager.instance.DisplayConfirm(string.Format("Are you sure you want to forget {0} and learn {1}?",
-						DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice)),
-						contents[0]), 0, false);
+
+					//Make sure the pokemon doesn't already know it
+					int TMMoveNumber = DataContents.ExecuteSQL<int>("SELECT rowid FROM Moves WHERE gameName='" + contents[0] + "'");
+					if (!GameManager.instance.GetTrainer().Team[teamSlot - 1].HasMove(TMMoveNumber))
+					{
+						GameManager.instance.DisplayConfirm(string.Format("Are you sure you want to forget {0} and learn {1}?",
+							DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice)),
+							contents[0]), 0, false);
+					} //end if
+					else
+					{
+						GameManager.instance.DisplayText(string.Format("{0} already knows {1}. It can't learn it again.",
+							GameManager.instance.GetTrainer().Team[teamSlot - 1].Nickname, contents[0]), true);
+						checkpoint = 4;
+					} //end else
 				} //end else if
 
 				//Anything else. This is what occurs when an item has no effect but is listed as usable
@@ -1538,6 +1551,9 @@ public class InventoryScene : MonoBehaviour
 			else if (checkpoint == 7)
 			{
 				playerTeam.SetActive(false);
+				selection.SetActive(false);
+				choices.SetActive(false);
+				pickMove = false;
 				checkpoint = 2;
 			} //end else if
 		} //end else if Right Mouse Button
@@ -1558,7 +1574,7 @@ public class InventoryScene : MonoBehaviour
 
 					//Set up selection box at end of frame if it doesn't fit
 					if (selection.GetComponent<RectTransform>().sizeDelta !=
-					  choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
+						choices.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta)
 					{
 						selection.SetActive(false);
 						StartCoroutine(WaitForResize());
@@ -1597,7 +1613,7 @@ public class InventoryScene : MonoBehaviour
 							GameManager.instance.DisplayText("Can't be used outside of battle.", true);
 						} //end else
 						break;
-					//Give
+						//Give
 					case 1:
 						if (GameManager.instance.GetTrainer().GetCurrentBagPocket() != 7)
 						{
@@ -1611,21 +1627,21 @@ public class InventoryScene : MonoBehaviour
 							checkpoint = 5;
 						} //end if
 						break;
-					//Toss
+						//Toss
 					case 2:
 						choices.SetActive(false);
 						selection.SetActive(false);
 						GameManager.instance.DisplayConfirm("Do you really want to throw out " +
-						DataContents.GetItemGameName(itemNumber) + "?", 1, true);
+							DataContents.GetItemGameName(itemNumber) + "?", 1, true);
 						break;
-					//Move
+						//Move
 					case 3:
 						selection.SetActive(false);
 						choices.SetActive(false);
 						switchSpot = inventorySpot;
 						checkpoint = 6;
 						break;
-					//To Free Space/Pocket
+						//To Free Space/Pocket
 					case 4:
 						if (GameManager.instance.GetTrainer().GetCurrentBagPocket() == 0)
 						{
@@ -1637,12 +1653,18 @@ public class InventoryScene : MonoBehaviour
 						} //end else
 						selection.SetActive(false);
 						choices.SetActive(false);
+						inventorySpot = 0;
+						topShown = 0;
+						bottomShown = 9;
 						checkpoint = 2;
 						break;
-					//Cancel
+						//Cancel
 					case 5:
 						selection.SetActive(false);
 						choices.SetActive(false);
+						inventorySpot = 0;
+						topShown = 0;
+						bottomShown = 9;
 						checkpoint = 2;
 						break;
 				} //end switch
@@ -1674,8 +1696,8 @@ public class InventoryScene : MonoBehaviour
 					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
 					GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 					GameManager.instance.GetTrainer().Team[teamSlot - 1].Item = itemNumber;
-					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " to " + 
-						GameManager.instance.GetTrainer().Team[teamSlot - 1].Nickname,true);
+					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
+						GameManager.instance.GetTrainer().Team[teamSlot - 1].Nickname, true);
 					checkpoint = 1;
 				} //end if
 				else
@@ -1683,12 +1705,12 @@ public class InventoryScene : MonoBehaviour
 					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
 					GameManager.instance.DisplayConfirm("Do you want to switch the held " + DataContents.GetItemGameName(
 						GameManager.instance.GetTrainer().Team[teamSlot - 1].Item) + " for " + DataContents.GetItemGameName(
-						itemNumber) + "?", 0, false);
+							itemNumber) + "?", 0, false);
 				} //end else
 			} //end else if
 
 			//Item Move Processing
-			else if(checkpoint == 6)
+			else if (checkpoint == 6)
 			{
 				GameManager.instance.GetTrainer().MoveItemLocation(inventorySpot, switchSpot);
 				inventorySpot = 0;
@@ -1824,10 +1846,23 @@ public class InventoryScene : MonoBehaviour
 				//TMs
 				else if (item > 288 && item < 395)
 				{
+					//Get target move
 					string[] contents = DataContents.ExecuteSQL<string>("SELECT description FROM Items WHERE rowid=" + item).Split(',');
-					GameManager.instance.DisplayConfirm(string.Format("Are you sure you want to forget {0} and learn {1}?",
-						DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice)),
-						contents[0]), 0, false);
+
+					//Make sure the pokemon doesn't already know it
+					int TMMoveNumber = DataContents.ExecuteSQL<int>("SELECT rowid FROM Moves WHERE gameName='" + contents[0] + "'");
+					if (!GameManager.instance.GetTrainer().Team[teamSlot - 1].HasMove(TMMoveNumber))
+					{
+						GameManager.instance.DisplayConfirm(string.Format("Are you sure you want to forget {0} and learn {1}?",
+							DataContents.GetMoveGameName(GameManager.instance.GetTrainer().Team[teamSlot - 1].GetMove(subMenuChoice)),
+							contents[0]), 0, false);
+					} //end if
+					else
+					{
+						GameManager.instance.DisplayText(string.Format("{0} already knows {1}. It can't learn it again.",
+							GameManager.instance.GetTrainer().Team[teamSlot - 1].Nickname, contents[0]), true);
+						checkpoint = 4;
+					} //end else
 				} //end else if
 
 				//Anything else. This is what occurs when an item has no effect but is listed as usable
@@ -1873,14 +1908,14 @@ public class InventoryScene : MonoBehaviour
 			} //end else if
 
 			//Team Give Processing
-			else if (checkpoint == 5)
+			else if(checkpoint == 5)
 			{
 				playerTeam.SetActive(false);
 				checkpoint = 2;
 			} //end else if
 
 			//Item Move Processing
-			else if (checkpoint == 6)
+			else if(checkpoint == 6)
 			{
 				inventorySpot = 0;
 				topShown = 0;
@@ -1892,6 +1927,9 @@ public class InventoryScene : MonoBehaviour
 			else if (checkpoint == 7)
 			{
 				playerTeam.SetActive(false);
+				selection.SetActive(false);
+				choices.SetActive(false);
+				pickMove = false;
 				checkpoint = 2;
 			} //end else if
 		} //end else if X Key
@@ -2167,6 +2205,13 @@ public class InventoryScene : MonoBehaviour
 				GameManager.instance.DisplayText("Did not switch items.", true);
 				checkpoint = 1;
 			} //end if
+
+			//Pick Move
+			else if (checkpoint == 7)
+			{
+				GameManager.instance.DisplayText("Cancelled.", true);
+				checkpoint = 4;
+			} //end else if
 		} //end else			
 	} //end ApplyConfirm(ConfirmChoice e)
 
