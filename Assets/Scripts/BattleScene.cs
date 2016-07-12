@@ -61,6 +61,7 @@ public class BattleScene : MonoBehaviour
 	bool processing = false;		//Whether a function is already processing something
 	bool pickMove = false;			//Whether the player must pick a move
 	bool replacePokemon = false;	//Whether the player must replace the active battler
+	bool optionalReplace = false;	//Whether the player is switching in a pokemon optionally
 	bool pocketChange;				//Is the pocket currently changing
 	Field battleField;				//The active battle field
 	PokemonBattler currentAttacker;	//Who is currently attacking
@@ -457,7 +458,9 @@ public class BattleScene : MonoBehaviour
 						break;
 					} //end if
 				} //end while
+				Debug.Log(randomSelection + ", " + combatants[1].Team.Count);
 				battlers[1].SwitchInPokemon(combatants[1].Team[randomSelection]);
+				Debug.Log("Switched in pokemon");
 				combatants[1].Swap(0, randomSelection);
 				battleField.ResetDefaultBoosts();
 				FillInBattlerData();
@@ -2219,6 +2222,7 @@ public class BattleScene : MonoBehaviour
 					if (moveChoice != switchChoice)
 					{					
 						combatants[0].Team[choiceNumber - 1].SwitchMoves(moveChoice, switchChoice);
+						battlers[0].UpdateActiveBattler();
 					} //end if
 
 					//Set color of background to clear
@@ -2294,7 +2298,7 @@ public class BattleScene : MonoBehaviour
 				{
 					commandChoice.SetActive(true);
 					playerTeam.SetActive(false);
-					battleState = replacePokemon ? Battle.ENDROUND : Battle.ROUNDSTART;
+					battleState = optionalReplace ? Battle.ENDROUND : Battle.ROUNDSTART;
 				} //end else if
 
 				//Pokemon submenu
@@ -2608,6 +2612,7 @@ public class BattleScene : MonoBehaviour
 					if (moveChoice != switchChoice)
 					{					
 						combatants[0].Team[choiceNumber - 1].SwitchMoves(moveChoice, switchChoice);
+						battlers[0].UpdateActiveBattler();
 					} //end if
 
 					//Set color of background to clear
@@ -2683,7 +2688,7 @@ public class BattleScene : MonoBehaviour
 				{
 					commandChoice.SetActive(true);
 					playerTeam.SetActive(false);
-					battleState = replacePokemon ? Battle.ENDROUND : Battle.ROUNDSTART;
+					battleState = optionalReplace ? Battle.ENDROUND : Battle.ROUNDSTART;
 				} //end else if
 
 				//Pokemon submenu
@@ -3045,7 +3050,91 @@ public class BattleScene : MonoBehaviour
 				} //end if
 				playerTeam.SetActive(false);
 				commandChoice.SetActive(false);
-				AddToQueue(0, commandInt, choiceNumber, 0, DeterminePriority(0, 1, item));
+				AddToQueue(0, commandInt, choiceNumber, 80, DeterminePriority(0, 1, item));
+				battleState = Battle.GETAICHOICE;
+				return true;
+			//Guard Spec
+			case 110:
+				//Make sure it's usable
+				if (fieldEffects[0][(int)FieldEffects.Mist] > 0)
+				{
+					return false;
+				} //end if
+				playerTeam.SetActive(false);
+				commandChoice.SetActive(false);
+				AddToQueue(0, commandInt, choiceNumber, 80, DeterminePriority(0, 1, item));
+				battleState = Battle.GETAICHOICE;
+				return true;
+			//X Accuracy
+			case 410:
+				//Make sure it's usable
+				if (battlers[0].GetStage(6) > 5)
+				{
+					return false;
+				} //end if
+				playerTeam.SetActive(false);
+				commandChoice.SetActive(false);
+				AddToQueue(0, commandInt, choiceNumber, 80, DeterminePriority(0, 1, item));
+				battleState = Battle.GETAICHOICE;
+				return true;
+			//X Attack
+			case 414:
+				//Make sure it's usable
+				if (battlers[0].GetStage(1) > 5)
+				{
+					return false;
+				} //end if
+				playerTeam.SetActive(false);
+				commandChoice.SetActive(false);
+				AddToQueue(0, commandInt, choiceNumber, 80, DeterminePriority(0, 1, item));
+				battleState = Battle.GETAICHOICE;
+				return true;
+			//X Defend
+			case 418:
+				//Make sure it's usable
+				if (battlers[0].GetStage(2) > 5)
+				{
+					return false;
+				} //end if
+				playerTeam.SetActive(false);
+				commandChoice.SetActive(false);
+				AddToQueue(0, commandInt, choiceNumber, 80, DeterminePriority(0, 1, item));
+				battleState = Battle.GETAICHOICE;
+				return true;
+			//X SpDef
+			case 422:
+				//Make sure it's usable
+				if (battlers[0].GetStage(5) > 5)
+				{
+					return false;
+				} //end if
+				playerTeam.SetActive(false);
+				commandChoice.SetActive(false);
+				AddToQueue(0, commandInt, choiceNumber, 80, DeterminePriority(0, 1, item));
+				battleState = Battle.GETAICHOICE;
+				return true;
+			//X Special
+			case 426:
+				//Make sure it's usable
+				if (battlers[0].GetStage(4) > 5)
+				{
+					return false;
+				} //end if
+				playerTeam.SetActive(false);
+				commandChoice.SetActive(false);
+				AddToQueue(0, commandInt, choiceNumber, 80, DeterminePriority(0, 1, item));
+				battleState = Battle.GETAICHOICE;
+				return true;
+			//X Speed
+			case 430:
+				//Make sure it's usable
+				if (battlers[0].GetStage(3) > 5)
+				{
+					return false;
+				} //end if
+				playerTeam.SetActive(false);
+				commandChoice.SetActive(false);
+				AddToQueue(0, commandInt, choiceNumber, 80, DeterminePriority(0, 1, item));
 				battleState = Battle.GETAICHOICE;
 				return true;
 			default:
@@ -3058,19 +3147,52 @@ public class BattleScene : MonoBehaviour
 	 * Applies items that only works on the
 	 * active battler
 	 ***************************************/
-	string ApplyBattleItem(int item)
+	string ApplyBattleItem(QueueEvent toProcess)
 	{
+		//Get item and targets
+		string givenTarget = toProcess.target.ToString();
+		int pokemonTarget = int.Parse(givenTarget[1].ToString());
+		int item = combatants[0].GetItem(toProcess.selection)[0];
+
 		//Switch to approriate effect
 		switch (item)
 		{
 			//Dire Hit
 			case 66: 
-				battlers[0].ApplyEffect((int)LastingEffects.FocusEnergy, 1);
-				return battlers[0].Nickname + " is getting pumped!";
+				battlers[pokemonTarget].ApplyEffect((int)LastingEffects.FocusEnergy, 1);
+				return battlers[pokemonTarget].Nickname + ". " + battlers[pokemonTarget].Nickname + " is getting pumped!";
+			//Guard Spec
+			case 110:
+				fieldEffects[0][(int)FieldEffects.Mist] = 5;
+				return battlers[pokemonTarget].Nickname + ". " + combatants[pokemonTarget].PlayerName + "'s side is covered by Mist!";
+			//X Accuracy
+			case 410:
+				battlers[pokemonTarget].SetStage(1, 6);
+				return battlers[pokemonTarget].Nickname + ". " + battlers[pokemonTarget].Nickname + "'s accuracy was boosted!";
+			//X Attack
+			case 414:
+				battlers[pokemonTarget].SetStage(1, 1);
+				return battlers[pokemonTarget].Nickname + ". " + battlers[pokemonTarget].Nickname + "'s Attack was boosted!";
+			//X Defend
+			case 418:
+				battlers[pokemonTarget].SetStage(1, 2);
+				return battlers[pokemonTarget].Nickname + ". " + battlers[pokemonTarget].Nickname + "'s Defense was boosted!";
+			//X SpDef
+			case 422:
+				battlers[pokemonTarget].SetStage(1, 5);
+				return battlers[pokemonTarget].Nickname + ". " + battlers[pokemonTarget].Nickname + "'s Special Defense was boosted!";
+			//X Special
+			case 426:
+				battlers[pokemonTarget].SetStage(1, 4);
+				return battlers[pokemonTarget].Nickname + ". " + battlers[pokemonTarget].Nickname + "'s Special Attack was boosted!";
+			//X Speed
+			case 430:
+				battlers[pokemonTarget].SetStage(1, 3);
+				return battlers[pokemonTarget].Nickname + ". " + battlers[pokemonTarget].Nickname + "'s Speed was boosted!";
 			default:
 				return DataContents.GetItemGameName(item) + " has no listed effect yet.";
 		} //end switch
-	} //end ApplyBattleItem(int item)
+	} //end ApplyBattleItem(QueueEvent toProcess)
 
 	/***************************************
 	 * Name: ResolveFieldEntrance
@@ -4112,6 +4234,31 @@ public class BattleScene : MonoBehaviour
 	} //end FillPartyLineup
 
 	/***************************************
+	 * Name: ProcessFieldEndEffects
+	 * Apply any end of round effects or
+	 * resets to field effects
+	 ***************************************/
+	IEnumerator ProcessFieldEndEffects()
+	{
+		//Loop through field effects
+		for(int i = 0; i < fieldEffects.Count; i++)
+		{
+			//Check for Water Sport
+			if (fieldEffects[i][(int)FieldEffects.WaterSport] > 0)
+			{
+				fieldEffects[i][(int)FieldEffects.WaterSport]--;
+				if (fieldEffects[i][(int)FieldEffects.WaterSport] == 0)
+				{
+					WriteBattleMessage("The Water Sport dried up!");
+					yield return new WaitForSeconds(0.5f);
+				} //end if
+			} //end if				
+		} //end for
+		battleState = Battle.ENDROUND;
+		yield return null;
+	} //end ProcessFieldEndEffects
+
+	/***************************************
 	 * Name: ProcessAttack
 	 * Processes effect of an attack
 	 ***************************************/
@@ -4128,6 +4275,9 @@ public class BattleScene : MonoBehaviour
 
 		//Get move damage
 		int moveDamage = DataContents.GetMoveDamage(currentAttack);
+
+		//Get move type
+		int moveType = DataContents.GetMoveIcon(currentAttacker.GetMove(toProcess.selection));
 
 		//Decrease PP of attack used
 		currentAttacker.SetMovePP(toProcess.selection, currentAttacker.GetMovePP(toProcess.selection) - 1);
@@ -4150,8 +4300,7 @@ public class BattleScene : MonoBehaviour
 		if (moveCategory != (int)Categories.Status)
 		{
 			//Check for typing
-			typeMod = battlers[toProcess.target].CheckDefenderTyping(DataContents.GetMoveIcon(currentAttacker.
-			GetMove(toProcess.selection)), currentAttacker);
+			typeMod = battlers[toProcess.target].CheckDefenderTyping(moveType, currentAttacker);
 			if (typeMod == 0)
 			{
 				WriteBattleMessage("But it had no effect...");
@@ -4161,7 +4310,7 @@ public class BattleScene : MonoBehaviour
 			//Check for accuracy
 			if (!battlers[toProcess.target].CheckAccuracy(DataContents.GetMoveAccuracy(currentAttacker.
 			GetMove(toProcess.selection)), currentAttacker.GetStage(6), DataContents.GetMoveIcon(
-				   currentAttack), DataContents.GetMoveCategory(currentAttack), false))
+				    currentAttack), DataContents.GetMoveCategory(currentAttack), false))
 			{
 				WriteBattleMessage(currentAttacker.Nickname + "'s attack missed!");
 				return 0;
@@ -4193,12 +4342,19 @@ public class BattleScene : MonoBehaviour
 			//Decide attack and defence based on move category
 			if (moveCategory == (int)Categories.Physical)
 			{
-				damage *= ((float)currentAttacker.Attack / (float)battlers[toProcess.target].Defense);
+				damage *= ((float)currentAttacker.GetAttack(critical) / (float)battlers[toProcess.target].GetDefense(critical));
 			} //end if
 			else
 			{
-				damage *= ((float)currentAttacker.SpecialA / (float)battlers[toProcess.target].SpecialD);
+				damage *= ((float)currentAttacker.GetSpecialAttack(critical) / (float)battlers[toProcess.target].
+					GetSpecialDefense(critical));
 			} //end else
+
+			//Adjust base damage
+			if (fieldEffects[0][(int)FieldEffects.WaterSport] > 0 && moveType == (int)Types.FIRE)
+			{
+				moveDamage = moveDamage / 3;
+			} //end if
 
 			//Modify damage based on base, then add 2
 			damage = damage * moveDamage + 2;
@@ -4207,9 +4363,33 @@ public class BattleScene : MonoBehaviour
 			damage = (int)(damage * damageMod);
 
 			//Return
-			return (int)damage;
+			return ExtensionMethods.BindToInt((int)damage, 1);
 		} //end if
-		return 0;
+
+		//Status effect
+		else
+		{
+			//Switch to appropriate effect
+			switch (currentAttack)
+			{
+				//Water Sport
+				case 612:
+					if (fieldEffects[0][(int)FieldEffects.WaterSport] == 0)
+					{
+						fieldEffects[0][(int)FieldEffects.WaterSport] = 5;
+						fieldEffects[1][(int)FieldEffects.WaterSport] = 5;
+						WriteBattleMessage("Fire attacks are weakened!");
+					} //end if
+					else
+					{
+						WriteBattleMessage("The field is still wet...");
+					} //end else
+					break;
+			} //end switch
+
+			//Return no damage
+			return 0;
+		} //end else
 	} //end ProcessAttack(QueueEvent toProcess)
 
 	/***************************************
@@ -4372,7 +4552,7 @@ public class BattleScene : MonoBehaviour
 						currentAttacker = null;
 						break;
 					case 1:
-						if (queue[i].target < 900)
+						if (queue[i].target < 80)
 						{
 							int item = combatants[queue[i].battler].GetItem(queue[i].selection)[0];
 							string effect = ItemEffects.BattleUseOnPokemon(combatants[queue[i].battler].Team[queue[i].target], 
@@ -4383,6 +4563,13 @@ public class BattleScene : MonoBehaviour
 							FillInBattlerData();
 							UpdateDisplayedTeam();
 						} //end if
+						else if (queue[i].target < 900)
+						{
+							string effect = ApplyBattleItem(queue[i]);
+							WriteBattleMessage(string.Format("{0} used {1} on {2}", combatants[queue[i].battler].PlayerName,
+								DataContents.GetItemGameName(combatants[queue[i].battler].GetItem(queue[i].selection)[0]), 
+								effect));
+						} //end else if
 						else
 						{
 							string effect = ApplySpecialItem(queue[i]);
@@ -4390,6 +4577,7 @@ public class BattleScene : MonoBehaviour
 								DataContents.GetItemGameName(combatants[queue[i].battler].GetItem(queue[i].selection)[0]), 
 								effect));
 						} //end else
+						yield return new WaitForSeconds(0.5f);
 						break;
 					case 2:
 						WriteBattleMessage(string.Format("That's enough, {0}! Go, {1}!", battlers[queue[i].battler].Nickname,
@@ -4442,6 +4630,11 @@ public class BattleScene : MonoBehaviour
 	 ***************************************/
 	IEnumerator ProcessEndOfRound()
 	{
+		//Process field effects
+		battleState = Battle.RESOLVEEFFECTS;
+		StartCoroutine(ProcessFieldEndEffects());
+		yield return new WaitUntil(() => battleState == Battle.ENDROUND);
+
 		//Reset battler effects
 		for (int i = 0; i < battlers.Count; i++)
 		{
@@ -4482,6 +4675,7 @@ public class BattleScene : MonoBehaviour
 						{
 							combatants[0].Team[choiceTarget-1].PerformLevelUp();
 							yield return new WaitUntil(() => battleState == Battle.ENDROUND);
+							battlers[0].UpdateActiveBattler();
 							overflow = combatants[0].Team[choiceTarget-1].GiveEXP(overflow);	
 						} //end if
 						yield return new WaitForSeconds(1f);
@@ -4564,8 +4758,7 @@ public class BattleScene : MonoBehaviour
 				GameManager.instance.GetTrainer().Swap(i, position);
 			} //end for
 
-			//Heal team and return to main
-			combatants[0].HealTeam();
+			//Return to main
 			GameManager.instance.LoadScene("MainGame", true);
 		} //end if
 		else if (condition == 1)
@@ -4637,15 +4830,14 @@ public class BattleScene : MonoBehaviour
 			} //end for
 
 			//Return team to original order
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < originalOrder.Count; i++)
 			{
 				//Find the pokemon that matches
 				int position = combatants[0].Team.FindIndex(pokemon => pokemon.PersonalID == originalOrder[i].PersonalID);
 				GameManager.instance.GetTrainer().Swap(i, position);
 			} //end for
 
-			//Heal team and return to main
-			combatants[0].HealTeam();
+			//Return to main
 			GameManager.instance.LoadScene("MainGame", true);
 		} //end else if			
 	} //end ProcessEndOfBattle(int condition)
@@ -4894,13 +5086,13 @@ public class BattleScene : MonoBehaviour
 
 			//Switch AI
 			else if (battleState == Battle.AIPICKPOKEMON)
-			{
+			{				
 				playerTeam.SetActive(true);
 				selectedChoice = playerTeam.transform.FindChild("Pokemon1").gameObject;
 				playerTeam.transform.FindChild("PartyInstructions").GetChild(0).GetComponent<Text>().text = 
 					"Choose a Pokemon to switch in.";
 				choiceNumber = 1;
-				replacePokemon = true;
+				optionalReplace = true;
 				battleState = Battle.SELECTPOKEMON;
 			} //end else if
 

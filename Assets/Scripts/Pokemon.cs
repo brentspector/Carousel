@@ -873,7 +873,7 @@ public class Pokemon
 	{
 		//Add one level
 		currentLevel++;
-		GameManager.instance.DisplayText(nickname + " grew to level " + currentLevel + "!", false);
+		GameManager.instance.DisplayText(nickname + " grew to level " + currentLevel + "!", true);
 		CalculateStats();
 
 		//Flag pokemon as evolvable

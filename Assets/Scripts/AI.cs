@@ -188,6 +188,9 @@ public static class PrizeList
 						"Pokemon with love!");
 				} //end else
 				break;
+			default:
+				GameManager.instance.WriteBattleMessage("This person has nothing to say about losing.");
+				break;
 		} //end switch
 	} //end LosingSpeech(Trainer player, int opponent)
 
@@ -417,6 +420,10 @@ public static class PrizeList
 					GameManager.instance.WriteBattleMessage("You have scored your first win! You have earned " + points + " points!");
 				} //end else
 				break;
+			default:
+				GameManager.instance.WriteBattleMessage("You got 50 points for winning!");
+				player.PlayerPoints += 50;
+				break;
 		} //end switch
 	} //end PointsPrize(Trainer player, int opponent)
 
@@ -610,6 +617,9 @@ public static class PrizeList
 					GameManager.instance.WriteBattleMessage("You were given a Mega Ring! Unlock the hiddne potential in your " +
 						"loyal battle partners!");
 				} //end else
+				break;
+			default:
+				GameManager.instance.WriteBattleMessage("You did not gain any items for this victory.");
 				break;
 		} //end switch
 	} //end ItemsPrize(Trainer player, int opponent)

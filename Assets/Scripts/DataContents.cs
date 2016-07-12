@@ -1203,8 +1203,9 @@ public enum ObtainTypeEnum
     Gift    = 3,
     Code    = 4,
     Function= 5,
-    Unknown = 6,
-    COUNT   = 7
+	Starter = 6,
+    Unknown = 7,
+    COUNT   = 8
 } //end ObtainTypeEnum enum
 
 /***************************************************************************************** 
@@ -1222,8 +1223,9 @@ public enum ObtainFromEnum
     MysteryEvent = 1,
     RandomTeam   = 2,
     Debug        = 3,
-    UnknownSource= 4,
-    COUNT        = 5
+	Introduction = 4,
+    UnknownSource= 5,
+    COUNT        = 6
 } //end ObtainFromEnum enum
 
 /***************************************************************************************** 

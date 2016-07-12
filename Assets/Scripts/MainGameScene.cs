@@ -20,6 +20,7 @@ public class MainGameScene : MonoBehaviour
 	{
 		HOME, 
 		GYMBATTLE,
+		KALOSGYMBATTLE,
 		TEAM,
 	    POKEMONSUBMENU,
 	    POKEMONSUMMARY,
@@ -127,6 +128,10 @@ public class MainGameScene : MonoBehaviour
 				buttonMenu.transform.FindChild("Debug").gameObject.SetActive(true);
 				buttonMenu.transform.FindChild("Quit").GetComponent<Button>().navigation = Navigation.defaultNavigation;
 			} //end if
+			else
+			{
+				buttonMenu.transform.FindChild("Training").GetComponent<Button>().navigation = Navigation.defaultNavigation;
+			} //end else
 
 			//Disable screens
 			gymBattle.SetActive(false);
@@ -191,7 +196,25 @@ public class MainGameScene : MonoBehaviour
 					initialize = true;
 					buttonMenu.SetActive(false);
 					gymBattle.SetActive(true);
-					EventSystem.current.SetSelectedGameObject(gymBattle.transform.GetChild(0).GetChild(0).
+					gymBattle.transform.GetChild(0).gameObject.SetActive(true);
+					gymBattle.transform.GetChild(1).gameObject.SetActive(false);
+					EventSystem.current.SetSelectedGameObject(gymBattle.transform.GetChild(0).GetChild(0).gameObject);
+				} //end if
+
+				//Get player input
+				GetInput();
+			} //end else if
+
+			//Kalos Gym battles
+			else if (gameState == MainGame.KALOSGYMBATTLE)
+			{
+				//Initialize only once
+				if (!initialize)
+				{
+					initialize = true;
+					gymBattle.transform.GetChild(0).gameObject.SetActive(false);
+					gymBattle.transform.GetChild(1).gameObject.SetActive(true);
+					EventSystem.current.SetSelectedGameObject(gymBattle.transform.GetChild(1).GetChild(0).
 						GetChild(0).gameObject);
 				} //end if
 
@@ -1622,7 +1645,7 @@ public class MainGameScene : MonoBehaviour
 			} //end else if Main Game Home
 
 			//Gym Battle 
-			else if (gameState == MainGame.GYMBATTLE)
+			else if (gameState == MainGame.GYMBATTLE || gameState == MainGame.KALOSGYMBATTLE)
 			{
 				PointerEventData eventData = new PointerEventData(EventSystem.current);
 				eventData.position = Input.mousePosition;
@@ -1777,7 +1800,7 @@ public class MainGameScene : MonoBehaviour
 			} //end else if Main Game Home
 
 			//Gym Battle 
-			else if (gameState == MainGame.GYMBATTLE)
+			else if (gameState == MainGame.GYMBATTLE || gameState == MainGame.KALOSGYMBATTLE)
 			{
 				PointerEventData eventData = new PointerEventData(EventSystem.current);
 				eventData.position = Input.mousePosition;
@@ -2177,6 +2200,16 @@ public class MainGameScene : MonoBehaviour
 				gameState = MainGame.HOME;
 			} //end else if Gym Battles
 
+			//Kalos Gym Battles
+			else if (gameState == MainGame.KALOSGYMBATTLE)
+			{
+				gymBattle.transform.GetChild(0).gameObject.SetActive(true);
+				gymBattle.transform.GetChild(1).gameObject.SetActive(false);
+				EventSystem.current.SetSelectedGameObject(gymBattle.transform.GetChild(0).GetChild(0).gameObject);
+				gameState = MainGame.GYMBATTLE;
+				initialize = false;
+			} //end else if Kalos Gym Battles
+
 			//Trainer Card
 			else if (gameState == MainGame.TRAINERCARD)
 			{
@@ -2501,6 +2534,16 @@ public class MainGameScene : MonoBehaviour
 				EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
 				gameState = MainGame.HOME;
 			} //end else if Gym Battles
+
+			//Kalos Gym Battles
+			else if (gameState == MainGame.KALOSGYMBATTLE)
+			{
+				gymBattle.transform.GetChild(0).gameObject.SetActive(true);
+				gymBattle.transform.GetChild(1).gameObject.SetActive(false);
+				EventSystem.current.SetSelectedGameObject(gymBattle.transform.GetChild(0).GetChild(0).gameObject);
+				gameState = MainGame.GYMBATTLE;
+				initialize = false;
+			} //end else if Kalos Gym Battles
 
 			//Trainer Card
 			else if (gameState == MainGame.TRAINERCARD)
@@ -3149,6 +3192,7 @@ public class MainGameScene : MonoBehaviour
 	
 	    //Set the new state
 	    gameState = newGameState; 
+		initialize = false;
 	} //end SetGameState(MainGame newGameState)
 
     /***************************************
@@ -3452,7 +3496,7 @@ public class MainGameScene : MonoBehaviour
                     int.Parse(pokemonRightRegion.transform.FindChild ("Level").GetComponent<InputField> ().text), 1, 100),
                 pokemonRightRegion.transform.FindChild ("Item").GetComponent<Dropdown> ().value,
                 pokemonRightRegion.transform.FindChild ("Ball").GetComponent<Dropdown> ().value,
-                5, 3,
+				(int)ObtainTypeEnum.Function, (int)ObtainFromEnum.Debug,
                 pokemonRightRegion.transform.FindChild ("Ability").GetComponent<Dropdown> ().value + 1,
                 pokemonRightRegion.transform.FindChild ("Gender").GetComponent<Dropdown> ().value, 
 				int.Parse (pokemonRightRegion.transform.FindChild ("Form").GetComponent<InputField>().text),

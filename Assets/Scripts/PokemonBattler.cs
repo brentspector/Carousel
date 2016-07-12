@@ -166,14 +166,14 @@ public class PokemonBattler
 	public void SwitchInPokemon(Pokemon toSwitch, bool retainStats = false)
 	{
 		//Check for Natural Cure
-		if (CheckAbility(99))
+		if (CheckAbility(99) && battler != null)
 		{
 			battler.Status = (int)Status.HEALTHY;
 			battler.StatusCount = 0;
 		} //end if
 
 		//Check for Regenerator
-		if (CheckAbility(124))
+		if (CheckAbility(124) && battler != null)
 		{
 			battler.CurrentHP += battler.CurrentHP / 3;
 		} //end if
@@ -290,7 +290,31 @@ public class PokemonBattler
 		} //end if
 		currentHP = battler.CurrentHP;
 		totalHP = battler.TotalHP;
+		attack = battler.Attack;
+		defense = battler.Defense;
+		speed = battler.Speed;
+		specialA = battler.SpecialA;
+		specialD = battler.SpecialD;
 		status = battler.Status;
+		currentLevel = battler.CurrentLevel;
+		CalculateStats();
+
+		//Initialize moves
+		for (int i = 0; i < 4; i++)
+		{
+			if (i < battler.GetMoveCount())
+			{
+				moves[i] = battler.GetMove(i);
+				ppRemaining[i] = battler.GetMovePP(i);
+				ppMax[i] = battler.GetMovePPMax(i);
+			} //end if
+			else
+			{
+				moves[i] = -1;
+				ppRemaining[i] = 0;
+				ppMax[i] = 0;
+			} //end else
+		} //end for
 	} //end UpdateActiveBattler
 
 	/***************************************
@@ -598,7 +622,15 @@ public class PokemonBattler
      ***************************************/
 	public void ProcessDefenderAttackEffect(int moveNumber)
 	{
-
+		//Bubble
+		if (moveNumber == 57)
+		{
+			//10% chance to lower defender's speed 1 stage
+			if (GameManager.instance.RandomInt(0, 9) == 0)
+			{
+				stages[3] = ExtensionMethods.BindToInt(stages[3]-1, -6);
+			} //end if
+		} //end if
 	} //end ProcessDefenderAttackEffect(int moveNumber)
 
 	/***************************************
@@ -677,6 +709,78 @@ public class PokemonBattler
 		"Base SpecialA: " + battler.SpecialA + ", Current SpecialA: " + specialA + ", " +
 		"Base SpecialD: " + battler.SpecialD + ", Current SpecialD: " + specialD);*/
 	} //end CalculateStat
+
+	/***************************************
+     * Name: GetAttack
+     * Returns the working value of the attack
+     * of the pokemon
+     ***************************************/
+	public int GetAttack(bool critical)
+	{
+		//Return non-debuff attack for critical
+		if (critical && stages[1] < 0)
+		{
+			return battler.Attack;
+		} //end if
+		else
+		{
+			return attack;
+		} //end else
+	} //end GetAttack(bool critical)
+
+	/***************************************
+     * Name: GetDefense
+     * Returns the working value of the defense
+     * of the pokemon
+     ***************************************/
+	public int GetDefense(bool critical)
+	{
+		//Return non-buff defense for critical
+		if (critical && stages[2] > 0)
+		{
+			return battler.Defense;
+		} //end if
+		else
+		{
+			return defense;
+		} //end else
+	} //end GetDefense(bool critical)
+
+	/***************************************
+     * Name: GetSpecialAttack
+     * Returns the working value of the
+     * special attack of the pokemon
+     ***************************************/
+	public int GetSpecialAttack(bool critical)
+	{
+		//Return non-debuff special attack for critical
+		if (critical && stages[4] < 0)
+		{
+			return battler.SpecialA;
+		} //end if
+		else
+		{
+			return specialA;
+		} //end else
+	} //end GetSpecialAttack(bool critical)
+
+	/***************************************
+     * Name: GetSpecialDefense
+     * Returns the working value of the 
+     * special defense of the pokemon
+     ***************************************/
+	public int GetSpecialDefense(bool critical)
+	{
+		//Return non-buff special defense for critical
+		if (critical && stages[5] > 0)
+		{
+			return battler.SpecialD;
+		} //end if
+		else
+		{
+			return specialD;
+		} //end else
+	} //end GetSpecialDefense(bool critical)
 
 	/***************************************
      * Name: GetSpeed

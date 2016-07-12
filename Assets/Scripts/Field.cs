@@ -109,8 +109,8 @@ public class Field
 	} //end ResolveFieldEntrance
 
 	/***************************************
-	 * Name: ResolveFieldEntrance
-	 * Activates entrance effects of fields
+	 * Name: ResetDefaultBoosts
+	 * Resets boosts to 0 and recalculates
 	 ***************************************/
 	public void ResetDefaultBoosts()
 	{
