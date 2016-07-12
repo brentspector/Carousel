@@ -953,7 +953,7 @@ public static class ItemEffects
 		} //end else if Cheri Berry, Paralyz Heal
 
 		//Dire Hit
-		else if(item == 66)
+		else if (item == 66)
 		{
 			if (!GameManager.instance.QueueBattleItem(66))
 			{
@@ -1127,6 +1127,16 @@ public static class ItemEffects
 				return bool.FalseString;
 			} //end else
 		} //end else if Full Restore
+
+		//Guard Spec
+		else if (item == 110)
+		{
+			if (!GameManager.instance.QueueBattleItem(110))
+			{
+				GameManager.instance.DisplayText("The active Pokemon is already under Mist. It won't have any effect.", true);
+			} //end if
+			return bool.FalseString;
+		} //end else if Guard Spec
 
 		//Heal Powder
 		else if (item == 114)
@@ -1350,6 +1360,66 @@ public static class ItemEffects
 		{
 			return BattleHealPokemon(selectedPokemon, 60, check);
 		} //end else if Soda Pop
+
+		//X Accuracy
+		else if (item == 410)
+		{
+			if (!GameManager.instance.QueueBattleItem(410))
+			{
+				GameManager.instance.DisplayText("The active Pokemon is already at maximum accuracy. It won't have any effect.", true);
+			} //end if
+			return bool.FalseString;
+		} //end else if X Accuracy
+
+		//X Attack
+		else if (item == 414)
+		{
+			if (!GameManager.instance.QueueBattleItem(414))
+			{
+				GameManager.instance.DisplayText("The active Pokemon is already at maximum Attack. It won't have any effect.", true);
+			} //end if
+			return bool.FalseString;
+		} //end else if X Attack
+
+		//X Defend
+		else if (item == 418)
+		{
+			if (!GameManager.instance.QueueBattleItem(418))
+			{
+				GameManager.instance.DisplayText("The active Pokemon is already at maximum Defense. It won't have any effect.", true);
+			} //end if
+			return bool.FalseString;
+		} //end else if X Defend
+
+		//X SpDef
+		else if (item == 422)
+		{
+			if (!GameManager.instance.QueueBattleItem(422))
+			{
+				GameManager.instance.DisplayText("The active Pokemon is already at maximum Special Defense. It won't have any effect.", true);
+			} //end if
+			return bool.FalseString;
+		} //end else if X SpDef
+
+		//X Special
+		else if (item == 426)
+		{
+			if (!GameManager.instance.QueueBattleItem(426))
+			{
+				GameManager.instance.DisplayText("The active Pokemon is already at maximum Special Attack. It won't have any effect.", true);
+			} //end if
+			return bool.FalseString;
+		} //end else if X Special
+
+		//X Speed
+		else if (item == 430)
+		{
+			if (!GameManager.instance.QueueBattleItem(430))
+			{
+				GameManager.instance.DisplayText("The active Pokemon is already at maximum Speed. It won't have any effect.", true);
+			} //end if
+			return bool.FalseString;
+		} //end else if X Speed
 
 		//Anything else. This is what occurs when an item has no effect but is listed as usable
 		else

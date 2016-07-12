@@ -624,6 +624,7 @@ public class ShopScene : MonoBehaviour
 			//Normal Processing
 			if (checkpoint == 2 || checkpoint == 5)
 			{
+				selection.SetActive(false);
 				GameManager.instance.LoadScene("MainGame", true);
 			} //end if
 
@@ -705,6 +706,7 @@ public class ShopScene : MonoBehaviour
 			//Normal Processing
 			if (checkpoint == 2 || checkpoint == 5)
 			{
+				selection.SetActive(false);
 				GameManager.instance.LoadScene("MainGame", true);
 			} //end if
 
@@ -868,7 +870,9 @@ public class ShopScene : MonoBehaviour
 				{
 					for (int i = 0; i < quantity; i++)
 					{
-						Pokemon newPokemon = new Pokemon(toDisplay[selectedItem],oType: 0, oWhere: 0);
+						bool buyShiny = GameManager.instance.RandomInt(0, 100) == 5;
+						Pokemon newPokemon = new Pokemon(toDisplay[selectedItem],oType: (int)ObtainTypeEnum.Bought, 
+							oWhere: (int)ObtainFromEnum.Shop, shiny: buyShiny);
 						GameManager.instance.GetTrainer().AddToPC(
 							GameManager.instance.GetTrainer().GetPCBox(), 0, newPokemon);
 						GameManager.instance.DisplayText("Bought " + quantity + " " + newPokemon.Nickname +
