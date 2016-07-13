@@ -527,7 +527,7 @@ public class ButtonFunctions : MonoBehaviour
 			Trainer newTrainer = new Trainer();
 			newTrainer.PlayerID = 666;
 			newTrainer.PlayerName = "Pokemon Coach";
-			newTrainer.PlayerImage = 0;
+			newTrainer.PlayerImage = 13;
 			newTrainer.EmptyTeam();
 			for(int i = 0; i < 3; i++)
 			{

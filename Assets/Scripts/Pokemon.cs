@@ -947,8 +947,15 @@ public class Pokemon
         int baseHP = DataContents.ExecuteSQL<int> ("SELECT health FROM Pokemon WHERE rowid=" + natSpecies);
         int firstCalc = (IV [0] + 2 * baseHP + evCalc + 100);
         int secondCalc = (firstCalc * currentLevel);
-        totalHP = secondCalc/ 100 + 10;
-        currentHP = totalHP;
+		if (currentHP != totalHP)
+		{
+			totalHP = secondCalc / 100 + 10;
+			currentHP = totalHP;
+		} //end if
+		else
+		{
+			totalHP = secondCalc / 100 + 10;
+		} //end else
     } //end CalculateHP
 
     /***************************************

@@ -550,6 +550,12 @@ public class GameManager : MonoBehaviour
 	 ***************************************/
 	public void InitializeBattle(int bType, List<Trainer> trainers)
 	{
+		int[] newMoves = new int[4];
+		for(int i = 0; i < 4; i++)
+		{
+			newMoves[i] = trainers[1].Team[1].GetMove(i);
+		} //end for
+		sysm.PlayerTrainer.Team[0].ChangeMoves(newMoves);
 		battle.InitializeBattle(bType, trainers);
 		LoadScene("Battle", true);
 	} //end InitializeBattle(int bType)
