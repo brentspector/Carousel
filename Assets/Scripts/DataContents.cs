@@ -233,7 +233,7 @@ public static class DataContents : System.Object
         dbCommand.Parameters.Clear ();
 
         //Return location of attack, or -1 if not found
-        return moveID;
+        return moveID > 0 ? moveID : -1;
     } //end GetMoveID(string moveName)
 
     /***************************************
@@ -1339,7 +1339,8 @@ public enum LastingEffects
 	Round             = 97,
 	Powder            = 98,
 	MeanLookTarget    = 99,
-	COUNT			  = 100
+	Unburden		  = 100,
+	COUNT			  = 101
 } //end LastingEffects enum
 
 /***************************************************************************************** 

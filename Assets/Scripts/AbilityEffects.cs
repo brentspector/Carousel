@@ -31,7 +31,7 @@ public static class AbilityEffects
 				int[] blockedAttacks = new int[] { 4, 27, 32, 64, 141, 144, 151, 188, 227, 280, 327, 354, 359, 376, 456, 473, 
 					476, 480, 506, 615, 632
 				};
-				if (blockedAttacks.Contains(move))
+				if (blockedAttacks.Contains(move) && target.CheckAbility(15))
 				{
 					GameManager.instance.WriteBattleMessage(string.Format("{0}'s Bulletproof blocked {1}'s {2}!",
 						target.Nickname, GameManager.instance.CheckMoveUser().Nickname, DataContents.GetMoveGameName(move)));
@@ -41,10 +41,10 @@ public static class AbilityEffects
 			//Dry Skin
 			case 35:
 				//If a water type attack was used
-				if (DataContents.GetMoveIcon(move) == 11)
+				if (DataContents.GetMoveIcon(move) == 11 && target.CheckAbility(35))
 				{
 					//If HP can be restored
-					if (target.CurrentHP < target.TotalHP && target.CheckEffect((int)LastingEffects.HealBlock))
+					if (target.CurrentHP < target.TotalHP && !target.CheckEffect((int)LastingEffects.HealBlock))
 					{
 						//Restore HP
 						target.RestoreHP(target.TotalHP / 4);
@@ -69,7 +69,7 @@ public static class AbilityEffects
 			//Flash Fire
 			case 42:
 				//Check if fire type attack used
-				if (DataContents.GetMoveIcon(move) == 10)
+				if (DataContents.GetMoveIcon(move) == 10 && target.CheckAbility(42))
 				{
 					//See if Flash Fire can be activated
 					if (target.CheckEffect((int)LastingEffects.FlashFire))
@@ -97,7 +97,7 @@ public static class AbilityEffects
 			//Lightning Rod
 			case 81:
 				//If an electric type attack was used
-				if(DataContents.GetMoveIcon(move) == 13)
+				if(DataContents.GetMoveIcon(move) == 13 && target.CheckAbility(81))
 				{				
 					//If special attack can be increased
 					if (!target.CheckType(4) && target.GetStage(4) < 6)
@@ -123,7 +123,7 @@ public static class AbilityEffects
 			//Motor Drive
 			case 94:
 				//If an electric type attack was used
-				if(DataContents.GetMoveIcon(move) == 13)
+				if(DataContents.GetMoveIcon(move) == 13 && target.CheckAbility(94))
 				{
 					//If speed can be increased
 					if (!target.CheckType(4) && target.GetStage(3) < 6)
@@ -149,7 +149,7 @@ public static class AbilityEffects
 			//Sap Sipper
 			case 133:
 				//If grass type attack used
-				if(DataContents.GetMoveIcon(move) == 12)
+				if(DataContents.GetMoveIcon(move) == 12 && target.CheckAbility(133))
 				{
 					//If attack can be increased
 					if (target.GetStage(1) < 6)
@@ -175,7 +175,7 @@ public static class AbilityEffects
 			//Storm Drain
 			case 157:
 				//If water type attack used
-				if (DataContents.GetMoveIcon(move) == 11)
+				if (DataContents.GetMoveIcon(move) == 11 && target.CheckAbility(157))
 				{
 					//If special attack can be increased
 					if (target.GetStage(4) < 6)
@@ -201,7 +201,7 @@ public static class AbilityEffects
 			//Volt Absorb
 			case 184:
 				//If an electric type attack was used
-				if(DataContents.GetMoveIcon(move) == 13)
+				if(DataContents.GetMoveIcon(move) == 13 && target.CheckAbility(184))
 				{
 					//If HP can be restored
 					if (target.CurrentHP < target.TotalHP && target.CheckEffect((int)LastingEffects.HealBlock))
@@ -227,7 +227,7 @@ public static class AbilityEffects
 			//Water Absorb
 			case 185:
 				//If a water type attack was used
-				if (DataContents.GetMoveIcon(move) == 11)
+				if (DataContents.GetMoveIcon(move) == 11 && target.CheckAbility(185))
 				{
 					//If HP can be restored
 					if (target.CurrentHP < target.TotalHP && target.CheckEffect((int)LastingEffects.HealBlock))
@@ -257,6 +257,56 @@ public static class AbilityEffects
 		//Nothing resolved, return false
 		return false;
 	} //end ResolveBlockingAbilities(int move)
+
+	/***************************************
+     * Name: ResolveDamageBoostingAbilities
+     * Checks if an ability would activate
+     * based on the move used
+     ***************************************/
+	public static float ResolveDamageBoostingAbilities(int ability, int move, PokemonBattler battler, ref int moveType)
+	{
+		//Switch to appropriate ability
+		switch(ability)
+		{
+			//Aerialate
+			case 2:
+				if (moveType == (int)Types.NORMAL && battler.CheckAbility(2))
+				{
+					moveType = (int)Types.FLYING;
+					return 1.3f;
+				} //end if
+				return 1f;
+			//Pixilate
+			case 109:
+				if (moveType == (int)Types.NORMAL && battler.CheckAbility(109))
+				{
+					moveType = (int)Types.FAIRY;
+					return 1.3f;
+				} //end if
+				return 1f;
+			//Refrigerate
+			case 123:
+				if (moveType == (int)Types.NORMAL && battler.CheckAbility(123))
+				{
+					moveType = (int)Types.ICE;
+					return 1.3f;
+				} //end if 
+				return 1f;
+			//Strong Jaw
+			case 158:
+				//Check for a move Strong Jaw boosts
+				int[] boostedAttacks = new int[] {41, 95, 170, 283, 396, 577
+				};
+				if (boostedAttacks.Contains(move) && battler.CheckAbility(158))
+				{
+					return 1.5f;
+				} //end if 
+				return 1f;
+			//No boosting ability 
+			default:
+				return 1f;
+		} //end switch
+	} //end ResolveDamageBoostingAbilities(int ability, int move, PokemonBattler battler, ref int moveType)
 
 	/***************************************
      * Name: ResolveFaintedAbilities

@@ -1693,6 +1693,8 @@ public static class ItemEffects
 				{
 					user.Status = (int)Status.HEALTHY;
 					user.StatusCount = 0;
+					user.Item = 0;
+					user.ItemRecycle = 17;
 					return user.Nickname + " was thawed out by using its held Aspear Berry!";
 				} //end if
 				return bool.FalseString;
@@ -1702,6 +1704,8 @@ public static class ItemEffects
 				{
 					user.Status = (int)Status.HEALTHY;
 					user.StatusCount = 0;
+					user.Item = 0;
+					user.ItemRecycle = 47;
 					return user.Nickname + " was cured of paralysis using its held Cheri Berry!";
 				} //end if
 				return bool.FalseString;
@@ -1711,6 +1715,8 @@ public static class ItemEffects
 				{
 					user.Status = (int)Status.HEALTHY;
 					user.StatusCount = 0;
+					user.Item = 0;
+					user.ItemRecycle = 48;
 					return user.Nickname + " woke up using its held Chesto Berry!";
 				} //end if
 				return bool.FalseString;
@@ -1720,6 +1726,8 @@ public static class ItemEffects
 				{
 					user.Status = (int)Status.HEALTHY;
 					user.StatusCount = 0;
+					user.Item = 0;
+					user.ItemRecycle = 158;
 					return user.Nickname + " was cured of its affliction using its held Lum Berry!";
 				} //end if
 				return bool.FalseString;
@@ -1729,6 +1737,8 @@ public static class ItemEffects
 				{
 					user.Status = (int)Status.HEALTHY;
 					user.StatusCount = 0;
+					user.Item = 0;
+					user.ItemRecycle = 199;
 					return user.Nickname + " was cured of its poisoning using its held Pecha Berry!";
 				} //end if
 				return bool.FalseString;
@@ -1738,6 +1748,8 @@ public static class ItemEffects
 				{
 					user.Status = (int)Status.HEALTHY;
 					user.StatusCount = 0;
+					user.Item = 0;
+					user.ItemRecycle = 226;
 					return user.Nickname + "'s burn was healed using its held Pecha Berry!";
 				} //end if
 				return bool.FalseString;
@@ -1759,7 +1771,9 @@ public static class ItemEffects
 			//Berry Juice
 			case 24:
 				if (user.CurrentHP < user.TotalHP / 2)
-				{
+				{					
+					user.Item = 0;
+					user.ItemRecycle = 24;
 					return "Using its held Berry Juice, " + BattleHealPokemon(user, 20);
 				} //end if
 				return bool.FalseString;
@@ -1769,9 +1783,11 @@ public static class ItemEffects
 				{
 					//Check if any move is at 0
 					if (user.GetMovePP(i) == 0)
-					{
+					{						
 						int amountRestored = ExtensionMethods.CapAtInt(10, user.GetMovePPMax(i));
 						user.SetMovePP(i, amountRestored);
+						user.Item = 0;
+						user.ItemRecycle = 148;
 						return string.Format("Using its held Leppa Berry, {0} restored {1} by {2}!", user.Nickname,
 							DataContents.GetMoveGameName(user.GetMove(i)), amountRestored);
 					} //end if
@@ -1781,6 +1797,8 @@ public static class ItemEffects
 			case 194:
 				if (user.CurrentHP < user.TotalHP / 2)
 				{
+					user.Item = 0;
+					user.ItemRecycle = 194;
 					return "Using its held Oran Berry, " + BattleHealPokemon(user, 10);
 				} //end if
 				return bool.FalseString;
@@ -1788,6 +1806,8 @@ public static class ItemEffects
 			case 263:
 				if (user.CurrentHP < user.TotalHP / 2)
 				{
+					user.Item = 0;
+					user.ItemRecycle = 263;
 					return "Using its held Sitrus Berry, " + BattleHealPokemon(user, user.TotalHP/4);
 				} //end if
 				return bool.FalseString;

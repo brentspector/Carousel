@@ -24,7 +24,8 @@ public class PokemonBattler
 	int status;				//Standard status
 	int ability;			//What ability does this pokemon currently have
 	int turnCount;			//How many turns have passed
-	int lastHPLost;			//The last mount of HP this pokemon lost
+	int lastHPLost;			//The last amount of HP this pokemon lost
+	int lastDamageDealt;	//The last amount of damage this pokemon did
 	int lastMoveUsed;		//The last attack this pokemon used
 	int sideOn;				//What side the pokemon is on
 	int item;				//What is the currently held item
@@ -242,6 +243,9 @@ public class PokemonBattler
 			effects[(int)LastingEffects.MagnetRise] = 0;
 			effects[(int)LastingEffects.MeanLook] = 0;
 			effects[(int)LastingEffects.MeanLookTarget] = -1;
+			effects[(int)LastingEffects.MultiTurn] = 0;
+			effects[(int)LastingEffects.MultiTurnUser] = 0;
+			effects[(int)LastingEffects.MultiTurnAttack] = 0;
 			effects[(int)LastingEffects.PerishSong] = 0;
 			effects[(int)LastingEffects.PerishSongUser] = 0;
 			effects[(int)LastingEffects.PowerTrick] = 0;
@@ -270,6 +274,7 @@ public class PokemonBattler
 		} //end else
 
 		//Reset these fields regardless of retain stats
+		effects[(int)LastingEffects.Unburden] = 0;
 		lastHPLost = 0;
 		lastMoveUsed = 0;
 		turnCount = 0;
@@ -608,11 +613,56 @@ public class PokemonBattler
      ***************************************/
 	public void ProcessAttackerAttackEffect(int moveNumber)
 	{
-		//Protect
-		if (moveNumber == 413)
+		//Absorb
+		if (moveNumber == 1)
 		{
-			effects[(int)LastingEffects.Protect] = 1;
+			int restore = lastDamageDealt / 2;
+			if (currentHP + restore > totalHP)
+			{
+				restore = totalHP - currentHP;
+			} //end if
+			currentHP += restore;
+			GameManager.instance.WriteBattleMessage(string.Format("{0} recovered {1} HP!", nickname, restore));
 		} //end if
+
+		//Harden
+		else if (moveNumber == 230)
+		{
+			if (stages[2] < 6)
+			{
+				SetStage(2, 2);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Defense sharply rose!");
+			} //end if
+		} //end else if
+
+		//Protect
+		else if (moveNumber == 413)
+		{
+			if (GameManager.instance.RandomInt(0, 10) < (10 / (1 + effects[(int)LastingEffects.ProtectRate])))
+			{
+				effects[(int)LastingEffects.Protect] = 1;
+				effects[(int)LastingEffects.ProtectRate]++;
+				GameManager.instance.WriteBattleMessage(nickname + " is protecting itself!");
+			} //end if
+			else
+			{
+				effects[(int)LastingEffects.Protect] = 0;
+				effects[(int)LastingEffects.ProtectRate] = 0;
+				GameManager.instance.WriteBattleMessage("But it failed!");
+			} //end else
+		} //end else if
+
+		//Take Down
+		else if (moveNumber == 566)
+		{
+			int damage = lastDamageDealt / 4;
+			if (currentHP - damage < 0)
+			{
+				damage = currentHP;
+			} //end if
+			currentHP -= damage;
+			GameManager.instance.WriteBattleMessage(string.Format("{0} lost {1} HP from recoil!", nickname, damage));
+		} //end else if
 	} //end ProcessAttackerAttackEffect(int moveNumber)
 
 	/***************************************
@@ -621,26 +671,147 @@ public class PokemonBattler
      * used against this pokemon to this pokemon
      ***************************************/
 	public void ProcessDefenderAttackEffect(int moveNumber)
-	{
-		//Bubble
-		if (moveNumber == 57)
+	{		
+		//Acid
+		if (moveNumber == 2 && !CheckAbility(140))
 		{
-			//10% chance to lower defender's speed 1 stage
-			if (GameManager.instance.RandomInt(0, 9) == 0)
+			//10% chance to lower defender's defense 1 stage
+			if (GameManager.instance.RandomInt(0, 9) == 1 && stages[2] > -6)
 			{
-				stages[3] = ExtensionMethods.BindToInt(stages[3]-1, -6);
+				stages[2] = ExtensionMethods.BindToInt(stages[2] - 1, -6);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Defense fell!");
 			} //end if
 		} //end if
+
+		//Aurora Beam
+		else if (moveNumber == 28 && !CheckAbility(140))
+		{
+			//10% chance to lower defender's attack 1 stage
+			if (GameManager.instance.RandomInt(0, 9) == 1 && stages[1] > -6)
+			{
+				stages[1] = ExtensionMethods.BindToInt(stages[1] - 1, -6);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Attack fell!");
+			} //end if
+		} //end else if
+
+		//Bite
+		else if (moveNumber == 41 && !CheckAbility(140))
+		{
+			//30% chance to flinch
+			if (GameManager.instance.RandomInt(0, 9) < 3 && effects[(int)LastingEffects.Flinch] == 0)
+			{
+				effects[(int)LastingEffects.Flinch] = 1;
+			} //end if
+		} //end else if
+
+		//Bubble
+		else if (moveNumber == 57 && !CheckAbility(140))
+		{
+			//10% chance to lower defender's speed 1 stage
+			if (GameManager.instance.RandomInt(0, 9) == 1 && stages[3] > -6)
+			{
+				stages[3] = ExtensionMethods.BindToInt(stages[3] - 1, -6);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Speed fell!");
+			} //end if
+		} //end else if
+
+		//Infestation
+		else if (moveNumber == 292)
+		{
+			if (effects[(int)LastingEffects.MultiTurn] == 0)
+			{
+				effects[(int)LastingEffects.MultiTurn] = 4 + GameManager.instance.RandomInt(0, 2);
+				effects[(int)LastingEffects.MultiTurnAttack] = 292;
+				effects[(int)LastingEffects.MultiTurnUser] = GameManager.instance.CheckMoveUser().BattlerPokemon.PersonalID;
+				GameManager.instance.WriteBattleMessage(string.Format("{0} was trapped in an infestation by {1}!", nickname, 
+					GameManager.instance.CheckMoveUser().Nickname));
+			} //end if
+		} //end else if
+
+		//Rock Tomb
+		else if (moveNumber == 455 && !CheckAbility(140))
+		{
+			//100% chance to lower defender's speed 1 stage
+			if (stages[3] > -6)
+			{
+				stages[3] = ExtensionMethods.BindToInt(stages[3] - 1, -6);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Speed fell!");
+			} //end if
+		} //end else if
+
+		//Stomp
+		else if (moveNumber == 535 && !CheckAbility(140))
+		{
+			//30% chance to flinch
+			if (GameManager.instance.RandomInt(0, 9) < 3 && effects[(int)LastingEffects.Flinch] == 0)
+			{
+				effects[(int)LastingEffects.Flinch] = 1;
+			} //end if
+		} //end else if
 	} //end ProcessDefenderAttackEffect(int moveNumber)
 
 	/***************************************
-     * Name: EndOfRoundReset
-     * Resets effects at end of round
+     * Name: ResolveOpponentLeaveField
+     * Resolves effects based on the opponent
      ***************************************/
-	public void EndOfRoundReset()
+	public void ResolveOpponentLeaveField(PokemonBattler opponent)
 	{
+		//Check for multiturn attack
+		if (effects[(int)LastingEffects.MultiTurnUser] == opponent.BattlerPokemon.PersonalID)
+		{
+			GameManager.instance.WriteBattleMessage(nickname + " was freed from the " + DataContents.GetMoveGameName(
+				effects[(int)LastingEffects.MultiTurnAttack]) + "!");
+			effects[(int)LastingEffects.MultiTurn] = 0;
+			effects[(int)LastingEffects.MultiTurnUser] = 0;
+			effects[(int)LastingEffects.MultiTurnAttack] = 0;
+		} //end if
+	} //end ResolveOpponentLeaveField(PokemonBattler opponent)
+
+	/***************************************
+     * Name: EndOfRoundResolve
+     * Resolves effects at end of round
+     ***************************************/
+	public void EndOfRoundResolve()
+	{
+		//Reset effects
 		effects[(int)LastingEffects.Protect] = 0;
-	} //end EndOfRoundReset
+		effects[(int)LastingEffects.Flinch] = 0;
+
+		//Resolve multiturn attacks
+		if (effects[(int)LastingEffects.MultiTurn] > 0)
+		{
+			//Reduce count
+			effects[(int)LastingEffects.MultiTurn]--;
+			if (effects[(int)LastingEffects.MultiTurn] > 0)
+			{
+				//Infestation
+				if (effects[(int)LastingEffects.MultiTurnAttack] == 292)
+				{
+					RemoveHP(ExtensionMethods.BindToInt(totalHP / 8, 1));
+					GameManager.instance.WriteBattleMessage(nickname + " was hurt by the infestation!");
+				} //end if
+			} //end if
+			else
+			{				
+				GameManager.instance.WriteBattleMessage(nickname + " was freed from the " + DataContents.GetMoveGameName(
+					effects[(int)LastingEffects.MultiTurnAttack]) + "!");
+				effects[(int)LastingEffects.MultiTurn] = 0;
+				effects[(int)LastingEffects.MultiTurnUser] = 0;
+				effects[(int)LastingEffects.MultiTurnAttack] = 0;
+			} //end else
+		} //end if
+
+		//Resolve held items
+		string result = ItemEffects.EndRoundItem(battler); 
+		if (result != bool.FalseString && battler.Item == 0)
+		{
+			item = 0;
+			if (CheckAbility(180))
+			{
+				effects[(int)LastingEffects.Unburden] = 1;
+			} //end if
+		} //end if
+	} //end EndOfRoundResolve
 
 	/***************************************
      * Name: RestoreHP
@@ -662,6 +833,7 @@ public class PokemonBattler
 	public void RemoveHP(int amount)
 	{
 		battler.CurrentHP -= amount;
+		lastHPLost = currentHP - battler.CurrentHP;
 		currentHP = battler.CurrentHP;
 	} //end RemoveHP(int amount)
 
@@ -724,6 +896,11 @@ public class PokemonBattler
 		} //end if
 		else
 		{
+			//Guts
+			if (CheckAbility(54) && status != (int)Status.HEALTHY && status != (int)Status.FAINT)
+			{
+				attack = (attack * 15) / 10;
+			} //end if
 			return attack;
 		} //end else
 	} //end GetAttack(bool critical)
@@ -795,7 +972,7 @@ public class PokemonBattler
 		//Apply stage effect
 		if (stages[3] < 0)
 		{
-			result /= 10 + (stages[3] * 5);
+			result /= 10 - (stages[3] * 5);
 		} //end if
 		else
 		{
@@ -864,6 +1041,12 @@ public class PokemonBattler
 		if (battler.Status == (int)Status.PARALYZE && !CheckAbility(119))
 		{
 			speed /= 4;
+		} //end if
+
+		//Check for Unburden
+		if (effects[(int)LastingEffects.Unburden] > 0)
+		{
+			speed *= 2;
 		} //end if
 		return result;
 	} //end GetSpeed
@@ -1130,6 +1313,10 @@ public class PokemonBattler
 		} //end get
 		set
 		{
+			if (item != 0 && value == 0 && CheckAbility(180))
+			{
+				effects[(int)LastingEffects.Unburden] = 1;
+			} //end if
 			item = value;
 		} //end set
 	} //end Item
@@ -1146,8 +1333,35 @@ public class PokemonBattler
 		set
 		{
 			status = value;
+			battler.Status = value;
 		} //end set
 	} //end BattlerStatus
+
+	/***************************************
+     * Name: LastHPLost
+     ***************************************/
+	public int LastHPLost
+	{
+		get
+		{
+			return lastHPLost;
+		} //end get
+	} //end LastHPLost
+
+	/***************************************
+     * Name: LastDamageDealt
+     ***************************************/
+	public int LastDamageDealt
+	{
+		get
+		{
+			return lastDamageDealt;
+		} //end get
+		set
+		{
+			lastDamageDealt = value;
+		} //end set
+	} //end LastDamageDealt
 
 	/***************************************
      * Name: Nickname
