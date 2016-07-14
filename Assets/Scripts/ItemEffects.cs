@@ -1682,74 +1682,80 @@ public static class ItemEffects
      * Checks if the held item can be used
      * if the pokemon is in a pinch
      ***************************************/ 
-	public static string PinchUseItem(Pokemon user)
+	public static string PinchUseItem(PokemonBattler user)
 	{
 		//Switch to appropriate effect
 		switch (user.Item)
 		{
 			//Aspear Berry
 			case 17:
-				if (user.Status == (int)Status.FREEZE)
+				if (user.BattlerStatus == (int)Status.FREEZE)
 				{
-					user.Status = (int)Status.HEALTHY;
-					user.StatusCount = 0;
+					user.BattlerStatus = (int)Status.HEALTHY;
+					user.BattlerPokemon.StatusCount = 0;
 					user.Item = 0;
-					user.ItemRecycle = 17;
+					user.BattlerPokemon.Item = 0;
+					user.BattlerPokemon.ItemRecycle = 17;
 					return user.Nickname + " was thawed out by using its held Aspear Berry!";
 				} //end if
 				return bool.FalseString;
 			//Cheri Berry
 			case 47:
-				if (user.Status == (int)Status.PARALYZE)
+				if (user.BattlerStatus == (int)Status.PARALYZE)
 				{
-					user.Status = (int)Status.HEALTHY;
-					user.StatusCount = 0;
+					user.BattlerStatus = (int)Status.HEALTHY;
+					user.BattlerPokemon.StatusCount = 0;
 					user.Item = 0;
-					user.ItemRecycle = 47;
+					user.BattlerPokemon.Item = 0;
+					user.BattlerPokemon.ItemRecycle = 47;
 					return user.Nickname + " was cured of paralysis using its held Cheri Berry!";
 				} //end if
 				return bool.FalseString;
 			//Chesto Berry
 			case 48:
-				if (user.Status == (int)Status.SLEEP)
+				if (user.BattlerStatus == (int)Status.SLEEP)
 				{
-					user.Status = (int)Status.HEALTHY;
-					user.StatusCount = 0;
+					user.BattlerStatus = (int)Status.HEALTHY;
+					user.BattlerPokemon.StatusCount = 0;
 					user.Item = 0;
-					user.ItemRecycle = 48;
+					user.BattlerPokemon.Item = 0;
+					user.BattlerPokemon.ItemRecycle = 48;
 					return user.Nickname + " woke up using its held Chesto Berry!";
 				} //end if
 				return bool.FalseString;
 			//Lum Berry
 			case 158:
-				if (user.Status != (int)Status.HEALTHY && user.Status != (int)Status.FAINT)
+				if (user.BattlerStatus != (int)Status.HEALTHY && user.BattlerStatus != (int)Status.FAINT)
 				{
-					user.Status = (int)Status.HEALTHY;
-					user.StatusCount = 0;
+					user.BattlerStatus = (int)Status.HEALTHY;
+					user.BattlerPokemon.StatusCount = 0;
 					user.Item = 0;
-					user.ItemRecycle = 158;
+					user.BattlerPokemon.Item = 0;
+					user.BattlerPokemon.ItemRecycle = 158;
 					return user.Nickname + " was cured of its affliction using its held Lum Berry!";
 				} //end if
 				return bool.FalseString;
 			//Pecha Berry
 			case 199:
-				if (user.Status == (int)Status.POISON)
+				if (user.BattlerStatus == (int)Status.POISON)
 				{
-					user.Status = (int)Status.HEALTHY;
-					user.StatusCount = 0;
+					user.BattlerStatus = (int)Status.HEALTHY;
+					user.BattlerPokemon.StatusCount = 0;
 					user.Item = 0;
-					user.ItemRecycle = 199;
+					user.BattlerPokemon.Item = 0;
+					user.BattlerPokemon.ItemRecycle = 199;
 					return user.Nickname + " was cured of its poisoning using its held Pecha Berry!";
 				} //end if
 				return bool.FalseString;
 			//Rawst Berry
 			case 226:
-				if (user.Status == (int)Status.BURN)
+				if (user.BattlerStatus == (int)Status.BURN)
 				{
-					user.Status = (int)Status.HEALTHY;
-					user.StatusCount = 0;
+					user.BattlerStatus = (int)Status.HEALTHY;
+					user.BattlerPokemon.StatusCount = 0;
 					user.Item = 0;
-					user.ItemRecycle = 226;
+					user.BattlerPokemon.Item = 0;
+					user.BattlerPokemon.ItemRecycle = 226;
 					return user.Nickname + "'s burn was healed using its held Pecha Berry!";
 				} //end if
 				return bool.FalseString;
@@ -1763,7 +1769,7 @@ public static class ItemEffects
      * Checks if the held item can be used
      * at the end of the round
      ***************************************/ 
-	public static string EndRoundItem(Pokemon user)
+	public static string EndRoundItem(PokemonBattler user)
 	{
 		//Switch to appropriate effect
 		switch (user.Item)
@@ -1773,13 +1779,13 @@ public static class ItemEffects
 				if (user.CurrentHP < user.TotalHP / 2)
 				{					
 					user.Item = 0;
-					user.ItemRecycle = 24;
-					return "Using its held Berry Juice, " + BattleHealPokemon(user, 20);
+					user.BattlerPokemon.ItemRecycle = 24;
+					return "Using its held Berry Juice, " + BattleHealPokemon(user.BattlerPokemon, 20);
 				} //end if
 				return bool.FalseString;
 			//Leppa Berry
 			case 148:
-				for (int i = 0; i < user.GetMoveCount(); i++)
+				for (int i = 0; i < user.BattlerPokemon.GetMoveCount(); i++)
 				{
 					//Check if any move is at 0
 					if (user.GetMovePP(i) == 0)
@@ -1787,7 +1793,7 @@ public static class ItemEffects
 						int amountRestored = ExtensionMethods.CapAtInt(10, user.GetMovePPMax(i));
 						user.SetMovePP(i, amountRestored);
 						user.Item = 0;
-						user.ItemRecycle = 148;
+						user.BattlerPokemon.ItemRecycle = 148;
 						return string.Format("Using its held Leppa Berry, {0} restored {1} by {2}!", user.Nickname,
 							DataContents.GetMoveGameName(user.GetMove(i)), amountRestored);
 					} //end if
@@ -1798,8 +1804,8 @@ public static class ItemEffects
 				if (user.CurrentHP < user.TotalHP / 2)
 				{
 					user.Item = 0;
-					user.ItemRecycle = 194;
-					return "Using its held Oran Berry, " + BattleHealPokemon(user, 10);
+					user.BattlerPokemon.ItemRecycle = 194;
+					return "Using its held Oran Berry, " + BattleHealPokemon(user.BattlerPokemon, 10);
 				} //end if
 				return bool.FalseString;
 			//Sitrus Berry
@@ -1807,8 +1813,8 @@ public static class ItemEffects
 				if (user.CurrentHP < user.TotalHP / 2)
 				{
 					user.Item = 0;
-					user.ItemRecycle = 263;
-					return "Using its held Sitrus Berry, " + BattleHealPokemon(user, user.TotalHP/4);
+					user.BattlerPokemon.ItemRecycle = 263;
+					return "Using its held Sitrus Berry, " + BattleHealPokemon(user.BattlerPokemon, user.TotalHP/4);
 				} //end if
 				return bool.FalseString;
 			default:
