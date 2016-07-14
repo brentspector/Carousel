@@ -544,6 +544,16 @@ public class GameManager : MonoBehaviour
 	} //end QueueBattleItem(int item)
 
 	/***************************************
+	 * Name: AdjustTargetHealth
+	 * Allows adjustment of a battler for 
+	 * effects outside combat (Leech Seed)
+	 ***************************************/
+	public void AdjustTargetHealth(int battlerTarget, int amount)
+	{
+		battle.AdjustTargetHealth(battlerTarget, amount);
+	} //end AdjustTargetHealth(int battlerTarget, int amount)
+
+	/***************************************
 	 * Name: InitializeBattle
 	 * Sets battle as a Single, Double, Triple
 	 * or other type and the trainers 
@@ -555,8 +565,8 @@ public class GameManager : MonoBehaviour
 		{
 			newMoves[i] = trainers[1].Team[1].GetMove(i);
 		} //end for
-		sysm.PlayerTrainer.Team[0].ChangeMoves(newMoves);
 		battle.InitializeBattle(bType, trainers);
+		sysm.PlayerTrainer.Team[0].ChangeMoves(new int[]{ 605 }, 3);
 		LoadScene("Battle", true);
 	} //end InitializeBattle(int bType)
     #endregion

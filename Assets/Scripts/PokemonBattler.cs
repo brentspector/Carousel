@@ -193,6 +193,7 @@ public class PokemonBattler
 		gender = battler.Gender;
 		currentLevel = battler.CurrentLevel;
 		nickname = battler.Nickname;
+		turnCount = 0;
 
 		//Initialize moves
 		for (int i = 0; i < 4; i++)
@@ -616,6 +617,7 @@ public class PokemonBattler
 		//Absorb
 		if (moveNumber == 1)
 		{
+			//Recover half the damage dealt
 			int restore = lastDamageDealt / 2;
 			if (currentHP + restore > totalHP)
 			{
@@ -628,16 +630,65 @@ public class PokemonBattler
 		//Harden
 		else if (moveNumber == 230)
 		{
+			//Increase defense 2 stages
 			if (stages[2] < 6)
 			{
 				SetStage(2, 2);
 				GameManager.instance.WriteBattleMessage(nickname + "'s Defense sharply rose!");
+			} //end if
+			else
+			{
+				GameManager.instance.WriteBattleMessage("...but nothing happened.");
+			} //end else
+		} //end else if
+
+		//Hone Claws
+		else if (moveNumber == 267)
+		{
+			//Increase attack 1 stage
+			if (stages[1] < 6)
+			{
+				//Increase accuracy 1 stage
+				if (stages[6] < 6)
+				{
+					SetStage(1, 1);
+					SetStage(1, 6);
+					GameManager.instance.WriteBattleMessage(nickname + "'s Attack and accuracy rose!");
+				} //end if
+				else
+				{
+					SetStage(1, 1);
+					GameManager.instance.WriteBattleMessage(nickname + "'s Attack rose!");
+				} //end else
+			} //end if
+
+			//Increase accuracy 1 stage
+			else if (stages[6] < 6)
+			{
+				SetStage(1, 6);
+				GameManager.instance.WriteBattleMessage(nickname + "'s accuracy rose!");
+			} //end else if
+			else
+			{
+				GameManager.instance.WriteBattleMessage("...but nothing happened.");
+			} //end else
+		} //end else if
+
+		//Power-Up Punch
+		else if (moveNumber == 410)
+		{
+			//Increase attack 1 stage
+			if (stages[1] < 6)
+			{
+				SetStage(1, 1);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Attack rose!");
 			} //end if
 		} //end else if
 
 		//Protect
 		else if (moveNumber == 413)
 		{
+			//Determine if it protects itself
 			if (GameManager.instance.RandomInt(0, 10) < (10 / (1 + effects[(int)LastingEffects.ProtectRate])))
 			{
 				effects[(int)LastingEffects.Protect] = 1;
@@ -655,6 +706,7 @@ public class PokemonBattler
 		//Take Down
 		else if (moveNumber == 566)
 		{
+			//25% recoil
 			int damage = lastDamageDealt / 4;
 			if (currentHP - damage < 0)
 			{
@@ -715,6 +767,24 @@ public class PokemonBattler
 			} //end if
 		} //end else if
 
+		//Bulldoze
+		else if (moveNumber == 62 && !CheckAbility(140))
+		{
+			//100% chance to lower defender's speed 1 stage
+			if (stages[3] > -6)
+			{
+				stages[3] = ExtensionMethods.BindToInt(stages[3] - 1, -6);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Speed fell!");
+			} //end if
+		} //end else if
+
+		//Fake Out
+		else if (moveNumber == 160)
+		{
+			//100% chance to flinch
+			effects[(int)LastingEffects.Flinch] = 1;
+		} //end else if
+
 		//Infestation
 		else if (moveNumber == 292)
 		{
@@ -725,6 +795,41 @@ public class PokemonBattler
 				effects[(int)LastingEffects.MultiTurnUser] = GameManager.instance.CheckMoveUser().BattlerPokemon.PersonalID;
 				GameManager.instance.WriteBattleMessage(string.Format("{0} was trapped in an infestation by {1}!", nickname, 
 					GameManager.instance.CheckMoveUser().Nickname));
+			} //end if
+		} //end else if
+
+		//Gastro Acid
+		else if (moveNumber == 207)
+		{
+			if(effects[(int)LastingEffects.GastroAcid] == 0)
+			{
+				effects[(int)LastingEffects.GastroAcid] = 1;
+				GameManager.instance.WriteBattleMessage(nickname + "'s ability was suppressed!");
+			} //end if
+		} //end else if
+
+		//Leech Seed
+		else if (moveNumber == 311)
+		{
+			if (effects[(int)LastingEffects.LeechSeed] != 0 && !types.Contains((int)Types.GRASS))
+			{
+				effects[(int)LastingEffects.LeechSeed] = GameManager.instance.CheckMoveUser().SideOn;
+				GameManager.instance.WriteBattleMessage(nickname + " was seeded!");
+			} //end if
+			else
+			{
+				GameManager.instance.WriteBattleMessage(nickname + " evaded the attack!");
+			} //end else
+		} //end else if
+
+		//Leer
+		else if (moveNumber == 312)
+		{
+			//100% chance to lower defender's defense 1 stage
+			if (stages[2] > -6)
+			{
+				stages[2] = ExtensionMethods.BindToInt(stages[2] - 1, -6);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Defense fell!");
 			} //end if
 		} //end else if
 
@@ -773,6 +878,9 @@ public class PokemonBattler
      ***************************************/
 	public void EndOfRoundResolve()
 	{
+		//Increment turn count
+		turnCount++;
+
 		//Reset effects
 		effects[(int)LastingEffects.Protect] = 0;
 		effects[(int)LastingEffects.Flinch] = 0;
@@ -801,8 +909,24 @@ public class PokemonBattler
 			} //end else
 		} //end if
 
+		//Resolve Leech Seed
+		if (effects[(int)LastingEffects.LeechSeed] > -1)
+		{
+			int sapped = ExtensionMethods.BindToInt(totalHP / 8, 1);
+			RemoveHP(sapped);
+			GameManager.instance.AdjustTargetHealth(effects[(int)LastingEffects.LeechSeed], sapped);
+			GameManager.instance.WriteBattleMessage(nickname + "'s health was sapped by Leech Seed!");
+		} //end if
+
+		//Resolve poison
+		if (status == (int)Status.POISON)
+		{
+			RemoveHP(ExtensionMethods.BindToInt(totalHP / 8, 1));
+			GameManager.instance.WriteBattleMessage(nickname + " was hurt by the poison!");
+		} //end if
+
 		//Resolve held items
-		string result = ItemEffects.EndRoundItem(battler); 
+		string result = ItemEffects.EndRoundItem(this); 
 		if (result != bool.FalseString && battler.Item == 0)
 		{
 			item = 0;
@@ -1012,7 +1136,7 @@ public class PokemonBattler
 		} //end if
 
 		//Check for Slow Start
-		if (CheckAbility(143) && turnCount > 0)
+		if (CheckAbility(143) && turnCount < 5)
 		{
 			result /= 2;
 		} //end if
@@ -1087,10 +1211,18 @@ public class PokemonBattler
 	public bool CheckAbility(int abilityToCheck)
 	{
 		//Check for ability, then if active
-		if (ability != abilityToCheck || effects[(int)LastingEffects.GastroAcid] > 0)
+		if (ability != abilityToCheck)
 		{
 			return false;
 		} //end if
+		else if (effects[(int)LastingEffects.GastroAcid] > 0)
+		{
+			//Magic Bounce, Multitype, Pickup, and Stance Change are immune to Gastro Acid
+			if (ability != 84 && ability != 97 && ability != 108 && ability != 152)
+			{
+				return false;
+			} //end if
+		} //end else if
 
 		//Ability is present and active
 		return true;
@@ -1334,6 +1466,7 @@ public class PokemonBattler
 		{
 			status = value;
 			battler.Status = value;
+			battler.StatusCount = 0;
 		} //end set
 	} //end BattlerStatus
 
@@ -1362,6 +1495,21 @@ public class PokemonBattler
 			lastDamageDealt = value;
 		} //end set
 	} //end LastDamageDealt
+
+	/***************************************
+     * Name: TurnCount
+     ***************************************/
+	public int TurnCount
+	{
+		get
+		{
+			return turnCount;
+		} //end get
+		set
+		{
+			turnCount = value;
+		} //end set
+	} //end TurnCount
 
 	/***************************************
      * Name: Nickname

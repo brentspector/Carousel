@@ -102,6 +102,15 @@ public class Field
 					} //end else
 				} //end for
 				break;
+			//Grassy Terrain
+			case 1:
+				break;
+			//Electric Terrain
+			case 2:
+				break;
+			//Misty Terrain
+			case 3:
+				break;
 		} //end switch
 
 		//Return battlers list
