@@ -516,6 +516,15 @@ public class GameManager : MonoBehaviour
 	} //end CheckMoveUsed
 
 	/***************************************
+	 * Name: CheckField
+	 * Retrieves integer of the active field
+	 ***************************************/
+	public int CheckField()
+	{
+		return battle.CheckField();
+	} //end CheckField
+
+	/***************************************
 	 * Name: WriteBattleMessage
 	 * Writes a message to the battle window
 	 ***************************************/
@@ -552,6 +561,15 @@ public class GameManager : MonoBehaviour
 	{
 		battle.AdjustTargetHealth(battlerTarget, amount);
 	} //end AdjustTargetHealth(int battlerTarget, int amount)
+
+	/***************************************
+	 * Name: CheckForFaint
+	 * Check if battler fainted
+	 ***************************************/
+	public bool CheckForFaint(int battler)
+	{
+		return battle.CheckForFaint(battler);
+	} //end CheckForFaint(int battler)
 
 	/***************************************
 	 * Name: InitializeBattle

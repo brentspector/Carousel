@@ -103,10 +103,10 @@ public class Field
 				} //end for
 				break;
 			//Grassy Terrain
-			case 1:
+			case 1:				
 				break;
 			//Electric Terrain
-			case 2:
+			case 2:				
 				break;
 			//Misty Terrain
 			case 3:
