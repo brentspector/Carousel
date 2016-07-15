@@ -94,6 +94,19 @@ public static class AbilityEffects
 					return true;
 				} //end if
 				break;
+			//Levitate
+			case 79:
+				//If a ground type attack was used
+				if (DataContents.GetMoveIcon(move) == 4 && target.CheckAbility(79))
+				{
+					//Display message
+					GameManager.instance.WriteBattleMessage(string.Format("{0}'s {1} had no effect on {2} due to Levitate!", 
+						GameManager.instance.CheckMoveUser().Nickname, GameManager.instance.CheckMoveUsed(), target.Nickname));
+
+					//Attack is negated
+					return true;
+				} //end if
+				break;
 			//Lightning Rod
 			case 81:
 				//If an electric type attack was used
@@ -169,6 +182,17 @@ public static class AbilityEffects
 					} //end else
 
 					//Attack is negated
+					return true;
+				} //end if
+				break;
+			//Soundproof
+			case 149:
+				//Check if moved is flagged as sound based
+				if (DataContents.GetMoveFlag(move, "k"))
+				{
+					//Attack is negated
+					GameManager.instance.WriteBattleMessage(string.Format("{0}'s Soundproof blocked {1}'s {2}!", 
+						target.Nickname, GameManager.instance.CheckMoveUser().Nickname, GameManager.instance.CheckMoveUsed()));
 					return true;
 				} //end if
 				break;
@@ -307,6 +331,40 @@ public static class AbilityEffects
 				return 1f;
 		} //end switch
 	} //end ResolveDamageBoostingAbilities(int ability, int move, PokemonBattler battler, ref int moveType)
+
+	/***************************************
+     * Name: ResolveContactAbilities
+     * Checks if an ability would activate
+     * once the battler is hit by a contact
+     * move
+     ***************************************/
+	public static void ResolveContactAbilities(PokemonBattler user, PokemonBattler target)
+	{
+		//Switch to appropriate ability
+		switch (user.GetAbility())
+		{
+			//Cute Charm
+			case 25:
+				//30% chance to infatuate
+				if (GameManager.instance.RandomInt(0, 10) < 3 && user.Gender != target.Gender && user.Gender != 2 
+					&& !target.CheckAbility(102) && !target.CheckEffect((int)LastingEffects.Attract))
+				{
+					target.ApplyEffect((int)LastingEffects.Attract, user.BattlerPokemon.PersonalID);
+					GameManager.instance.WriteBattleMessage(string.Format("{0} fell in love with {1}! It may be unable to attack.",
+						target.Nickname, user.Nickname));
+				} //end if
+				break;
+			//Static
+			case 153:
+				//30% chance to paralyze
+				if (GameManager.instance.RandomInt(0, 10) < 3 && target.BattlerStatus == (int)Status.HEALTHY)
+				{
+					target.BattlerStatus = (int)Status.PARALYZE;
+					GameManager.instance.WriteBattleMessage(target.Nickname + " is paralyzed! It may be unable to move.");
+				} //end if
+				break;
+		} //end switch
+	} //end ResolveFaintedAbilities(PokemonBattler user, PokemonBattler target)
 
 	/***************************************
      * Name: ResolveFaintedAbilities
