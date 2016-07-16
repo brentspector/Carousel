@@ -41,6 +41,7 @@ public class PokemonBattler
 	bool hasSubstitute;		//Is there a substitute active for this pokemon
 	bool isMega;			//Is this pokemon mega-evolved
 	bool justEntered;		//Has this pokemon just entered battle
+	bool partyFainted;		//Did this pokemon replace a fainted party member
 	Pokemon battler;		//The pokemon this object is representing
 	#endregion
 
@@ -77,6 +78,7 @@ public class PokemonBattler
 		effects = new List<int>();
 		hasSubstitute = false;
 		isMega = false;
+		partyFainted = false;
 
 		//Set moves
 		for (int i = 0; i < 4; i++)
@@ -157,6 +159,9 @@ public class PokemonBattler
 
 		//MeanLookTarget is target based
 		effects[(int)LastingEffects.MeanLookTarget] = -1;
+
+		//TwoTurnAttack is move based
+		effects[(int)LastingEffects.TwoTurnAttack] = -1;
 	} //end InitializeEffects
 
 	/***************************************
@@ -177,6 +182,12 @@ public class PokemonBattler
 		if (CheckAbility(124) && battler != null)
 		{
 			battler.CurrentHP += battler.CurrentHP / 3;
+		} //end if
+
+		//Previous fainted
+		if (battler == null)
+		{
+			partyFainted = true;
 		} //end if
 
 		//Initialize fields
@@ -277,8 +288,10 @@ public class PokemonBattler
 		//Reset these fields regardless of retain stats
 		effects[(int)LastingEffects.Attract] = 0;
 		effects[(int)LastingEffects.Unburden] = 0;
+		effects[(int)LastingEffects.Torment] = 0;
+		effects[(int)LastingEffects.TwoTurnAttack] = -1;
 		lastHPLost = 0;
-		lastMoveUsed = 0;
+		lastMoveUsed = -1;
 		turnCount = 0;
 		isMega = false;
 		justEntered = true;
@@ -332,6 +345,15 @@ public class PokemonBattler
 	{
 		effects[effect] = toSet;
 	} //end ApplyEffect(int effect, int toSet)
+
+	/***************************************
+     * Name: GetEffectValue
+     * Returns value at effect location
+     ***************************************/
+	public int GetEffectValue(int effectToCheck)
+	{
+		return effects[effectToCheck];
+	} //end GetEffectValue(int effectToCheck)
 
 	/***************************************
      * Name: CheckDefenderTyping
@@ -628,6 +650,19 @@ public class PokemonBattler
 			GameManager.instance.WriteBattleMessage(string.Format("{0} recovered {1} HP!", nickname, restore));
 		} //end if
 
+		//Brave Bird
+		else if (moveNumber == 54)
+		{
+			//25% recoil
+			int damage = lastDamageDealt / 4;
+			if (currentHP - damage < 0)
+			{
+				damage = currentHP;
+			} //end if
+			currentHP -= damage;
+			GameManager.instance.WriteBattleMessage(string.Format("{0} lost {1} HP from recoil!", nickname, damage));
+		} //end else if
+
 		//Calm Mind
 		else if (moveNumber == 65)
 		{
@@ -658,6 +693,17 @@ public class PokemonBattler
 			{
 				GameManager.instance.WriteBattleMessage("...but nothing happened.");
 			} //end else
+		} //end else if
+
+		//Cotton Guard
+		else if (moveNumber == 87)
+		{
+			//Increase defense 3 stages
+			if (stages[2] < 6)
+			{
+				SetStage(3, 2);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Defense drastically rose!");
+			} //end if
 		} //end else if
 
 		//Curse
@@ -730,6 +776,51 @@ public class PokemonBattler
 			} //end else
 		} //end else if
 
+		//Dragon Dance
+		else if (moveNumber == 125)
+		{
+			//Increase attack 1 stage
+			if (stages[1] < 6)
+			{
+				//Increase speed 1 stage
+				if (stages[3] < 6)
+				{
+					SetStage(1, 1);
+					SetStage(1, 3);
+					GameManager.instance.WriteBattleMessage(nickname + "'s Attack and Speed rose!");
+				} //end if
+				else
+				{
+					SetStage(1, 1);
+					GameManager.instance.WriteBattleMessage(nickname + "'s Attack rose!");
+				} //end else
+			} //end if
+
+			//Increase speed 1 stage
+			else if (stages[3] < 6)
+			{
+				SetStage(1, 3);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Speed rose!");
+			} //end else if
+			else
+			{
+				GameManager.instance.WriteBattleMessage("...but nothing happened.");
+			} //end else
+		} //end else if
+
+		//Flare Blitz
+		else if (moveNumber == 180)
+		{
+			//25% recoil
+			int damage = lastDamageDealt / 4;
+			if (currentHP - damage < 0)
+			{
+				damage = currentHP;
+			} //end if
+			currentHP -= damage;
+			GameManager.instance.WriteBattleMessage(string.Format("{0} lost {1} HP from recoil!", nickname, damage));
+		} //end else if
+
 		//Harden
 		else if (moveNumber == 230)
 		{
@@ -743,6 +834,19 @@ public class PokemonBattler
 			{
 				GameManager.instance.WriteBattleMessage("...but nothing happened.");
 			} //end else
+		} //end else if
+
+		//Head Smash
+		else if (moveNumber == 233)
+		{
+			//25% recoil
+			int damage = lastDamageDealt / 4;
+			if (currentHP - damage < 0)
+			{
+				damage = currentHP;
+			} //end if
+			currentHP -= damage;
+			GameManager.instance.WriteBattleMessage(string.Format("{0} lost {1} HP from recoil!", nickname, damage));
 		} //end else if
 
 		//Hone Claws
@@ -788,6 +892,30 @@ public class PokemonBattler
 			} //end if
 		} //end else if
 
+		//King's Shield
+		else if (moveNumber == 302)
+		{
+			//Switch form
+			if (battler.FormNumber != 0)
+			{
+				ApplyFormCalculateStats();
+			} //end if
+
+			//Determine if it protects itself
+			if (GameManager.instance.RandomInt(0, 10) < (10 / (1 + effects[(int)LastingEffects.ProtectRate])))
+			{
+				effects[(int)LastingEffects.KingsShield] = 1;
+				effects[(int)LastingEffects.ProtectRate]++;
+				GameManager.instance.WriteBattleMessage(nickname + " is protecting itself!");
+			} //end if
+			else
+			{
+				effects[(int)LastingEffects.Protect] = 0;
+				effects[(int)LastingEffects.ProtectRate] = 0;
+				GameManager.instance.WriteBattleMessage("But it failed!");
+			} //end else
+		} //end else if
+
 		//Power-Up Punch
 		else if (moveNumber == 410)
 		{
@@ -817,8 +945,32 @@ public class PokemonBattler
 			} //end else
 		} //end else if
 
+		//Swords Dance
+		else if (moveNumber == 558)
+		{
+			//Increase attack 2 stages
+			if (stages[1] < 6)
+			{
+				SetStage(2, 1);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Attack sharply rose!");
+			} //end if
+		} //end else if
+
 		//Take Down
 		else if (moveNumber == 566)
+		{
+			//25% recoil
+			int damage = lastDamageDealt / 4;
+			if (currentHP - damage < 0)
+			{
+				damage = currentHP;
+			} //end if
+			currentHP -= damage;
+			GameManager.instance.WriteBattleMessage(string.Format("{0} lost {1} HP from recoil!", nickname, damage));
+		} //end else if
+
+		//Wild Charge
+		else if (moveNumber == 619)
 		{
 			//25% recoil
 			int damage = lastDamageDealt / 4;
@@ -839,7 +991,7 @@ public class PokemonBattler
 	public void ProcessDefenderAttackEffect(int moveNumber)
 	{		
 		//Acid
-		if (moveNumber == 2 && !CheckAbility(140))
+		if (moveNumber == 2 && !CheckAbility(140) && !CheckAbility(188))
 		{
 			//10% chance to lower defender's defense 1 stage
 			if (GameManager.instance.RandomInt(0, 10) == 1 && stages[2] > -6)
@@ -860,7 +1012,7 @@ public class PokemonBattler
 		} //end else if
 
 		//Aurora Beam
-		else if (moveNumber == 28 && !CheckAbility(140) && !CheckAbility(63))
+		else if (moveNumber == 28 && !CheckAbility(140) && !CheckAbility(63) && !CheckAbility(188))
 		{
 			//10% chance to lower defender's attack 1 stage
 			if (GameManager.instance.RandomInt(0, 10) == 1 && stages[1] > -6)
@@ -880,8 +1032,19 @@ public class PokemonBattler
 			} //end if
 		} //end else if
 
+		//Blizzard
+		else if (moveNumber == 44 && status == (int)Status.HEALTHY && !types.Contains((int)Types.ICE) && !CheckAbility(140))
+		{
+			//10% chance to freeze
+			if (GameManager.instance.RandomInt(0, 10) == 1)
+			{
+				status = (int)Status.FREEZE;
+				GameManager.instance.WriteBattleMessage(nickname + " became frozen!");
+			} //end if
+		} //end else  if
+
 		//Bubble
-		else if (moveNumber == 57 && !CheckAbility(140))
+		else if (moveNumber == 57 && !CheckAbility(140) && !CheckAbility(188))
 		{
 			//10% chance to lower defender's speed 1 stage
 			if (GameManager.instance.RandomInt(0, 10) == 1 && stages[3] > -6)
@@ -892,7 +1055,7 @@ public class PokemonBattler
 		} //end else if
 
 		//Bulldoze
-		else if (moveNumber == 62 && !CheckAbility(140))
+		else if (moveNumber == 62 && !CheckAbility(140) && !CheckAbility(188))
 		{
 			//100% chance to lower defender's speed 1 stage
 			if (stages[3] > -6)
@@ -911,12 +1074,29 @@ public class PokemonBattler
 				GameManager.instance.WriteBattleMessage(nickname + "'s Hyper Cutter prevented Charm from working!");
 			} //end if
 
+			//White Smoke
+			else if (CheckAbility(188))
+			{
+				GameManager.instance.WriteBattleMessage(nickname + "'s White Smoke prevented Charm from working!");
+			} //end else if
+
 			//100% chance to lower defender's Attack 2 stages
 			else if (stages[1] > -6)
 			{
 				SetStage(-2, 1);
 				GameManager.instance.WriteBattleMessage(nickname + "'s Attack sharply fell!");
 			} //end else if
+		} //end else if
+
+		//Confide
+		else if (moveNumber == 79)
+		{
+			//100% chance to lower defender's special attack by 1 stage
+			if (stages[4] > -6)
+			{
+				SetStage(-1, 4);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Special Attack fell!");
+			} //end if
 		} //end else if
 
 		//Confuse Ray
@@ -937,7 +1117,7 @@ public class PokemonBattler
 		else if (moveNumber == 95)
 		{
 			//20% chance to lower defender's Defense 1 stage
-			if (GameManager.instance.RandomInt(0, 10) < 2 && stages[2] > -6)
+			if (GameManager.instance.RandomInt(0, 10) < 2 && stages[2] > -6 && !CheckAbility(140) && !CheckAbility(188))
 			{
 				SetStage(-1, 2);
 				GameManager.instance.WriteBattleMessage(nickname + "'s Defense fell!");
@@ -958,8 +1138,41 @@ public class PokemonBattler
 			} //end else
 		} //end else if
 
+		//Dark Pulse
+		else if (moveNumber == 100 && !CheckAbility(140))
+		{
+			//20% chance to flinch
+			if (GameManager.instance.RandomInt(0, 10) < 2 && effects[(int)LastingEffects.Flinch] == 0)
+			{
+				effects[(int)LastingEffects.Flinch] = 1;
+			} //end if
+		} //end else if
+
+		//Discharge
+		else if (moveNumber == 112 && status == (int)Status.HEALTHY && !types.Contains((int)Types.ELECTRIC) && !CheckAbility(140)
+		         && !CheckAbility(82))
+		{
+			//30% chance to paralyze
+			if (GameManager.instance.RandomInt(0, 10) < 3)
+			{
+				status = (int)Status.PARALYZE;
+				GameManager.instance.WriteBattleMessage(nickname + " is paralyzed! It may be unable to move.");
+			} //end if
+		} //end else  if
+
+		//Earth Power
+		else if (moveNumber == 137 && !CheckAbility(140) && !CheckAbility(188))
+		{
+			//10% chance to lower defender's special defense by 1 stage
+			if (GameManager.instance.RandomInt(0, 10) == 1 && stages[5] > -6)
+			{
+				SetStage(-1, 5);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Special Defense fell!");
+			} //end if
+		} //end else if
+
 		//Energy Ball
-		else if (moveNumber == 151 && !CheckAbility(140))
+		else if (moveNumber == 151 && !CheckAbility(140) && !CheckAbility(188))
 		{
 			//10% chance to lower defender's special defense by 1 stage
 			if (GameManager.instance.RandomInt(0, 10) == 1 && stages[5] > -6)
@@ -976,6 +1189,86 @@ public class PokemonBattler
 			effects[(int)LastingEffects.Flinch] = 1;
 		} //end else if
 
+		//Fire Blast
+		else if (moveNumber == 169 && status == (int)Status.HEALTHY && !types.Contains((int)Types.FIRE) && !CheckAbility(140))
+		{
+			//10% chance to burn
+			if (GameManager.instance.RandomInt(0, 10) == 1)
+			{
+				status = (int)Status.BURN;
+				GameManager.instance.WriteBattleMessage(nickname + " sustained a burn!");
+			} //end if
+		} //end else  if
+
+		//Flamethrower
+		else if (moveNumber == 179 && status == (int)Status.HEALTHY && !types.Contains((int)Types.FIRE) && !CheckAbility(140))
+		{
+			//10% chance to burn
+			if (GameManager.instance.RandomInt(0, 10) == 1)
+			{
+				status = (int)Status.BURN;
+				GameManager.instance.WriteBattleMessage(nickname + " sustained a burn!");
+			} //end if
+		} //end else  if
+
+		//Flame Wheel
+		else if (moveNumber == 178)
+		{
+			//Defrost if frozen
+			if (status == (int)Status.FREEZE)
+			{
+				status = (int)Status.HEALTHY;
+				GameManager.instance.WriteBattleMessage(nickname + " was defrosted!");
+			} //end if
+
+			//10% chance to burn
+			if (GameManager.instance.RandomInt(0, 10) == 1)
+			{
+				status = (int)Status.BURN;
+				GameManager.instance.WriteBattleMessage(nickname + " sustained a burn!");
+			} //end if
+		} //end else if
+
+		//Flare Blitz
+		else if (moveNumber == 180)
+		{
+			//Defrost if frozen
+			if (status == (int)Status.FREEZE)
+			{
+				status = (int)Status.HEALTHY;
+				GameManager.instance.WriteBattleMessage(nickname + " was defrosted!");
+			} //end if
+
+			//10% chance to burn
+			if (GameManager.instance.RandomInt(0, 10) == 1)
+			{
+				status = (int)Status.BURN;
+				GameManager.instance.WriteBattleMessage(nickname + " sustained a burn!");
+			} //end if
+		} //end else if
+
+		//Flash Cannon
+		else if (moveNumber == 182 && !CheckAbility(140) && !CheckAbility(188))
+		{
+			//10% chance to lower defender's special defense by 1 stage
+			if (GameManager.instance.RandomInt(0, 10) == 1 && stages[5] > -6)
+			{
+				SetStage(-1, 5);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Special Defense fell!");
+			} //end if
+		} //end else if
+
+		//Focus Blast
+		else if (moveNumber == 188 && !CheckAbility(140) && !CheckAbility(188))
+		{
+			//10% chance to lower defender's special defense by 1 stage
+			if (GameManager.instance.RandomInt(0, 10) == 1 && stages[5] > -6)
+			{
+				SetStage(-1, 5);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Special Defense fell!");
+			} //end if
+		} //end else if
+
 		//Gastro Acid
 		else if (moveNumber == 207)
 		{
@@ -987,13 +1280,30 @@ public class PokemonBattler
 		} //end else if
 
 		//Ice Beam
-		else if (moveNumber == 281 && status != (int)Status.FREEZE && !types.Contains((int)Types.ICE) && !CheckAbility(140))
+		else if (moveNumber == 281 && status == (int)Status.HEALTHY && !types.Contains((int)Types.ICE) && !CheckAbility(140))
 		{
 			//10% chance to freeze
 			if (GameManager.instance.RandomInt(0, 10) == 1)
 			{
 				status = (int)Status.FREEZE;
-				GameManager.instance.WriteBattleMessage(nickname + " is frozen!");
+				GameManager.instance.WriteBattleMessage(nickname + " became frozen!");
+			} //end if
+		} //end else  if
+
+		//Ice Fang
+		else if (moveNumber == 281 && !CheckAbility(140))
+		{
+			//10% chance to freeze
+			if (GameManager.instance.RandomInt(0, 10) == 1 && status == (int)Status.HEALTHY && !types.Contains((int)Types.ICE))
+			{
+				status = (int)Status.FREEZE;
+				GameManager.instance.WriteBattleMessage(nickname + " became frozen!");
+			} //end if
+
+			//10% chance to finch
+			if (GameManager.instance.RandomInt(0, 10) == 1 && effects[(int)LastingEffects.Flinch] == 0)
+			{
+				effects[(int)LastingEffects.Flinch] = 1;
 			} //end if
 		} //end else  if
 
@@ -1007,6 +1317,16 @@ public class PokemonBattler
 				effects[(int)LastingEffects.MultiTurnUser] = GameManager.instance.CheckMoveUser().BattlerPokemon.PersonalID;
 				GameManager.instance.WriteBattleMessage(string.Format("{0} was trapped in an infestation by {1}!", nickname, 
 					GameManager.instance.CheckMoveUser().Nickname));
+			} //end if
+		} //end else if
+
+		//Iron Head
+		else if (moveNumber == 296 && !CheckAbility(140))
+		{
+			//30% chance to flinch
+			if (GameManager.instance.RandomInt(0, 10) < 3 && effects[(int)LastingEffects.Flinch] == 0)
+			{
+				effects[(int)LastingEffects.Flinch] = 1;
 			} //end if
 		} //end else if
 
@@ -1027,33 +1347,115 @@ public class PokemonBattler
 		//Leer
 		else if (moveNumber == 312)
 		{
+			//White Smoke
+			if (CheckAbility(188))
+			{
+				GameManager.instance.WriteBattleMessage(nickname + "'s White Smoke prevented Leer from working!");
+			} //end if
+
 			//100% chance to lower defender's defense 1 stage
-			if (stages[2] > -6)
+			else if (stages[2] > -6)
 			{
 				SetStage(-1, 2);
 				GameManager.instance.WriteBattleMessage(nickname + "'s Defense fell!");
-			} //end if
+			} //end else if
 		} //end else if
 
 		//Mirror Shot
 		else if (moveNumber == 352)
 		{
 			//30% chance to lower defender's accuracy 1 stage
-			if (GameManager.instance.RandomInt(0, 10) < 3 && stages[6] > -6)
+			if (GameManager.instance.RandomInt(0, 10) < 3 && stages[6] > -6 && !CheckAbility(140) && !CheckAbility(188))
 			{
 				SetStage(-1, 6);
 				GameManager.instance.WriteBattleMessage(nickname + "'s accuracy fell!");
 			} //end if
 		} //end else if
 
+		//Moonblast
+		else if (moveNumber == 356)
+		{
+			//30% chance to lower defender's special attack by 1 stage
+			if (GameManager.instance.RandomInt(0, 10) < 3 && stages[4] > -6)
+			{
+				SetStage(-1, 4);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Special Attack fell!");
+			} //end if
+		} //end else if
+
+		//Muddy Water
+		else if (moveNumber == 362)
+		{
+			//30% chance to lower defender's accuracy 1 stage
+			if (GameManager.instance.RandomInt(0, 10) < 3 && stages[6] > -6 && !CheckAbility(140) && !CheckAbility(188))
+			{
+				SetStage(-1, 6);
+				GameManager.instance.WriteBattleMessage(nickname + "'s accuracy fell!");
+			} //end if
+		} //end else if
+
+		//Noble Roar
+		else if (moveNumber == 373)
+		{
+			//Decrease attack 1 stage
+			if (stages[1] > -6)
+			{
+				//Decrease special attack 1 stage
+				if (stages[4] > -6)
+				{
+					SetStage(-1, 1);
+					SetStage(-1, 4);
+					GameManager.instance.WriteBattleMessage(nickname + "'s Attack and Special Attack fell!");
+				} //end if
+				else
+				{
+					SetStage(-1, 1);
+					GameManager.instance.WriteBattleMessage(nickname + "'s Attack fell!");
+				} //end else
+			} //end if
+
+			//Decrease special attack 1 stage
+			else if (stages[4] > -6)
+			{
+				SetStage(-1, 4);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Special Attack fell!");
+			} //end else if
+			else
+			{
+				GameManager.instance.WriteBattleMessage("...but nothing happened.");
+			} //end else
+		} //end else if
+
+		//Poison Jab
+		else if (moveNumber == 398 && status == (int)Status.HEALTHY && !types.Contains((int)Types.POISON) && !CheckAbility(140))
+		{
+			//30% chance to poison
+			if (GameManager.instance.RandomInt(0, 10) < 3)
+			{
+				status = (int)Status.POISON;
+				GameManager.instance.WriteBattleMessage(nickname + " is poisoned!");
+			} //end if
+		} //end else  if
+
 		//Psychic
 		else if (moveNumber == 416 && !CheckAbility(140))
 		{
 			//10% chance to lower defender's Special Defense 1 stage
-			if (GameManager.instance.RandomInt(0, 10) == 1 && stages[5] > -6)
+			if (GameManager.instance.RandomInt(0, 10) == 1 && stages[5] > -6 && !CheckAbility(140) && !CheckAbility(188))
 			{
 				SetStage(-1, 5);
 				GameManager.instance.WriteBattleMessage(nickname + "'s Special Defense fell!");
+			} //end if
+		} //end else if
+
+		//Razor Shell
+		else if (moveNumber == 434)
+		{
+			//50% chance to lower defender's Defense 1 stage
+			if (GameManager.instance.RandomInt(0, 10) < 5 && stages[2] > -6 && !CheckAbility(140) && !CheckAbility(188))
+			{
+				SetStage(-1, 2);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Defense fell!");
 			} //end if
 		} //end else if
 
@@ -1061,7 +1463,7 @@ public class PokemonBattler
 		else if (moveNumber == 455 && !CheckAbility(140))
 		{
 			//100% chance to lower defender's speed 1 stage
-			if (stages[3] > -6)
+			if (stages[3] > -6 && !CheckAbility(140) && !CheckAbility(188))
 			{
 				SetStage(-1, 3);
 				GameManager.instance.WriteBattleMessage(nickname + "'s Speed fell!");
@@ -1072,12 +1474,23 @@ public class PokemonBattler
 		else if (moveNumber == 480 && !CheckAbility(140))
 		{
 			//20% chance to lower defender's special defense by 1 stage
-			if (GameManager.instance.RandomInt(0, 10) < 2 && stages[5] > -6)
+			if (GameManager.instance.RandomInt(0, 10) < 2 && stages[5] > -6 && !CheckAbility(14) && !CheckAbility(188))
 			{
 				SetStage(-1, 5);
 				GameManager.instance.WriteBattleMessage(nickname + "'s Special Defense fell!");
 			} //end if
 		} //end else if
+
+		//Sludge Bomb
+		else if (moveNumber == 506 && status == (int)Status.HEALTHY && !types.Contains((int)Types.POISON) && !CheckAbility(140))
+		{
+			//30% chance to poison
+			if (GameManager.instance.RandomInt(0, 10) < 3)
+			{
+				status = (int)Status.POISON;
+				GameManager.instance.WriteBattleMessage(nickname + " is became poisoned!");
+			} //end if
+		} //end else  if
 
 		//Stomp
 		else if (moveNumber == 535 && !CheckAbility(140))
@@ -1089,8 +1502,21 @@ public class PokemonBattler
 			} //end if
 		} //end else if
 
+		//Thunder
+		else if (moveNumber == 576 && status == (int)Status.HEALTHY && !types.Contains((int)Types.ELECTRIC) && !CheckAbility(140)
+		         && !CheckAbility(82))
+		{
+			//30% chance to paralyze
+			if (GameManager.instance.RandomInt(0, 10) < 3)
+			{
+				status = (int)Status.PARALYZE;
+				GameManager.instance.WriteBattleMessage(nickname + " is paralyzed! It may be unable to move.");
+			} //end if
+		} //end else  if
+
 		//Thunderbolt
-		else if (moveNumber == 581 && status != (int)Status.PARALYZE && !types.Contains((int)Types.ELECTRIC) && !CheckAbility(140))
+		else if (moveNumber == 581 && status == (int)Status.HEALTHY && !types.Contains((int)Types.ELECTRIC) && !CheckAbility(140)
+		         && !CheckAbility(82))
 		{
 			//10% chance to paralyze
 			if (GameManager.instance.RandomInt(0, 10) == 1)
@@ -1099,6 +1525,55 @@ public class PokemonBattler
 				GameManager.instance.WriteBattleMessage(nickname + " is paralyzed! It may be unable to move.");
 			} //end if
 		} //end else  if
+
+		//Torment
+		else if (moveNumber == 584)
+		{
+			if (effects[(int)LastingEffects.Torment] == 0)
+			{
+				effects[(int)LastingEffects.Torment] = 1;
+				GameManager.instance.WriteBattleMessage(nickname + " fell for the Torment!");
+			} //end if
+			else
+			{
+				GameManager.instance.WriteBattleMessage(nickname + " is already affected by Torment!");
+			} //end
+		} //end else if
+
+		//Trick or Treat
+		else if (moveNumber == 591)
+		{
+			if (!types.Contains((int)Types.GHOST))
+			{
+				types.Add((int)Types.GHOST);
+				GameManager.instance.WriteBattleMessage(nickname + " was taken Trick or Treating and became part Ghost type!");
+			} //end if
+			else
+			{
+				GameManager.instance.WriteBattleMessage(nickname + " is already a Ghost type!");
+			} //end else
+		} //end else if
+
+		//Water Pulse
+		else if (moveNumber == 610)
+		{
+			//20% chance to confuse
+			if (GameManager.instance.RandomInt(0, 10) < 2 && effects[(int)LastingEffects.Confusion] == 0)
+			{
+				effects[(int)LastingEffects.Confusion] = GameManager.instance.RandomInt(2, 6);
+				GameManager.instance.WriteBattleMessage(nickname + " became confused!");
+			} //end if
+		} //end else if
+
+		//Waterfall
+		else if (moveNumber == 614 && !CheckAbility(140))
+		{
+			//20% chance to flinch
+			if (GameManager.instance.RandomInt(0, 10) < 2 && effects[(int)LastingEffects.Flinch] == 0)
+			{
+				effects[(int)LastingEffects.Flinch] = 1;
+			} //end if
+		} //end else if
 
 		//Yawn
 		else if (moveNumber == 631)
@@ -1178,6 +1653,8 @@ public class PokemonBattler
 		turnCount++;
 
 		//Reset effects
+		partyFainted = false;
+		effects[(int)LastingEffects.KingsShield] = 0;
 		effects[(int)LastingEffects.Protect] = 0;
 		effects[(int)LastingEffects.Flinch] = 0;
 
@@ -1232,6 +1709,20 @@ public class PokemonBattler
 			{	
 				RemoveHP(ExtensionMethods.BindToInt(totalHP / 8, 1));
 				GameManager.instance.WriteBattleMessage(nickname + " was hurt by the poison!");
+
+				//Check for faint
+				GameManager.instance.CheckForFaint(sideOn);
+			} //end if
+		} //end if
+
+		//Resolve burn
+		if (status == (int)Status.BURN)
+		{
+			//Check for Magic Guard
+			if (!CheckAbility(85))
+			{	
+				RemoveHP(ExtensionMethods.BindToInt(totalHP / 8, 1));
+				GameManager.instance.WriteBattleMessage(nickname + " was hurt by the burn!");
 
 				//Check for faint
 				GameManager.instance.CheckForFaint(sideOn);
@@ -1337,6 +1828,85 @@ public class PokemonBattler
 	} //end SetStage(int amount, int stage, bool adjust = true)
 
 	/***************************************
+     * Name: ApplyFormCalculateStats
+     * Changes the stats to match the form
+     ***************************************/
+	public void ApplyFormCalculateStats()
+	{
+		//Calculate nature impact
+		int[] pvalues = {100,100,100,100,100};
+		int[] results = new int[5];
+		int nd5 = (int)Mathf.Floor (battler.Nature / 5);
+		int nm5 = (int)Mathf.Floor (battler.Nature % 5);
+		if (nd5 != nm5)
+		{
+			pvalues [nd5] = 110;
+			pvalues [nm5] = 90;
+		} //end if
+
+		//Switch based on species
+		switch(battler.NatSpecies)
+		{			
+			//Aegislash
+			case 681:
+				if (battler.FormNumber == 0)
+				{
+					//Change to Attack Stance
+					battler.FormNumber = 1;
+
+					//Calculate Attack
+					int baseStat = 150;
+					int evCalc = battler.GetEV(1) / 4;
+					int firstCalc = (battler.GetIV(1) + 2 * baseStat + evCalc);
+					int secondCalc = (firstCalc * currentLevel / 100);
+					int bValue = (secondCalc + 5) * pvalues[0] / 100;
+					float value = (float)bValue * (1f + (0.5f * stages[1]));
+					attack = (int)value;
+
+					//Calculate Defense
+					baseStat = 50;
+					evCalc = battler.GetEV(2) / 4;
+					firstCalc = (battler.GetIV(2) + 2 * baseStat + evCalc);
+					secondCalc = (firstCalc * currentLevel / 100);
+					bValue = (secondCalc + 5) * pvalues[1] / 100;
+					value = (float)bValue * (1f + (0.5f * stages[2]));
+					defense = (int)value;
+
+					//Calculate Speed
+					value = (float)battler.Speed * (1f + (0.5f * stages[3]));
+					speed = (int)value;
+
+					//Calculate Special Attack
+					baseStat = 150;
+					evCalc = battler.GetEV(4) / 4;
+					firstCalc = (battler.GetIV(4) + 2 * baseStat + evCalc);
+					secondCalc = (firstCalc * currentLevel / 100);
+					bValue = (secondCalc + 5) * pvalues[3] / 100;
+					value = (float)bValue * (1f + (0.5f * stages[4]));
+					specialA = (int)value;
+
+					//Calculate Special Defense
+					baseStat = 50;
+					evCalc = battler.GetEV(5) / 4;
+					firstCalc = (battler.GetIV(5) + 2 * baseStat + evCalc);
+					secondCalc = (firstCalc * currentLevel / 100);
+					bValue = (secondCalc + 5) * pvalues[4] / 100;
+					value = (float)bValue * (1f + (0.5f * stages[5]));
+					specialD = (int)value;
+				} //end if
+				else
+				{
+					//Change to Defense Stance
+					battler.FormNumber = 0;
+
+					//Calculate based on base battler
+					CalculateStats();
+				} //end else
+				break;
+		} //end switch
+	} //end ApplyStanceChange
+
+	/***************************************
      * Name: CalculateStats
      * Determines the values for all stats,
      * using the base battler as a reference
@@ -1377,8 +1947,13 @@ public class PokemonBattler
 			//Guts
 			if (CheckAbility(54) && status != (int)Status.HEALTHY && status != (int)Status.FAINT)
 			{
-				attack = (attack * 15) / 10;
+				return (attack * 15) / 10;
 			} //end if
+			//Burn
+			else if (status == (int)Status.BURN)
+			{
+				return attack / 2;
+			} //end else if
 			return attack;
 		} //end else
 	} //end GetAttack(bool critical)
@@ -1388,18 +1963,22 @@ public class PokemonBattler
      * Returns the working value of the defense
      * of the pokemon
      ***************************************/
-	public int GetDefense(bool critical)
+	public int GetDefense(bool critical, int move)
 	{
 		//Return non-buff defense for critical
 		if (critical && stages[2] > 0)
 		{
 			return battler.Defense;
 		} //end if
+		else if (move == 72)
+		{
+			return battler.Defense;
+		} //end else if
 		else
 		{
 			return defense;
 		} //end else
-	} //end GetDefense(bool critical)
+	} //end GetDefense(bool critical, int move)
 
 	/***************************************
      * Name: GetSpecialAttack
@@ -1893,6 +2472,21 @@ public class PokemonBattler
 	} //end LastDamageDealt
 
 	/***************************************
+     * Name: LastMoveused
+     ***************************************/
+	public int LastMoveUsed
+	{
+		get
+		{
+			return lastMoveUsed;
+		} //end get
+		set
+		{
+			lastMoveUsed = value;
+		} //end set
+	} //end LastMoveUsed
+
+	/***************************************
      * Name: TurnCount
      ***************************************/
 	public int TurnCount
@@ -2035,5 +2629,20 @@ public class PokemonBattler
 			justEntered = value;
 		} //end set
 	} //end JustEntered
+
+	/***************************************
+     * Name: PartyFainted
+     ***************************************/
+	public bool PartyFainted
+	{
+		get
+		{
+			return partyFainted;
+		} //end get
+		set
+		{
+			partyFainted = value;
+		} //end set
+	} //end PartyFainted
 	#endregion
 } //end PokemonBattler class

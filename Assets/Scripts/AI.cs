@@ -614,8 +614,12 @@ public static class PrizeList
 				{
 					player.LeaderWins[opponent]++;
 					player.AddItem(174, 1);
-					GameManager.instance.WriteBattleMessage("You were given a Mega Ring! Unlock the hiddne potential in your " +
+					GameManager.instance.WriteBattleMessage("You were given a Mega Ring! Unlock the hidden potential in your " +
 						"loyal battle partners!");
+					for (int i = 0; i < GameManager.instance.GetTrainer().Team.Count; i++)
+					{
+						GameManager.instance.GetTrainer().Team[i].ChangeRibbons(0);
+					} //end for
 				} //end else
 				break;
 			default:

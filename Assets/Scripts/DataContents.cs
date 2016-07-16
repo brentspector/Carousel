@@ -1002,7 +1002,7 @@ public class RibbonData
      ***************************************/
     string[] RibbonNames =
     {
-        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Champion Beater", "That One Ribbon", "Default", "That One Ribbon", 
         "Default", "That One Ribbon", "Default", "That One Ribbon", 
         "Default", "That One Ribbon", "Default", "That One Ribbon", 
         "Default", "That One Ribbon", "Default", "That One Ribbon", 
@@ -1023,7 +1023,7 @@ public class RibbonData
      ***************************************/
     string[] RibbonDescriptions =
     {
-        "A default ribbon", "A ribbon given for doing things pertaining to testing",
+        "Given for defeating Champion Diantha", "A ribbon given for doing things pertaining to testing",
         "A default ribbon", "A ribbon given for doing things pertaining to testing",  
         "A default ribbon", "A ribbon given for doing things pertaining to testing",  
         "A default ribbon", "A ribbon given for doing things pertaining to testing",  

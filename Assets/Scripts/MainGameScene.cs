@@ -3088,6 +3088,7 @@ public class MainGameScene : MonoBehaviour
 
 			//Get the ribbon value at the index
 			int ribbonValue = GameManager.instance.GetTrainer().Team[choiceNumber - 1].GetRibbon(ribbonChoice);
+			//Debug.Log(ribbonValue);
 
 			//Set the name and description
 			ribbonScreen.transform.FindChild("RibbonName").GetComponent<Text>().text = 
