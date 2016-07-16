@@ -786,7 +786,8 @@ public class GameManager : MonoBehaviour
         sysm.PlayerTrainer.EmptyTeam();
         sysm.PlayerTrainer.RandomTeam();
         sysm.PlayerTrainer.Team [0].ChangeRibbons (GameManager.instance.RandomInt (0, 20));
-        sysm.PlayerTrainer.Team [0].ChangeRibbons (GameManager.instance.RandomInt (0, 20));
+		sysm.PlayerTrainer.Team[0].ChangeRibbons(0);
+        //sysm.PlayerTrainer.Team [0].ChangeRibbons (GameManager.instance.RandomInt (0, 20));
         sysm.PlayerTrainer.Team [1].ChangeRibbons (GameManager.instance.RandomInt (0, 20));
     } //end RandomTeam
     

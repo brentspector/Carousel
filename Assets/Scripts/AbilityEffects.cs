@@ -287,7 +287,8 @@ public static class AbilityEffects
      * Checks if an ability would activate
      * based on the move used
      ***************************************/
-	public static float ResolveDamageBoostingAbilities(int ability, int move, PokemonBattler battler, ref int moveType)
+	public static float ResolveDamageBoostingAbilities(int ability, int move, int moveDamage, PokemonBattler battler, 
+		PokemonBattler opponent, ref int moveType)
 	{
 		//Switch to appropriate ability
 		switch(ability)
@@ -300,6 +301,17 @@ public static class AbilityEffects
 					return 1.3f;
 				} //end if
 				return 1f;
+			//Mega launcher
+			case 90:
+				//Check for a move Mega Launcher boosts
+				int[] boostedAttacks = new int[] {27, 100, 126, 379, 610 
+				};
+				if (boostedAttacks.Contains(move) && battler.CheckAbility(90))
+				{
+					return 1.5f;
+				} //end if 
+				return 1f;
+				break;
 			//Pixilate
 			case 109:
 				if (moveType == (int)Types.NORMAL && battler.CheckAbility(109))
@@ -316,21 +328,56 @@ public static class AbilityEffects
 					return 1.3f;
 				} //end if 
 				return 1f;
+			//Rivalry
+			case 125:
+				if (battler.CheckAbility(125))
+				{
+					if (battler.Gender == 2 || opponent.Gender == 2)
+					{
+						return 1f;
+					} //end if
+					else if (battler.Gender == opponent.Gender)
+					{
+						return 1.25f;
+					} //end else if
+					else
+					{
+						return 0.75f;
+					} //end else
+				} //end if
+				return 1f;
 			//Strong Jaw
 			case 158:
 				//Check for a move Strong Jaw boosts
-				int[] boostedAttacks = new int[] {41, 95, 170, 283, 396, 577
+				boostedAttacks = new int[] {41, 95, 170, 283, 396, 577
 				};
 				if (boostedAttacks.Contains(move) && battler.CheckAbility(158))
 				{
 					return 1.5f;
 				} //end if 
 				return 1f;
+			//Technician
+			case 168:
+				if (moveDamage <= 60)
+				{
+					return 1.5f;
+				} //end if
+				return 1f;
+				break;
+			//Tough Claws
+			case 174:
+				if (DataContents.GetMoveFlag(move, "a") && battler.CheckAbility(174))
+				{
+					return 1.33f;
+				} //end if
+				return 1f;
+				break;
 			//No boosting ability 
 			default:
 				return 1f;
 		} //end switch
-	} //end ResolveDamageBoostingAbilities(int ability, int move, PokemonBattler battler, ref int moveType)
+	} //end ResolveDamageBoostingAbilities(int ability, int move, int moveDamage, PokemonBattler battler, PokemonBattler opponent,
+		//ref int moveType)
 
 	/***************************************
      * Name: ResolveContactAbilities
@@ -350,17 +397,73 @@ public static class AbilityEffects
 					&& !target.CheckAbility(102) && !target.CheckEffect((int)LastingEffects.Attract))
 				{
 					target.ApplyEffect((int)LastingEffects.Attract, user.BattlerPokemon.PersonalID);
-					GameManager.instance.WriteBattleMessage(string.Format("{0} fell in love with {1}! It may be unable to attack.",
-						target.Nickname, user.Nickname));
+					GameManager.instance.WriteBattleMessage(string.Format("{0} fell in love with {1} due to Cute Charm! " +
+					"It may be unable to attack.", target.Nickname, user.Nickname));
+				} //end if
+				break;
+			//Flame Body
+			case 40:
+				//30% chance to burn
+				if (GameManager.instance.RandomInt(0, 10) < 3 && target.BattlerStatus == (int)Status.HEALTHY && 
+					!target.CheckType((int)Types.FIRE))
+				{
+					target.BattlerStatus = (int)Status.BURN;
+					GameManager.instance.WriteBattleMessage(target.Nickname + " was burned on contact with the Flame Body!");
+
+					//Check for Syncronize
+					if (target.CheckAbility(166) && user.BattlerStatus == (int)Status.HEALTHY && !user.CheckType((int)Types.FIRE))
+					{
+						user.BattlerStatus = (int)Status.BURN;
+						GameManager.instance.WriteBattleMessage(target.Nickname + "'s Synchronize burned " +  
+							user.Nickname + "!");
+					} //end if
+				} //end if
+				break;
+			//Poison Point
+			case 112:
+				//30% chance to poison
+				if (GameManager.instance.RandomInt(0, 10) < 3 && target.BattlerStatus == (int)Status.HEALTHY && 
+					!target.CheckType((int)Types.POISON))
+				{
+					target.BattlerStatus = (int)Status.POISON;
+					GameManager.instance.WriteBattleMessage(target.Nickname + " was poisoned on contact with the Poison Point!");
+
+					//Check for Syncronize
+					if (target.CheckAbility(166) && user.BattlerStatus == (int)Status.HEALTHY && !user.CheckType((int)Types.POISON))
+					{
+						user.BattlerStatus = (int)Status.POISON;
+						GameManager.instance.WriteBattleMessage(target.Nickname + "'s Synchronize poisoned " +  
+							user.Nickname + "!");
+					} //end if
+				} //end if
+				break;
+			//Rough Skin
+			case 127:
+				//100% chance to inflict damage
+				if (!target.CheckAbility(85))
+				{
+					target.RemoveHP(ExtensionMethods.BindToInt(target.TotalHP / 8, 1));
+					GameManager.instance.WriteBattleMessage(target.Nickname + " was hurt by the Rough Skin!");
 				} //end if
 				break;
 			//Static
 			case 153:
 				//30% chance to paralyze
-				if (GameManager.instance.RandomInt(0, 10) < 3 && target.BattlerStatus == (int)Status.HEALTHY)
+				if (GameManager.instance.RandomInt(0, 10) < 3 && target.BattlerStatus == (int)Status.HEALTHY && 
+					!target.CheckType((int)Types.ELECTRIC) && !target.CheckAbility(82))
 				{
 					target.BattlerStatus = (int)Status.PARALYZE;
-					GameManager.instance.WriteBattleMessage(target.Nickname + " is paralyzed! It may be unable to move.");
+					GameManager.instance.WriteBattleMessage(string.Format("{0}'s Static paralyzed {1}! It may be unable to move.",
+						user.Nickname, target.Nickname));
+
+					//Check for Syncronize
+					if (target.CheckAbility(166) && user.BattlerStatus == (int)Status.HEALTHY && !user.CheckType((int)Types.ELECTRIC) &&
+						!user.CheckAbility(82))
+					{
+						user.BattlerStatus = (int)Status.PARALYZE;
+						GameManager.instance.WriteBattleMessage(target.Nickname + "'s Synchronize paralyzed " +  
+							user.Nickname + "!");
+					} //end if
 				} //end if
 				break;
 		} //end switch
