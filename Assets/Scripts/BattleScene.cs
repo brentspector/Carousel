@@ -423,6 +423,12 @@ public class BattleScene : MonoBehaviour
 				} //end if
 				else
 				{
+					//Check if mega
+					if (CheckMega(1))
+					{
+						ApplyMega(1);
+					} //end if
+
 					//Select a random attack
 					int randomSelection = GameManager.instance.RandomInt(0, battlers[1].BattlerPokemon.GetMoveCount() - 1);
 
@@ -2877,6 +2883,32 @@ public class BattleScene : MonoBehaviour
 	} //end CheckField
 
 	/***************************************
+	 * Name: CheckMega
+	 * Checks if the trainer can mega evolve
+	 ***************************************/
+	bool CheckMega(int trainer)
+	{
+		if (battlers[trainer].CheckMegaPossible() && !combatants[trainer].HasMega && combatants[trainer].ItemCount(174) > 0)
+		{
+			return true;
+		} //end if
+		else
+		{
+			return false;
+		} //end else
+	} //end CheckMega(int trainer)
+
+	/***************************************
+	 * Name: ApplyMega
+	 * Mega evolves the trainer's pokemon
+	 ***************************************/
+	void ApplyMega(int battler)
+	{
+		AddToQueue(battler, 3, 0, 0, 8);
+		combatants[battler].HasMega = true;
+	} //end ApplyMega(int battler)
+
+	/***************************************
 	 * Name: AdjustTargetHealth
 	 * Allows adjustment of a battler for 
 	 * effects outside combat (Leech Seed)
@@ -3411,7 +3443,9 @@ public class BattleScene : MonoBehaviour
 								break;
 						} //end switch
 						WriteBattleMessage(battler.Nickname + " was hurt by spikes!");
+						FillInBattlerData();
 						yield return new WaitForSeconds(0.5f);
+						CheckForFaint(battler.SideOn);
 					} //end if
 				} //end if
 			} //end if
@@ -3439,6 +3473,7 @@ public class BattleScene : MonoBehaviour
 	 ***************************************/
 	void SetStatusIcon(Image statusImage, PokemonBattler myPokemon)
 	{
+		Debug.Log(myPokemon.BattlerStatus);
 		//Set status
 		switch (myPokemon.BattlerStatus)
 		{
@@ -3446,32 +3481,32 @@ public class BattleScene : MonoBehaviour
 			case 0:
 				statusImage.color = Color.clear;
 				break;
-				//Faint
+			//Faint
 			case 1:
 				statusImage.color = Color.white;
 				statusImage.sprite = DataContents.statusSprites[5];
 				break;
-				//Sleep
+			//Sleep
 			case 2:
 				statusImage.color = Color.white;
 				statusImage.sprite = DataContents.statusSprites[0];
 				break;
-				//Poison
+			//Poison
 			case 3:
 				statusImage.color = Color.white;
 				statusImage.sprite = DataContents.statusSprites[1];
 				break;
-				//Burn
+			//Burn
 			case 4:
 				statusImage.color = Color.white;
 				statusImage.sprite = DataContents.statusSprites[2];
 				break;
-				//Paralyze
+			//Paralyze
 			case 5:
 				statusImage.color = Color.white;
 				statusImage.sprite = DataContents.statusSprites[3];
 				break;
-				//Freeze
+			//Freeze
 			case 6:
 				statusImage.color = Color.white;
 				statusImage.sprite = DataContents.statusSprites[4];
@@ -3524,7 +3559,9 @@ public class BattleScene : MonoBehaviour
 			//Set back of player pokemon
 			string toLoad = "Sprites/Pokemon/" + battlers[0].BattlerPokemon.NatSpecies.ToString("000");
 			toLoad += battlers[0].BattlerPokemon.Gender == 1 ? "f" : "";
-			toLoad += battlers[0].BattlerPokemon.IsShiny ? "sb" : "b";
+			toLoad += battlers[0].BattlerPokemon.IsShiny ? "s" : "";
+			toLoad += battlers[0].BattlerPokemon.FormNumber != 0 ? "_" + battlers[0].BattlerPokemon.FormNumber : "";
+			toLoad += "b";
 			if (Resources.Load<Sprite>(toLoad) == null)
 			{
 				toLoad = toLoad.Replace("f", "");
@@ -3536,7 +3573,42 @@ public class BattleScene : MonoBehaviour
 				trainerStands[0].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
 					Resources.Load<Sprite>(toLoad);
 			} //end else 
+
+			//Set player battler box
+			battlerBoxes[0].transform.FindChild("HP").GetComponent<Text>().text = battlers[0].CurrentHP.ToString() + "/" +
+				battlers[0].TotalHP.ToString();
+			battlerBoxes[0].transform.FindChild("Name").GetComponent<Text>().text = battlers[0].Nickname;
+			battlerBoxes[0].transform.FindChild("Level").GetComponent<Text>().text = "Lv." + battlers[0].CurrentLevel.ToString();
+			battlerBoxes[0].transform.FindChild("Gender").GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/gender"
+				+ battlers[0].Gender);
+			SetStatusIcon(battlerBoxes[0].transform.FindChild("Status").GetComponent<Image>(), battlers[0]);
+			if (battlers[0].CurrentLevel != 100)
+			{
+				battlerBoxes[0].transform.FindChild("Experience").GetComponent<RectTransform>().localScale = new Vector3(
+					(float)(battlers[0].BattlerPokemon.EXPForLevel - battlers[0].BattlerPokemon.RemainingEXP) /
+					(float)battlers[0].BattlerPokemon.EXPForLevel, 1, 1);
+			} //end if
+			else
+			{
+				battlerBoxes[0].transform.FindChild("Experience").GetComponent<RectTransform>().localScale = new Vector3(0, 1, 1);
+			} //end else
+			float scale = (float)battlers[0].CurrentHP / (float)battlers[0].TotalHP;
+			battlerBoxes[0].transform.FindChild("HPBar").GetComponent<RectTransform>().localScale = new Vector3(
+				scale, 1, 1);
+			if (scale < 0.25f)
+			{
+				battlerBoxes[0].transform.FindChild("HPBar").GetComponent<Image>().color = Color.red;
+			} //end if
+			else if (scale < 0.5f)
+			{
+				battlerBoxes[0].transform.FindChild("HPBar").GetComponent<Image>().color = Color.yellow;
+			} //end else if
+			else
+			{
+				battlerBoxes[0].transform.FindChild("HPBar").GetComponent<Image>().color = Color.green;
+			} //end else 
 		} //end if
+
 		//Set front for rest
 		for (int i = 1; i < trainerStands.Count; i++)
 		{
@@ -3552,6 +3624,7 @@ public class BattleScene : MonoBehaviour
 			string toLoad = "Sprites/Pokemon/" + battlers[i].BattlerPokemon.NatSpecies.ToString("000");
 			toLoad += battlers[i].BattlerPokemon.Gender == 1 ? "f" : "";
 			toLoad += battlers[i].BattlerPokemon.IsShiny ? "s" : "";
+			toLoad += battlers[i].BattlerPokemon.FormNumber != 0 ? "_" + battlers[i].BattlerPokemon.FormNumber : "";
 			if (Resources.Load<Sprite>(toLoad) == null)
 			{
 				toLoad = toLoad.Replace("f", "");
@@ -3563,51 +3636,14 @@ public class BattleScene : MonoBehaviour
 				trainerStands[i].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
 					Resources.Load<Sprite>(toLoad);
 			} //end else 
-		} //end for
 
-		//Set player battler box
-		battlerBoxes[0].transform.FindChild("HP").GetComponent<Text>().text = battlers[0].CurrentHP.ToString() + "/" +
-			battlers[0].TotalHP.ToString();
-		battlerBoxes[0].transform.FindChild("Name").GetComponent<Text>().text = battlers[0].Nickname;
-		battlerBoxes[0].transform.FindChild("Level").GetComponent<Text>().text = "Lv." + battlers[0].CurrentLevel.ToString();
-		battlerBoxes[0].transform.FindChild("Gender").GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/gender"
-			+ battlers[0].Gender);
-		SetStatusIcon(battlerBoxes[0].transform.FindChild("Status").GetComponent<Image>(), battlers[0]);
-		if (battlers[0].CurrentLevel != 100)
-		{
-			battlerBoxes[0].transform.FindChild("Experience").GetComponent<RectTransform>().localScale = new Vector3(
-				(float)(battlers[0].BattlerPokemon.EXPForLevel - battlers[0].BattlerPokemon.RemainingEXP) /
-				(float)battlers[0].BattlerPokemon.EXPForLevel, 1, 1);
-		} //end if
-		else
-		{
-			battlerBoxes[0].transform.FindChild("Experience").GetComponent<RectTransform>().localScale = new Vector3(0, 1, 1);
-		} //end else
-		float scale = (float)battlers[0].CurrentHP / (float)battlers[0].TotalHP;
-		battlerBoxes[0].transform.FindChild("HPBar").GetComponent<RectTransform>().localScale = new Vector3(
-			scale, 1, 1);
-		if (scale < 0.25f)
-		{
-			battlerBoxes[0].transform.FindChild("HPBar").GetComponent<Image>().color = Color.red;
-		} //end if
-		else if (scale < 0.5f)
-		{
-			battlerBoxes[0].transform.FindChild("HPBar").GetComponent<Image>().color = Color.yellow;
-		} //end else if
-		else
-		{
-			battlerBoxes[0].transform.FindChild("HPBar").GetComponent<Image>().color = Color.green;
-		} //end else 
-
-		//Set remaining battler boxes
-		for (int i = 1; i < combatants.Count; i++)
-		{
+			//Set battler box
 			battlerBoxes[i].transform.FindChild("Name").GetComponent<Text>().text = battlers[i].Nickname;
 			battlerBoxes[i].transform.FindChild("Level").GetComponent<Text>().text = "Lv." + battlers[i].CurrentLevel.ToString();
 			battlerBoxes[i].transform.FindChild("Gender").GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/gender"
 				+ battlers[i].Gender);
 			SetStatusIcon(battlerBoxes[i].transform.FindChild("Status").GetComponent<Image>(), battlers[i]);
-			scale = (float)battlers[i].CurrentHP / (float)battlers[i].TotalHP;
+			float scale = (float)battlers[i].CurrentHP / (float)battlers[i].TotalHP;
 			battlerBoxes[i].transform.FindChild("HPBar").GetComponent<RectTransform>().localScale = new Vector3(
 				scale, 1, 1);
 			if (scale < 0.25f)
@@ -4526,6 +4562,10 @@ public class BattleScene : MonoBehaviour
 		//Switch to appropriate effect
 		switch (currentAttack)
 		{
+			//Bulk Up
+			case 61:
+				battlers[toProcess.battler].ProcessAttackerAttackEffect(61);
+				break;
 			//Calm Mind
 			case 65:
 				battlers[toProcess.battler].ProcessAttackerAttackEffect(65);
@@ -4595,6 +4635,7 @@ public class BattleScene : MonoBehaviour
 			//King's Shield
 			case 302:
 				battlers[toProcess.battler].ProcessAttackerAttackEffect(302);
+				FillInBattlerData();
 				break;
 			//Leech Seed
 			case 311:
@@ -4732,6 +4773,10 @@ public class BattleScene : MonoBehaviour
 			case 584:
 				battlers[toProcess.target].ProcessDefenderAttackEffect(584);
 				break;
+			//Toxic
+			case 585:
+				battlers[toProcess.target].ProcessDefenderAttackEffect(585);
+				break;
 			//Trick or Treat
 			case 591:
 				battlers[toProcess.target].ProcessDefenderAttackEffect(591);
@@ -4795,6 +4840,15 @@ public class BattleScene : MonoBehaviour
 				return 0;
 			} //end if
 
+			//Fling
+			else if (currentAttack == 184 && battlers[toProcess.battler].Item == 0)
+			{
+				WriteBattleMessage("But it failed!");
+				//Set move as last used
+				battlers[toProcess.battler].LastMoveUsed = -1;
+				return 0;
+			} //end else if
+
 			//Check for Phantom Force
 			if (currentAttack == 391)
 			{
@@ -4809,6 +4863,29 @@ public class BattleScene : MonoBehaviour
 				{
 					battlers[toProcess.battler].ApplyEffect((int)LastingEffects.TwoTurnAttack, -1);
 					WriteBattleMessage(battlers[toProcess.battler].Nickname + " reappeared behind the opponent!");
+				} //end else
+			} //end if
+
+			//Check for Solarbeam
+			if (currentAttack == 517)
+			{
+				//If using it first turn
+				if (battlers[toProcess.battler].GetEffectValue((int)LastingEffects.TwoTurnAttack) == -1 &&
+				    fieldEffects[toProcess.battler][(int)FieldEffects.Sun] == 0)
+				{
+					battlers[toProcess.battler].ApplyEffect((int)LastingEffects.TwoTurnAttack, choiceNumber);
+					WriteBattleMessage(battlers[toProcess.battler].Nickname + " began absorbing energy!");
+					return 0;
+				} //end if
+				else if (fieldEffects[toProcess.battler][(int)FieldEffects.Sun] > 0)
+				{
+					battlers[toProcess.battler].ApplyEffect((int)LastingEffects.TwoTurnAttack, -1);
+					WriteBattleMessage(battlers[toProcess.battler].Nickname + " absorbed light and immediately attacked!");
+				} //end else if
+				else
+				{
+					battlers[toProcess.battler].ApplyEffect((int)LastingEffects.TwoTurnAttack, -1);
+					WriteBattleMessage(battlers[toProcess.battler].Nickname + " released the absorbed light!");
 				} //end else
 			} //end if
 
@@ -4883,6 +4960,7 @@ public class BattleScene : MonoBehaviour
 					battlers[toProcess.battler].BattlerPokemon.FormNumber != 1)
 				{
 					battlers[toProcess.battler].ApplyFormCalculateStats();
+					FillInBattlerData();
 				} //end if
 
 				//Adjust base damage
@@ -4942,10 +5020,31 @@ public class BattleScene : MonoBehaviour
 				} //end else if
 
 				//Gyro Ball
-				else if(currentAttack == 227)
+				else if (currentAttack == 227)
 				{
-					moveDamage = ExtensionMethods.CapAtInt(25 * (battlers[toProcess.target].GetSpeed() / 
-						battlers[toProcess.battler].GetSpeed()), 150);
+					moveDamage = ExtensionMethods.CapAtInt(25 * (battlers[toProcess.target].GetSpeed() /
+					battlers[toProcess.battler].GetSpeed()), 150);
+				} //end else if
+
+				//Fling
+				else if (currentAttack == 184)
+				{
+					if (battlers[toProcess.battler].Item == 128)
+					{
+						moveDamage = 130;
+						battlers[toProcess.battler].Item = 0;
+					} //end if
+					else if (battlers[toProcess.battler].Item == 113)
+					{
+						moveDamage = 100;
+						battlers[toProcess.battler].Item = 0;
+					} //end else if
+					else
+					{
+						moveDamage = 70;
+						GameManager.instance.LogErrorMessage("The item " + battlers[toProcess.battler].Item + " was flung.");
+						battlers[toProcess.battler].Item = 0;
+					} //end else
 				} //end else if
 
 				//Flying Press, Stomp
@@ -4960,6 +5059,22 @@ public class BattleScene : MonoBehaviour
 				{
 					moveDamage *= 2;
 				} //end else if
+
+				//Solarbeam
+				else if (currentAttack == 517)
+				{
+					if (fieldEffects[toProcess.battler][(int)FieldEffects.Hail] > 0 || fieldEffects[toProcess.battler][(int)FieldEffects.
+						Rain] > 0 || fieldEffects[toProcess.battler][(int)FieldEffects.Sand] > 0)
+					{
+						moveDamage /= 2;
+					} //end if
+				} //end else if
+
+				//Venoshock
+				if (currentAttack == 601 && battlers[toProcess.target].BattlerStatus == (int)Status.POISON)
+				{
+					moveDamage *= 2;
+				} //end if
 
 				//Water Sport
 				if (fieldEffects[0][(int)FieldEffects.WaterSport] > 0 && moveType == (int)Types.FIRE)
@@ -5533,6 +5648,7 @@ public class BattleScene : MonoBehaviour
 										{
 											ItemEffects.PinchUseItem(battlers[queue[i].target]);
 										} //end if
+										FillInBattlerData();
 									} //end if
 								} //end else
 
@@ -5546,11 +5662,27 @@ public class BattleScene : MonoBehaviour
 									//Process move effect
 									battlers[queue[i].battler].ProcessAttackerAttackEffect(currentAttack);
 
+
+									//Check for Thief
+									if (currentAttack == 572)
+									{
+										//If user has no item and target has stealable item
+										int[] unstealableItems = new int[]{103};
+										if (battlers[queue[i].battler].Item == 0 && battlers[queue[i].target].Item != 0 &&
+										   !unstealableItems.Contains(battlers[queue[i].target].Item))
+										{
+											battlers[queue[i].battler].Item = battlers[queue[i].target].Item;
+											battlers[queue[i].target].Item = 0;
+											battlers[queue[i].battler].BattlerPokemon.ItemStolen = true;
+										} //end if
+									} //end if
+
 									//Check if there is a pinch item to activate
 									if (battlers[queue[i].battler].CurrentHP <= battlers[queue[i].battler].TotalHP / 4)
 									{
 										ItemEffects.PinchUseItem(battlers[queue[i].battler]);
 									} //end if
+									FillInBattlerData();
 								} //end else
 							} //end for
 						} //end if
@@ -5617,6 +5749,12 @@ public class BattleScene : MonoBehaviour
 						waitingState = Battle.PROCESSQUEUE;
 						StartCoroutine(ResolveFieldEntrance());
 						yield return new WaitUntil(() => battleState == Battle.PROCESSQUEUE);
+						break;
+					case 3:
+						battlers[queue[i].battler].ApplyFormCalculateStats();
+						FillInBattlerData();
+						WriteBattleMessage(battlers[queue[i].battler].Nickname + " Mega Evolved!");
+						yield return new WaitForSeconds(0.5f);
 						break;
 				} //end switch
 			} //end if
@@ -5775,6 +5913,21 @@ public class BattleScene : MonoBehaviour
 				{
 					GameManager.instance.GetTrainer().Team[i].FormNumber = 0;
 				} //end if
+
+				//Remove stolen items
+				if (GameManager.instance.GetTrainer().Team[i].ItemStolen)
+				{
+					if (GameManager.instance.GetTrainer().Team[i].Item !=
+						GameManager.instance.GetTrainer().Team[i].InitialItem)
+					{
+						GameManager.instance.GetTrainer().Team[i].Item = 
+							GameManager.instance.GetTrainer().Team[i].InitialItem;
+					} //end if
+					else
+					{
+						GameManager.instance.GetTrainer().Team[i].Item = 0;
+					} //end else
+				} //end if
 			} //end for
 
 			//Return to main
@@ -5855,6 +6008,27 @@ public class BattleScene : MonoBehaviour
 				//Find the pokemon that matches
 				int position = combatants[0].Team.FindIndex(pokemon => pokemon.PersonalID == originalOrder[i].PersonalID);
 				GameManager.instance.GetTrainer().Swap(i, position);
+
+				//Revert forms
+				if (GameManager.instance.GetTrainer().Team[i].NatSpecies == 681)
+				{
+					GameManager.instance.GetTrainer().Team[i].FormNumber = 0;
+				} //end if
+
+				//Remove stolen items
+				if (GameManager.instance.GetTrainer().Team[i].ItemStolen)
+				{
+					if (GameManager.instance.GetTrainer().Team[i].Item !=
+						GameManager.instance.GetTrainer().Team[i].InitialItem)
+					{
+						GameManager.instance.GetTrainer().Team[i].Item = 
+							GameManager.instance.GetTrainer().Team[i].InitialItem;
+					} //end if
+					else
+					{
+						GameManager.instance.GetTrainer().Team[i].Item = 0;
+					} //end else
+				} //end if
 			} //end for
 
 			//Return to main
@@ -6100,6 +6274,27 @@ public class BattleScene : MonoBehaviour
 					//Find the pokemon that matches
 					int position = combatants[0].Team.FindIndex(pokemon => pokemon.Equals(originalOrder[i]));
 					GameManager.instance.GetTrainer().Swap(i, position);
+
+					//Revert forms
+					if (GameManager.instance.GetTrainer().Team[i].NatSpecies == 681)
+					{
+						GameManager.instance.GetTrainer().Team[i].FormNumber = 0;
+					} //end if
+
+					//Remove stolen items
+					if (GameManager.instance.GetTrainer().Team[i].ItemStolen)
+					{
+						if (GameManager.instance.GetTrainer().Team[i].Item !=
+						    GameManager.instance.GetTrainer().Team[i].InitialItem)
+						{
+							GameManager.instance.GetTrainer().Team[i].Item = 
+								GameManager.instance.GetTrainer().Team[i].InitialItem;
+						} //end if
+						else
+						{
+							GameManager.instance.GetTrainer().Team[i].Item = 0;
+						} //end else
+					} //end if
 				} //end for
 				GameManager.instance.LoadScene("MainGame", true);
 			} //end if

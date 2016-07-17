@@ -1320,6 +1320,7 @@ public class InventoryScene : MonoBehaviour
 					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
 					GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 					GameManager.instance.GetTrainer().Team[teamSlot - 1].Item = itemNumber;
+					GameManager.instance.GetTrainer().Team[teamSlot - 1].InitialItem = itemNumber;
 					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
 					GameManager.instance.GetTrainer().Team[teamSlot - 1].Nickname, true);
 					checkpoint = 1;
@@ -1696,6 +1697,7 @@ public class InventoryScene : MonoBehaviour
 					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
 					GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 					GameManager.instance.GetTrainer().Team[teamSlot - 1].Item = itemNumber;
+					GameManager.instance.GetTrainer().Team[teamSlot - 1].InitialItem = itemNumber;
 					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
 						GameManager.instance.GetTrainer().Team[teamSlot - 1].Nickname, true);
 					checkpoint = 1;
@@ -2176,6 +2178,7 @@ public class InventoryScene : MonoBehaviour
 				GameManager.instance.GetTrainer().AddItem(GameManager.instance.GetTrainer().Team[teamSlot - 1].
 					Item, 1);
 				GameManager.instance.GetTrainer().Team[teamSlot - 1].Item = itemNumber;
+				GameManager.instance.GetTrainer().Team[teamSlot - 1].InitialItem = itemNumber;
 				GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
 				GameManager.instance.GetTrainer().Team[teamSlot - 1].Nickname + " and " +
 				"put other item in bag.", true);

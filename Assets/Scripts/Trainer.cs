@@ -37,6 +37,8 @@ public class Trainer
 	Shop shop;			  //The status of the shop for the player
 	[OptionalField(VersionAdded=2)]
 	List<int> leaderWins; //How many wins has the player scored against the leader mode
+	[OptionalField(VersionAdded=2)]
+	bool hasMega;		  //Has this trainer used a mega this battle yet
 
     //Gym Battle count
     //Kalos
@@ -811,6 +813,21 @@ public class Trainer
             debugUnlocked = value;
         } //end set
     } //end DebugUnlocked
+
+	/***************************************
+     * Name: HasMega
+     ***************************************/
+	public bool HasMega
+	{
+		get
+		{
+			return hasMega;
+		} //end get
+		set
+		{
+			hasMega = value;
+		} //end set
+	} //end HasMega
     #endregion
     #endregion
 } //end Trainer class

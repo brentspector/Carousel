@@ -85,7 +85,7 @@ public static class DataContents : System.Object
         if (returnValue == 0)
         {
             return false;
-        } //end if
+        } //end if	
 
         //Initialize markings
         markingCharacters = new char[] {'●','■','▲','♥','♦','☻'};
@@ -112,11 +112,11 @@ public static class DataContents : System.Object
         ribbonSprites       = Resources.LoadAll<Sprite> ("Sprites/Icons/ribbons");
         badgeSprites        = Resources.LoadAll<Sprite> ("Sprites/Icons/Badges");
         trainerCardSprites  = Resources.LoadAll<Sprite> ("Sprites/Menus/FullTrainers");
-		trainerBacks        = Resources.LoadAll<Sprite>("Sprites/Battle/TrainerBack");
-		versusImages 		= Resources.LoadAll<Sprite>("Sprites/Battle/Leaders");
-		leaderSprites 		= Resources.LoadAll<Sprite>("Sprites/Battle/FullLeaders");
-		attackNonSelSprites	= Resources.LoadAll<Sprite>("Sprites/Battle/battleFightButtons");
-		attackSelSprites 	= Resources.LoadAll<Sprite>("Sprites/Battle/battleFightButtonsSelect");
+		trainerBacks        = Resources.LoadAll<Sprite> ("Sprites/Battle/TrainerBack");
+		versusImages 		= Resources.LoadAll<Sprite> ("Sprites/Battle/Leaders");
+		leaderSprites 		= Resources.LoadAll<Sprite> ("Sprites/Battle/FullLeaders");
+		attackNonSelSprites	= Resources.LoadAll<Sprite> ("Sprites/Battle/battleFightButtons");
+		attackSelSprites 	= Resources.LoadAll<Sprite> ("Sprites/Battle/battleFightButtonsSelect");
 
         return true;
     } //end InitDataContents()

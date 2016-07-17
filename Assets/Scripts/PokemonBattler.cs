@@ -66,6 +66,7 @@ public class PokemonBattler
 		ability = battler.Ability;
 		gender = battler.Gender;
 		currentLevel = battler.CurrentLevel;
+		item = battler.Item;
 		turnCount = 0;
 		lastHPLost = 0;
 		lastMoveUsed = -1;
@@ -171,6 +172,12 @@ public class PokemonBattler
      ***************************************/
 	public void SwitchInPokemon(Pokemon toSwitch, bool retainStats = false)
 	{
+		//Save toxic
+		if (effects[(int)LastingEffects.Toxic] > 0 && battler != null)
+		{
+			battler.StatusCount = 1;
+		} //end if
+
 		//Check for Natural Cure
 		if (CheckAbility(99) && battler != null)
 		{
@@ -290,11 +297,20 @@ public class PokemonBattler
 		effects[(int)LastingEffects.Unburden] = 0;
 		effects[(int)LastingEffects.Torment] = 0;
 		effects[(int)LastingEffects.TwoTurnAttack] = -1;
+		effects[(int)LastingEffects.SmackDown] = 0;
+		status = battler.Status;
+		item = battler.Item;
 		lastHPLost = 0;
 		lastMoveUsed = -1;
 		turnCount = 0;
 		isMega = false;
 		justEntered = true;
+
+		//Restore toxic
+		if (status == (int)Status.POISON && battler.StatusCount == 1)
+		{
+			effects[(int)LastingEffects.Toxic] = 1;
+		} //end if
 	} //end SwitchInPokemon(bool retainStats = false)
 
 	/***************************************
@@ -663,6 +679,38 @@ public class PokemonBattler
 			GameManager.instance.WriteBattleMessage(string.Format("{0} lost {1} HP from recoil!", nickname, damage));
 		} //end else if
 
+		//Bulk Up
+		else if (moveNumber == 61)
+		{
+			//Increase attack 1 stage
+			if (stages[1] < 6)
+			{
+				//Increase defense 1 stage
+				if (stages[2] < 6)
+				{
+					SetStage(1, 1);
+					SetStage(1, 2);
+					GameManager.instance.WriteBattleMessage(nickname + "'s Attack and Defense rose!");
+				} //end if
+				else
+				{
+					SetStage(1, 1);
+					GameManager.instance.WriteBattleMessage(nickname + "'s Attack rose!");
+				} //end else
+			} //end if
+
+			//Increase defense 1 stage
+			else if (stages[2] < 6)
+			{
+				SetStage(1, 2);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Defense rose!");
+			} //end else if
+			else
+			{
+				GameManager.instance.WriteBattleMessage("...but nothing happened.");
+			} //end else
+		} //end else if
+
 		//Calm Mind
 		else if (moveNumber == 65)
 		{
@@ -806,6 +854,17 @@ public class PokemonBattler
 			{
 				GameManager.instance.WriteBattleMessage("...but nothing happened.");
 			} //end else
+		} //end else if
+
+		//Flame Charge
+		else if (moveNumber == 177)
+		{
+			//100% chance to increase speed by 1 stage
+			if (stages[3] < 6)
+			{
+				SetStage(1, 3);
+				GameManager.instance.WriteBattleMessage(nickname + "'s Speed rose!");
+			} //end if
 		} //end else if
 
 		//Flare Blitz
@@ -1492,6 +1551,16 @@ public class PokemonBattler
 			} //end if
 		} //end else  if
 
+		//Smack Down
+		else if (moveNumber == 508)
+		{
+			if (effects[(int)LastingEffects.SmackDown] == 0)
+			{
+				effects[(int)LastingEffects.SmackDown] = 1;
+				GameManager.instance.WriteBattleMessage(nickname + " was thrown to the ground!");
+			} //end if
+		} //end else if
+
 		//Stomp
 		else if (moveNumber == 535 && !CheckAbility(140))
 		{
@@ -1537,6 +1606,25 @@ public class PokemonBattler
 			else
 			{
 				GameManager.instance.WriteBattleMessage(nickname + " is already affected by Torment!");
+			} //end
+		} //end else if
+
+		//Toxic
+		else if (moveNumber == 585)
+		{
+			if (effects[(int)LastingEffects.Toxic] != 0)
+			{
+				GameManager.instance.WriteBattleMessage(nickname + " is already affected by Toxic!");
+			} //end if
+			else if (status != (int)Status.HEALTHY)
+			{
+				GameManager.instance.WriteBattleMessage(nickname + " is already afflicted with a status!");
+			} //end else if
+			else
+			{
+				effects[(int)LastingEffects.Toxic] = 1;
+				status = (int)Status.POISON;
+				GameManager.instance.WriteBattleMessage(nickname + " was badly poisoned!");
 			} //end
 		} //end else if
 
@@ -1701,14 +1789,23 @@ public class PokemonBattler
 			} //end if
 		} //end if
 
-		//Resolve poison
+		//Resolve poison/toxic
 		if (status == (int)Status.POISON)
 		{
 			//Check for Magic Guard
 			if (!CheckAbility(85))
 			{	
-				RemoveHP(ExtensionMethods.BindToInt(totalHP / 8, 1));
-				GameManager.instance.WriteBattleMessage(nickname + " was hurt by the poison!");
+				if (effects[(int)LastingEffects.Toxic] > 0)
+				{
+					RemoveHP(ExtensionMethods.BindToInt(effects[(int)LastingEffects.Toxic] * totalHP / 16, 1));
+					GameManager.instance.WriteBattleMessage(nickname + " was hurt by the toxic!");
+					effects[(int)LastingEffects.Toxic]++;
+				} //end if
+				else
+				{
+					RemoveHP(ExtensionMethods.BindToInt(totalHP / 8, 1));
+					GameManager.instance.WriteBattleMessage(nickname + " was hurt by the poison!");
+				} //end else
 
 				//Check for faint
 				GameManager.instance.CheckForFaint(sideOn);
@@ -1843,68 +1940,113 @@ public class PokemonBattler
 			pvalues [nd5] = 110;
 			pvalues [nm5] = 90;
 		} //end if
+			
+		//Gardevoir, Abomasnow, Altaria, Gallade
+		if(battler.NatSpecies == 282 || battler.NatSpecies == 334 || battler.NatSpecies == 460 ||
+			battler.NatSpecies == 475)
+		{
+			if (battler.FormNumber == 0)
+			{
+				battler.FormNumber = 1;
 
-		//Switch based on species
-		switch(battler.NatSpecies)
-		{			
-			//Aegislash
-			case 681:
-				if (battler.FormNumber == 0)
+				//Loop through and set all non-HP stats
+				for (int i = 1; i < 6; i++)
 				{
-					//Change to Attack Stance
-					battler.FormNumber = 1;
-
-					//Calculate Attack
-					int baseStat = 150;
-					int evCalc = battler.GetEV(1) / 4;
-					int firstCalc = (battler.GetIV(1) + 2 * baseStat + evCalc);
+					int baseStat = 0;
+					if (i == 1)
+					{
+						baseStat = DataContents.ExecuteSQL<int>("SELECT attack FROM Forms WHERE baseSpecies=" + battler.NatSpecies);
+					} //end if
+						else if (i == 2)
+					{
+						baseStat = DataContents.ExecuteSQL<int>("SELECT defence FROM Forms WHERE baseSpecies=" + battler.NatSpecies);
+					} //end else if
+						else if (i == 3)
+					{
+						baseStat = DataContents.ExecuteSQL<int>("SELECT speed FROM Forms WHERE baseSpecies=" + battler.NatSpecies);
+					} //end else if
+						else if (i == 4)
+					{
+						baseStat = DataContents.ExecuteSQL<int>("SELECT specialAttack FROM Forms WHERE baseSpecies=" +
+						battler.NatSpecies);
+					} //end else if
+						else
+					{
+						baseStat = DataContents.ExecuteSQL<int>("SELECT specialDefence FROM Forms WHERE baseSpecies=" +
+						battler.NatSpecies);
+					} //end else if
+					int evCalc = battler.GetEV(i) / 4;
+					int firstCalc = (battler.GetIV(i) + 2 * baseStat + evCalc);
 					int secondCalc = (firstCalc * currentLevel / 100);
-					int bValue = (secondCalc + 5) * pvalues[0] / 100;
-					float value = (float)bValue * (1f + (0.5f * stages[1]));
-					attack = (int)value;
+					results[i - 1] = (secondCalc + 5) * pvalues[i - 1] / 100;
+				} //end for
 
-					//Calculate Defense
-					baseStat = 50;
-					evCalc = battler.GetEV(2) / 4;
-					firstCalc = (battler.GetIV(2) + 2 * baseStat + evCalc);
-					secondCalc = (firstCalc * currentLevel / 100);
-					bValue = (secondCalc + 5) * pvalues[1] / 100;
-					value = (float)bValue * (1f + (0.5f * stages[2]));
-					defense = (int)value;
+				//Set the values
+				attack = results[0];
+				defense = results[1];
+				speed = results[2];
+				specialA = results[3];
+				specialD = results[4];
+			} //end if
+		} //end if
+		//Aegislash
+		else if(battler.NatSpecies == 681)
+		{
+			if (battler.FormNumber == 0)
+			{
+				//Change to Attack Stance
+				battler.FormNumber = 1;
 
-					//Calculate Speed
-					value = (float)battler.Speed * (1f + (0.5f * stages[3]));
-					speed = (int)value;
+				//Calculate Attack
+				int baseStat = 150;
+				int evCalc = battler.GetEV(1) / 4;
+				int firstCalc = (battler.GetIV(1) + 2 * baseStat + evCalc);
+				int secondCalc = (firstCalc * currentLevel / 100);
+				int bValue = (secondCalc + 5) * pvalues[0] / 100;
+				float value = (float)bValue * (1f + (0.5f * stages[1]));
+				attack = (int)value;
 
-					//Calculate Special Attack
-					baseStat = 150;
-					evCalc = battler.GetEV(4) / 4;
-					firstCalc = (battler.GetIV(4) + 2 * baseStat + evCalc);
-					secondCalc = (firstCalc * currentLevel / 100);
-					bValue = (secondCalc + 5) * pvalues[3] / 100;
-					value = (float)bValue * (1f + (0.5f * stages[4]));
-					specialA = (int)value;
+				//Calculate Defense
+				baseStat = 50;
+				evCalc = battler.GetEV(2) / 4;
+				firstCalc = (battler.GetIV(2) + 2 * baseStat + evCalc);
+				secondCalc = (firstCalc * currentLevel / 100);
+				bValue = (secondCalc + 5) * pvalues[1] / 100;
+				value = (float)bValue * (1f + (0.5f * stages[2]));
+				defense = (int)value;
 
-					//Calculate Special Defense
-					baseStat = 50;
-					evCalc = battler.GetEV(5) / 4;
-					firstCalc = (battler.GetIV(5) + 2 * baseStat + evCalc);
-					secondCalc = (firstCalc * currentLevel / 100);
-					bValue = (secondCalc + 5) * pvalues[4] / 100;
-					value = (float)bValue * (1f + (0.5f * stages[5]));
-					specialD = (int)value;
-				} //end if
+				//Calculate Speed
+				value = (float)battler.Speed * (1f + (0.5f * stages[3]));
+				speed = (int)value;
+
+				//Calculate Special Attack
+				baseStat = 150;
+				evCalc = battler.GetEV(4) / 4;
+				firstCalc = (battler.GetIV(4) + 2 * baseStat + evCalc);
+				secondCalc = (firstCalc * currentLevel / 100);
+				bValue = (secondCalc + 5) * pvalues[3] / 100;
+				value = (float)bValue * (1f + (0.5f * stages[4]));
+				specialA = (int)value;
+
+				//Calculate Special Defense
+				baseStat = 50;
+				evCalc = battler.GetEV(5) / 4;
+				firstCalc = (battler.GetIV(5) + 2 * baseStat + evCalc);
+				secondCalc = (firstCalc * currentLevel / 100);
+				bValue = (secondCalc + 5) * pvalues[4] / 100;
+				value = (float)bValue * (1f + (0.5f * stages[5]));
+				specialD = (int)value;
+			} //end if
 				else
-				{
-					//Change to Defense Stance
-					battler.FormNumber = 0;
+			{
+				//Change to Defense Stance
+				battler.FormNumber = 0;
 
-					//Calculate based on base battler
-					CalculateStats();
-				} //end else
-				break;
-		} //end switch
-	} //end ApplyStanceChange
+				//Calculate based on base battler
+				CalculateStats();
+			} //end else
+		} //end else if
+	} //end ApplyFormCalculateStats
 
 	/***************************************
      * Name: CalculateStats
@@ -2248,6 +2390,23 @@ public class PokemonBattler
 			return false;
 		} //end else
 	} //end CheckAirborne
+
+	/***************************************
+     * Name: CheckMegaPossible
+     * Checks if this pokemon can mega evolve
+     ***************************************/
+	public bool CheckMegaPossible()
+	{
+		int itemRequired = DataContents.ExecuteSQL<int>("SELECT item FROM Forms WHERE baseSpecies=" + battler.NatSpecies);
+		if (itemRequired == item && itemRequired != 0)
+		{			
+			return true;
+		} //end if
+		else
+		{
+			return false;
+		} //end else
+	} //end CheckMegaPossible
 
 	/***************************************
      * Name: FaintPokemon
