@@ -2411,6 +2411,7 @@ public class PCScene : MonoBehaviour
 							int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
 							GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
+							GameManager.instance.GetTrainer().Team[choiceNumber - 1].InitialItem = itemNumber;
 							GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
 							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname, true);
 							playerBag.SetActive(false);
@@ -2442,6 +2443,8 @@ public class PCScene : MonoBehaviour
 							GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 							GameManager.instance.GetTrainer().GetPC(
 								GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Item = itemNumber;
+							GameManager.instance.GetTrainer().GetPC(
+								GameManager.instance.GetTrainer().GetPCBox(), boxChoice).InitialItem = itemNumber;
 							GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
 								GameManager.instance.GetTrainer().GetPC(
 									GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Nickname, true);
@@ -3083,6 +3086,7 @@ public class PCScene : MonoBehaviour
 							int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
 							GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
+							GameManager.instance.GetTrainer().Team[choiceNumber - 1].InitialItem = itemNumber;
 							GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
 								GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname, true);
 							playerBag.SetActive(false);
@@ -3114,6 +3118,8 @@ public class PCScene : MonoBehaviour
 							GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 							GameManager.instance.GetTrainer().GetPC(
 								GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Item = itemNumber;
+							GameManager.instance.GetTrainer().GetPC(
+								GameManager.instance.GetTrainer().GetPCBox(), boxChoice).InitialItem = itemNumber;
 							GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
 								GameManager.instance.GetTrainer().GetPC(
 									GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Nickname, true);
@@ -4088,6 +4094,7 @@ public class PCScene : MonoBehaviour
 					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
 					GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 					GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
+					GameManager.instance.GetTrainer().Team[choiceNumber - 1].InitialItem = itemNumber;
 					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
 					GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname + " and " +
 					"put other item in bag.", true);
@@ -4108,6 +4115,8 @@ public class PCScene : MonoBehaviour
 					GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 					GameManager.instance.GetTrainer().GetPC(
 						GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Item = itemNumber;
+					GameManager.instance.GetTrainer().GetPC(
+						GameManager.instance.GetTrainer().GetPCBox(), boxChoice).InitialItem = itemNumber;
 					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
 					GameManager.instance.GetTrainer().GetPC(
 						GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Nickname + " and " +

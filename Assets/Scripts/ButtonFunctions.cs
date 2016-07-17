@@ -556,6 +556,7 @@ public class ButtonFunctions : MonoBehaviour
 		try
 		{
 			List<Trainer> battlerList = new List<Trainer>();
+			GameManager.instance.GetTrainer().HasMega = false;
 			battlerList.Add(GameManager.instance.GetTrainer());
 			string[] enemiesGiven = battleData.Split(',');
 			for(int i = 1; i < enemiesGiven.Length; i++)
@@ -564,6 +565,7 @@ public class ButtonFunctions : MonoBehaviour
 				newTrainer.PlayerID = int.Parse(enemiesGiven[i]);
 				newTrainer.PlayerName = DataContents.ExecuteSQL<string>("SELECT name FROM Trainers WHERE enemyID=" + enemiesGiven[i]);
 				newTrainer.PlayerImage = DataContents.ExecuteSQL<int>("SELECT image FROM Trainers WHERE enemyID=" + enemiesGiven[i]);
+				newTrainer.HasMega = false;
 				string[] items = DataContents.ExecuteSQL<string>("SELECT items FROM Trainers WHERE enemyID=" + enemiesGiven[i]).Split(',');
 				for(int j = 0; j < items.Length; j++)
 				{

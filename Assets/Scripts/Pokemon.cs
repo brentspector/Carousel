@@ -76,6 +76,10 @@ public class Pokemon
 	int expForLevel;		//The amount of EXP needed for the next level
 	[OptionalField(VersionAdded=2)]
 	bool canEvolve;			//Is this pokemon able to evolve at the end of battle
+	[OptionalField(VersionAdded=2)]
+	bool itemStolen = false;//Is this pokemon's held item stolen
+	[OptionalField(VersionAdded=2)]
+	int initialItem;		//The item stolen from this pokemon
     #endregion
 
     #region Methods
@@ -258,6 +262,7 @@ public class Pokemon
 		currentEXP = CalculateEXP (currentLevel);
 		remainingEXP = CalculateRemainingEXP (currentLevel);
 		Item = item;
+		initialItem = item;
 		ballUsed = ball;
 		obtainLevel = currentLevel;
 		string formString = DataContents.ExecuteSQL<string>("SELECT forms FROM Pokemon WHERE rowid=" + natSpecies);
@@ -672,8 +677,8 @@ public class Pokemon
 							values[i] = 510 - totalEV;
 						} //end if
 						if (EV[i] + values[i] > 252)
-						{
-							values[i] = 252 - EV[index];
+						{							
+							values[i] = 252 - EV[i];
 						} //end if
 						totalEV += values[i];
 						EV[i] += values[i];
@@ -1984,6 +1989,21 @@ public class Pokemon
 		} //end set
 	} //end ItemRecycle
 
+	/***************************************
+     * Name: InitialItem
+     ***************************************/
+	public int InitialItem
+	{
+		get
+		{
+			return initialItem;
+		} //end get
+		set
+		{
+			initialItem = value;
+		} //end set
+	} //end InitialItem
+
     /***************************************
      * Name: HasPokerus
      ***************************************/
@@ -2028,6 +2048,21 @@ public class Pokemon
 			canEvolve = value;
 		} //end set
 	} //end CanEvolve
+
+	/***************************************
+     * Name: ItemStolen
+     ***************************************/
+	public bool ItemStolen
+	{
+		get
+		{
+			return itemStolen;
+		} //end get
+		set
+		{
+			itemStolen = value;
+		} //end set
+	} //end ItemStolen
 
     /***************************************
      * Name: GetMarkings

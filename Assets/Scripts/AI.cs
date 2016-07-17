@@ -36,7 +36,7 @@ public static class PrizeList
 		{
 			case 196:
 				//Check if player has fought this opponent before
-				if (player.LeaderWins[opponent] > 0)
+				if (player.LeaderWins[opponent] == 0)
 				{
 					GameManager.instance.WriteBattleMessage("You always manage to beat me, " + player.PlayerName + ". I'll " +
 						"get you next time!");
@@ -48,7 +48,7 @@ public static class PrizeList
 				break;
 			case 199:
 				//Check if player has fought this opponent before
-				if (player.LeaderWins[opponent] > 0)
+				if (player.LeaderWins[opponent] == 0)
 				{
 					GameManager.instance.WriteBattleMessage("You sure have some impressive skills, " + player.PlayerName + "!");
 				} //end if
@@ -59,7 +59,7 @@ public static class PrizeList
 				break;
 			case 202:
 				//Check if player has fought this opponent before
-				if (player.LeaderWins[opponent] > 0)
+				if (player.LeaderWins[opponent] == 0)
 				{
 					GameManager.instance.WriteBattleMessage("How did you manage to topple me, " + player.PlayerName + "? I'll " +
 						"improve for next time!");
@@ -71,7 +71,7 @@ public static class PrizeList
 				break;
 			case 205:
 				//Check if player has fought this opponent before
-				if (player.LeaderWins[opponent] > 0)
+				if (player.LeaderWins[opponent] == 0)
 				{
 					GameManager.instance.WriteBattleMessage("Yer quite a talented trainer, " + player.PlayerName + ". Yer gonna " +
 						"be a mighty force!");
@@ -83,7 +83,7 @@ public static class PrizeList
 				break;
 			case 208:
 				//Check if player has fought this opponent before
-				if (player.LeaderWins[opponent] > 0)
+				if (player.LeaderWins[opponent] == 0)
 				{
 					GameManager.instance.WriteBattleMessage("Your abilities are really sharp, " + player.PlayerName + "! I'll " +
 						"to get my pokemon into my Mach 2 training!");
@@ -95,20 +95,20 @@ public static class PrizeList
 				break;
 			case 211:
 				//Check if player has fought this opponent before
-				if (player.LeaderWins[opponent] > 0)
+				if (player.LeaderWins[opponent] == 0)
 				{
 					GameManager.instance.WriteBattleMessage("Now there's a smile I can appreciate! " + player.PlayerName + ", I " +
 						"look forward to a rematch!");
 				} //end if
 				else
 				{
-					GameManager.instance.WriteBattleMessage("Well, you beat me, " + player.PlayerName + ". It's always a captivating" +
+					GameManager.instance.WriteBattleMessage("Well, you beat me, " + player.PlayerName + ". It's always a captivating " +
 						"match!");
 				} //end else
 				break;
 			case 214:
 				//Check if player has fought this opponent before
-				if (player.LeaderWins[opponent] > 0)
+				if (player.LeaderWins[opponent] == 0)
 				{
 					GameManager.instance.WriteBattleMessage("Always seek your own way, " + player.PlayerName + "!");
 				} //end if
@@ -119,7 +119,7 @@ public static class PrizeList
 				break;
 			case 217:
 				//Check if player has fought this opponent before
-				if (player.LeaderWins[opponent] > 0)
+				if (player.LeaderWins[opponent] == 0)
 				{
 					GameManager.instance.WriteBattleMessage("You've burned so hot my Pokemon have melted, " + player.PlayerName + "!");
 				} //end if
@@ -130,7 +130,7 @@ public static class PrizeList
 				break;
 			case 220:
 				//Check if player has fought this opponent before
-				if (player.LeaderWins[opponent] > 0)
+				if (player.LeaderWins[opponent] == 0)
 				{
 					GameManager.instance.WriteBattleMessage("You've got a firey passion, " + player.PlayerName + "!");
 				} //end if
@@ -141,7 +141,7 @@ public static class PrizeList
 				break;
 			case 223:
 				//Check if player has fought this opponent before
-				if (player.LeaderWins[opponent] > 0)
+				if (player.LeaderWins[opponent] == 0)
 				{
 					GameManager.instance.WriteBattleMessage(player.PlayerName + ", you're a force that can shake even my rigid Pokemon!");
 				} //end if
@@ -152,7 +152,7 @@ public static class PrizeList
 				break;
 			case 226:
 				//Check if player has fought this opponent before
-				if (player.LeaderWins[opponent] > 0)
+				if (player.LeaderWins[opponent] == 0)
 				{
 					GameManager.instance.WriteBattleMessage("Not even the beasts of legend will ignore your strength, " + 
 						player.PlayerName + "!");
@@ -164,7 +164,7 @@ public static class PrizeList
 				break;
 			case 229:
 				//Check if player has fought this opponent before
-				if (player.LeaderWins[opponent] > 0)
+				if (player.LeaderWins[opponent] == 0)
 				{
 					GameManager.instance.WriteBattleMessage("I will not be able to forget the triumph you accomplished here, " + 
 						player.PlayerName + "!");
@@ -177,7 +177,7 @@ public static class PrizeList
 				break;
 			case 232:
 				//Check if player has fought this opponent before
-				if (player.LeaderWins[opponent] > 0)
+				if (player.LeaderWins[opponent] == 0)
 				{
 					GameManager.instance.WriteBattleMessage("My word! You've defeated even the highest authority in the land, " + 
 						player.PlayerName + "! I can only hope we'll meet again.");
