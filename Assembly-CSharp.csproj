@@ -48,6 +48,7 @@
      <Compile Include="Assets\Scripts\AI.cs" />
      <Compile Include="Assets\Scripts\AbilityEffects.cs" />
      <Compile Include="Assets\Scripts\AnimationManager.cs" />
+     <Compile Include="Assets\Scripts\AudioManager.cs" />
      <Compile Include="Assets\Scripts\BattleScene.cs" />
      <Compile Include="Assets\Scripts\ButtonFunctions.cs" />
      <Compile Include="Assets\Scripts\DataContents.cs" />

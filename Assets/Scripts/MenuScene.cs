@@ -233,6 +233,9 @@ public class MenuScene : MonoBehaviour
 					mChoices.transform.GetChild(choiceNumber).transform.position.x,
 					mChoices.transform.GetChild(choiceNumber).transform.position.y - 1,
 					100);
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Menu without continue game
@@ -252,6 +255,9 @@ public class MenuScene : MonoBehaviour
 					mChoices.transform.GetChild(choiceNumber).transform.position.x,
 					mChoices.transform.GetChild(choiceNumber).transform.position.y - 2,
 					100);
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end else if Up Arrow
 
@@ -277,6 +283,9 @@ public class MenuScene : MonoBehaviour
 					mChoices.transform.GetChild(choiceNumber).transform.position.x,
 					mChoices.transform.GetChild(choiceNumber).transform.position.y - 1,
 					100);
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Menu without continue game
@@ -296,6 +305,9 @@ public class MenuScene : MonoBehaviour
 					mChoices.transform.GetChild(choiceNumber).transform.position.x,
 					mChoices.transform.GetChild(choiceNumber).transform.position.y - 2,
 					100);
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end else if Down Arrow
 
@@ -338,6 +350,9 @@ public class MenuScene : MonoBehaviour
 					mChoices.transform.GetChild(choiceNumber).transform.position.x,
 					mChoices.transform.GetChild(choiceNumber).transform.position.y - 1,
 					100);
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Menu without continue game
@@ -358,6 +373,9 @@ public class MenuScene : MonoBehaviour
 					mChoices.transform.GetChild(choiceNumber).transform.position.x,
 					mChoices.transform.GetChild(choiceNumber).transform.position.y - 2,
 					100);
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end else if Mouse Moves Up
 
@@ -384,6 +402,9 @@ public class MenuScene : MonoBehaviour
 					mChoices.transform.GetChild(choiceNumber).transform.position.x,
 					mChoices.transform.GetChild(choiceNumber).transform.position.y - 1,
 					100);
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Menu without continue game
@@ -404,6 +425,9 @@ public class MenuScene : MonoBehaviour
 					mChoices.transform.GetChild(choiceNumber).transform.position.x,
 					mChoices.transform.GetChild(choiceNumber).transform.position.y - 2,
 					100);
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end else if Mouse Moves Down
 
@@ -432,6 +456,9 @@ public class MenuScene : MonoBehaviour
 			if (checkpoint == 2 || checkpoint == 4)
 			{
 				checkpoint = 5;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 		} //end else if Left Mouse Button
 
@@ -452,6 +479,9 @@ public class MenuScene : MonoBehaviour
 			if (checkpoint == 2 || checkpoint == 4)
 			{
 				checkpoint = 5;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 		} //end else if Enter/Return Key
 

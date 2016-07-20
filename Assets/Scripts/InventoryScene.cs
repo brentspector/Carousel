@@ -576,6 +576,9 @@ public class InventoryScene : MonoBehaviour
 			{
 				GameManager.instance.GetTrainer().PreviousPocket();
 				checkpoint = 1;
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Use Processing
@@ -601,6 +604,9 @@ public class InventoryScene : MonoBehaviour
 				{
 					currentTeamSlot = playerTeam.transform.FindChild("Buttons").GetChild(1).gameObject;
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 
 			//Give Processing
@@ -626,6 +632,9 @@ public class InventoryScene : MonoBehaviour
 				{
 					currentTeamSlot = playerTeam.transform.FindChild("Buttons").GetChild(1).gameObject;
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end if Left Arrow
 
@@ -639,6 +648,9 @@ public class InventoryScene : MonoBehaviour
 			{
 				GameManager.instance.GetTrainer().NextPocket();
 				checkpoint = 1;
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Use Processing
@@ -663,6 +675,9 @@ public class InventoryScene : MonoBehaviour
 				{
 					currentTeamSlot = playerTeam.transform.FindChild("Buttons").GetChild(1).gameObject;
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 
 			//Give Processing
@@ -687,6 +702,9 @@ public class InventoryScene : MonoBehaviour
 				{
 					currentTeamSlot = playerTeam.transform.FindChild("Buttons").GetChild(1).gameObject;
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end else if Right Arrow
 
@@ -704,6 +722,9 @@ public class InventoryScene : MonoBehaviour
 					topShown = inventorySpot;
 					bottomShown--;
 				} //end if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Submenu Processing
@@ -720,6 +741,9 @@ public class InventoryScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 
 			//Use Processing
@@ -743,6 +767,9 @@ public class InventoryScene : MonoBehaviour
 					teamSlot -= 2;
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + teamSlot).gameObject;
 				} //end else
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 
 			//Give Processing
@@ -766,6 +793,9 @@ public class InventoryScene : MonoBehaviour
 					teamSlot -= 2;
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + teamSlot).gameObject;
 				} //end else
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 
 			//Item Move Processing
@@ -777,6 +807,9 @@ public class InventoryScene : MonoBehaviour
 					topShown = switchSpot;
 					bottomShown--;
 				} //end if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 
 			//Pick Move Processing
@@ -793,6 +826,9 @@ public class InventoryScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end else if Up Arrow
 
@@ -810,6 +846,9 @@ public class InventoryScene : MonoBehaviour
 					bottomShown = inventorySpot;
 					topShown++;
 				} //end if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Submenu Processing
@@ -826,6 +865,9 @@ public class InventoryScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 
 			//Use Processing
@@ -850,6 +892,9 @@ public class InventoryScene : MonoBehaviour
 					teamSlot += 2;
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + teamSlot).gameObject;
 				} //end else
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 
 			//Give Processing
@@ -874,6 +919,9 @@ public class InventoryScene : MonoBehaviour
 					teamSlot += 2;
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + teamSlot).gameObject;
 				} //end else
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 
 			//Item Move Processing
@@ -885,6 +933,9 @@ public class InventoryScene : MonoBehaviour
 					bottomShown = switchSpot;
 					topShown++;
 				} //end if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 
 			//Pick Move Processing
@@ -901,6 +952,9 @@ public class InventoryScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end else if Down Arrow
 
@@ -919,6 +973,9 @@ public class InventoryScene : MonoBehaviour
 					teamSlot--;
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + teamSlot).gameObject;
 				} //end if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Give Processing
@@ -931,6 +988,9 @@ public class InventoryScene : MonoBehaviour
 					teamSlot--;
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + teamSlot).gameObject;
 				} //end if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end else if Mouse Moves Left
 
@@ -949,6 +1009,9 @@ public class InventoryScene : MonoBehaviour
 					teamSlot++;
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + teamSlot).gameObject;
 				} //end if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if 
 
 			//Give Processing
@@ -961,6 +1024,9 @@ public class InventoryScene : MonoBehaviour
 					teamSlot++;
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + teamSlot).gameObject;
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if 
 		} //end else if Mouse Moves Right
 
@@ -981,6 +1047,9 @@ public class InventoryScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Use Processing
@@ -1004,6 +1073,9 @@ public class InventoryScene : MonoBehaviour
 					teamSlot -= 2;
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + teamSlot).gameObject;
 				} //end else
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 
 			//Give Processing
@@ -1027,6 +1099,9 @@ public class InventoryScene : MonoBehaviour
 					teamSlot -= 2;
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + teamSlot).gameObject;
 				} //end else
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 
 			//Pick Move Processing
@@ -1041,6 +1116,9 @@ public class InventoryScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end else if Mouse Moves Up
 
@@ -1061,6 +1139,9 @@ public class InventoryScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Use Processing
@@ -1085,6 +1166,9 @@ public class InventoryScene : MonoBehaviour
 					teamSlot += 2;
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + teamSlot).gameObject;
 				} //end else
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 
 			//Give Processing
@@ -1109,6 +1193,9 @@ public class InventoryScene : MonoBehaviour
 					teamSlot += 2;
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + teamSlot).gameObject;
 				} //end else
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 
 			//Pick Move Processing
@@ -1123,7 +1210,10 @@ public class InventoryScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
-			} //end if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
+			} //end else if
 		} //end else if Mouse Moves Down
 
 		/*********************************************
@@ -1140,6 +1230,9 @@ public class InventoryScene : MonoBehaviour
 					topShown = inventorySpot;
 					bottomShown--;
 				} //end if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Item Move Processing
@@ -1151,6 +1244,9 @@ public class InventoryScene : MonoBehaviour
 					topShown = switchSpot;
 					bottomShown--;
 				} //end if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end else if Mouse Wheel Up
 
@@ -1168,6 +1264,9 @@ public class InventoryScene : MonoBehaviour
 					bottomShown = inventorySpot;
 					topShown++;
 				} //end if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Item Move Processing
@@ -1179,6 +1278,9 @@ public class InventoryScene : MonoBehaviour
 					bottomShown = switchSpot;
 					topShown++;
 				} //end if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end else if Mouse Wheel Down
 
@@ -1204,6 +1306,10 @@ public class InventoryScene : MonoBehaviour
 						StartCoroutine(WaitForResize());
 					} //end if
 
+					//Play selection SFX
+					AudioManager.instance.PlaySelect();
+
+					//Change Checkpoint
 					checkpoint = 3;
 				} //end if
 			} //end if
@@ -1292,6 +1398,9 @@ public class InventoryScene : MonoBehaviour
 						checkpoint = 2;
 						break;
 				} //end switch
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Use Processing
@@ -1309,6 +1418,9 @@ public class InventoryScene : MonoBehaviour
 					} //end if
 				} //end if
 				checkpoint = 1;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Give Processing
@@ -1332,6 +1444,9 @@ public class InventoryScene : MonoBehaviour
 						GameManager.instance.GetTrainer().Team[teamSlot - 1].Item) + " for " + DataContents.GetItemGameName(
 						itemNumber) + "?", 0, false);
 				} //end else
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Item Move Processing
@@ -1342,6 +1457,8 @@ public class InventoryScene : MonoBehaviour
 				topShown = 0;
 				bottomShown = 9;
 				checkpoint = 2;
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Pick Move Processing
@@ -1503,6 +1620,9 @@ public class InventoryScene : MonoBehaviour
 				selection.SetActive(false);
 				choices.SetActive(false);
 				pickMove = false;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 		} //end else if Left Mouse Button
 
@@ -1515,6 +1635,8 @@ public class InventoryScene : MonoBehaviour
 			if (checkpoint == 2)
 			{
 				GameManager.instance.LoadScene("MainGame", true);
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 
 			//Submenu Processing
@@ -1523,6 +1645,8 @@ public class InventoryScene : MonoBehaviour
 				selection.SetActive(false);
 				choices.SetActive(false);
 				checkpoint = 2;
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Team Use Processing
@@ -1530,6 +1654,8 @@ public class InventoryScene : MonoBehaviour
 			{
 				playerTeam.SetActive(false);
 				checkpoint = 2;
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Team Give Processing
@@ -1537,6 +1663,8 @@ public class InventoryScene : MonoBehaviour
 			{
 				playerTeam.SetActive(false);
 				checkpoint = 2;
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Item Move Processing
@@ -1546,6 +1674,8 @@ public class InventoryScene : MonoBehaviour
 				topShown = 0;
 				bottomShown = 9;
 				checkpoint = 2;
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Pick Move Processing
@@ -1556,6 +1686,8 @@ public class InventoryScene : MonoBehaviour
 				choices.SetActive(false);
 				pickMove = false;
 				checkpoint = 2;
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 		} //end else if Right Mouse Button
 
@@ -1582,6 +1714,9 @@ public class InventoryScene : MonoBehaviour
 					} //end if
 
 					checkpoint = 3;
+
+					//Play selection SFX
+					AudioManager.instance.PlaySelect();
 				} //end if
 			} //end if
 
@@ -1669,6 +1804,9 @@ public class InventoryScene : MonoBehaviour
 						checkpoint = 2;
 						break;
 				} //end switch
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Use Processing
@@ -1686,6 +1824,9 @@ public class InventoryScene : MonoBehaviour
 					} //end if
 				} //end if
 				checkpoint = 1;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Give Processing
@@ -1709,6 +1850,9 @@ public class InventoryScene : MonoBehaviour
 						GameManager.instance.GetTrainer().Team[teamSlot - 1].Item) + " for " + DataContents.GetItemGameName(
 							itemNumber) + "?", 0, false);
 				} //end else
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Item Move Processing
@@ -1719,6 +1863,8 @@ public class InventoryScene : MonoBehaviour
 				topShown = 0;
 				bottomShown = 9;
 				checkpoint = 2;
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Pick Move Processing
@@ -1880,6 +2026,9 @@ public class InventoryScene : MonoBehaviour
 				selection.SetActive(false);
 				choices.SetActive(false);
 				pickMove = false;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 		} //end else if Enter/Return Key
 
@@ -1892,6 +2041,8 @@ public class InventoryScene : MonoBehaviour
 			if (checkpoint == 2)
 			{
 				GameManager.instance.LoadScene("MainGame", true);
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 
 			//Submenu Processing
@@ -1900,6 +2051,8 @@ public class InventoryScene : MonoBehaviour
 				selection.SetActive(false);
 				choices.SetActive(false);
 				checkpoint = 2;
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Team Use Processing
@@ -1907,6 +2060,8 @@ public class InventoryScene : MonoBehaviour
 			{
 				playerTeam.SetActive(false);
 				checkpoint = 2;
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Team Give Processing
@@ -1914,6 +2069,8 @@ public class InventoryScene : MonoBehaviour
 			{
 				playerTeam.SetActive(false);
 				checkpoint = 2;
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Item Move Processing
@@ -1923,6 +2080,8 @@ public class InventoryScene : MonoBehaviour
 				topShown = 0;
 				bottomShown = 9;
 				checkpoint = 2;
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Pick Move Processing
@@ -1933,6 +2092,8 @@ public class InventoryScene : MonoBehaviour
 				choices.SetActive(false);
 				pickMove = false;
 				checkpoint = 2;
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 		} //end else if X Key
 	} //end GetInput
