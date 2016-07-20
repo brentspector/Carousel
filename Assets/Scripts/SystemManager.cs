@@ -359,6 +359,9 @@ public class SystemManager : MonoBehaviour
 			choiceNumber = 0;
 			selection.transform.position = new Vector3(confirmBox.transform.GetChild(0).position.x,
 				confirmBox.transform.GetChild(choiceNumber).position.y, 100);
+
+			//Play choice SFX
+			AudioManager.instance.PlayChange();
 			return true;
 		} //end if
 		//Move selection down
@@ -368,6 +371,9 @@ public class SystemManager : MonoBehaviour
 			choiceNumber = 1;
 			selection.transform.position = new Vector3(confirmBox.transform.GetChild(0).position.x,
 				confirmBox.transform.GetChild(choiceNumber).position.y, 100);
+
+			//Play choice SFX
+			AudioManager.instance.PlayChange();
 			return true;
 		} //end else if
 		//Proceed when text is finished and player hits enter
@@ -383,6 +389,9 @@ public class SystemManager : MonoBehaviour
 			//Close confirm
 			confirmBox.SetActive(false);
 			selection.SetActive(false);
+
+			//Play selection SFX
+			AudioManager.instance.PlaySelect();
 
 			//Raise confirm event
 			ConfirmChoice theChoice = new ConfirmChoice();

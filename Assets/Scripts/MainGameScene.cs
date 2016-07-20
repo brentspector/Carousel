@@ -20,6 +20,7 @@ public class MainGameScene : MonoBehaviour
 	{
 		HOME, 
 		GYMBATTLE,
+		KALOSGYMBATTLE,
 		TEAM,
 	    POKEMONSUBMENU,
 	    POKEMONSUMMARY,
@@ -127,6 +128,10 @@ public class MainGameScene : MonoBehaviour
 				buttonMenu.transform.FindChild("Debug").gameObject.SetActive(true);
 				buttonMenu.transform.FindChild("Quit").GetComponent<Button>().navigation = Navigation.defaultNavigation;
 			} //end if
+			else
+			{
+				buttonMenu.transform.FindChild("Training").GetComponent<Button>().navigation = Navigation.defaultNavigation;
+			} //end else
 
 			//Disable screens
 			gymBattle.SetActive(false);
@@ -191,7 +196,25 @@ public class MainGameScene : MonoBehaviour
 					initialize = true;
 					buttonMenu.SetActive(false);
 					gymBattle.SetActive(true);
-					EventSystem.current.SetSelectedGameObject(gymBattle.transform.GetChild(0).GetChild(0).
+					gymBattle.transform.GetChild(0).gameObject.SetActive(true);
+					gymBattle.transform.GetChild(1).gameObject.SetActive(false);
+					EventSystem.current.SetSelectedGameObject(gymBattle.transform.GetChild(0).GetChild(0).gameObject);
+				} //end if
+
+				//Get player input
+				GetInput();
+			} //end else if
+
+			//Kalos Gym battles
+			else if (gameState == MainGame.KALOSGYMBATTLE)
+			{
+				//Initialize only once
+				if (!initialize)
+				{
+					initialize = true;
+					gymBattle.transform.GetChild(0).gameObject.SetActive(false);
+					gymBattle.transform.GetChild(1).gameObject.SetActive(true);
+					EventSystem.current.SetSelectedGameObject(gymBattle.transform.GetChild(1).GetChild(0).
 						GetChild(0).gameObject);
 				} //end if
 
@@ -874,6 +897,9 @@ public class MainGameScene : MonoBehaviour
 					{
 						summaryChoice = 4;
 					} //end if
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end if Pokemon Summary on Continue Game -> Team -> Summary
 
@@ -904,6 +930,9 @@ public class MainGameScene : MonoBehaviour
 				{
 					currentTeamSlot = playerTeam.transform.FindChild("Buttons").GetChild(0).gameObject;
 				} //end else if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Player Team
 
 			//Pokemon Switch on Continue Game -> Team -> Switch
@@ -920,6 +949,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Set current switch slot
 				currentSwitchSlot = playerTeam.transform.FindChild("Pokemon" + switchChoice).gameObject;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Switch on Continue Game -> Team -> Switch
 
 			//Pokemon Ribbons on Continue Game -> Team -> Ribbons
@@ -940,6 +972,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Read ribbon
 				ReadRibbon();
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
@@ -947,6 +982,8 @@ public class MainGameScene : MonoBehaviour
 			{
 				GameManager.instance.GetTrainer().PreviousPocket();
 				initialize = false;
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end if Left Arrow
 
@@ -972,6 +1009,9 @@ public class MainGameScene : MonoBehaviour
 					{
 						summaryChoice = 0;
 					} //end if
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end if Pokemon Summary on Continue Game -> Team -> Summary
 
@@ -1002,6 +1042,9 @@ public class MainGameScene : MonoBehaviour
 				{
 					currentTeamSlot = playerTeam.transform.FindChild("Buttons").GetChild(0).gameObject;
 				} //end else if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Player Team
 
 			//Pokemon Switch on Continue Game -> Team -> Switch
@@ -1018,6 +1061,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Set current switch slot
 				currentSwitchSlot = playerTeam.transform.FindChild("Pokemon" + switchChoice).gameObject;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Switch on Continue Game -> Team -> Switch
 
 			//Pokemon Ribbons on Continue Game -> Team -> Ribbons
@@ -1039,6 +1085,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Read ribbon
 				ReadRibbon();
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
@@ -1046,6 +1095,8 @@ public class MainGameScene : MonoBehaviour
 			{
 				GameManager.instance.GetTrainer().NextPocket();
 				initialize = false;
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Right Arrow
 
@@ -1068,6 +1119,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if Pokemon Submenu on Continue Game -> Team -> Submenu
 
 			//Player team
@@ -1097,6 +1151,9 @@ public class MainGameScene : MonoBehaviour
 					choiceNumber -= 2;
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Player team
 
 			//Pokemon Summary on Continue Game -> Team -> Summary
@@ -1131,6 +1188,9 @@ public class MainGameScene : MonoBehaviour
 					//Set move slot
 					currentMoveSlot = summaryScreen.transform.GetChild(5).FindChild("Move" + (moveChoice + 1)).gameObject;
 				} //end else
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Summary on Continue Game -> Team -> Summary
 
 			//Pokemon Switch on Continue Game -> Team -> Switch
@@ -1149,6 +1209,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Set current switch choice
 				currentSwitchSlot = playerTeam.transform.FindChild("Pokemon" + switchChoice).gameObject;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Switch on Continue Game -> Team -> Switch
 
 			//Move switch on Continue Game -> Team -> Summary -> Move Details
@@ -1165,6 +1228,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Set current switch slot
 				currentSwitchSlot = summaryScreen.transform.GetChild(5).FindChild("Move" + (switchChoice + 1)).gameObject;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Move switch on Continue Game -> Team -> Summary -> Move Details
 
 			//Pokemon Ribbons on Continue Game -> Team -> Ribbons
@@ -1184,6 +1250,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Reload ribbons
 				initialize = false;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
 
 			//Pokemon Take/Give on Continue Game -> Team -> Item
@@ -1200,6 +1269,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
@@ -1211,6 +1283,9 @@ public class MainGameScene : MonoBehaviour
 					topShown = inventorySpot;
 					bottomShown--;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Up Arrow
 
@@ -1233,6 +1308,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if Pokemon Submenu on Continue Game -> Team -> Submenu
 
 			//Player team
@@ -1263,6 +1341,9 @@ public class MainGameScene : MonoBehaviour
 					choiceNumber += 2;
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Player team
 
 			//Pokemon Summary on Continue Game -> Team -> Summary
@@ -1297,6 +1378,9 @@ public class MainGameScene : MonoBehaviour
 					//Set move slot
 					currentMoveSlot = summaryScreen.transform.GetChild(5).FindChild("Move" + (moveChoice + 1)).gameObject;
 				} //end else
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Summary on Continue Game -> Team -> Summary
 
 			//Pokemon Switch on Continue Game -> Team -> Switch
@@ -1315,6 +1399,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Set current switch choice
 				currentSwitchSlot = playerTeam.transform.FindChild("Pokemon" + switchChoice).gameObject;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Switch on Continue Game -> Team -> Switch
 
 			//Move switch on Continue Game -> Team -> Summary -> Move Details
@@ -1331,6 +1418,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Set current switch slot
 				currentSwitchSlot = summaryScreen.transform.GetChild(5).FindChild("Move" + (switchChoice + 1)).gameObject;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Move switch on Continue Game -> Team -> Summary -> Move Details
 
 			//Pokemon Ribbons on Continue Game -> Team -> Ribbons
@@ -1350,6 +1440,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Reload ribbons
 				initialize = false;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
 
 			//Pokemon Take/Give on Continue Game -> Team -> Item
@@ -1366,6 +1459,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
@@ -1377,6 +1473,9 @@ public class MainGameScene : MonoBehaviour
 					bottomShown = inventorySpot;
 					topShown++;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Down Arrow
 
@@ -1394,6 +1493,8 @@ public class MainGameScene : MonoBehaviour
 				{
 					choiceNumber--;
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end if Player team
 
@@ -1409,6 +1510,9 @@ public class MainGameScene : MonoBehaviour
 
 					//Set cuurentSwitchSlot
 					currentSwitchSlot = playerTeam.transform.FindChild("Pokemon" + switchChoice).gameObject;
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end else if Pokemon Switch on Continue Game -> Team -> Switch
 
@@ -1428,6 +1532,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Set currentRibbonSlot
 				currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").GetChild(ribbonChoice).gameObject;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Ribbon on Continue Game -> Team -> Ribbons
 		} //end else if Mouse Moves Left
 
@@ -1445,6 +1552,9 @@ public class MainGameScene : MonoBehaviour
 				{
 					choiceNumber++;
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end if Player team
 
@@ -1460,6 +1570,9 @@ public class MainGameScene : MonoBehaviour
 
 					//Set cuurentSwitchSlot
 					currentSwitchSlot = playerTeam.transform.FindChild("Pokemon" + switchChoice).gameObject;
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end else if Pokemon Switch on Continue Game -> Team -> Switch
 
@@ -1480,6 +1593,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Set currentRibbonSlot
 				currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").GetChild(ribbonChoice).gameObject;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Ribbon on Continue Game -> Team -> Ribbons
 		} //end else if Mouse Moves Right
 
@@ -1500,6 +1616,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if Pokemon submenu on Continue Game -> Team -> Submenu
 
 			//Player team
@@ -1529,6 +1648,9 @@ public class MainGameScene : MonoBehaviour
 					choiceNumber -= 2;
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Player team
 
 			//Pokemon switch on Continue Game -> Team -> Switch
@@ -1540,6 +1662,9 @@ public class MainGameScene : MonoBehaviour
 				{
 					switchChoice -= 2;
 					currentSwitchSlot = playerTeam.transform.FindChild("Pokemon" + switchChoice).gameObject;
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end else if Pokemon switch on Continue Game -> Team -> Switch
 
@@ -1556,6 +1681,9 @@ public class MainGameScene : MonoBehaviour
 
 					//Set currentMoveSlot
 					currentMoveSlot = summaryScreen.transform.GetChild(5).FindChild("Move" + (moveChoice + 1)).gameObject;
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end else if Pokemon Summary on Continue Game -> Team -> Summary
 
@@ -1571,6 +1699,9 @@ public class MainGameScene : MonoBehaviour
 
 					//Set currentSwitchSlot
 					currentSwitchSlot = summaryScreen.transform.GetChild(5).FindChild("Move" + (switchChoice + 1)).gameObject;
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end else if Move switch on Continue Game -> Team -> Summary -> Move Details
 
@@ -1589,6 +1720,9 @@ public class MainGameScene : MonoBehaviour
 
 					//Set currentRibbonSlot
 					currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").GetChild(ribbonChoice).gameObject;
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
 
@@ -1604,6 +1738,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
 
 			//Main Game Home
@@ -1619,10 +1756,13 @@ public class MainGameScene : MonoBehaviour
 				{
 					EventSystem.current.SetSelectedGameObject(results[0].gameObject.transform.parent.gameObject, bEvent);
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Main Game Home
 
 			//Gym Battle 
-			else if (gameState == MainGame.GYMBATTLE)
+			else if (gameState == MainGame.GYMBATTLE || gameState == MainGame.KALOSGYMBATTLE)
 			{
 				PointerEventData eventData = new PointerEventData(EventSystem.current);
 				eventData.position = Input.mousePosition;
@@ -1634,6 +1774,9 @@ public class MainGameScene : MonoBehaviour
 				{
 					EventSystem.current.SetSelectedGameObject(results[0].gameObject.transform.parent.gameObject, bEvent);
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if GymBattle
 		} //end else if Mouse Moves Up
 
@@ -1654,6 +1797,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if Pokemon submenu on Continue Game -> Team -> Submenu
 
 			//Player team
@@ -1684,6 +1830,9 @@ public class MainGameScene : MonoBehaviour
 					choiceNumber += 2;
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Player team
 
 			//Pokemon switch on Continue Game -> Team -> Switch
@@ -1695,6 +1844,9 @@ public class MainGameScene : MonoBehaviour
 				{
 					switchChoice += 2;
 					currentSwitchSlot = playerTeam.transform.FindChild("Pokemon" + switchChoice).gameObject;
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end else if Pokemon switch on Continue Game -> Team -> Switch
 
@@ -1711,6 +1863,9 @@ public class MainGameScene : MonoBehaviour
 
 					//Set currentMoveSlot
 					currentMoveSlot = summaryScreen.transform.GetChild(5).FindChild("Move" + (moveChoice + 1)).gameObject;
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end else if Pokemon Summary on Continue Game -> Team -> Summary
 
@@ -1726,6 +1881,9 @@ public class MainGameScene : MonoBehaviour
 
 					//Set currentSwitchSlot
 					currentSwitchSlot = summaryScreen.transform.GetChild(5).FindChild("Move" + (switchChoice + 1)).gameObject;
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end else if Move switch on Continue Game -> Team -> Summary -> Move Details
 
@@ -1744,6 +1902,9 @@ public class MainGameScene : MonoBehaviour
 
 					//Set currentRibbonSlot
 					currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").GetChild(ribbonChoice).gameObject;
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
 
@@ -1759,6 +1920,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
 
 			//Main Game Home
@@ -1774,10 +1938,13 @@ public class MainGameScene : MonoBehaviour
 				{
 					EventSystem.current.SetSelectedGameObject(results[0].gameObject.transform.parent.gameObject, bEvent);
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Main Game Home
 
 			//Gym Battle 
-			else if (gameState == MainGame.GYMBATTLE)
+			else if (gameState == MainGame.GYMBATTLE || gameState == MainGame.KALOSGYMBATTLE)
 			{
 				PointerEventData eventData = new PointerEventData(EventSystem.current);
 				eventData.position = Input.mousePosition;
@@ -1789,6 +1956,9 @@ public class MainGameScene : MonoBehaviour
 				{
 					EventSystem.current.SetSelectedGameObject(results[0].gameObject.transform.parent.gameObject, bEvent);
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if GymBattle
 		} //end else if Mouse Moves Down
 
@@ -1814,6 +1984,9 @@ public class MainGameScene : MonoBehaviour
 
 					//Update current team slot
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end if Pokemon Summary on Continue Game -> Team -> Summary
 
@@ -1834,6 +2007,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Reload ribbons
 				initialize = false;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
@@ -1845,6 +2021,9 @@ public class MainGameScene : MonoBehaviour
 					topShown = inventorySpot;
 					bottomShown--;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Mouse Wheel Up
 
@@ -1870,6 +2049,9 @@ public class MainGameScene : MonoBehaviour
 
 					//Update current team slot
 					currentTeamSlot = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end if Pokemon Summary on Continue Game -> Team -> Summary
 
@@ -1890,6 +2072,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Reload ribbons
 				initialize = false;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
@@ -1901,6 +2086,9 @@ public class MainGameScene : MonoBehaviour
 					bottomShown = inventorySpot;
 					topShown++;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Mouse Wheel Down
 
@@ -1960,6 +2148,9 @@ public class MainGameScene : MonoBehaviour
 						gameState = MainGame.TEAM;
 						break;
 				} //end switch
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if Pokemon submenu on Continue Game -> Team -> Submenu
 
 			//Player team, Open menu as long as player isn't selecting a button
@@ -1981,6 +2172,9 @@ public class MainGameScene : MonoBehaviour
 				initialize = false;
 				subMenuChoice = 0;
 				gameState = MainGame.POKEMONSUBMENU;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if player team
 
 			//Pokemon Switch on Continue Game -> Team -> Switch
@@ -1996,6 +2190,9 @@ public class MainGameScene : MonoBehaviour
 				//Go back to team
 				initialize = false;
 				gameState = MainGame.TEAM;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Switch on Continue Game -> Team -> Switch
 
 			//Pokemon summary on Continue Game -> Team -> Summary
@@ -2017,6 +2214,9 @@ public class MainGameScene : MonoBehaviour
 					currentSwitchSlot = currentMoveSlot;
 					gameState = MainGame.MOVESWITCH;
 				} //end else if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon summary on Continue Game -> Team -> Summary
 
 			//Move Switch on Continue Game -> Team -> Summary -> Move Details
@@ -2031,6 +2231,9 @@ public class MainGameScene : MonoBehaviour
 				//Set color of background to clear
 				currentMoveSlot.GetComponent<Image>().color = Color.clear;
 				gameState = MainGame.POKEMONSUMMARY;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Move Switch on Continue Game -> Team -> Summary -> Move Details
 
 			//Pokemon Ribbons on Continue Game -> Team -> Ribbons
@@ -2041,6 +2244,9 @@ public class MainGameScene : MonoBehaviour
 				{
 					selection.SetActive(!selection.activeSelf);
 					ReadRibbon();
+
+					//Play selection SFX
+					AudioManager.instance.PlaySelect();
 				} //end if
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
 
@@ -2077,12 +2283,18 @@ public class MainGameScene : MonoBehaviour
 						gameState = MainGame.TEAM;
 						break;
 				} //end switch
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 			else if (gameState == MainGame.ITEMGIVE)
 			{
 				StartCoroutine(ProcessGiveItem());
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Left Mouse Button
 
@@ -2109,6 +2321,9 @@ public class MainGameScene : MonoBehaviour
 					selection.SetActive(false);
 					summaryChoice = 4;
 				} //end else
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if Pokemon Summary on Continue Game -> Team -> Summary
 
 			//Pokemon Submenu on Continue Game -> Team -> Submenu
@@ -2118,6 +2333,9 @@ public class MainGameScene : MonoBehaviour
 				choices.SetActive(false);
 				selection.SetActive(false);
 				gameState = MainGame.TEAM;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Submenu on Continue Game -> Team -> Submenu
 
 			//Pokemon Ribbons on Continue Game -> Team -> Ribbons
@@ -2131,6 +2349,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Return to team
 				gameState = MainGame.TEAM;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
 
 			//Player team
@@ -2138,6 +2359,9 @@ public class MainGameScene : MonoBehaviour
 			{
 				EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
 				gameState = MainGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Player team
 
 			//Pokemon switch on Continue Game -> Team -> Switch
@@ -2145,6 +2369,9 @@ public class MainGameScene : MonoBehaviour
 			{
 				//Go back to team
 				gameState = MainGame.TEAM;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon switch on Continue Game -> Team -> Switch
 
 			//Move Switch on Continue Game -> Team -> Summary -> Move Details
@@ -2153,6 +2380,9 @@ public class MainGameScene : MonoBehaviour
 				//Return to summary
 				currentMoveSlot.GetComponent<Image>().color = Color.clear;
 				gameState = MainGame.POKEMONSUMMARY;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Move Switch on Continue Game -> Team -> Summary -> Move Details
 
 			//Pokemon Take/Give on Continue Game -> Team -> Item
@@ -2161,6 +2391,9 @@ public class MainGameScene : MonoBehaviour
 				choices.SetActive(false);
 				selection.SetActive(false);
 				gameState = MainGame.TEAM;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
@@ -2168,6 +2401,9 @@ public class MainGameScene : MonoBehaviour
 			{
 				playerBag.SetActive(false);
 				gameState = MainGame.TEAM;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 
 			//Gym Battles
@@ -2175,13 +2411,32 @@ public class MainGameScene : MonoBehaviour
 			{
 				EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
 				gameState = MainGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Gym Battles
+
+			//Kalos Gym Battles
+			else if (gameState == MainGame.KALOSGYMBATTLE)
+			{
+				gymBattle.transform.GetChild(0).gameObject.SetActive(true);
+				gymBattle.transform.GetChild(1).gameObject.SetActive(false);
+				EventSystem.current.SetSelectedGameObject(gymBattle.transform.GetChild(0).GetChild(0).gameObject);
+				gameState = MainGame.GYMBATTLE;
+				initialize = false;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
+			} //end else if Kalos Gym Battles
 
 			//Trainer Card
 			else if (gameState == MainGame.TRAINERCARD)
 			{
 				EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
 				gameState = MainGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Trainer Card
 
 			//Debug
@@ -2189,6 +2444,9 @@ public class MainGameScene : MonoBehaviour
 			{
 				EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
 				gameState = MainGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Debug
 		} //end else if Right Mouse Button
 
@@ -2248,6 +2506,9 @@ public class MainGameScene : MonoBehaviour
 						gameState = MainGame.TEAM;
 						break;
 				} //end switch
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if Pokemon submenu on Continue Game -> Team -> Submenu
 
 			//Player team
@@ -2284,6 +2545,9 @@ public class MainGameScene : MonoBehaviour
 				{
 					GameManager.instance.LoadScene("PC", true);
 				} //end else if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if player team
 
 			//Pokemon Switch on Continue Game -> Team -> Switch
@@ -2299,6 +2563,9 @@ public class MainGameScene : MonoBehaviour
 				//Go back to team
 				initialize = false;
 				gameState = MainGame.TEAM;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Switch on Continue Game -> Team -> Switch
 
 			//Pokemon summary on Continue Game -> Team -> Summary
@@ -2320,6 +2587,9 @@ public class MainGameScene : MonoBehaviour
 					currentSwitchSlot = currentMoveSlot;
 					gameState = MainGame.MOVESWITCH;
 				} //end else if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon summary on Continue Game -> Team -> Summary
 
 			//Move Switch on Continue Game -> Team -> Summary -> Move Details
@@ -2334,6 +2604,9 @@ public class MainGameScene : MonoBehaviour
 				//Set color of background to clear
 				currentMoveSlot.GetComponent<Image>().color = Color.clear;
 				gameState = MainGame.POKEMONSUMMARY;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Move Switch on Continue Game -> Team -> Summary -> Move Details
 
 			//Pokemon Ribbons on Continue Game -> Team -> Ribbons
@@ -2345,6 +2618,9 @@ public class MainGameScene : MonoBehaviour
 					selection.SetActive(!selection.activeSelf);
 					ReadRibbon();
 				} //end if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
 
 			//Pokemon Take/Give on Continue Game -> Team -> Item
@@ -2380,6 +2656,9 @@ public class MainGameScene : MonoBehaviour
 						gameState = MainGame.TEAM;
 						break;
 				} //end switch
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
@@ -2407,6 +2686,9 @@ public class MainGameScene : MonoBehaviour
 							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item) + " for " + DataContents.GetItemGameName(
 								itemNumber) + "?", 0, false);
 					} //end else
+
+					//Play selection SFX
+					AudioManager.instance.PlaySelect();
 				} //end if
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Enter/Return Key
@@ -2434,6 +2716,9 @@ public class MainGameScene : MonoBehaviour
 					selection.SetActive(false);
 					summaryChoice = 4;
 				} //end else
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if Pokemon Summary on Continue Game -> Team -> Summary
 
 			//Pokemon Submenu on Continue Game -> Team -> Submenu
@@ -2443,6 +2728,9 @@ public class MainGameScene : MonoBehaviour
 				choices.SetActive(false);
 				selection.SetActive(false);
 				gameState = MainGame.TEAM;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Submenu on Continue Game -> Team -> Submenu
 
 			//Pokemon Ribbons on Continue Game -> Team -> Ribbons
@@ -2456,6 +2744,9 @@ public class MainGameScene : MonoBehaviour
 
 				//Return to team
 				gameState = MainGame.TEAM;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Ribbons on Continue Game -> Team -> Ribbons
 
 			//Player team
@@ -2463,6 +2754,9 @@ public class MainGameScene : MonoBehaviour
 			{
 				EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
 				gameState = MainGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Player team
 
 			//Pokemon switch on Continue Game -> Team -> Switch
@@ -2470,6 +2764,9 @@ public class MainGameScene : MonoBehaviour
 			{
 				//Go back to team
 				gameState = MainGame.TEAM;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon switch on Continue Game -> Team -> Switch
 
 			//Move Switch on Continue Game -> Team -> Summary -> Move Details
@@ -2478,6 +2775,9 @@ public class MainGameScene : MonoBehaviour
 				//Return to summary
 				currentMoveSlot.GetComponent<Image>().color = Color.clear;
 				gameState = MainGame.POKEMONSUMMARY;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Move Switch on Continue Game -> Team -> Summary -> Move Details
 
 			//Pokemon Take/Give on Continue Game -> Team -> Item
@@ -2486,6 +2786,9 @@ public class MainGameScene : MonoBehaviour
 				choices.SetActive(false);
 				selection.SetActive(false);
 				gameState = MainGame.TEAM;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
@@ -2493,6 +2796,9 @@ public class MainGameScene : MonoBehaviour
 			{
 				playerBag.SetActive(false);
 				gameState = MainGame.TEAM;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 
 			//Gym Battles
@@ -2500,13 +2806,32 @@ public class MainGameScene : MonoBehaviour
 			{
 				EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
 				gameState = MainGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Gym Battles
+
+			//Kalos Gym Battles
+			else if (gameState == MainGame.KALOSGYMBATTLE)
+			{
+				gymBattle.transform.GetChild(0).gameObject.SetActive(true);
+				gymBattle.transform.GetChild(1).gameObject.SetActive(false);
+				EventSystem.current.SetSelectedGameObject(gymBattle.transform.GetChild(0).GetChild(0).gameObject);
+				gameState = MainGame.GYMBATTLE;
+				initialize = false;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
+			} //end else if Kalos Gym Battles
 
 			//Trainer Card
 			else if (gameState == MainGame.TRAINERCARD)
 			{
 				EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
 				gameState = MainGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Trainer Card
 
 			//Debug
@@ -2514,6 +2839,9 @@ public class MainGameScene : MonoBehaviour
 			{
 				EventSystem.current.SetSelectedGameObject(buttonMenu.transform.GetChild(0).gameObject);
 				gameState = MainGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Debug
 		} //end else if X Key
 	} //end GetInput
@@ -2870,6 +3198,16 @@ public class MainGameScene : MonoBehaviour
 					pokemonChoice.CurrentEXP.ToString();
 				summaryScreen.transform.GetChild(0).FindChild("RemainingXP").GetComponent<Text>().text =
 					pokemonChoice.RemainingEXP.ToString();
+				if (pokemonChoice.CurrentLevel != 100)
+				{
+					summaryScreen.transform.GetChild(0).FindChild("XPBar").GetComponent<RectTransform>().localScale = new Vector3(
+						(float)(pokemonChoice.EXPForLevel - pokemonChoice.RemainingEXP) /
+						(float)pokemonChoice.EXPForLevel, 1, 1);
+				} //end if
+				else
+				{
+					summaryScreen.transform.GetChild(0).FindChild("XPBar").GetComponent<RectTransform>().localScale = new Vector3(0, 1, 1);
+				} //end else
 				SetTypeSprites(summaryScreen.transform.GetChild(0).FindChild("Types").GetChild(0).GetComponent<Image>(),
 					summaryScreen.transform.GetChild(0).FindChild("Types").GetChild(1).GetComponent<Image>(), 
 					pokemonChoice.NatSpecies);
@@ -3035,6 +3373,7 @@ public class MainGameScene : MonoBehaviour
 
 			//Get the ribbon value at the index
 			int ribbonValue = GameManager.instance.GetTrainer().Team[choiceNumber - 1].GetRibbon(ribbonChoice);
+			//Debug.Log(ribbonValue);
 
 			//Set the name and description
 			ribbonScreen.transform.FindChild("RibbonName").GetComponent<Text>().text = 
@@ -3139,6 +3478,7 @@ public class MainGameScene : MonoBehaviour
 	
 	    //Set the new state
 	    gameState = newGameState; 
+		initialize = false;
 	} //end SetGameState(MainGame newGameState)
 
     /***************************************
@@ -3220,6 +3560,7 @@ public class MainGameScene : MonoBehaviour
 				int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
 				GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 				GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
+				GameManager.instance.GetTrainer().Team[choiceNumber - 1].InitialItem = itemNumber;
 				GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " to " + 
 					GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname,true);
 				playerBag.SetActive(false);
@@ -3253,6 +3594,7 @@ public class MainGameScene : MonoBehaviour
 			GameManager.instance.GetTrainer().AddItem(GameManager.instance.GetTrainer().Team[choiceNumber - 1].
 				Item , 1);
 			GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
+			GameManager.instance.GetTrainer().Team[choiceNumber - 1].InitialItem = itemNumber;
 			GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber)  + " to " + 
 				GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname + " and " +
 				"put other item in bag.",true);
@@ -3442,7 +3784,7 @@ public class MainGameScene : MonoBehaviour
                     int.Parse(pokemonRightRegion.transform.FindChild ("Level").GetComponent<InputField> ().text), 1, 100),
                 pokemonRightRegion.transform.FindChild ("Item").GetComponent<Dropdown> ().value,
                 pokemonRightRegion.transform.FindChild ("Ball").GetComponent<Dropdown> ().value,
-                5, 3,
+				(int)ObtainTypeEnum.Function, (int)ObtainFromEnum.Debug,
                 pokemonRightRegion.transform.FindChild ("Ability").GetComponent<Dropdown> ().value + 1,
                 pokemonRightRegion.transform.FindChild ("Gender").GetComponent<Dropdown> ().value, 
 				int.Parse (pokemonRightRegion.transform.FindChild ("Form").GetComponent<InputField>().text),
@@ -3471,7 +3813,7 @@ public class MainGameScene : MonoBehaviour
             {
                 evFields [i] = int.Parse (pokemonRightRegion.transform.FindChild ("EV").GetChild (i).GetComponent<InputField> ().text);
             } //end for
-            newPokemon.ChangeEVs(evFields);
+			newPokemon.ChangeEVs(evFields, adjust:false);
             newPokemon.CalculateStats ();
 
             //Update Ribbons

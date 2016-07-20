@@ -15,6 +15,7 @@ public class NewGameScene : MonoBehaviour
 	//Scene variables
 	int checkpoint = 0;				//Manage function progress
 	int playerChoice;				//The trainer the player is currently selecting
+	int starterChoice;				//The starter the player is currently selecting
 	Image profBase;					//Base professor stands on
 	Image professor;				//Professor image
 	InputField inputText;			//The actual text of input
@@ -23,6 +24,7 @@ public class NewGameScene : MonoBehaviour
 	GameObject nextTrainer;			//Object of next trainer
 	GameObject input;				//The input portion of scene tools
 	string playerName;				//The player's name
+	List<int> starterSelection;		//The Pokemon available for the player to choose
 	#endregion
 
 	#region Methods
@@ -58,11 +60,22 @@ public class NewGameScene : MonoBehaviour
 
 			//Initialze starting states
 			playerChoice = 0;
+			starterChoice = 0;
 			profBase.color = new Color(1, 1, 1, 0);
 			professor.color = new Color(1, 1, 1, 0);
 			prevTrainer.SetActive(false);
 			currTrainer.SetActive(false);
 			nextTrainer.SetActive(false);
+
+			//Decide starter selection
+			starterSelection = new List<int>();
+			string contents = DataContents.ExecuteSQL<string>("SELECT tier1 FROM Shop WHERE region=5");
+			string[] list = contents.Split(',');
+			while(starterSelection.Count < 3)
+			{	
+				int rand = GameManager.instance.RandomInt(0, list.Length);
+				ExtensionMethods.AddUnique<int>(starterSelection, int.Parse(list[rand]));
+			} //end while
 
 			//Run fade in animation
 			GameManager.instance.FadeInAnimation(1);
@@ -195,7 +208,7 @@ public class NewGameScene : MonoBehaviour
 			} //end else
 		} //end else if
 
-		//Finish new game
+		//Select starter
 		else if (checkpoint == 10)
 		{
 			//Enable professor
@@ -203,26 +216,123 @@ public class NewGameScene : MonoBehaviour
 			professor.color = Color.white;
 
 			//Display text
-			GameManager.instance.DisplayText("Fantastic! Here's your sample team. Enjoy the show.", true);
+			GameManager.instance.DisplayText("Fantastic! Now, please choose which Pokemon will accompany you.", true);
 
 			//Move to next checkpoint
 			checkpoint = 11;
 		} //end else if
 
-		//Return to introduction
+		//Turn on character choices
 		else if (checkpoint == 11)
+		{
+			//Disable professor
+			profBase.color = Color.clear;
+			professor.color = Color.clear;
+
+			//Update Pokemon sprites
+			//Previous
+			if (starterChoice == 0)
+			{
+				prevTrainer.transform.FindChild("TrainerImage").GetComponent<Image>().sprite =
+					Resources.Load<Sprite>("Sprites/Pokemon/" + starterSelection[2].ToString("000"));
+			} //end if
+			else
+			{
+				prevTrainer.transform.FindChild("TrainerImage").GetComponent<Image>().sprite =
+					Resources.Load<Sprite>("Sprites/Pokemon/" + starterSelection[starterChoice-1].ToString("000"));
+			} //end else
+
+			//Current
+			currTrainer.transform.FindChild("TrainerImage").GetComponent<Image>().sprite =
+				Resources.Load<Sprite>("Sprites/Pokemon/" + starterSelection[starterChoice].ToString("000"));
+
+			//Next
+			if (starterChoice == starterSelection.Count - 1)
+			{
+				nextTrainer.transform.FindChild("TrainerImage").GetComponent<Image>().sprite =
+					Resources.Load<Sprite>("Sprites/Pokemon/" + starterSelection[0].ToString("000"));
+			} //end if
+			else
+			{
+				nextTrainer.transform.FindChild("TrainerImage").GetComponent<Image>().sprite =
+					Resources.Load<Sprite>("Sprites/Pokemon/" + starterSelection[starterChoice+1].ToString("000"));
+			} //end else
+
+			//Activate player choices
+			prevTrainer.SetActive(true);
+			currTrainer.SetActive(true);
+			nextTrainer.SetActive(true);
+
+			//Move to next checkpoint
+			checkpoint = 12;
+		} //end else if
+
+		//Wait for player to select a character
+		else if (checkpoint == 12)
+		{
+			//Get player input
+			GetInput();
+
+			//Update Pokemon sprites
+			//Previous
+			if (starterChoice == 0)
+			{
+				prevTrainer.transform.FindChild("TrainerImage").GetComponent<Image>().sprite =
+					Resources.Load<Sprite>("Sprites/Pokemon/" + starterSelection[2].ToString("000"));
+			} //end if
+			else
+			{
+				prevTrainer.transform.FindChild("TrainerImage").GetComponent<Image>().sprite =
+					Resources.Load<Sprite>("Sprites/Pokemon/" + starterSelection[starterChoice-1].ToString("000"));
+			} //end else
+
+			//Current
+			currTrainer.transform.FindChild("TrainerImage").GetComponent<Image>().sprite =
+				Resources.Load<Sprite>("Sprites/Pokemon/" + starterSelection[starterChoice].ToString("000"));
+
+			//Next
+			if (starterChoice == starterSelection.Count - 1)
+			{
+				nextTrainer.transform.FindChild("TrainerImage").GetComponent<Image>().sprite =
+					Resources.Load<Sprite>("Sprites/Pokemon/" + starterSelection[0].ToString("000"));
+			} //end if
+			else
+			{
+				nextTrainer.transform.FindChild("TrainerImage").GetComponent<Image>().sprite =
+					Resources.Load<Sprite>("Sprites/Pokemon/" + starterSelection[starterChoice+1].ToString("000"));
+			} //end else
+		} //end else if
+
+		//Finish new game
+		else if (checkpoint == 13)
+		{
+			//Enable professor
+			profBase.color = Color.white;
+			professor.color = Color.white;
+
+			//Display text
+			GameManager.instance.DisplayText("Well, that's everything. Enjoy your stay!", true);
+
+			//Move to next checkpoint
+			checkpoint = 14;
+		} //end else if
+
+		//Return to introduction
+		else if (checkpoint == 14)
 		{
 			//Save new file, then go back to intro
 			GameManager.instance.RestartFile(GameManager.instance.GetPersist());
 			GameManager.instance.GetTrainer().PlayerName = playerName;
 			GameManager.instance.GetTrainer().PlayerImage = playerChoice;
-			GameManager.instance.GetTrainer().RandomTeam();
+			bool gotShiny = GameManager.instance.RandomInt(0, 50) == 5;
+			GameManager.instance.GetTrainer().AddPokemon(new Pokemon(species: starterSelection[starterChoice], 
+				oType: (int)ObtainTypeEnum.Starter, oWhere: (int)ObtainFromEnum.Introduction, shiny: gotShiny));
 			GameManager.instance.GetTrainer().PopulateStock(5);
 			GameManager.instance.Persist(false);
 			GameManager.instance.Reset();
 
 			//Set checkpoint to dummy
-			checkpoint = 12;
+			checkpoint = 15;
 		} //end else if
 	} //end RunNewGame
 
@@ -249,7 +359,26 @@ public class NewGameScene : MonoBehaviour
 				{
 					playerChoice = DataContents.trainerCardSprites.Length - 1;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
+
+			//Cycle through starter choices
+			else if (checkpoint == 12)
+			{
+				//Decrease starter choice
+				starterChoice--;
+
+				//Loop to end of selection if necessary
+				if (starterChoice < 0)
+				{
+					starterChoice = starterSelection.Count - 1;
+				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
+			} //end else if
 		} //end if Left Arrow
 
 		/*********************************************
@@ -268,7 +397,26 @@ public class NewGameScene : MonoBehaviour
 				{
 					playerChoice = 0;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
+
+			//Cycle through starter choices
+			else if (checkpoint == 12)
+			{
+				//Increase starter choice
+				starterChoice++;
+
+				//Loop to beginning of selection if necessary
+				if (starterChoice >  starterSelection.Count - 1)
+				{
+					starterChoice = 0;
+				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
+			} //end else if
 		} //end else if Right Arrow
 
 		/*********************************************
@@ -335,7 +483,26 @@ public class NewGameScene : MonoBehaviour
 				{
 					playerChoice = 0;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
+
+			//Cycle through starter choices
+			else if (checkpoint == 12)
+			{
+				//Increase starter choice
+				starterChoice++;
+
+				//Loop to beginning of selection if necessary
+				if (starterChoice >  starterSelection.Count - 1)
+				{
+					starterChoice = 0;
+				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
+			} //end else if
 		} //end else if Mouse Wheel Up
 
 		/*********************************************
@@ -354,7 +521,26 @@ public class NewGameScene : MonoBehaviour
 				{
 					playerChoice = DataContents.trainerCardSprites.Length - 1;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
+
+			//Cycle through starter choices
+			else if (checkpoint == 12)
+			{
+				//Decrease starter choice
+				starterChoice--;
+
+				//Loop to end of selection if necessary
+				if (starterChoice < 0)
+				{
+					starterChoice = starterSelection.Count - 1;
+				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
+			} //end else if
 		} //end else if Mouse Wheel Down
 
 		/*********************************************
@@ -371,6 +557,9 @@ public class NewGameScene : MonoBehaviour
 
 				//Display text
 				GameManager.instance.DisplayConfirm("So your name is " + playerName + "?", 0, false);
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 
 			//Player selected a character
@@ -381,6 +570,22 @@ public class NewGameScene : MonoBehaviour
 				currTrainer.SetActive(false);
 				nextTrainer.SetActive(false);
 				checkpoint = 10;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
+			} //end else if
+
+			//Player selected a starter
+			else if (checkpoint == 12)
+			{
+				//Turn off starter selection
+				prevTrainer.SetActive(false);
+				currTrainer.SetActive(false);
+				nextTrainer.SetActive(false);
+				checkpoint = 13;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 		} //end else if Left Mouse Button
 
@@ -406,6 +611,9 @@ public class NewGameScene : MonoBehaviour
 
 				//Display text
 				GameManager.instance.DisplayConfirm("So your name is " + playerName + "?", 0, false);
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 
 			//Player selected a character
@@ -416,6 +624,22 @@ public class NewGameScene : MonoBehaviour
 				currTrainer.SetActive(false);
 				nextTrainer.SetActive(false);
 				checkpoint = 10;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
+			} //end else if
+
+			//Player selected a starter
+			else if (checkpoint == 12)
+			{
+				//Turn off starter selection
+				prevTrainer.SetActive(false);
+				currTrainer.SetActive(false);
+				nextTrainer.SetActive(false);
+				checkpoint = 13;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 		} //end else if Enter/Return Key
 

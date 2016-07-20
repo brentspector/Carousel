@@ -726,6 +726,9 @@ public class PCScene : MonoBehaviour
 					//Decrease (higher slots are on lower children)
 					boxChoice--;
 				} //end else
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if Home
 
 			//Pokemon Party on PC -> Party Tab
@@ -757,6 +760,9 @@ public class PCScene : MonoBehaviour
 				{
 					currentTeamSlot = partyTab.transform.FindChild("Close").gameObject;
 				} //end else if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Party on PC -> Party Tab
 
 			//Pokemon Summary on PC -> Summary
@@ -776,6 +782,9 @@ public class PCScene : MonoBehaviour
 					{
 						summaryChoice = 4;
 					} //end if
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} // end else if Pokemon Summary on PC -> Summary
 
@@ -798,6 +807,9 @@ public class PCScene : MonoBehaviour
 
 				//Read ribbon
 				ReadRibbon();
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Ribbons on PC -> Ribbons
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
@@ -805,6 +817,9 @@ public class PCScene : MonoBehaviour
 			{
 				GameManager.instance.GetTrainer().PreviousPocket();
 				initialize = false;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end if Left Arrow
 
@@ -824,6 +839,9 @@ public class PCScene : MonoBehaviour
 				{
 					boxChoice = 31;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if Home
 
 			//Pokemon Party on PC -> Party Tab
@@ -859,6 +877,9 @@ public class PCScene : MonoBehaviour
 				{
 					currentTeamSlot = partyTab.transform.FindChild("Close").gameObject;
 				} //end else if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Party on PC -> Party Tab
 
 			//Pokemon Summary on PC -> Summary
@@ -878,6 +899,9 @@ public class PCScene : MonoBehaviour
 					{
 						summaryChoice = 0;
 					} //end if
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end else if Pokemon Summary on PC -> Summary
 
@@ -900,6 +924,9 @@ public class PCScene : MonoBehaviour
 
 				//Read ribbon
 				ReadRibbon();
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Ribbons on PC -> Ribbons
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
@@ -907,6 +934,9 @@ public class PCScene : MonoBehaviour
 			{
 				GameManager.instance.GetTrainer().NextPocket();
 				initialize = false;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Right Arrow
 
@@ -934,6 +964,9 @@ public class PCScene : MonoBehaviour
 						boxChoice = -2;
 					} //end if
 				} //end else
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Pokemon Party on PC -> Party Tab
@@ -966,6 +999,9 @@ public class PCScene : MonoBehaviour
 					choiceNumber -= 2;
 					currentTeamSlot = partyTab.transform.FindChild("Pokemon"+choiceNumber).gameObject;
 				} //end else
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Party on PC -> Party Tab
 
 			//Pokemon Submenu on PC
@@ -982,6 +1018,9 @@ public class PCScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Submenu on PC
 
 			//Pokemon Summary on PC -> Summary
@@ -1023,6 +1062,9 @@ public class PCScene : MonoBehaviour
 					currentMoveSlot = summaryScreen.transform.GetChild(5).
 						FindChild("Move"+(moveChoice+1)).gameObject;
 				} //end else
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Summary on PC -> Summary
 
 			//Move Switch on PC -> Summary -> Move Details
@@ -1040,6 +1082,9 @@ public class PCScene : MonoBehaviour
 				//Set currentSwitchSlot
 				currentSwitchSlot = summaryScreen.transform.GetChild(5).
 					FindChild("Move"+(switchChoice+1)).gameObject;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Move Switch on PC -> Summary -> Move Details
 
 			//Pokemon Ribbons on PC -> Ribbons
@@ -1073,6 +1118,9 @@ public class PCScene : MonoBehaviour
 
 				//Reload ribbons
 				initialize = false;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Ribbons on PC -> Ribbons
 
 			//Pokemon Markings on PC -> Submenu
@@ -1086,6 +1134,9 @@ public class PCScene : MonoBehaviour
 				{
 					subMenuChoice = choices.transform.childCount-1;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Markings on PC -> Submenu
 
 			//Pokemon Take/Give on Continue Game -> Team -> Item
@@ -1102,6 +1153,9 @@ public class PCScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
@@ -1113,6 +1167,9 @@ public class PCScene : MonoBehaviour
 					topShown = inventorySpot;
 					bottomShown--;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Up Arrow
 
@@ -1141,6 +1198,9 @@ public class PCScene : MonoBehaviour
 						boxChoice = 30;
 					} //end if
 				} //end else
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if PC Home
 
 			//Pokemon Party on PC -> Party Tab
@@ -1189,6 +1249,9 @@ public class PCScene : MonoBehaviour
 					choiceNumber += 2;
 					currentTeamSlot = partyTab.transform.FindChild("Pokemon"+choiceNumber).gameObject;
 				} //end else
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Party on PC -> Party Tab
 
 			//Pokemon Submenu on PC
@@ -1205,6 +1268,9 @@ public class PCScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Submenu on PC
 
 			//Pokemon Summary on PC -> Summary
@@ -1247,6 +1313,9 @@ public class PCScene : MonoBehaviour
 					currentMoveSlot = summaryScreen.transform.GetChild(5).
 						FindChild("Move"+(moveChoice+1)).gameObject;
 				} //end else
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Summary on PC -> Summary
 
 			//Move Switch on PC -> Summary -> Move Details
@@ -1264,6 +1333,9 @@ public class PCScene : MonoBehaviour
 				//Set currentSwitchSlot
 				currentSwitchSlot = summaryScreen.transform.GetChild(5).
 					FindChild("Move"+(switchChoice+1)).gameObject;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Move Switch on PC -> Summary -> Move Details
 
 			//Pokemon Ribbons in PC -> Ribbons
@@ -1297,6 +1369,9 @@ public class PCScene : MonoBehaviour
 
 				//Reload ribbons
 				initialize = false;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Ribbons in PC -> Ribbons
 
 			//Pokemon Markings on PC -> Submenu
@@ -1310,6 +1385,9 @@ public class PCScene : MonoBehaviour
 				{
 					subMenuChoice = 0;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Markings on PC -> Submenu
 
 			//Pokemon Take/Give on Continue Game -> Team -> Item
@@ -1326,6 +1404,9 @@ public class PCScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
@@ -1337,6 +1418,9 @@ public class PCScene : MonoBehaviour
 					bottomShown = inventorySpot;
 					topShown++;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Down Arrow
 
@@ -1365,7 +1449,10 @@ public class PCScene : MonoBehaviour
 					//Set to left box
 					boxChoice = -3;
 				} //end else
-			} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
+			} //end if PC Home
 
 			//Pokemon Party on PC -> Party Tab
 			else if(pcState == PCGame.PARTY && Input.mousePosition.x < 
@@ -1378,6 +1465,9 @@ public class PCScene : MonoBehaviour
 					choiceNumber--;
 					currentTeamSlot = partyTab.transform.FindChild("Pokemon"+choiceNumber).gameObject;
 				} //end if   
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Party on PC -> Party Tab
 
 			//Pokemon Ribbons on PC -> Ribbons
@@ -1397,6 +1487,9 @@ public class PCScene : MonoBehaviour
 				//Set currentRibbonSlot
 				currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").
 					GetChild(ribbonChoice).gameObject;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Ribbons on PC -> Ribbons
 		} //end else if Mouse Moves Left
 
@@ -1425,7 +1518,10 @@ public class PCScene : MonoBehaviour
 					//Set to right box
 					boxChoice = -1;
 				} //end else
-			} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
+			} //end if PC Home
 
 			//Pokemon Party on PC -> Party Tab
 			else if(pcState == PCGame.PARTY && Input.mousePosition.x > Camera.main.
@@ -1446,6 +1542,9 @@ public class PCScene : MonoBehaviour
 					choiceNumber++;
 					currentTeamSlot = partyTab.transform.FindChild("Pokemon"+choiceNumber).gameObject;
 				} //end else if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Party on PC -> Party Tab
 
 			//Pokemon Ribbons on PC -> Ribbons
@@ -1465,6 +1564,9 @@ public class PCScene : MonoBehaviour
 				//Set currentRibbonSlot
 				currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").
 					GetChild(ribbonChoice).gameObject;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Ribbons on PC -> Ribbons
 		} //end else if Mouse Moves Right
 
@@ -1488,6 +1590,9 @@ public class PCScene : MonoBehaviour
 					//Go to title                           
 					boxChoice = -2;
 				} //end else
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if Home
 
 			//Pokemon Party on PC -> Party Tab
@@ -1519,6 +1624,9 @@ public class PCScene : MonoBehaviour
 					choiceNumber -= 2;
 					currentTeamSlot = partyTab.transform.FindChild("Pokemon"+choiceNumber).gameObject;
 				} //end else
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Continue Game -> My Team
 
 			//Pokemon Submenu on PC
@@ -1534,6 +1642,9 @@ public class PCScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if Pokemon Submenu on PC
 
 			//Pokemon Summary on PC -> Summary
@@ -1547,6 +1658,9 @@ public class PCScene : MonoBehaviour
 					moveChoice--;
 					currentMoveSlot = summaryScreen.transform.GetChild(5).
 						FindChild("Move"+(moveChoice+1)).gameObject;
+					
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end else if Pokemon Summary on PC -> Summary
 
@@ -1561,6 +1675,9 @@ public class PCScene : MonoBehaviour
 					switchChoice--;                        
 					currentSwitchSlot = summaryScreen.transform.GetChild(5).
 						FindChild("Move"+(switchChoice+1)).gameObject;
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end else if Move Switch on PC -> Summary -> Move Details
 
@@ -1581,6 +1698,9 @@ public class PCScene : MonoBehaviour
 				//Set currentRibbonSlot
 				currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").
 					GetChild(ribbonChoice).gameObject;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Ribbons on PC -> Ribbons
 
 			//Pokemon Markings on PC -> Submenu
@@ -1591,6 +1711,9 @@ public class PCScene : MonoBehaviour
 				if(subMenuChoice > 0)
 				{
 					subMenuChoice--;
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end else if Pokemon Markings on PC -> Submenu
 
@@ -1606,6 +1729,9 @@ public class PCScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
 		} //end else if Mouse Moves Up
 
@@ -1635,6 +1761,9 @@ public class PCScene : MonoBehaviour
 					//Set to return button
 					boxChoice = 31;
 				} //end else
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if PC Home
 
 			//Pokemon Party on PC -> Party Tab
@@ -1684,6 +1813,9 @@ public class PCScene : MonoBehaviour
 					choiceNumber += 2;
 					currentTeamSlot = partyTab.transform.FindChild("Pokemon"+choiceNumber).gameObject;
 				} //end else
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Party on PC -> Party Tab
 
 			//Pokemon Submenu on PC
@@ -1699,6 +1831,9 @@ public class PCScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Submenu on PC
 
 			//Pokemon Summary on PC -> Summary
@@ -1718,6 +1853,9 @@ public class PCScene : MonoBehaviour
 					//Set currentMoveSlot
 					currentMoveSlot = summaryScreen.transform.GetChild(5).
 						FindChild("Move"+(moveChoice+1)).gameObject;
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end else if Pokemon Summary on PC -> Summary
 
@@ -1735,6 +1873,9 @@ public class PCScene : MonoBehaviour
 				//Set currentSwitchSlot
 				currentSwitchSlot = summaryScreen.transform.GetChild(5).
 					FindChild("Move"+(switchChoice+1)).gameObject;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Move Switch on PC -> Summary -> Move Details
 
 			//Pokemon Ribbons on PC -> Ribbons
@@ -1754,6 +1895,9 @@ public class PCScene : MonoBehaviour
 				//Set currentRibbonSlot
 				currentRibbonSlot = ribbonScreen.transform.FindChild("RibbonRegion").
 					GetChild(ribbonChoice).gameObject;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Ribbons on PC -> Ribbons
 
 			//Pokemon Markings on PC -> Submenu
@@ -1764,6 +1908,9 @@ public class PCScene : MonoBehaviour
 				if(subMenuChoice < choices.transform.childCount-1)
 				{
 					subMenuChoice++;
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end else if Pokemon Markings on PC -> Submenu
 
@@ -1779,6 +1926,9 @@ public class PCScene : MonoBehaviour
 
 				//Reposition selection
 				selection.transform.position = choices.transform.GetChild(subMenuChoice).position;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
 		} //end else if Mouse Moves Down
 
@@ -1810,6 +1960,9 @@ public class PCScene : MonoBehaviour
 						//Decrease to previous pokemon slot
 						boxChoice = GameManager.instance.GetTrainer().GetPreviousPokemon(boxChoice);
 					} //end else if
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end if Pokemon Summary on PC -> Summary
 
@@ -1837,6 +1990,9 @@ public class PCScene : MonoBehaviour
 					//Decrease to previous pokemon slot
 					boxChoice = GameManager.instance.GetTrainer().GetPreviousPokemon(boxChoice);
 				} //end else if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Ribbons on PC -> Ribbons
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
@@ -1848,6 +2004,9 @@ public class PCScene : MonoBehaviour
 					topShown = inventorySpot;
 					bottomShown--;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Mouse Wheel Up
 
@@ -1879,6 +2038,9 @@ public class PCScene : MonoBehaviour
 						//Increase to next pokemon slot
 						boxChoice = GameManager.instance.GetTrainer().GetNextPokemon(boxChoice);
 					} //end else if
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end if Pokemon Summary on PC -> Summary
 
@@ -1902,6 +2064,9 @@ public class PCScene : MonoBehaviour
 					//Increase to next pokemon slot
 					boxChoice = GameManager.instance.GetTrainer().GetNextPokemon(boxChoice);
 				} //end else if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Ribbons on PC -> Ribbons
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
@@ -1913,6 +2078,9 @@ public class PCScene : MonoBehaviour
 					bottomShown = inventorySpot;
 					topShown++;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Mouse Wheel Down
 
@@ -1943,6 +2111,9 @@ public class PCScene : MonoBehaviour
 					initialize = false;
 					pcState = PCGame.POKEMONSUBMENU;
 				} //end if  
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if Home
 
 			//Pokemon Party on PC -> Party Tab
@@ -1973,6 +2144,9 @@ public class PCScene : MonoBehaviour
 					choices.SetActive(false);
 					selection.SetActive(false);
 				} //end else
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Party on PC -> Party Tab
 
 			//Pokemon Submenu on PC
@@ -2129,6 +2303,9 @@ public class PCScene : MonoBehaviour
 							} //end case 3
 					} //end switch
 				} //end else
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Submenu on PC
 
 			//Pokemon Summary on PC -> Summary
@@ -2151,6 +2328,9 @@ public class PCScene : MonoBehaviour
 					currentSwitchSlot = currentMoveSlot;
 					pcState = PCGame.MOVESWITCH;
 				} //end else if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Pokemon Summary on PC -> Summary
 
 			//Move Switch on PC -> Summary -> Move Details
@@ -2164,6 +2344,9 @@ public class PCScene : MonoBehaviour
 
 				currentMoveSlot.GetComponent<Image>().color = Color.clear;
 				pcState = PCGame.POKEMONSUMMARY;
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if Move Switch on PC -> Summary -> Move Details
 
 			//Pokemon Ribbons on PC -> Ribbons
@@ -2174,6 +2357,9 @@ public class PCScene : MonoBehaviour
 				{
 					selection.SetActive(!selection.activeSelf);
 					ReadRibbon();
+
+					//Play choice SFX
+					AudioManager.instance.PlayChange();
 				} //end if
 			} //end else if Pokemon Ribbons on PC -> Ribbons
 
@@ -2247,6 +2433,9 @@ public class PCScene : MonoBehaviour
 					//Return to home or party
 					pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
 				} //end else if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Markings on PC -> Submenu
 
 			//Pokemon Input on PC -> Input
@@ -2300,6 +2489,9 @@ public class PCScene : MonoBehaviour
 				//Return to home
 				checkpoint = 1;
 				pcState = PCGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Input on PC -> Input
 
 			//Pokemon Take/Give on Continue Game -> Team -> Item
@@ -2394,6 +2586,9 @@ public class PCScene : MonoBehaviour
 						pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
 						break;
 				} //end switch
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
@@ -2411,6 +2606,7 @@ public class PCScene : MonoBehaviour
 							int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
 							GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
+							GameManager.instance.GetTrainer().Team[choiceNumber - 1].InitialItem = itemNumber;
 							GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
 							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname, true);
 							playerBag.SetActive(false);
@@ -2442,6 +2638,8 @@ public class PCScene : MonoBehaviour
 							GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 							GameManager.instance.GetTrainer().GetPC(
 								GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Item = itemNumber;
+							GameManager.instance.GetTrainer().GetPC(
+								GameManager.instance.GetTrainer().GetPCBox(), boxChoice).InitialItem = itemNumber;
 							GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
 								GameManager.instance.GetTrainer().GetPC(
 									GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Nickname, true);
@@ -2460,6 +2658,9 @@ public class PCScene : MonoBehaviour
 						} //end else
 					} //end else
 				} //end if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Left Mouse Button
 
@@ -2472,6 +2673,9 @@ public class PCScene : MonoBehaviour
 			if(pcState == PCGame.HOME)
 			{
 				GameManager.instance.LoadScene("MainGame", true);
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if PC Home
 
 			//Pokemon Submenu on PC
@@ -2483,6 +2687,9 @@ public class PCScene : MonoBehaviour
 				//Enable party close button
 				partyTab.transform.FindChild("Close").GetComponent<Button>().interactable = true;
 				pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Submenu on PC
 
 			//Pokemon Party on PC -> Party Tab
@@ -2491,6 +2698,9 @@ public class PCScene : MonoBehaviour
 				choices.SetActive(false);
 				selection.SetActive(false);
 				StartCoroutine(PartyState(false));
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Party on PC -> Party Tab
 
 			//Pokemon Summary on PC -> Summary
@@ -2514,6 +2724,9 @@ public class PCScene : MonoBehaviour
 					selection.SetActive(false);
 					summaryChoice = 4;
 				} //end else
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Summary on PC -> Summary
 
 			//Move Switch on PC -> Summary -> Move Details
@@ -2522,6 +2735,9 @@ public class PCScene : MonoBehaviour
 				//Return to summary
 				currentMoveSlot.GetComponent<Image>().color = Color.clear;
 				pcState = PCGame.POKEMONSUMMARY;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Move Switch on PC -> Summary -> Move Details
 
 			//Pokemon Ribbons on PC -> Ribbons
@@ -2538,6 +2754,9 @@ public class PCScene : MonoBehaviour
 
 				//Return to home or party
 				pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Ribbons on PC -> Ribbons
 
 			//Pokemon Markings on PC -> Submenu
@@ -2553,6 +2772,9 @@ public class PCScene : MonoBehaviour
 
 				//Return to home or party
 				pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Markings on PC -> Submenu
 
 			//Pokemon Take/Give on PC -> Submenu -> Item
@@ -2564,6 +2786,9 @@ public class PCScene : MonoBehaviour
 				//Enable party close button
 				partyTab.transform.FindChild("Close").GetComponent<Button>().interactable = true;
 				pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Take/Give on PC -> Submenu -> Item
 
 			//Pokemon Item Give From Bag on PC -> Inventory
@@ -2574,6 +2799,9 @@ public class PCScene : MonoBehaviour
 				//Enable party close button
 				partyTab.transform.FindChild("Close").GetComponent<Button>().interactable = true;
 				pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Item Give From Bag on PC -> Inventory
 		} //end else if Right Mouse Button
 
@@ -2642,6 +2870,9 @@ public class PCScene : MonoBehaviour
 				{
 					StartCoroutine(PartyState(false));
 				} //end else 
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Party on PC -> Party Tab
 
 			//Pokemon Submenu on PC
@@ -2800,6 +3031,9 @@ public class PCScene : MonoBehaviour
 							} //end case 3
 					} //end switch
 				} //end else
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Submenu on PC
 
 			//Pokemon Summary on PC -> Summary
@@ -2822,6 +3056,9 @@ public class PCScene : MonoBehaviour
 					currentSwitchSlot = currentMoveSlot;
 					pcState = PCGame.MOVESWITCH;
 				} //end else if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Summary on PC -> Summary
 
 			//Move Switch on PC -> Summary -> Move Details
@@ -2835,6 +3072,9 @@ public class PCScene : MonoBehaviour
 
 				currentMoveSlot.GetComponent<Image>().color = Color.clear;
 				pcState = PCGame.POKEMONSUMMARY;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Move Switch on PC -> Summary -> Move Details
 
 			//Pokemon Ribbons on PC -> Ribbons
@@ -2846,6 +3086,9 @@ public class PCScene : MonoBehaviour
 					selection.SetActive(!selection.activeSelf);
 					ReadRibbon();
 				} //end if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Ribbons on PC -> Ribbons
 
 			//Pokemon Markings on PC -> Submenu
@@ -2919,6 +3162,9 @@ public class PCScene : MonoBehaviour
 					//Return to home or party
 					pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
 				} //end else if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Markings on PC -> Submenu
 
 			//Pokemon Input on PC -> Input
@@ -2972,6 +3218,9 @@ public class PCScene : MonoBehaviour
 				//Return to home
 				checkpoint = 1;
 				pcState = PCGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Input on PC -> Input
 
 			//Pokemon Take/Give on Continue Game -> Team -> Item
@@ -3066,6 +3315,9 @@ public class PCScene : MonoBehaviour
 						pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
 						break;
 				} //end switch
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Take/Give on Continue Game -> Team -> Item
 
 			//Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
@@ -3083,6 +3335,7 @@ public class PCScene : MonoBehaviour
 							int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
 							GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 							GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
+							GameManager.instance.GetTrainer().Team[choiceNumber - 1].InitialItem = itemNumber;
 							GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
 								GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname, true);
 							playerBag.SetActive(false);
@@ -3114,6 +3367,8 @@ public class PCScene : MonoBehaviour
 							GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 							GameManager.instance.GetTrainer().GetPC(
 								GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Item = itemNumber;
+							GameManager.instance.GetTrainer().GetPC(
+								GameManager.instance.GetTrainer().GetPCBox(), boxChoice).InitialItem = itemNumber;
 							GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
 								GameManager.instance.GetTrainer().GetPC(
 									GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Nickname, true);
@@ -3132,6 +3387,9 @@ public class PCScene : MonoBehaviour
 						} //end else
 					} //end else
 				} //end if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Item Give From Bag on Continue Game -> Team -> Inventory
 		} //end else if Enter/Return Key
 
@@ -3144,6 +3402,9 @@ public class PCScene : MonoBehaviour
 			if(pcState == PCGame.HOME)
 			{
 				GameManager.instance.LoadScene("MainGame", true);
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if PC Home
 
 			//Pokemon Submenu on PC
@@ -3155,12 +3416,18 @@ public class PCScene : MonoBehaviour
 				//Enable party close button
 				partyTab.transform.FindChild("Close").GetComponent<Button>().interactable = true;
 				pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Submenu on PC
 
 			//Pokeon Party on PC -> Party Tab
 			else if(pcState == PCGame.PARTY)
 			{
 				StartCoroutine(PartyState(false));
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Party on PC -> Party Tab
 
 			//Pokemon Summary on PC -> Summary
@@ -3184,6 +3451,9 @@ public class PCScene : MonoBehaviour
 					selection.SetActive(false);
 					summaryChoice = 4;
 				} //end else
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Summary on PC -> Summary
 
 			//Move Switch on PC -> Summary -> Move Details
@@ -3192,6 +3462,9 @@ public class PCScene : MonoBehaviour
 				//Return to summary
 				currentMoveSlot.GetComponent<Image>().color = Color.clear;
 				pcState = PCGame.POKEMONSUMMARY;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Move Switch on PC -> Summary -> Move Details
 
 			//Pokemon Ribbons on PC -> Ribbons
@@ -3208,6 +3481,9 @@ public class PCScene : MonoBehaviour
 
 				//Return to home or party
 				pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Ribbons on PC -> Ribbons
 
 			//Pokemon Markings on PC -> Submenu
@@ -3223,6 +3499,9 @@ public class PCScene : MonoBehaviour
 
 				//Return to home or party
 				pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Markings on PC -> Submenu
 
 			//Pokemon Take/Give on PC -> Submenu -> Item
@@ -3234,6 +3513,9 @@ public class PCScene : MonoBehaviour
 				//Enable party close button
 				partyTab.transform.FindChild("Close").GetComponent<Button>().interactable = true;
 				pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Take/Give on PC -> Submenu -> Item
 
 			//Pokemon Item Give From Bag on PC -> Inventory
@@ -3244,6 +3526,9 @@ public class PCScene : MonoBehaviour
 				//Enable party close button
 				partyTab.transform.FindChild("Close").GetComponent<Button>().interactable = true;
 				pcState = partyTab.activeSelf ? PCGame.PARTY : PCGame.HOME;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if Pokemon Item Give From Bag on PC -> Inventory
 		} //end else if X Key
 	} //end GetInput
@@ -3843,6 +4128,16 @@ public class PCScene : MonoBehaviour
 					pokemonChoice.CurrentEXP.ToString();
 				summaryScreen.transform.GetChild(0).FindChild("RemainingXP").GetComponent<Text>().text =
 					pokemonChoice.RemainingEXP.ToString();
+				if (pokemonChoice.CurrentLevel != 100)
+				{
+					summaryScreen.transform.GetChild(0).FindChild("XPBar").GetComponent<RectTransform>().localScale = new Vector3(
+						(float)(pokemonChoice.EXPForLevel - pokemonChoice.RemainingEXP) /
+						(float)pokemonChoice.EXPForLevel, 1, 1);
+				} //end if
+				else
+				{
+					summaryScreen.transform.GetChild(0).FindChild("XPBar").GetComponent<RectTransform>().localScale = new Vector3(0, 1, 1);
+				} //end else
 				SetTypeSprites(summaryScreen.transform.GetChild(0).FindChild("Types").GetChild(0).GetComponent<Image>(),
 					summaryScreen.transform.GetChild(0).FindChild("Types").GetChild(1).GetComponent<Image>(), 
 					pokemonChoice.NatSpecies);
@@ -4078,6 +4373,7 @@ public class PCScene : MonoBehaviour
 					int itemNumber = GameManager.instance.GetTrainer().GetItem(inventorySpot)[0];
 					GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 					GameManager.instance.GetTrainer().Team[choiceNumber - 1].Item = itemNumber;
+					GameManager.instance.GetTrainer().Team[choiceNumber - 1].InitialItem = itemNumber;
 					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
 					GameManager.instance.GetTrainer().Team[choiceNumber - 1].Nickname + " and " +
 					"put other item in bag.", true);
@@ -4098,6 +4394,8 @@ public class PCScene : MonoBehaviour
 					GameManager.instance.GetTrainer().RemoveItem(itemNumber, 1);
 					GameManager.instance.GetTrainer().GetPC(
 						GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Item = itemNumber;
+					GameManager.instance.GetTrainer().GetPC(
+						GameManager.instance.GetTrainer().GetPCBox(), boxChoice).InitialItem = itemNumber;
 					GameManager.instance.DisplayText("Gave " + DataContents.GetItemGameName(itemNumber) + " to " +
 					GameManager.instance.GetTrainer().GetPC(
 						GameManager.instance.GetTrainer().GetPCBox(), boxChoice).Nickname + " and " +

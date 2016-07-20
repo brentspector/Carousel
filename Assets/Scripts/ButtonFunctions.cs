@@ -64,6 +64,22 @@ public class ButtonFunctions : MonoBehaviour
         } //end catch
     } //end TeamMenu
 
+	/***************************************
+     * Name: KalosGyms
+     * Brings up the Kalos gym battle menu
+     ***************************************/ 
+	public void KalosGyms()
+	{
+		try
+		{
+			GameManager.instance.SetGameState(MainGameScene.MainGame.KALOSGYMBATTLE);       
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end KalosGyms
+
     /***************************************
      * Name: PlayerPC
      * Brings up the pokemon storage screen
@@ -484,6 +500,53 @@ public class ButtonFunctions : MonoBehaviour
 	} //end CancelPurchase
 
 	/***************************************
+     * Name: HealPokemon
+     * Heals the player's team
+     ***************************************/ 
+	public void HealPokemon()
+	{
+		try
+		{
+			GameManager.instance.GetTrainer().HealTeam();
+			GameManager.instance.DisplayText("Your team was healed", true);
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end HealPokemon
+
+	/***************************************
+     * Name: TrainingBattle
+     * Begins a training battle 
+     ***************************************/ 
+	public void TrainingBattle()
+	{
+		try
+		{
+			Trainer newTrainer = new Trainer();
+			newTrainer.PlayerID = 666;
+			newTrainer.PlayerName = "Pokemon Coach";
+			newTrainer.PlayerImage = 13;
+			newTrainer.EmptyTeam();
+			for(int i = 0; i < 3; i++)
+			{
+				Pokemon newPokemon = new Pokemon(species:531,  level: 6);
+				newPokemon.ChangeMoves(new int[]{527, -1, -1, -1});
+				newTrainer.AddPokemon(newPokemon);
+			} //end for
+			List<Trainer> battlerList = new List<Trainer>();
+			battlerList.Add(GameManager.instance.GetTrainer());
+			battlerList.Add(newTrainer);
+			GameManager.instance.InitializeBattle(0, battlerList);
+		} //end try
+		catch(System.Exception e)
+		{
+			GameManager.instance.LogErrorMessage (e.ToString());
+		} //end catch
+	} //end TrainingBattle
+
+	/***************************************
      * Name: BeginBattle
      * Begins a battle 
      ***************************************/ 
@@ -493,6 +556,7 @@ public class ButtonFunctions : MonoBehaviour
 		try
 		{
 			List<Trainer> battlerList = new List<Trainer>();
+			GameManager.instance.GetTrainer().HasMega = false;
 			battlerList.Add(GameManager.instance.GetTrainer());
 			string[] enemiesGiven = battleData.Split(',');
 			for(int i = 1; i < enemiesGiven.Length; i++)
@@ -501,6 +565,7 @@ public class ButtonFunctions : MonoBehaviour
 				newTrainer.PlayerID = int.Parse(enemiesGiven[i]);
 				newTrainer.PlayerName = DataContents.ExecuteSQL<string>("SELECT name FROM Trainers WHERE enemyID=" + enemiesGiven[i]);
 				newTrainer.PlayerImage = DataContents.ExecuteSQL<int>("SELECT image FROM Trainers WHERE enemyID=" + enemiesGiven[i]);
+				newTrainer.HasMega = false;
 				string[] items = DataContents.ExecuteSQL<string>("SELECT items FROM Trainers WHERE enemyID=" + enemiesGiven[i]).Split(',');
 				for(int j = 0; j < items.Length; j++)
 				{

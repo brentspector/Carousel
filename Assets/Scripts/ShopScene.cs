@@ -453,6 +453,9 @@ public class ShopScene : MonoBehaviour
 				{
 					EventSystem.current.SetSelectedGameObject(results[0].gameObject.transform.parent.gameObject);
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Purchase Processing
@@ -466,6 +469,9 @@ public class ShopScene : MonoBehaviour
 				{
 					EventSystem.current.SetSelectedGameObject(results[0].gameObject);
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end else if Mouse Moves Left
 
@@ -485,6 +491,9 @@ public class ShopScene : MonoBehaviour
 				{
 					EventSystem.current.SetSelectedGameObject(results[0].gameObject.transform.parent.gameObject);
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Purchase Processing
@@ -498,6 +507,9 @@ public class ShopScene : MonoBehaviour
 				{
 					EventSystem.current.SetSelectedGameObject(results[0].gameObject);
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end else if Mouse Moves Right
 
@@ -517,6 +529,9 @@ public class ShopScene : MonoBehaviour
 				{
 					EventSystem.current.SetSelectedGameObject(results[0].gameObject.transform.parent.gameObject);
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Purchase Processing
@@ -530,6 +545,9 @@ public class ShopScene : MonoBehaviour
 				{
 					EventSystem.current.SetSelectedGameObject(results[0].gameObject);
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end else if Mouse Moves Up
 
@@ -549,6 +567,9 @@ public class ShopScene : MonoBehaviour
 				{
 					EventSystem.current.SetSelectedGameObject(results[0].gameObject.transform.parent.gameObject);
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Purchase Processing
@@ -562,6 +583,9 @@ public class ShopScene : MonoBehaviour
 				{
 					EventSystem.current.SetSelectedGameObject(results[0].gameObject);
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end else if Mouse Moves Down
 
@@ -593,6 +617,9 @@ public class ShopScene : MonoBehaviour
 				{
 					StartCoroutine(SetupPurchase());
 				} //end if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 
 			//Code processing
@@ -613,6 +640,9 @@ public class ShopScene : MonoBehaviour
 						checkpoint = 2;
 					} //end else
 				} //end if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 		} //end else if Left Mouse Button
 
@@ -624,7 +654,11 @@ public class ShopScene : MonoBehaviour
 			//Normal Processing
 			if (checkpoint == 2 || checkpoint == 5)
 			{
+				selection.SetActive(false);
 				GameManager.instance.LoadScene("MainGame", true);
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 
 			//Purchase Processing
@@ -635,6 +669,9 @@ public class ShopScene : MonoBehaviour
 				EventSystem.current.SetSelectedGameObject(itemRegion.transform.GetChild(selectedItem - 
 					(page * 15)).gameObject);
 				checkpoint = 2;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Sale Processing
@@ -645,6 +682,9 @@ public class ShopScene : MonoBehaviour
 				EventSystem.current.SetSelectedGameObject(itemRegion.transform.GetChild(selectedItem - 
 					(page * 15)).gameObject);
 				checkpoint = 5;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Code processing
@@ -659,6 +699,9 @@ public class ShopScene : MonoBehaviour
 				{
 					checkpoint = 2;
 				} //end else
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 		} //end else if Right Mouse Button
 
@@ -674,6 +717,9 @@ public class ShopScene : MonoBehaviour
 				{
 					StartCoroutine(SetupPurchase());
 				} //end if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 
 			//Code processing
@@ -693,6 +739,9 @@ public class ShopScene : MonoBehaviour
 					{
 						checkpoint = 2;
 					} //end else
+
+					//Play selection SFX
+					AudioManager.instance.PlaySelect();
 				} //end if
 			} //end else if
 		} //end else if Enter/Return Key
@@ -705,7 +754,11 @@ public class ShopScene : MonoBehaviour
 			//Normal Processing
 			if (checkpoint == 2 || checkpoint == 5)
 			{
+				selection.SetActive(false);
 				GameManager.instance.LoadScene("MainGame", true);
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 
 			//Purchase Processing
@@ -716,6 +769,9 @@ public class ShopScene : MonoBehaviour
 				EventSystem.current.SetSelectedGameObject(itemRegion.transform.GetChild(selectedItem - 
 					(page * 15)).gameObject);
 				checkpoint = 2;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Sale Processing
@@ -726,6 +782,9 @@ public class ShopScene : MonoBehaviour
 				EventSystem.current.SetSelectedGameObject(itemRegion.transform.GetChild(selectedItem - 
 					(page * 15)).gameObject);
 				checkpoint = 5;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Code processing
@@ -740,6 +799,9 @@ public class ShopScene : MonoBehaviour
 				{
 					checkpoint = 2;
 				} //end else
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 		} //end else if X Key
 	} //end GetInput
@@ -868,7 +930,9 @@ public class ShopScene : MonoBehaviour
 				{
 					for (int i = 0; i < quantity; i++)
 					{
-						Pokemon newPokemon = new Pokemon(toDisplay[selectedItem],oType: 0, oWhere: 0);
+						bool buyShiny = GameManager.instance.RandomInt(0, 100) == 5;
+						Pokemon newPokemon = new Pokemon(toDisplay[selectedItem],oType: (int)ObtainTypeEnum.Bought, 
+							oWhere: (int)ObtainFromEnum.Shop, shiny: buyShiny);
 						GameManager.instance.GetTrainer().AddToPC(
 							GameManager.instance.GetTrainer().GetPCBox(), 0, newPokemon);
 						GameManager.instance.DisplayText("Bought " + quantity + " " + newPokemon.Nickname +

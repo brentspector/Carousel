@@ -102,6 +102,15 @@ public class Field
 					} //end else
 				} //end for
 				break;
+			//Grassy Terrain
+			case 1:				
+				break;
+			//Electric Terrain
+			case 2:				
+				break;
+			//Misty Terrain
+			case 3:
+				break;
 		} //end switch
 
 		//Return battlers list
@@ -109,8 +118,8 @@ public class Field
 	} //end ResolveFieldEntrance
 
 	/***************************************
-	 * Name: ResolveFieldEntrance
-	 * Activates entrance effects of fields
+	 * Name: ResetDefaultBoosts
+	 * Resets boosts to 0 and recalculates
 	 ***************************************/
 	public void ResetDefaultBoosts()
 	{

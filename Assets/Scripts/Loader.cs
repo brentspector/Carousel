@@ -12,6 +12,9 @@ public class Loader : MonoBehaviour
     #region Variables
     //Holds the prefab of the GameManager
     public GameManager gameManager;
+
+	//Holds the prefab of the AudioManager
+	public AudioManager audioManager;
     #endregion
 
     #region Methods
@@ -23,6 +26,12 @@ public class Loader : MonoBehaviour
         {
             Instantiate(gameManager);
         } //end if	
+
+		//If a AudioManager doesn't exist, make one
+		if(AudioManager.instance == null)
+		{
+			Instantiate(audioManager);
+		} //end if	
 	} //end Awake
     #endregion
 } //end Loader class

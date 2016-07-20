@@ -138,7 +138,19 @@ public class Inventory
 		//Find the item
 		List<int> itemRequested = inventory[slot].Find(theItem => theItem[0] == item);
 
-		return itemRequested != null ? itemRequested[1] : 0;
+		//Check Free Space if no bag spot was given
+		List<int> itemFreeSpace = null;
+		if (bagSpot < 0)
+		{
+			itemFreeSpace = inventory[0].Find(theItem => theItem[0] == item);
+		} //end if
+
+		//Total the found items
+		int count = itemRequested != null ? itemRequested[1] : 0;
+		count += itemFreeSpace != null ? itemFreeSpace[1] : 0;
+
+		//Return total
+		return count;
 	} //end ItemCount(int item, int bagSpot = -1)
 
 	/***************************************

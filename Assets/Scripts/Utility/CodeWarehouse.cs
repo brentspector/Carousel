@@ -430,6 +430,56 @@ public class CodeWarehouse : MonoBehaviour
 			dbCommand.ExecuteNonQuery();
 			dbCommand.Parameters.Clear();
 		} //end for
+
+		//Load Forms
+				dbCommand.CommandText = "CREATE TABLE Forms(baseSpecies int,form int,name text,type1 text,type2 text,health int,attack int," +
+		"defence int,speed int,specialAttack int,specialDefence int,baseExp int,hpEffort int,attackEffort int,defenceEffort int," +
+		"speedEffort int,specialAttackEffort int,specialDefenceEffort int,ability text,height real,weight real,item int," +
+		"battlerPlayerY int,battlerEnemyY int,battlerAltitude int)";
+		dbCommand.ExecuteNonQuery();
+				SystemManager sysm = new SystemManager();
+		sysm.GetContents(dataLocation + "Forms.txt");
+
+		int[] toAdd = new int[]{282,334,460,475};
+		for (int i = 0; i < 4; i++)
+		{
+			dbCommand.CommandText = "INSERT INTO Forms(baseSpecies,form,name,type1,type2,health,attack,defence,speed,specialAttack," +
+			"specialDefence,baseExp,hpEffort,attackEffort,defenceEffort,speedEffort,specialAttackEffort,specialDefenceEffort,ability," +
+			"height,weight,item,battlerPlayerY,battlerEnemyY,battlerAltitude) VALUES (@bs,@fm,@nm,@t1,@t2,@hp,@atk,@def,@spe,@spa," +
+			"@spd,@bxp,@hpe,@atke,@defe,@spee,@spae,@spde,@ab,@ht,@wt,@it,@bpy,@bey,@ba)";
+			dbCommand.Parameters.Add(new SqliteParameter("@bs", toAdd[i]));
+			dbCommand.Parameters.Add(new SqliteParameter("@fm", sysm.ReadINI<int>(toAdd[i].ToString(), "Form")));
+			dbCommand.Parameters.Add(new SqliteParameter("@nm", sysm.ReadINI<string>(toAdd[i].ToString(), "Name")));
+			dbCommand.Parameters.Add(new SqliteParameter("@t1", sysm.ReadINI<string>(toAdd[i].ToString(), "Type1")));
+			dbCommand.Parameters.Add(new SqliteParameter("@t2", sysm.ReadINI<string>(toAdd[i].ToString(), "Type2")));
+			string result = sysm.ReadINI<string>(toAdd[i].ToString(), "BaseStats");
+			string[] contents = result.Split(',');
+			dbCommand.Parameters.Add(new SqliteParameter("@hp", int.Parse(contents[0])));
+			dbCommand.Parameters.Add(new SqliteParameter("@atk", int.Parse(contents[1])));
+			dbCommand.Parameters.Add(new SqliteParameter("@def", int.Parse(contents[2])));
+			dbCommand.Parameters.Add(new SqliteParameter("@spe", int.Parse(contents[3])));
+			dbCommand.Parameters.Add(new SqliteParameter("@spa", int.Parse(contents[4])));
+			dbCommand.Parameters.Add(new SqliteParameter("@spd", int.Parse(contents[5])));
+			dbCommand.Parameters.Add(new SqliteParameter("@bxp", sysm.ReadINI<int>(toAdd[i].ToString(), "BaseEXP")));
+			result = sysm.ReadINI<string>(toAdd[i].ToString(), "EffortPoints");
+			contents = result.Split(',');
+			dbCommand.Parameters.Add(new SqliteParameter("@hpe", int.Parse(contents[0])));
+			dbCommand.Parameters.Add(new SqliteParameter("@atke", int.Parse(contents[1])));
+			dbCommand.Parameters.Add(new SqliteParameter("@defe", int.Parse(contents[2])));
+			dbCommand.Parameters.Add(new SqliteParameter("@spee", int.Parse(contents[3])));
+			dbCommand.Parameters.Add(new SqliteParameter("@spae", int.Parse(contents[4])));
+			dbCommand.Parameters.Add(new SqliteParameter("@spde", int.Parse(contents[5])));
+			dbCommand.Parameters.Add(new SqliteParameter("@ab", sysm.ReadINI<string>(toAdd[i].ToString(), "Abilities")));
+			dbCommand.Parameters.Add(new SqliteParameter("@ht", sysm.ReadINI<float>(toAdd[i].ToString(), "Height")));
+			dbCommand.Parameters.Add(new SqliteParameter("@wt", sysm.ReadINI<float>(toAdd[i].ToString(), "Weight")));
+			dbCommand.Parameters.Add(new SqliteParameter("@it", sysm.ReadINI<int>(toAdd[i].ToString(), "Item")));
+			dbCommand.Parameters.Add(new SqliteParameter("@bpy", sysm.ReadINI<int>(toAdd[i].ToString(), "BattlerPlayerY")));
+			dbCommand.Parameters.Add(new SqliteParameter("@bey", sysm.ReadINI<int>(toAdd[i].ToString(), "BattlerEnemyY")));
+			dbCommand.Parameters.Add(new SqliteParameter("@ba", sysm.ReadINI<int>(toAdd[i].ToString(), "BattlerAltitude")));
+			dbCommand.Prepare();
+			dbCommand.ExecuteNonQuery();
+			dbCommand.Parameters.Clear();
+		} //end for
      */
     #endregion
     #region LevelUpFinder

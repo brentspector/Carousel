@@ -382,6 +382,9 @@ public class PokedexScene : MonoBehaviour
 			if(checkpoint == 2)
 			{
 				pokedexIndex = ExtensionMethods.BindToInt(pokedexIndex-10, 1);
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end if Left Arrow
 
@@ -401,6 +404,9 @@ public class PokedexScene : MonoBehaviour
 				{
 					pokedexIndex = 721;
 				} //end else
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Right Arrow
 
@@ -413,6 +419,9 @@ public class PokedexScene : MonoBehaviour
 			if(checkpoint == 2)
 			{
 				pokedexIndex = ExtensionMethods.BindToInt(pokedexIndex-1, 1);
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Up Arrow
 
@@ -425,6 +434,9 @@ public class PokedexScene : MonoBehaviour
 			if(checkpoint == 2)
 			{
 				pokedexIndex = ExtensionMethods.CapAtInt(pokedexIndex+1, 721);
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Down Arrow
 
@@ -469,6 +481,9 @@ public class PokedexScene : MonoBehaviour
 			if(checkpoint == 2)
 			{
 				pokedexIndex = ExtensionMethods.BindToInt(pokedexIndex-1, 1);
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Mouse Wheel Up
 
@@ -481,6 +496,9 @@ public class PokedexScene : MonoBehaviour
 			if(checkpoint == 2)
 			{
 				pokedexIndex = ExtensionMethods.CapAtInt(pokedexIndex+1, 721);
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Mouse Wheel Down
 
@@ -501,6 +519,9 @@ public class PokedexScene : MonoBehaviour
 			if(checkpoint == 2)
 			{
 				GameManager.instance.LoadScene("MainGame", true);
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 		} //end else if Right Mouse Button
 
@@ -513,6 +534,9 @@ public class PokedexScene : MonoBehaviour
 			if(checkpoint == 2)
 			{
 				ToggleShown();
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 		} //end else if Enter/Return Key
 
@@ -525,6 +549,9 @@ public class PokedexScene : MonoBehaviour
 			if(checkpoint == 2)
 			{
 				GameManager.instance.LoadScene("MainGame", true);
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 		} //end else if X Key
 	} //end GetInput
@@ -549,7 +576,9 @@ public class PokedexScene : MonoBehaviour
                 child.FindChild ("Ball").GetComponent<Image> ().sprite = 
                     GameManager.instance.GetTrainer ().Owned.Contains (chosenPoke) ? 
                 Resources.Load<Sprite> ("Sprites/Battle/ballnormal") :
-                Resources.Load<Sprite> ("Sprites/Battle/ballfainted");
+					GameManager.instance.GetTrainer().Seen.Contains (chosenPoke) ?
+                Resources.Load<Sprite> ("Sprites/Battle/ballfainted") :
+					Resources.Load<Sprite> ("Sprites/Battle/ballempty");
 				child.FindChild("Icon").GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/icon" + 
 					chosenPoke.ToString("000"));
             } //end for

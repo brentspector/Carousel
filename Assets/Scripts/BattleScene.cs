@@ -26,12 +26,15 @@ public class BattleScene : MonoBehaviour
 		POKEMONRIBBONS,
 		ITEMUSE,
 		PICKMOVE,
+		REPLACEMOVE,
+		GETNEWMOVECHOICE,
 		MOVESWITCH,
 		GETAICHOICE,
 		PROCESSQUEUE,
 		ENDROUND,
 		USERPICKPOKEMON,
 		AIPICKPOKEMON,
+		EVOLVEPOKEMON,
 		ENDFIGHT
 	} //end Battle
 
@@ -53,9 +56,16 @@ public class BattleScene : MonoBehaviour
 	int detailsSize;                //Font size for move description
 	int ribbonChoice;               //The ribbon currently shown
 	int previousRibbonChoice;       //The ribbon last highlighted for reading
+	int moveHits;					//How many times does the move hit
+	int moveCategory;				//What category is the move in (Physical, Special, Status)
+	int moveDamage;					//What is the base damage of the move used
+	float typeMod;					//The type modification value
+	float damageMod;				//What damage adjustments are applied to the final result
+	int moveToLearn = -1;			//What move is the pokemon trying to learn
 	bool processing = false;		//Whether a function is already processing something
-	bool pickMove = false;			//Whether the player must pick a move to use an item on
+	bool pickMove = false;			//Whether the player must pick a move
 	bool replacePokemon = false;	//Whether the player must replace the active battler
+	bool optionalReplace = false;	//Whether the player is switching in a pokemon optionally
 	bool pocketChange;				//Is the pocket currently changing
 	Field battleField;				//The active battle field
 	PokemonBattler currentAttacker;	//Who is currently attacking
@@ -150,7 +160,7 @@ public class BattleScene : MonoBehaviour
 			{
 				battlers.Add(new PokemonBattler(combatants[i].Team[0]));
 				battlers[i].JustEntered = true;
-				participants.Add(combatants[i].Team[0]);
+				battlers[i].SideOn = i;
 			} //end for
 
 			//Initialize battler boxes
@@ -233,6 +243,13 @@ public class BattleScene : MonoBehaviour
 			//Begin processing
 			processing = true;
 
+			//Add in the player's battler to participants
+			participants.Add(battlers[0].BattlerPokemon);
+
+			//Add opponent's pokemon to the player's seen list
+			GameManager.instance.GetTrainer().Seen = 
+				ExtensionMethods.AddUnique<int>(GameManager.instance.GetTrainer().Seen, battlers[1].BattlerPokemon.NatSpecies);
+
 			//Check field effect, abilities, and items
 			StartCoroutine(ResolveFieldEntrance());
 		} //end else if
@@ -240,20 +257,31 @@ public class BattleScene : MonoBehaviour
 		{
 			if (battleState == Battle.ROUNDSTART)
 			{
-				//Turn on command choice screen
-				commandChoice.SetActive(true);
+				if (battlers[0].GetEffectValue((int)LastingEffects.TwoTurnAttack) != -1)
+				{
+					choiceNumber = battlers[0].GetEffectValue((int)LastingEffects.TwoTurnAttack);
+					int proposedAttack = battlers[0].GetMove(choiceNumber);
+					AddToQueue(0, 0, choiceNumber, DetermineTarget(0, 0, proposedAttack), DeterminePriority(0, 0, 
+						choiceNumber));
+					battleState = Battle.GETAICHOICE;
+				} //end if
+				else
+				{
+					//Turn on command choice screen
+					commandChoice.SetActive(true);
 
-				//Reset choiceNumber to zero
-				choiceNumber = 0;
+					//Reset choiceNumber to zero
+					choiceNumber = 0;
 
-				//Reset choiceTarget to zero
-				choiceTarget = 0;
+					//Reset choiceTarget to zero
+					choiceTarget = 0;
 
-				//Reset processing to false
-				processing = false;
+					//Reset processing to false
+					processing = false;
 
-				//Get player input
-				GetInput();
+					//Get player input
+					GetInput();
+				} //end else
 			} //end if
 			else if (battleState == Battle.SELECTATTACK)
 			{
@@ -378,17 +406,41 @@ public class BattleScene : MonoBehaviour
 			} //end else if
 			else if (battleState == Battle.GETAICHOICE)
 			{
-				//Select a random attack
-				int randomSelection = GameManager.instance.RandomInt(0, battlers[1].BattlerPokemon.GetMoveCount() - 1);
+				//Check for two turn attack
+				if (battlers[1].CheckEffect((int)LastingEffects.TwoTurnAttack))
+				{
+					//Get attack used
+					int randomSelection = battlers[1].GetEffectValue((int)LastingEffects.TwoTurnAttack);
 
-				//Queue it
-				AddToQueue(1, 0, randomSelection, 0, DeterminePriority(1, 0, randomSelection));
+					//Queue it
+					AddToQueue(1, 0, randomSelection, 0, DeterminePriority(1, 0, randomSelection));
 
-				//Organize list
-				SortQueue();
+					//Organize list
+					SortQueue();
 
-				//Move to process
-				battleState = Battle.PROCESSQUEUE;
+					//Move to process
+					battleState = Battle.PROCESSQUEUE;
+				} //end if
+				else
+				{
+					//Check if mega
+					if (CheckMega(1))
+					{
+						ApplyMega(1);
+					} //end if
+
+					//Select a random attack
+					int randomSelection = GameManager.instance.RandomInt(0, battlers[1].BattlerPokemon.GetMoveCount() - 1);
+
+					//Queue it
+					AddToQueue(1, 0, randomSelection, 0, DeterminePriority(1, 0, randomSelection));
+
+					//Organize list
+					SortQueue();
+
+					//Move to process
+					battleState = Battle.PROCESSQUEUE;
+				} //end else
 			} //end else if
 			else if (battleState == Battle.PROCESSQUEUE)
 			{
@@ -450,74 +502,16 @@ public class BattleScene : MonoBehaviour
 				combatants[1].Swap(0, randomSelection);
 				battleField.ResetDefaultBoosts();
 				FillInBattlerData();
-				GameManager.instance.DisplayConfirm(string.Format("{0} is about to send out {1}. Do you want to switch pokemon?", 
-					combatants[1].PlayerName, battlers[1].Nickname), 0, true);
+				if (waitingState == Battle.PROCESSQUEUE)
+				{
+					battleState = Battle.PROCESSQUEUE;
+				} //end if
+				else
+				{
+					GameManager.instance.DisplayConfirm(string.Format("{0} is about to send out {1}. Do you want to switch pokemon?", 
+						combatants[1].PlayerName, battlers[1].Nickname), 0, true);
+				} //end else
 			} //end else if
-			/* Done - Start of Battle
-			 * ++++++-Display trainers
-			 * ++++++-AI sends out first pokemon in roster
-			 * ++++++-Player sends out first pokemon in roster
-			 * 
-			 * Done - On Entry
-			 * ++++++-Resolve field
-			 * ++++++-Resolve ability (intimidate,levitate,frisk)
-			 * ++++++-Resolve item(air balloon)
-			 * 
-			 * Beginning of round
-			 * ++++++-Player picks Fight/Bag/Pokemon/Run
-			 * ++++++--Fight
-			 * ++++++----Display pokemon attacks
-			 * ++++++----Player picks an attack or cancels back to main
-			 * ++++++--Bag
-			 * ++++++----Display inventory
-			 * ++++++----Player picks an item with a battle use
-			 * ++++++----Player picks pokemon to use it on
-			 * ++++++--Pokemon
-			 * ++++++----Team roster is shown
-			 * ++++++----Player picks a pokemon
-			 * ++++++----If switch is chosen, queue it
-			 * ++++++----Player can view summary or cancel back to main
-			 * ++++++--Run
-			 * ++++++----End the fight and return any variables to start
-			 * ++++++----Return to battle menu
-			 * -AI picks Fight/Item/Switch
-			 * 
-			 * Done - End of Choice
-			 * ++++++-Queue events
-			 * ++++++--Switch (fastest goes first)
-			 * ++++++---Resolve OnEntry
-			 * ++++++--Item (fastest goes first)
-			 * ++++++--Attack
-			 * ++++++---Sort by Priority, then Speed
-			 * ++++++---Queue with flag indentifying the pokemon who used it
-			 * 
-			 * Done - Middle of round
-			 * ++++++-Resolve Queue
-			 * ++++++--Attack
-			 * ++++++----Resolve protect
-			 * ++++++----Resolve blocking abilities (Bulletproof & Telepathy)
-			 * ++++++----Resolve typing
-			 * ++++++----Resolve accuracy
-			 * ++++++----Resolve critical
-			 * ++++++----Resolve damage, item, ability, field
-			 * ++++++----Resolve recoil
-			 * ++++++----Check if either pokemon is fainted
-			 * ++++++-----Resolve ability (aftermath)
-			 * ++++++-----Resolve player targeted secondary effects
-			 * ++++++-----If opponent is still alive, process opponent secondary effects
-			 * ++++++--Loop until queue is empty
-			 * 
-			 * Done - End of round
-			 * +++++-Resolve field & item
-			 * +++++-Replace missing pokemon
-			 * +++++-Loop to beginning of round
-			 * 
-			 * End of Battle
-			 * -Give badge if needed
-			 * -Give points
-			 * -Give item
-			 */
-
 		} //end else if
 	} //end RunBattle
 
@@ -681,6 +675,9 @@ public class BattleScene : MonoBehaviour
 					//Set current slot choice
 					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end if Left Arrow
 
@@ -838,6 +835,9 @@ public class BattleScene : MonoBehaviour
 					//Set current slot choice
 					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Right Arrow
 
@@ -1061,6 +1061,9 @@ public class BattleScene : MonoBehaviour
 					//Set current slot choice
 					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Up Arrow
 
@@ -1287,6 +1290,9 @@ public class BattleScene : MonoBehaviour
 					//Set current slot choice
 					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Down Arrow
 
@@ -1398,6 +1404,9 @@ public class BattleScene : MonoBehaviour
 						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 					} //end if
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Mouse Moves Left
 
@@ -1510,6 +1519,9 @@ public class BattleScene : MonoBehaviour
 						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 					} //end if
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Mouse Moves Right
 
@@ -1698,6 +1710,9 @@ public class BattleScene : MonoBehaviour
 						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 					} //end else
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Mouse Moves Up
 
@@ -1889,6 +1904,9 @@ public class BattleScene : MonoBehaviour
 						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 					} //end else
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Mouse Moves Down
 
@@ -1949,6 +1967,9 @@ public class BattleScene : MonoBehaviour
 					//Reload ribbons
 					InitializeRibbons();
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Mouse Wheel Up
 
@@ -2009,6 +2030,9 @@ public class BattleScene : MonoBehaviour
 					//Reload ribbons
 					InitializeRibbons();
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Mouse Wheel Down
 
@@ -2047,14 +2071,14 @@ public class BattleScene : MonoBehaviour
 							//Load screen with pokemon attacks
 							for (int i = 0; i < 4; i++)
 							{
-								int attackType = DataContents.GetMoveIcon(battlers[0].BattlerPokemon.GetMove(i));
+								int attackType = DataContents.GetMoveIcon(battlers[0].GetMove(i));
 								if (attackType != -1)
 								{
 									attackSelection.transform.GetChild(i).gameObject.SetActive(true);
 									attackSelection.transform.GetChild(i).GetComponent<Image>().sprite = DataContents.attackNonSelSprites[
 										attackType];
 									attackSelection.transform.GetChild(i).GetChild(0).GetComponent<Text>().text = 
-										DataContents.GetMoveGameName(battlers[0].BattlerPokemon.GetMove(i));
+										DataContents.GetMoveGameName(battlers[0].GetMove(i));
 								} //end if
 								else
 								{
@@ -2097,16 +2121,23 @@ public class BattleScene : MonoBehaviour
 
 				//Attack selection
 				else if (battleState == Battle.SELECTATTACK)
-				{						
-					if (battlers[0].GetMovePP(choiceNumber) > 0)
-					{
-						attackSelection.SetActive(false);
-						AddToQueue(0, commandInt, choiceNumber, DetermineTarget(0, 0, choiceNumber), DeterminePriority(0, 0, choiceNumber));
-						battleState = Battle.GETAICHOICE;
-					} //end if
-					else
+				{		
+					int proposedAttack = battlers[0].GetMove(choiceNumber);
+					if (battlers[0].GetMovePP(choiceNumber) < 0)
 					{
 						GameManager.instance.DisplayText("There's no PP left! You can't choose this move.", true);
+					} //end if
+					else if (battlers[0].CheckEffect((int)LastingEffects.Torment) && battlers[0].LastMoveUsed == proposedAttack)
+					{
+						GameManager.instance.DisplayText("You can't select the same move twice in a row while under " +
+						"the effect of Torment!", true);
+					} //end else if
+					else
+					{
+						attackSelection.SetActive(false);
+						AddToQueue(0, commandInt, choiceNumber, DetermineTarget(0, 0, proposedAttack), DeterminePriority(0, 0, 
+							choiceNumber));
+						battleState = Battle.GETAICHOICE;
 					} //end else
 				} //end else if
 
@@ -2132,22 +2163,34 @@ public class BattleScene : MonoBehaviour
 				//Pick Move Processing
 				else if (battleState == Battle.PICKMOVE)
 				{
-					int itemNumber = combatants[0].GetItem(choiceNumber)[0];
-					QueueEvent newEvent = new QueueEvent();
-					newEvent.battler = 0;
-					newEvent.action = 1;
-					newEvent.selection = choiceNumber;
-					newEvent.target = DetermineTarget(0, 1, choiceNumber);
-					newEvent.priority = 7;
-					if (bool.Parse(ApplySpecialItem(newEvent, true)))
+					if (moveToLearn == -1)
 					{
-						selection.SetActive(false);
-						choices.SetActive(false);
-						playerTeam.SetActive(false);
-						commandChoice.SetActive(false);
-						AddToQueue(0, commandInt, choiceNumber, DetermineTarget(0, 1, itemNumber), DeterminePriority(0, 1, itemNumber));
-						battleState = Battle.GETAICHOICE;
+						int itemNumber = combatants[0].GetItem(choiceNumber)[0];
+						QueueEvent newEvent = new QueueEvent();
+						newEvent.battler = 0;
+						newEvent.action = 1;
+						newEvent.selection = choiceNumber;
+						newEvent.target = DetermineTarget(0, 1, choiceNumber);
+						newEvent.priority = 7;
+						if (bool.Parse(ApplySpecialItem(newEvent, true)))
+						{
+							selection.SetActive(false);
+							choices.SetActive(false);
+							playerTeam.SetActive(false);
+							commandChoice.SetActive(false);
+							AddToQueue(0, commandInt, choiceNumber, DetermineTarget(0, 1, itemNumber), DeterminePriority(0, 1, itemNumber));
+							battleState = Battle.GETAICHOICE;
+						} //end if
 					} //end if
+					else
+					{
+						combatants[0].Team[choiceTarget-1].ChangeMoves(new int[]{ moveToLearn }, subMenuChoice);
+						WriteBattleMessage(string.Format("{0} learned {1}!", combatants[0].Team[choiceTarget-1].Nickname, 
+							DataContents.GetMoveGameName(moveToLearn)));
+						choices.SetActive(false);
+						selection.SetActive(false);
+						battleState = Battle.REPLACEMOVE;
+					} //end else
 				} //end else if
 
 				//Pokemon selection
@@ -2180,34 +2223,50 @@ public class BattleScene : MonoBehaviour
 							battleState = Battle.POKEMONSUMMARY;
 							break;
 						case 1:
-							if (combatants[0].Team[choiceNumber - 1].Status != (int)Status.FAINT)
+							//Check to make sure selected isn't fainted
+							if (combatants[0].Team[choiceNumber - 1].Status == (int)Status.FAINT)
+							{
+								GameManager.instance.DisplayText(combatants[0].Team[choiceNumber - 1].Nickname +
+									" has fainted. It can't be used in battle currently.", true);
+							} //end if
+
+							//Check to make sure battler isn't already on field
+							if (combatants[0].Team[choiceNumber - 1] == battlers[0].BattlerPokemon)
+							{
+								GameManager.instance.DisplayText(combatants[0].Team[choiceNumber - 1].Nickname +
+									" is already in battle. Pick a different Pokemon or return to battle.", true);
+							} //end if
+
+							//Check to make sure battler isn't trapped by any move
+							if (battlers[0].CheckEffect((int)LastingEffects.MultiTurn) && !battlers[0].CheckType((int)Types.GHOST))
+							{
+								GameManager.instance.DisplayText(battlers[0].Nickname +
+									" is trapped! It can't be switched out.", true);
+							} //end if
+
+							//Allow switch to go through
+							else
 							{
 								selection.SetActive(false);
 								choices.SetActive(false);
 								playerTeam.SetActive(false);
 								commandChoice.SetActive(false);
-								if (replacePokemon)
+								if (replacePokemon || optionalReplace)
 								{
 									battlers[0].SwitchInPokemon(combatants[0].Team[choiceNumber - 1]);
 									battlers[0].JustEntered = true;
-									combatants[0].Swap(0, choiceNumber-1);
+									combatants[0].Swap(0, choiceNumber - 1);
 									replacePokemon = false;
 									FillInBattlerData();
-									UpdateDisplayedTeam();
 									trainerStands[0].GetComponent<Animator>().SetTrigger("SendOut");
 									GameManager.instance.ShowPlayerBox();
-									battleState = Battle.ENDROUND;
+									battleState = waitingState;
 								} //end if
 								else
 								{
 									AddToQueue(0, commandInt, 0, choiceNumber - 1, DeterminePriority(0, 2, choiceNumber));
 									battleState = Battle.GETAICHOICE;
 								} //end else
-							} //end if
-							else
-							{
-								GameManager.instance.DisplayText(combatants[0].Team[choiceNumber - 1].Nickname +
-								" has fainted. It can't be used in battle currently.", true);
 							} //end else
 							break;
 						case 2:
@@ -2254,6 +2313,7 @@ public class BattleScene : MonoBehaviour
 					if (moveChoice != switchChoice)
 					{					
 						combatants[0].Team[choiceNumber - 1].SwitchMoves(moveChoice, switchChoice);
+						battlers[0].UpdateActiveBattler();
 					} //end if
 
 					//Set color of background to clear
@@ -2281,6 +2341,9 @@ public class BattleScene : MonoBehaviour
 					subMenuChoice = 0;
 					battleState = Battle.POKEMONSUBMENU;
 				} //end else if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 		} //end else if Left Mouse Button
 
@@ -2329,7 +2392,7 @@ public class BattleScene : MonoBehaviour
 				{
 					commandChoice.SetActive(true);
 					playerTeam.SetActive(false);
-					battleState = Battle.ROUNDSTART;
+					battleState = optionalReplace ? Battle.ENDROUND : Battle.ROUNDSTART;
 				} //end else if
 
 				//Pokemon submenu
@@ -2349,8 +2412,8 @@ public class BattleScene : MonoBehaviour
 						//Deactivate summary
 						summaryScreen.SetActive(false);
 
-						//Return to select pokemon
-						battleState = Battle.SELECTPOKEMON;
+						//Return to select pokemon or user pick
+						battleState = replacePokemon ? Battle.USERPICKPOKEMON : Battle.SELECTPOKEMON;
 					} //end if
 					else
 					{
@@ -2377,8 +2440,11 @@ public class BattleScene : MonoBehaviour
 					previousRibbonChoice = -1;
 
 					//Return to select pokemon
-					battleState = Battle.SELECTPOKEMON;
+					battleState = replacePokemon ? Battle.USERPICKPOKEMON : Battle.SELECTPOKEMON;
 				} //end else if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 		} //end else if Right Mouse Button
 
@@ -2417,14 +2483,14 @@ public class BattleScene : MonoBehaviour
 							//Load screen with pokemon attacks
 							for (int i = 0; i < 4; i++)
 							{
-								int attackType = DataContents.GetMoveIcon(battlers[0].BattlerPokemon.GetMove(i));
+								int attackType = DataContents.GetMoveIcon(battlers[0].GetMove(i));
 								if (attackType != -1)
 								{
 									attackSelection.transform.GetChild(i).gameObject.SetActive(true);
 									attackSelection.transform.GetChild(i).GetComponent<Image>().sprite = DataContents.attackNonSelSprites[
 										attackType];
 									attackSelection.transform.GetChild(i).GetChild(0).GetComponent<Text>().text = 
-										DataContents.GetMoveGameName(battlers[0].BattlerPokemon.GetMove(i));
+										DataContents.GetMoveGameName(battlers[0].GetMove(i));
 								} //end if
 								else
 								{
@@ -2467,16 +2533,23 @@ public class BattleScene : MonoBehaviour
 
 				//Attack selection
 				else if (battleState == Battle.SELECTATTACK)
-				{						
-					if (battlers[0].GetMovePP(choiceNumber) > 0)
-					{
-						attackSelection.SetActive(false);
-						AddToQueue(0, commandInt, choiceNumber, DetermineTarget(0, 0, choiceNumber), DeterminePriority(0, 0, choiceNumber));
-						battleState = Battle.GETAICHOICE;
-					} //end if
-					else
+				{		
+					int proposedAttack = battlers[0].GetMove(choiceNumber);
+					if (battlers[0].GetMovePP(choiceNumber) < 0)
 					{
 						GameManager.instance.DisplayText("There's no PP left! You can't choose this move.", true);
+					} //end if
+					else if (battlers[0].CheckEffect((int)LastingEffects.Torment) && battlers[0].LastMoveUsed == proposedAttack)
+					{
+						GameManager.instance.DisplayText("You can't select the same move twice in a row while under " +
+							"the effect of Torment!", true);
+					} //end else if
+					else
+					{
+						attackSelection.SetActive(false);
+						AddToQueue(0, commandInt, choiceNumber, DetermineTarget(0, 0, proposedAttack), DeterminePriority(0, 0, 
+							choiceNumber));
+						battleState = Battle.GETAICHOICE;
 					} //end else
 				} //end else if
 
@@ -2502,22 +2575,34 @@ public class BattleScene : MonoBehaviour
 				//Pick Move Processing
 				else if (battleState == Battle.PICKMOVE)
 				{
-					int itemNumber = combatants[0].GetItem(choiceNumber)[0];
-					QueueEvent newEvent = new QueueEvent();
-					newEvent.battler = 0;
-					newEvent.action = 1;
-					newEvent.selection = choiceNumber;
-					newEvent.target = DetermineTarget(0, 1, choiceNumber);
-					newEvent.priority = 7;
-					if (bool.Parse(ApplySpecialItem(newEvent, true)))
+					if (moveToLearn == -1)
 					{
-						selection.SetActive(false);
-						choices.SetActive(false);
-						playerTeam.SetActive(false);
-						commandChoice.SetActive(false);
-						AddToQueue(0, commandInt, choiceNumber, DetermineTarget(0, 1, itemNumber), DeterminePriority(0, 1, itemNumber));
-						battleState = Battle.GETAICHOICE;
+						int itemNumber = combatants[0].GetItem(choiceNumber)[0];
+						QueueEvent newEvent = new QueueEvent();
+						newEvent.battler = 0;
+						newEvent.action = 1;
+						newEvent.selection = choiceNumber;
+						newEvent.target = DetermineTarget(0, 1, choiceNumber);
+						newEvent.priority = 7;
+						if (bool.Parse(ApplySpecialItem(newEvent, true)))
+						{
+							selection.SetActive(false);
+							choices.SetActive(false);
+							playerTeam.SetActive(false);
+							commandChoice.SetActive(false);
+							AddToQueue(0, commandInt, choiceNumber, DetermineTarget(0, 1, itemNumber), DeterminePriority(0, 1, itemNumber));
+							battleState = Battle.GETAICHOICE;
+						} //end if
 					} //end if
+					else
+					{
+						combatants[0].Team[choiceTarget-1].ChangeMoves(new int[]{ moveToLearn }, subMenuChoice);
+						WriteBattleMessage(string.Format("{0} learned {1}!", combatants[0].Team[choiceTarget-1].Nickname, 
+							DataContents.GetMoveGameName(moveToLearn)));
+						choices.SetActive(false);
+						selection.SetActive(false);
+						battleState = Battle.REPLACEMOVE;
+					} //end else
 				} //end else if
 
 				//Pokemon selection
@@ -2550,34 +2635,50 @@ public class BattleScene : MonoBehaviour
 							battleState = Battle.POKEMONSUMMARY;
 							break;
 						case 1:
-							if (combatants[0].Team[choiceNumber - 1].Status != (int)Status.FAINT)
+							//Check to make sure selected isn't fainted
+							if (combatants[0].Team[choiceNumber - 1].Status == (int)Status.FAINT)
+							{
+								GameManager.instance.DisplayText(combatants[0].Team[choiceNumber - 1].Nickname +
+									" has fainted. It can't be used in battle currently.", true);
+							} //end if
+
+							//Check to make sure battler isn't already on field
+							if (combatants[0].Team[choiceNumber - 1] == battlers[0].BattlerPokemon)
+							{
+								GameManager.instance.DisplayText(combatants[0].Team[choiceNumber - 1].Nickname +
+									" is already in battle. Pick a different Pokemon or return to battle.", true);
+							} //end if
+
+							//Check to make sure battler isn't trapped by any move
+							if (battlers[0].CheckEffect((int)LastingEffects.MultiTurn) && !battlers[0].CheckType((int)Types.GHOST))
+							{
+								GameManager.instance.DisplayText(battlers[0].Nickname +
+									" is trapped! It can't be switched out.", true);
+							} //end if
+
+							//Allow switch to go through
+							else
 							{
 								selection.SetActive(false);
 								choices.SetActive(false);
 								playerTeam.SetActive(false);
 								commandChoice.SetActive(false);
-								if (replacePokemon)
+								if (replacePokemon || optionalReplace)
 								{
 									battlers[0].SwitchInPokemon(combatants[0].Team[choiceNumber - 1]);
 									battlers[0].JustEntered = true;
-									combatants[0].Swap(0, choiceNumber-1);
+									combatants[0].Swap(0, choiceNumber - 1);
 									replacePokemon = false;
 									FillInBattlerData();
-									UpdateDisplayedTeam();
 									trainerStands[0].GetComponent<Animator>().SetTrigger("SendOut");
 									GameManager.instance.ShowPlayerBox();
-									battleState = Battle.ENDROUND;
+									battleState = waitingState;
 								} //end if
 								else
 								{
 									AddToQueue(0, commandInt, 0, choiceNumber - 1, DeterminePriority(0, 2, choiceNumber));
 									battleState = Battle.GETAICHOICE;
 								} //end else
-							} //end if
-							else
-							{
-								GameManager.instance.DisplayText(combatants[0].Team[choiceNumber - 1].Nickname +
-									" has fainted. It can't be used in battle currently.", true);
 							} //end else
 							break;
 						case 2:
@@ -2624,6 +2725,7 @@ public class BattleScene : MonoBehaviour
 					if (moveChoice != switchChoice)
 					{					
 						combatants[0].Team[choiceNumber - 1].SwitchMoves(moveChoice, switchChoice);
+						battlers[0].UpdateActiveBattler();
 					} //end if
 
 					//Set color of background to clear
@@ -2651,6 +2753,9 @@ public class BattleScene : MonoBehaviour
 					subMenuChoice = 0;
 					battleState = Battle.POKEMONSUBMENU;
 				} //end else if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 		} //end else if Enter/Return Key
 
@@ -2699,7 +2804,7 @@ public class BattleScene : MonoBehaviour
 				{
 					commandChoice.SetActive(true);
 					playerTeam.SetActive(false);
-					battleState = Battle.ROUNDSTART;
+					battleState = optionalReplace ? Battle.ENDROUND : Battle.ROUNDSTART;
 				} //end else if
 
 				//Pokemon submenu
@@ -2720,7 +2825,7 @@ public class BattleScene : MonoBehaviour
 						summaryScreen.SetActive(false);
 
 						//Return to select pokemon
-						battleState = Battle.SELECTPOKEMON;
+						battleState = replacePokemon ? Battle.USERPICKPOKEMON : Battle.SELECTPOKEMON;
 					} //end if
 					else
 					{
@@ -2746,9 +2851,12 @@ public class BattleScene : MonoBehaviour
 					ribbonChoice = 0;
 					previousRibbonChoice = -1;
 
-					//Return to select pokemon
-					battleState = Battle.SELECTPOKEMON;
+					//Return to select pokemon or user pick
+					battleState = replacePokemon ? Battle.USERPICKPOKEMON : Battle.SELECTPOKEMON;
 				} //end else if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 		} //end else if X Key
 	} //end GetInput
@@ -2762,7 +2870,12 @@ public class BattleScene : MonoBehaviour
 	{
 		battleType = bType;
 		combatants = trainers;
-		originalOrder = trainers[0].Team;
+		originalOrder = new List<Pokemon>();
+		foreach (Pokemon pokemon in combatants[0].Team)
+		{
+			originalOrder.Add(pokemon);
+			pokemon.CanEvolve = false;
+		} //end foreach	
 	} //end InitializeBattle(int bType)
 
 	/***************************************
@@ -2803,6 +2916,51 @@ public class BattleScene : MonoBehaviour
 	} //end CheckEffect(int effect, int target)
 
 	/***************************************
+	 * Name: CheckField
+	 * Retrieves integer of the active field
+	 ***************************************/
+	public int CheckField()
+	{
+		return battleField.ActiveField;
+	} //end CheckField
+
+	/***************************************
+	 * Name: CheckMega
+	 * Checks if the trainer can mega evolve
+	 ***************************************/
+	bool CheckMega(int trainer)
+	{
+		if (battlers[trainer].CheckMegaPossible() && !combatants[trainer].HasMega && combatants[trainer].ItemCount(174) > 0)
+		{
+			return true;
+		} //end if
+		else
+		{
+			return false;
+		} //end else
+	} //end CheckMega(int trainer)
+
+	/***************************************
+	 * Name: ApplyMega
+	 * Mega evolves the trainer's pokemon
+	 ***************************************/
+	void ApplyMega(int battler)
+	{
+		AddToQueue(battler, 3, 0, 0, 8);
+		combatants[battler].HasMega = true;
+	} //end ApplyMega(int battler)
+
+	/***************************************
+	 * Name: AdjustTargetHealth
+	 * Allows adjustment of a battler for 
+	 * effects outside combat (Leech Seed)
+	 ***************************************/
+	public void AdjustTargetHealth(int battlerTarget, int amount)
+	{
+		battlers[battlerTarget].RestoreHP(amount);
+	} //end AdjustTargetHealth(int battlerTarget, int amount)
+
+	/***************************************
 	 * Name: DeterminePriority
 	 * Returns the priority of the action
 	 ***************************************/
@@ -2811,7 +2969,12 @@ public class BattleScene : MonoBehaviour
 		switch (action)
 		{
 			case 0:
-				return DataContents.GetMovePriority(battlers[battler].GetMove(selection));
+				int priority = DataContents.GetMovePriority(battlers[battler].GetMove(selection));
+				if(battlers[battler].CheckAbility(114) && DataContents.GetMoveCategory(battlers[battler].GetMove(selection)) == 2)
+				{
+					return priority + 1;
+				} //end if
+				return priority;
 			case 1:
 				return 6;
 			case 2:
@@ -2883,7 +3046,7 @@ public class BattleScene : MonoBehaviour
 				//Check for Leppa Berry/Ether/MaxEther
 				if (item == 83 || item == 148 || item == 169)
 				{
-					return int.Parse("9" + (choiceTarget-1).ToString() + subMenuChoice.ToString());
+					return int.Parse("9" + (choiceTarget - 1).ToString() + subMenuChoice.ToString());
 				} //end if
 
 				//Otherwise return battler
@@ -3039,6 +3202,168 @@ public class BattleScene : MonoBehaviour
 	} //end ApplySpecialItem(QueueEvent toProcess, bool check = false)
 
 	/***************************************
+	 * Name: QueueBattleItem
+	 * Queues the use of a battle item
+	 ***************************************/
+	public bool QueueBattleItem(int item)
+	{
+		//Switch to appropriate effect
+		switch (item)
+		{
+			//Dire Hit
+			case 66:
+				//Make sure it's usable
+				if (battlers[0].CheckEffect((int)LastingEffects.FocusEnergy))
+				{
+					return false;
+				} //end if
+				playerTeam.SetActive(false);
+				commandChoice.SetActive(false);
+				AddToQueue(0, commandInt, choiceNumber, 80, DeterminePriority(0, 1, item));
+				battleState = Battle.GETAICHOICE;
+				return true;
+			//Guard Spec
+			case 110:
+				//Make sure it's usable
+				if (fieldEffects[0][(int)FieldEffects.Mist] > 0)
+				{
+					return false;
+				} //end if
+				playerTeam.SetActive(false);
+				commandChoice.SetActive(false);
+				AddToQueue(0, commandInt, choiceNumber, 80, DeterminePriority(0, 1, item));
+				battleState = Battle.GETAICHOICE;
+				return true;
+			//X Accuracy
+			case 410:
+				//Make sure it's usable
+				if (battlers[0].GetStage(6) > 5)
+				{
+					return false;
+				} //end if
+				playerTeam.SetActive(false);
+				commandChoice.SetActive(false);
+				AddToQueue(0, commandInt, choiceNumber, 80, DeterminePriority(0, 1, item));
+				battleState = Battle.GETAICHOICE;
+				return true;
+			//X Attack
+			case 414:
+				//Make sure it's usable
+				if (battlers[0].GetStage(1) > 5)
+				{
+					return false;
+				} //end if
+				playerTeam.SetActive(false);
+				commandChoice.SetActive(false);
+				AddToQueue(0, commandInt, choiceNumber, 80, DeterminePriority(0, 1, item));
+				battleState = Battle.GETAICHOICE;
+				return true;
+			//X Defend
+			case 418:
+				//Make sure it's usable
+				if (battlers[0].GetStage(2) > 5)
+				{
+					return false;
+				} //end if
+				playerTeam.SetActive(false);
+				commandChoice.SetActive(false);
+				AddToQueue(0, commandInt, choiceNumber, 80, DeterminePriority(0, 1, item));
+				battleState = Battle.GETAICHOICE;
+				return true;
+			//X SpDef
+			case 422:
+				//Make sure it's usable
+				if (battlers[0].GetStage(5) > 5)
+				{
+					return false;
+				} //end if
+				playerTeam.SetActive(false);
+				commandChoice.SetActive(false);
+				AddToQueue(0, commandInt, choiceNumber, 80, DeterminePriority(0, 1, item));
+				battleState = Battle.GETAICHOICE;
+				return true;
+			//X Special
+			case 426:
+				//Make sure it's usable
+				if (battlers[0].GetStage(4) > 5)
+				{
+					return false;
+				} //end if
+				playerTeam.SetActive(false);
+				commandChoice.SetActive(false);
+				AddToQueue(0, commandInt, choiceNumber, 80, DeterminePriority(0, 1, item));
+				battleState = Battle.GETAICHOICE;
+				return true;
+			//X Speed
+			case 430:
+				//Make sure it's usable
+				if (battlers[0].GetStage(3) > 5)
+				{
+					return false;
+				} //end if
+				playerTeam.SetActive(false);
+				commandChoice.SetActive(false);
+				AddToQueue(0, commandInt, choiceNumber, 80, DeterminePriority(0, 1, item));
+				battleState = Battle.GETAICHOICE;
+				return true;
+			default:
+				return false;
+		} //end switch
+	} //end QueueBattleItem(int item)
+
+	/***************************************
+	 * Name: ApplyBattleItem
+	 * Applies items that only works on the
+	 * active battler
+	 ***************************************/
+	string ApplyBattleItem(QueueEvent toProcess)
+	{
+		//Get item and targets
+		string givenTarget = toProcess.target.ToString();
+		int pokemonTarget = int.Parse(givenTarget[1].ToString());
+		int item = combatants[0].GetItem(toProcess.selection)[0];
+
+		//Switch to approriate effect
+		switch (item)
+		{
+			//Dire Hit
+			case 66: 
+				battlers[pokemonTarget].ApplyEffect((int)LastingEffects.FocusEnergy, 1);
+				return battlers[pokemonTarget].Nickname + ". " + battlers[pokemonTarget].Nickname + " is getting pumped!";
+			//Guard Spec
+			case 110:
+				fieldEffects[0][(int)FieldEffects.Mist] = 5;
+				return battlers[pokemonTarget].Nickname + ". " + combatants[pokemonTarget].PlayerName + "'s side is covered by Mist!";
+			//X Accuracy
+			case 410:
+				battlers[pokemonTarget].SetStage(1, 6);
+				return battlers[pokemonTarget].Nickname + ". " + battlers[pokemonTarget].Nickname + "'s accuracy was boosted!";
+			//X Attack
+			case 414:
+				battlers[pokemonTarget].SetStage(1, 1);
+				return battlers[pokemonTarget].Nickname + ". " + battlers[pokemonTarget].Nickname + "'s Attack was boosted!";
+			//X Defend
+			case 418:
+				battlers[pokemonTarget].SetStage(1, 2);
+				return battlers[pokemonTarget].Nickname + ". " + battlers[pokemonTarget].Nickname + "'s Defense was boosted!";
+			//X SpDef
+			case 422:
+				battlers[pokemonTarget].SetStage(1, 5);
+				return battlers[pokemonTarget].Nickname + ". " + battlers[pokemonTarget].Nickname + "'s Special Defense was boosted!";
+			//X Special
+			case 426:
+				battlers[pokemonTarget].SetStage(1, 4);
+				return battlers[pokemonTarget].Nickname + ". " + battlers[pokemonTarget].Nickname + "'s Special Attack was boosted!";
+			//X Speed
+			case 430:
+				battlers[pokemonTarget].SetStage(1, 3);
+				return battlers[pokemonTarget].Nickname + ". " + battlers[pokemonTarget].Nickname + "'s Speed was boosted!";
+			default:
+				return DataContents.GetItemGameName(item) + " has no listed effect yet.";
+		} //end switch
+	} //end ApplyBattleItem(QueueEvent toProcess)
+
+	/***************************************
 	 * Name: ResolveFieldEntrance
 	 * Activates entrance effects of fields,
 	 * abilities, and items
@@ -3048,7 +3373,7 @@ public class BattleScene : MonoBehaviour
 		battleState = Battle.RESOLVEEFFECTS;
 		//Only process if a battler just entered
 		if (battlers.Select(pokemon => pokemon.JustEntered).Contains(true))
-		{
+		{			
 			WriteBattleMessage("There were no field entrance effects to process.");
 			battlers = battleField.ResolveFieldEntrance(battlers);
 			yield return new WaitForSeconds(1.5f);
@@ -3068,21 +3393,107 @@ public class BattleScene : MonoBehaviour
 	IEnumerator EntranceAbilities()
 	{
 		//Process entrance abilities
-		WriteBattleMessage("There were no abilities to process.");
-		yield return new WaitForSeconds(1.5f);
+		foreach (PokemonBattler battler in battlers)
+		{
+			if (battler.JustEntered)
+			{	
+				//Get the opponent
+				int opponent = battler.SideOn == 0 ? 1 : 0;
+
+				//Switch to appropriate ability
+				switch(battler.GetAbility())
+				{
+					//Frisk
+					case 48:
+						string itemName = DataContents.GetItemGameName(battlers[opponent].Item);
+						if (itemName != "None")
+						{
+							GameManager.instance.WriteBattleMessage(battler.Nickname + " frisked its opponent's " +
+							itemName + "!");
+							yield return new WaitForSeconds(0.5f);
+						} //end if
+						break;
+					//Intimidate
+					case 72:
+						//Hyper Cutter
+						if (battlers[opponent].CheckAbility(63))
+						{
+							GameManager.instance.WriteBattleMessage(battlers[opponent].Nickname + "'s Hyper Cutter prevented " +
+								"Intimidate from working!");
+						} //end if
+
+						//White Smoke
+						else if (battlers[opponent].CheckAbility(188))
+						{
+							GameManager.instance.WriteBattleMessage(battlers[opponent].Nickname + "'s White Smoke prevented " +
+								"Intimidate from working!");
+						} //end else if
+
+						//100% chance to lower defender's Attack 1 stages
+						else if (battlers[opponent].GetStage(1) > -6)
+						{
+							battlers[opponent].SetStage(-1, 1);
+							GameManager.instance.WriteBattleMessage(string.Format("{0}'s Intimidate lowered {1}'s attack!", 
+								battler.Nickname, battlers[opponent].Nickname));
+						} //end else if
+						break;
+					//Snow Warning
+					case 146:
+						//Hail
+						if (fieldEffects[0][(int)FieldEffects.Hail] == 0)
+						{
+							fieldEffects[0][(int)FieldEffects.Hail] = 5;
+							fieldEffects[1][(int)FieldEffects.Hail] = 5;
+							GameManager.instance.WriteBattleMessage(battler.Nickname + "'s Snow Warning summoned a hail storm!");
+						} //end if
+						yield return new WaitForSeconds(0.5f);
+						break;
+				} //end switch
+			} //end if
+		} //end foreach
+		yield return null;
 		StartCoroutine(EntranceItems());
 	} //end EntranceAbilities
 
 	/***************************************
 	 * Name: EntranceItems
-	 * Activates entrance items based on 
-	 * speed
+	 * Activates entrance items and field 
+	 * effects
 	 ***************************************/
 	IEnumerator EntranceItems()
 	{
 		//Process entrance items
-		WriteBattleMessage("There were no items to process");
-		yield return new WaitForSeconds(1.5f);
+		foreach (PokemonBattler battler in battlers)
+		{
+			if (battler.JustEntered)
+			{				
+				if (fieldEffects[battler.SideOn][(int)FieldEffects.Spikes] > 0)
+				{
+					//Flying types, Levitate, and Magic Guard are immune to damage
+					if (!battler.CheckType((int)Types.FLYING) && !battler.CheckAbility(79) && !battler.CheckAbility(85))
+					{
+						switch (fieldEffects[battler.SideOn][(int)FieldEffects.Spikes])
+						{
+							case 1:
+								battler.RemoveHP(ExtensionMethods.BindToInt(battler.TotalHP / 8, 1));
+								break;
+							case 2:
+								battler.RemoveHP(ExtensionMethods.BindToInt(battler.TotalHP / 6, 1));
+								break;
+							case 3:
+								battler.RemoveHP(ExtensionMethods.BindToInt(battler.TotalHP / 4, 1));
+								break;
+						} //end switch
+						WriteBattleMessage(battler.Nickname + " was hurt by spikes!");
+						FillInBattlerData();
+						yield return new WaitForSeconds(0.5f);
+						CheckForFaint(battler.SideOn);
+					} //end if
+				} //end if
+			} //end if
+		} //end foreach
+
+		//Disable just entered
 		battlers.ForEach(pokemon => pokemon.JustEntered = false);
 
 		//Reset to beginning of round
@@ -3094,7 +3505,7 @@ public class BattleScene : MonoBehaviour
 			selectedChoice = commandChoice.transform.GetChild(commandInt).gameObject;
 			checkpoint = 4;
 		} //end if
-		//processing = false;
+		yield return null;
 	} //end EntranceItems
 
 	/***************************************
@@ -3104,6 +3515,7 @@ public class BattleScene : MonoBehaviour
 	 ***************************************/
 	void SetStatusIcon(Image statusImage, PokemonBattler myPokemon)
 	{
+		Debug.Log(myPokemon.BattlerStatus);
 		//Set status
 		switch (myPokemon.BattlerStatus)
 		{
@@ -3111,32 +3523,32 @@ public class BattleScene : MonoBehaviour
 			case 0:
 				statusImage.color = Color.clear;
 				break;
-				//Faint
+			//Faint
 			case 1:
 				statusImage.color = Color.white;
 				statusImage.sprite = DataContents.statusSprites[5];
 				break;
-				//Sleep
+			//Sleep
 			case 2:
 				statusImage.color = Color.white;
 				statusImage.sprite = DataContents.statusSprites[0];
 				break;
-				//Poison
+			//Poison
 			case 3:
 				statusImage.color = Color.white;
 				statusImage.sprite = DataContents.statusSprites[1];
 				break;
-				//Burn
+			//Burn
 			case 4:
 				statusImage.color = Color.white;
 				statusImage.sprite = DataContents.statusSprites[2];
 				break;
-				//Paralyze
+			//Paralyze
 			case 5:
 				statusImage.color = Color.white;
 				statusImage.sprite = DataContents.statusSprites[3];
 				break;
-				//Freeze
+			//Freeze
 			case 6:
 				statusImage.color = Color.white;
 				statusImage.sprite = DataContents.statusSprites[4];
@@ -3180,35 +3592,81 @@ public class BattleScene : MonoBehaviour
 	 ***************************************/
 	void FillInBattlerData()
 	{
-		//Update the battler
-		battlers[0].UpdateActiveBattler();
+		//If the player has an active battler
+		if(battlers[0].BattlerPokemon != null)
+		{
+			//Update the battler
+			battlers[0].UpdateActiveBattler();
 
-		//Set back of player pokemon
-		string toLoad = "Sprites/Pokemon/" + battlers[0].BattlerPokemon.NatSpecies.ToString("000");
-		toLoad += battlers[0].BattlerPokemon.Gender == 1 ? "f" : "";
-		toLoad += battlers[0].BattlerPokemon.IsShiny ? "sb" : "b";
-		if (Resources.Load<Sprite>(toLoad) == null)
-		{
-			toLoad = toLoad.Replace("f", "");
-			trainerStands[0].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
-				Resources.Load<Sprite>(toLoad);
+			//Set back of player pokemon
+			string toLoad = "Sprites/Pokemon/" + battlers[0].BattlerPokemon.NatSpecies.ToString("000");
+			toLoad += battlers[0].BattlerPokemon.Gender == 1 ? "f" : "";
+			toLoad += battlers[0].BattlerPokemon.IsShiny ? "s" : "";
+			toLoad += battlers[0].BattlerPokemon.FormNumber != 0 ? "_" + battlers[0].BattlerPokemon.FormNumber : "";
+			toLoad += "b";
+			if (Resources.Load<Sprite>(toLoad) == null)
+			{
+				toLoad = toLoad.Replace("f", "");
+				trainerStands[0].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
+					Resources.Load<Sprite>(toLoad);
+			} //end if
+			else
+			{
+				trainerStands[0].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
+					Resources.Load<Sprite>(toLoad);
+			} //end else 
+
+			//Set player battler box
+			battlerBoxes[0].transform.FindChild("HP").GetComponent<Text>().text = battlers[0].CurrentHP.ToString() + "/" +
+				battlers[0].TotalHP.ToString();
+			battlerBoxes[0].transform.FindChild("Name").GetComponent<Text>().text = battlers[0].Nickname;
+			battlerBoxes[0].transform.FindChild("Level").GetComponent<Text>().text = "Lv." + battlers[0].CurrentLevel.ToString();
+			battlerBoxes[0].transform.FindChild("Gender").GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/gender"
+				+ battlers[0].Gender);
+			SetStatusIcon(battlerBoxes[0].transform.FindChild("Status").GetComponent<Image>(), battlers[0]);
+			if (battlers[0].CurrentLevel != 100)
+			{
+				battlerBoxes[0].transform.FindChild("Experience").GetComponent<RectTransform>().localScale = new Vector3(
+					(float)(battlers[0].BattlerPokemon.EXPForLevel - battlers[0].BattlerPokemon.RemainingEXP) /
+					(float)battlers[0].BattlerPokemon.EXPForLevel, 1, 1);
+			} //end if
+			else
+			{
+				battlerBoxes[0].transform.FindChild("Experience").GetComponent<RectTransform>().localScale = new Vector3(0, 1, 1);
+			} //end else
+			float scale = (float)battlers[0].CurrentHP / (float)battlers[0].TotalHP;
+			battlerBoxes[0].transform.FindChild("HPBar").GetComponent<RectTransform>().localScale = new Vector3(
+				scale, 1, 1);
+			if (scale < 0.25f)
+			{
+				battlerBoxes[0].transform.FindChild("HPBar").GetComponent<Image>().color = Color.red;
+			} //end if
+			else if (scale < 0.5f)
+			{
+				battlerBoxes[0].transform.FindChild("HPBar").GetComponent<Image>().color = Color.yellow;
+			} //end else if
+			else
+			{
+				battlerBoxes[0].transform.FindChild("HPBar").GetComponent<Image>().color = Color.green;
+			} //end else 
 		} //end if
-		else
-		{
-			trainerStands[0].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
-				Resources.Load<Sprite>(toLoad);
-		} //end else 
 
 		//Set front for rest
 		for (int i = 1; i < trainerStands.Count; i++)
 		{
+			if (battlers[i].BattlerPokemon == null)
+			{
+				return;
+			} //end if
+
 			//Update the battler
 			battlers[i].UpdateActiveBattler();
 
 			//Set sprites
-			toLoad = "Sprites/Pokemon/" + battlers[i].BattlerPokemon.NatSpecies.ToString("000");
+			string toLoad = "Sprites/Pokemon/" + battlers[i].BattlerPokemon.NatSpecies.ToString("000");
 			toLoad += battlers[i].BattlerPokemon.Gender == 1 ? "f" : "";
 			toLoad += battlers[i].BattlerPokemon.IsShiny ? "s" : "";
+			toLoad += battlers[i].BattlerPokemon.FormNumber != 0 ? "_" + battlers[i].BattlerPokemon.FormNumber : "";
 			if (Resources.Load<Sprite>(toLoad) == null)
 			{
 				toLoad = toLoad.Replace("f", "");
@@ -3220,51 +3678,14 @@ public class BattleScene : MonoBehaviour
 				trainerStands[i].transform.FindChild("Pokemon").GetComponent<Image>().sprite = 
 					Resources.Load<Sprite>(toLoad);
 			} //end else 
-		} //end for
 
-		//Set player battler box
-		battlerBoxes[0].transform.FindChild("HP").GetComponent<Text>().text = battlers[0].CurrentHP.ToString() + "/" +
-			battlers[0].TotalHP.ToString();
-		battlerBoxes[0].transform.FindChild("Name").GetComponent<Text>().text = battlers[0].Nickname;
-		battlerBoxes[0].transform.FindChild("Level").GetComponent<Text>().text = "Lv." + battlers[0].CurrentLevel.ToString();
-		battlerBoxes[0].transform.FindChild("Gender").GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/gender"
-			+ battlers[0].Gender);
-		SetStatusIcon(battlerBoxes[0].transform.FindChild("Status").GetComponent<Image>(), battlers[0]);
-		if (battlers[0].CurrentLevel != 100)
-		{
-			battlerBoxes[0].transform.FindChild("Experience").GetComponent<RectTransform>().localScale = new Vector3(
-				(float)(battlers[0].BattlerPokemon.EXPForLevel - battlers[0].BattlerPokemon.RemainingEXP) /
-				(float)battlers[0].BattlerPokemon.EXPForLevel, 1, 1);
-		} //end if
-		else
-		{
-			battlerBoxes[0].transform.FindChild("Experience").GetComponent<RectTransform>().localScale = new Vector3(0, 1, 1);
-		} //end else
-		float scale = (float)battlers[0].CurrentHP / (float)battlers[0].TotalHP;
-		battlerBoxes[0].transform.FindChild("HPBar").GetComponent<RectTransform>().localScale = new Vector3(
-			scale, 1, 1);
-		if (scale < 0.25f)
-		{
-			battlerBoxes[0].transform.FindChild("HPBar").GetComponent<Image>().color = Color.red;
-		} //end if
-		else if (scale < 0.5f)
-		{
-			battlerBoxes[0].transform.FindChild("HPBar").GetComponent<Image>().color = Color.yellow;
-		} //end else if
-		else
-		{
-			battlerBoxes[0].transform.FindChild("HPBar").GetComponent<Image>().color = Color.green;
-		} //end else 
-
-		//Set remaining battler boxes
-		for (int i = 1; i < combatants.Count; i++)
-		{
+			//Set battler box
 			battlerBoxes[i].transform.FindChild("Name").GetComponent<Text>().text = battlers[i].Nickname;
 			battlerBoxes[i].transform.FindChild("Level").GetComponent<Text>().text = "Lv." + battlers[i].CurrentLevel.ToString();
 			battlerBoxes[i].transform.FindChild("Gender").GetComponent<Image>().sprite = Resources.Load<Sprite>("Sprites/Icons/gender"
 				+ battlers[i].Gender);
 			SetStatusIcon(battlerBoxes[i].transform.FindChild("Status").GetComponent<Image>(), battlers[i]);
-			scale = (float)battlers[i].CurrentHP / (float)battlers[i].TotalHP;
+			float scale = (float)battlers[i].CurrentHP / (float)battlers[i].TotalHP;
 			battlerBoxes[i].transform.FindChild("HPBar").GetComponent<RectTransform>().localScale = new Vector3(
 				scale, 1, 1);
 			if (scale < 0.25f)
@@ -3811,6 +4232,16 @@ public class BattleScene : MonoBehaviour
 					pokemonChoice.CurrentEXP.ToString();
 				summaryScreen.transform.GetChild(0).FindChild("RemainingXP").GetComponent<Text>().text =
 					pokemonChoice.RemainingEXP.ToString();
+				if (pokemonChoice.CurrentLevel != 100)
+				{
+					summaryScreen.transform.GetChild(0).FindChild("XPBar").GetComponent<RectTransform>().localScale = new Vector3(
+						(float)(pokemonChoice.EXPForLevel - pokemonChoice.RemainingEXP) /
+						(float)pokemonChoice.EXPForLevel, 1, 1);
+				} //end if
+				else
+				{
+					summaryScreen.transform.GetChild(0).FindChild("XPBar").GetComponent<RectTransform>().localScale = new Vector3(0, 1, 1);
+				} //end else
 				SetTypeSprites(summaryScreen.transform.GetChild(0).FindChild("Types").GetChild(0).GetComponent<Image>(),
 					summaryScreen.transform.GetChild(0).FindChild("Types").GetChild(1).GetComponent<Image>(), 
 					pokemonChoice.NatSpecies);
@@ -4055,6 +4486,368 @@ public class BattleScene : MonoBehaviour
 	} //end FillPartyLineup
 
 	/***************************************
+	 * Name: ProcessWeatherAttack
+	 * Apply any weather attack
+	 ***************************************/
+	void ProcessWeatherAttack(int moveNumber)
+	{
+		//Hail
+		if (fieldEffects[0][(int)FieldEffects.Hail] == 0)
+		{
+			fieldEffects[0][(int)FieldEffects.Hail] = 5;
+			fieldEffects[1][(int)FieldEffects.Hail] = 5;
+			GameManager.instance.WriteBattleMessage("It began to hail!");
+		} //end if
+		else
+		{
+			GameManager.instance.WriteBattleMessage("Hail is already falling!");
+		} //end else
+	} //end ProcessWeatherAttack(int moveNumber)
+
+	/***************************************
+	 * Name: ProcessFieldEndEffects
+	 * Apply any end of round effects or
+	 * resets to field effects
+	 ***************************************/
+	IEnumerator ProcessFieldEndEffects()
+	{
+		//Loop through field effects
+		for(int i = 0; i < fieldEffects.Count; i++)
+		{
+			//Check for Electric Terrain
+			if (fieldEffects[i][(int)FieldEffects.Terrain] > 0)
+			{
+				fieldEffects[i][(int)FieldEffects.Terrain]--;
+				if (fieldEffects[i][(int)FieldEffects.Terrain] == 0)
+				{
+					WriteBattleMessage("The Electric Terrain faded!");
+					battleField.ActiveField = 0;
+					yield return new WaitForSeconds(0.5f);
+				} //end if
+			} //end if
+
+			//Check for Light Screen
+			if (fieldEffects[i][(int)FieldEffects.LightScreen] > 0)
+			{
+				fieldEffects[i][(int)FieldEffects.LightScreen]--;
+				if (fieldEffects[i][(int)FieldEffects.LightScreen] == 0)
+				{
+					WriteBattleMessage("Light Screen is no longer protecting " + battlers[i].Nickname + "!");
+					yield return new WaitForSeconds(0.5f);
+				} //end if
+			} //end if
+
+			//Check for Reflect
+			if (fieldEffects[i][(int)FieldEffects.Reflect] > 0)
+			{
+				fieldEffects[i][(int)FieldEffects.Reflect]--;
+				if (fieldEffects[i][(int)FieldEffects.Reflect] == 0)
+				{
+					WriteBattleMessage("Reflect is no longer protecting " + battlers[i].Nickname + "!");
+					yield return new WaitForSeconds(0.5f);
+				} //end if
+			} //end if
+
+			//Check for Water Sport
+			if (fieldEffects[i][(int)FieldEffects.WaterSport] > 0)
+			{
+				fieldEffects[i][(int)FieldEffects.WaterSport]--;
+				if (fieldEffects[i][(int)FieldEffects.WaterSport] == 0)
+				{
+					WriteBattleMessage("The Water Sport dried up!");
+					yield return new WaitForSeconds(0.5f);
+				} //end if
+			} //end if		
+
+			//Check for Weather
+			if (fieldEffects[i][(int)FieldEffects.Hail] > 0)
+			{
+				fieldEffects[i][(int)FieldEffects.Hail]--;
+				if (fieldEffects[i][(int)FieldEffects.Hail] == 0)
+				{
+					WriteBattleMessage("The hail stopped!");
+				} //end if
+				else
+				{
+					for (int j = 0; j < battlers.Count; j++)
+					{
+						//Make sure combatant can be damaged by hail
+						if (!battlers[j].CheckType((int)Types.ICE) || !battlers[j].CheckAbility(85))
+						{
+							battlers[j].RemoveHP(battlers[j].TotalHP / 16);
+							WriteBattleMessage(battlers[j].Nickname + " was buffeted by Hail!");
+
+							//Check for faint
+							CheckForFaint(j);
+						} // end if
+
+						//Ice Body
+						else if (battlers[j].CheckAbility(64))
+						{
+							battlers[j].RestoreHP(battlers[j].TotalHP / 16);
+							WriteBattleMessage(battlers[j].Nickname + " was healed with its Ice Body!");
+						} //end else if
+					} //end for
+				} //end else
+			} //end if
+		} //end for
+		battleState = Battle.ENDROUND;
+		yield return null;
+	} //end ProcessFieldEndEffects
+
+	/***************************************
+	 * Name: ProcessStatusAttack
+	 * Processes effect of a status attack
+	 ***************************************/
+	void ProcessStatusAttack(QueueEvent toProcess)
+	{
+		//Switch to appropriate effect
+		switch (currentAttack)
+		{
+			//Bulk Up
+			case 61:
+				battlers[toProcess.battler].ProcessAttackerAttackEffect(61);
+				break;
+			//Calm Mind
+			case 65:
+				battlers[toProcess.battler].ProcessAttackerAttackEffect(65);
+				break;
+			//Charm
+			case 70:
+				battlers[toProcess.target].ProcessDefenderAttackEffect(70);
+				break;
+			//Confide
+			case 79:
+				battlers[toProcess.target].ProcessDefenderAttackEffect(79);
+				break;
+			//Confuse Ray
+			case 80:
+				battlers[toProcess.target].ProcessDefenderAttackEffect(80);
+				break;
+			//Cotton Guard
+			case 87:
+				battlers[toProcess.battler].ProcessAttackerAttackEffect(87);
+				break;
+			//Curse
+			case 98:
+				if (battlers[toProcess.battler].CheckType((int)Types.GHOST))
+				{
+					battlers[toProcess.battler].RemoveHP(battlers[toProcess.battler].TotalHP / 2);
+					battlers[toProcess.target].ProcessDefenderAttackEffect(98);
+				} //end if
+				else
+				{
+					battlers[toProcess.battler].ProcessAttackerAttackEffect(98);
+				} //end else
+				break;
+			//Dragon Dance
+			case 125:
+				battlers[toProcess.battler].ProcessAttackerAttackEffect(125);
+				break;
+			//Electric Terrain
+			case 142:
+				if (battleField.ActiveField != 1 && fieldEffects[0][(int)FieldEffects.Terrain] == 0)
+				{
+					battleField.ActiveField = 1;
+					fieldEffects[0][(int)FieldEffects.Terrain] = 5;
+					fieldEffects[0][(int)FieldEffects.Terrain] = 5;
+					WriteBattleMessage("The field crackles with electicity!");
+				} //end if
+				else
+				{
+					WriteBattleMessage("The field is already electrified!");
+				} //end else
+				break;
+			//Gastro Acid
+			case 207:
+				battlers[toProcess.target].ProcessDefenderAttackEffect(207);
+				break;
+			//Hail
+			case 228:
+				ProcessWeatherAttack(228);
+				break;
+			//Harden
+			case 230:
+				battlers[toProcess.battler].ProcessAttackerAttackEffect(230);
+				break;
+			//Hone Claws
+			case 267:
+				battlers[toProcess.battler].ProcessAttackerAttackEffect(267);
+				break;
+			//King's Shield
+			case 302:
+				battlers[toProcess.battler].ProcessAttackerAttackEffect(302);
+				FillInBattlerData();
+				break;
+			//Leech Seed
+			case 311:
+				battlers[toProcess.target].ProcessDefenderAttackEffect(311);
+				break;
+			//Leer
+			case 312:
+				battlers[toProcess.target].ProcessDefenderAttackEffect(312);
+				break;
+			//Light Screen
+			case 314:
+				if (fieldEffects[toProcess.battler][(int)FieldEffects.LightScreen] == 0)
+				{
+					fieldEffects[toProcess.battler][(int)FieldEffects.LightScreen] = 5;
+					WriteBattleMessage(battlers[toProcess.battler].Nickname + "'s Light Screen raised its team's Special Defense!");
+				} //end if
+				else
+				{
+					WriteBattleMessage("...but an earlier Light Screen still exists!");
+				} //end else
+				break;
+			//Noble Roar
+			case 373:
+				battlers[toProcess.target].ProcessDefenderAttackEffect(373);
+				break;
+			//Poison Powder
+			case 399:
+				if (battlers[toProcess.target].BattlerStatus != (int)Status.HEALTHY)
+				{
+					WriteBattleMessage(battlers[toProcess.target].Nickname + " is already afflicted!");
+				} //end if
+				else if (battlers[toProcess.target].CheckType((int)Types.POISON))
+				{
+					WriteBattleMessage(battlers[toProcess.target].Nickname + " is immune to poison!");
+				} //end else if
+				else
+				{
+					battlers[toProcess.target].BattlerStatus = (int)Status.POISON;
+					WriteBattleMessage(battlers[toProcess.target].Nickname + " is poisoned.");
+
+					//Check for Syncronize
+					if (battlers[toProcess.target].CheckAbility(166) && battlers[toProcess.battler].BattlerStatus == 
+						(int)Status.HEALTHY && !battlers[toProcess.battler].CheckType((int)Types.POISON))
+					{
+						battlers[toProcess.target].BattlerStatus = (int)Status.POISON;
+						WriteBattleMessage(battlers[toProcess.target].Nickname + "'s Synchronize poisoned " +  
+							battlers[toProcess.battler].Nickname + "!");
+					} //end if
+				} //end else
+				break;
+			//Protect
+			case 413:
+				battlers[toProcess.battler].ProcessAttackerAttackEffect(413);
+				break;
+			//Reflect
+			case 438:
+				if (fieldEffects[toProcess.battler][(int)FieldEffects.Reflect] == 0)
+				{
+					fieldEffects[toProcess.battler][(int)FieldEffects.Reflect] = 5;
+					WriteBattleMessage(battlers[toProcess.battler].Nickname + "'s Reflect raised its team's Defense!");
+				} //end if
+				else
+				{
+					WriteBattleMessage("...but an earlier Reflect still exists!");
+				} //end else
+				break;
+			//Sing
+			case 493:
+				if (battlers[toProcess.target].BattlerStatus != (int)Status.HEALTHY)
+				{
+					WriteBattleMessage(battlers[toProcess.target].Nickname + " is already afflicted!");
+				} //end if
+				else if (battleField.ActiveField == 2)
+				{
+					WriteBattleMessage(battlers[toProcess.target].Nickname + " can't sleep due to the Electric Terrain!");
+				} //end else if
+				else
+				{
+					battlers[toProcess.target].BattlerStatus = (int)Status.SLEEP;
+					WriteBattleMessage(battlers[toProcess.target].Nickname + " fell asleep.");
+
+					//Check for Syncronize
+					if (battlers[toProcess.target].CheckAbility(166) && battlers[toProcess.battler].BattlerStatus == 
+						(int)Status.HEALTHY)
+					{
+						battlers[toProcess.target].BattlerStatus = (int)Status.SLEEP;
+						WriteBattleMessage(battlers[toProcess.target].Nickname + "'s Synchronize put " +  
+							battlers[toProcess.battler].Nickname + " to sleep!");
+					} //end if
+				} //end else
+				break;
+			//Spikes
+			case 523:
+				if (fieldEffects[toProcess.target][(int)FieldEffects.Spikes] < 3)
+				{
+					fieldEffects[toProcess.target][(int)FieldEffects.Spikes]++;
+					WriteBattleMessage("A layer of spikes were added to the opponent's field!");
+				} //end if
+				else
+				{
+					WriteBattleMessage("The opponent is already at maximum spike count!");
+				} //end else
+				break;
+			//Swords Dance
+			case 558:
+				battlers[toProcess.battler].ProcessAttackerAttackEffect(558);
+				break;
+			//Thunder Wave
+			case 580:
+				if (battlers[toProcess.target].BattlerStatus != (int)Status.HEALTHY)
+				{
+					WriteBattleMessage(battlers[toProcess.target].Nickname + " is already afflicted!");
+				} //end if
+				else if (battlers[toProcess.target].CheckType((int)Types.ELECTRIC) || battlers[toProcess.target].CheckAbility(82))
+				{
+					WriteBattleMessage(battlers[toProcess.target].Nickname + " is immune to paralysis!");
+				} //end else if
+				else
+				{
+					battlers[toProcess.target].BattlerStatus = (int)Status.PARALYZE;
+					WriteBattleMessage(battlers[toProcess.target].Nickname + " is paralyzed. It may be unable to move.");
+
+					//Check for Syncronize
+					if (battlers[toProcess.target].CheckAbility(166) && battlers[toProcess.battler].BattlerStatus == 
+						(int)Status.HEALTHY && !battlers[toProcess.battler].CheckType((int)Types.ELECTRIC) &&
+						!battlers[toProcess.battler].CheckAbility(82))
+					{
+						battlers[toProcess.target].BattlerStatus = (int)Status.PARALYZE;
+						WriteBattleMessage(battlers[toProcess.target].Nickname + "'s Synchronize paralyzed " +  
+							battlers[toProcess.battler].Nickname + "!");
+					} //end if
+				} //end else
+				break;
+			//Torment
+			case 584:
+				battlers[toProcess.target].ProcessDefenderAttackEffect(584);
+				break;
+			//Toxic
+			case 585:
+				battlers[toProcess.target].ProcessDefenderAttackEffect(585);
+				break;
+			//Trick or Treat
+			case 591:
+				battlers[toProcess.target].ProcessDefenderAttackEffect(591);
+				break;
+			//Water Sport
+			case 612:
+				if (fieldEffects[0][(int)FieldEffects.WaterSport] == 0)
+				{
+					fieldEffects[0][(int)FieldEffects.WaterSport] = 5;
+					fieldEffects[1][(int)FieldEffects.WaterSport] = 5;
+					WriteBattleMessage("Fire attacks are weakened!");
+				} //end if
+				else
+				{
+					WriteBattleMessage("The field is still wet...");
+				} //end else
+				break;
+			//Will-O-Wisp
+			case 620:
+				battlers[toProcess.target].ProcessDefenderAttackEffect(620);
+				break;
+			//Yawn
+			case 631:
+				battlers[toProcess.target].ProcessDefenderAttackEffect(631);
+				break;
+		} //end switch
+	} //end ProcessStatusAttack(QueueEvent toProcess)
+
+	/***************************************
 	 * Name: ProcessAttack
 	 * Processes effect of an attack
 	 ***************************************/
@@ -4063,104 +4856,416 @@ public class BattleScene : MonoBehaviour
 		//Get move user
 		currentAttacker = battlers[toProcess.battler];
 
-		//Get move used
-		currentAttack = battlers[toProcess.battler].GetMove(toProcess.selection);
-
-		//Get category of move
-		int moveCategory = DataContents.GetMoveCategory(currentAttack);
-
-		//Get move damage
-		int moveDamage = DataContents.GetMoveDamage(currentAttack);
-
-		//Decrease PP of attack used
-		currentAttacker.SetMovePP(toProcess.selection, currentAttacker.GetMovePP(toProcess.selection) - 1);
-
-		//Check for protect
-		if (battlers[toProcess.target].CheckEffect((int)LastingEffects.Protect))
+		//Process confusion differently
+		if (toProcess.selection != -1)
 		{
-			WriteBattleMessage(battlers[toProcess.target].Nickname + " protected itself!");
-			return 0;
-		} //end if
+			//Get move used
+			currentAttack = battlers[toProcess.battler].GetMove(toProcess.selection);
 
-		//Check for negating abilities
-		if (AbilityEffects.ResolveBlockingAbilities(battlers[toProcess.target].GetAbility(), currentAttack,
-			battlers[toProcess.target]))
-		{
-			return 0;
-		} //end if
+			//Get category of move
+			moveCategory = DataContents.GetMoveCategory(currentAttack);
 
-		//If the move is not a status move, check for damage
-		if (moveCategory != (int)Categories.Status)
-		{
-			//Check for typing
-			float typeMod = battlers[toProcess.target].CheckDefenderTyping(DataContents.GetMoveIcon(currentAttacker.
-			GetMove(toProcess.selection)), currentAttacker);
-			if (typeMod == 0)
+			//Get move damage
+			moveDamage = DataContents.GetMoveDamage(currentAttack);
+
+			//Get move type
+			int moveType = DataContents.GetMoveIcon(currentAttacker.GetMove(toProcess.selection));
+
+			//Reset type mod to 1
+			typeMod = 1f;
+
+			//Decrease PP of attack used
+			currentAttacker.SetMovePP(toProcess.selection, currentAttacker.GetMovePP(toProcess.selection) - 1);
+
+			//Check for Fake Out
+			if (currentAttack == 160 && battlers[toProcess.battler].TurnCount > 0)
 			{
-				WriteBattleMessage("But it had no effect...");
+				WriteBattleMessage("But it failed!");
+				//Set move as last used
+				battlers[toProcess.battler].LastMoveUsed = -1;
 				return 0;
 			} //end if
 
-			//Check for accuracy
-			if (!battlers[toProcess.target].CheckAccuracy(DataContents.GetMoveAccuracy(currentAttacker.
-			GetMove(toProcess.selection)), currentAttacker.GetStage(6), DataContents.GetMoveIcon(
-				   currentAttack), DataContents.GetMoveCategory(currentAttack), false))
+			//Fling
+			else if (currentAttack == 184 && battlers[toProcess.battler].Item == 0)
 			{
-				WriteBattleMessage(currentAttacker.Nickname + "'s attack missed!");
+				WriteBattleMessage("But it failed!");
+				//Set move as last used
+				battlers[toProcess.battler].LastMoveUsed = -1;
+				return 0;
+			} //end else if
+
+			//Check for Phantom Force
+			if (currentAttack == 391)
+			{
+				//If using it first turn
+				if (battlers[toProcess.battler].GetEffectValue((int)LastingEffects.TwoTurnAttack) == -1)
+				{
+					battlers[toProcess.battler].ApplyEffect((int)LastingEffects.TwoTurnAttack, choiceNumber);
+					WriteBattleMessage(battlers[toProcess.battler].Nickname + " vanished instantly!");
+					return 0;
+				} //end if
+				else
+				{
+					battlers[toProcess.battler].ApplyEffect((int)LastingEffects.TwoTurnAttack, -1);
+					WriteBattleMessage(battlers[toProcess.battler].Nickname + " reappeared behind the opponent!");
+				} //end else
+			} //end if
+
+			//Check for Sky Drop
+			if (currentAttack == 498)
+			{
+				//If using it first turn
+				if (battlers[toProcess.battler].GetEffectValue((int)LastingEffects.TwoTurnAttack) == -1)
+				{
+					battlers[toProcess.battler].ApplyEffect((int)LastingEffects.TwoTurnAttack, choiceNumber);
+					battlers[toProcess.target].ApplyEffect((int)LastingEffects.SkyDrop, 1);
+					WriteBattleMessage(battlers[toProcess.battler].Nickname + " picked up " +
+					battlers[toProcess.target].Nickname + "!");
+					return 0;
+				} //end if
+				else
+				{
+					battlers[toProcess.battler].ApplyEffect((int)LastingEffects.TwoTurnAttack, -1);
+					battlers[toProcess.target].ApplyEffect((int)LastingEffects.SkyDrop, 0);
+					WriteBattleMessage(battlers[toProcess.battler].Nickname + " smashed " +
+					battlers[toProcess.target].Nickname + " into the ground!");
+				} //end else
+			} //end if
+
+			//Check for Solarbeam
+			if (currentAttack == 517)
+			{
+				//If using it first turn
+				if (battlers[toProcess.battler].GetEffectValue((int)LastingEffects.TwoTurnAttack) == -1 &&
+				    fieldEffects[toProcess.battler][(int)FieldEffects.Sun] == 0)
+				{
+					battlers[toProcess.battler].ApplyEffect((int)LastingEffects.TwoTurnAttack, choiceNumber);
+					WriteBattleMessage(battlers[toProcess.battler].Nickname + " began absorbing energy!");
+					return 0;
+				} //end if
+				else if (fieldEffects[toProcess.battler][(int)FieldEffects.Sun] > 0)
+				{
+					battlers[toProcess.battler].ApplyEffect((int)LastingEffects.TwoTurnAttack, -1);
+					WriteBattleMessage(battlers[toProcess.battler].Nickname + " absorbed light and immediately attacked!");
+				} //end else if
+				else
+				{
+					battlers[toProcess.battler].ApplyEffect((int)LastingEffects.TwoTurnAttack, -1);
+					WriteBattleMessage(battlers[toProcess.battler].Nickname + " released the absorbed light!");
+				} //end else
+			} //end if
+
+			//Check for King's Shield
+			if (battlers[toProcess.target].CheckEffect((int)LastingEffects.KingsShield) && moveCategory != (int)Categories.Status)
+			{
+				//Phantom Force
+				if (currentAttack == 391 && !battlers[toProcess.target].CheckType((int)Types.NORMAL))
+				{
+					battlers[toProcess.target].ApplyEffect((int)LastingEffects.KingsShield, 0);
+					WriteBattleMessage(string.Format("{0} broke through the King's Shield and removed it!", 
+						battlers[toProcess.battler].Nickname));
+				} //end if
+				else if (DataContents.GetMoveFlag(currentAttack, "a"))
+				{
+					battlers[toProcess.battler].SetStage(-2, 1);
+					WriteBattleMessage(string.Format("{0} crashed into the King's Shield! {0}'s Attack sharply fell!", 
+						battlers[toProcess.battler].Nickname));
+					//Set move as last used
+					battlers[toProcess.battler].LastMoveUsed = -1;
+					return 0;
+				} //end else if
+				else
+				{
+					WriteBattleMessage(battlers[toProcess.target].Nickname + " protected itself!");
+					//Set move as last used
+					battlers[toProcess.battler].LastMoveUsed = -1;
+					return 0;
+				} //end else
+			} //end if
+
+			//Check for Protect
+			if (battlers[toProcess.target].CheckEffect((int)LastingEffects.Protect) && currentAttack != 79)
+			{
+				//Phantom Force
+				if (currentAttack == 391 && !battlers[toProcess.target].CheckType((int)Types.NORMAL))
+				{
+					battlers[toProcess.target].ApplyEffect((int)LastingEffects.KingsShield, 0);
+					WriteBattleMessage(string.Format("{0} broke through the Protect and removed it!", 
+						battlers[toProcess.battler].Nickname));
+				} //end if
+				else
+				{
+					WriteBattleMessage(battlers[toProcess.target].Nickname + " protected itself!");
+					//Set move as last used
+					battlers[toProcess.battler].LastMoveUsed = -1;
+					return 0;
+				} //end else
+			} //end if
+
+			//Check for two-turn attack
+			if (battlers[toProcess.target].CheckEffect((int)LastingEffects.TwoTurnAttack))
+			{
+				WriteBattleMessage("But couldn't hit the target!");
 				return 0;
 			} //end if
 
-			//Check for critical
-			bool critical = ProcessCritical(toProcess);	
-
-			//Calculate damage mod
-			//Check for STAB
-			float damageMod = currentAttacker.CheckSTAB(currentAttack) ?
-			1.5f : 1f;
-			
-			//Apply typing
-			damageMod *= typeMod;
-
-			//Apply critical
-			damageMod *= critical ? 1.5f : 1f;
-
-			//Check for held items
-			damageMod *= 1f;
-
-			//Get random modifier between 0.85 and 1
-			damageMod *= (float)(GameManager.instance.RandomInt(85, 101)) / 100f;
-
-			//Get base attacker modifier
-			float damage = ((2f * (float)currentAttacker.CurrentLevel + 10f) / 250f); 
-
-			//Decide attack and defence based on move category
-			if (moveCategory == (int)Categories.Physical)
+			//Check for negating abilities
+			if (AbilityEffects.ResolveBlockingAbilities(battlers[toProcess.target].GetAbility(), currentAttack,
+				battlers[toProcess.target]))
 			{
-				damage *= ((float)currentAttacker.Attack / (float)battlers[toProcess.target].Defense);
+				//Set move as last used
+				battlers[toProcess.battler].LastMoveUsed = -1;
+				return 0;
 			} //end if
+
+			//If the move is not a status move, check for damage
+			if (moveCategory != (int)Categories.Status)
+			{
+				//Apply stance change for Aegislash
+				if(battlers[toProcess.battler].CheckAbility(152) && battlers[toProcess.battler].BattlerPokemon.NatSpecies == 681 &&
+					battlers[toProcess.battler].BattlerPokemon.FormNumber != 1)
+				{
+					battlers[toProcess.battler].ApplyFormCalculateStats();
+					FillInBattlerData();
+				} //end if
+
+				//Adjust base damage
+				//Acrobatics
+				if (currentAttack == 5 && battlers[toProcess.battler].Item == 0)
+				{
+					moveDamage *= 2;
+				} //end if
+
+				//Avalanche, Revenge
+				else if ((currentAttack == 30 || currentAttack == 445) && currentAttacker.LastHPLost > 0)
+				{
+					moveDamage *= 2;
+				} //end else if
+
+				//Bulldoze
+				else if (currentAttack == 62 && battleField.ActiveField == 1)
+				{
+					moveDamage /= 2;
+				} //end else if
+
+				//Flail
+				else if (currentAttack == 175)
+				{
+					moveDamage = (48 * battlers[toProcess.battler].CurrentHP) / battlers[toProcess.battler].TotalHP;
+				} //end else if
+
+				//Grass Knot
+				else if (currentAttack == 214)
+				{
+					float weight = battlers[toProcess.target].GetWeight();
+
+					if (weight < 10f)
+					{
+						moveDamage = 20;
+					} //end if
+					else if (weight < 25f)
+					{
+						moveDamage = 40;
+					} //end else if
+					else if (weight < 50f)
+					{
+						moveDamage = 60;
+					} //end else if
+					else if (weight < 100f)
+					{
+						moveDamage = 80;
+					} //end else if
+					else if (weight < 200f)
+					{
+						moveDamage = 100;
+					} //end else if
+					else
+					{
+						moveDamage = 120;
+					} //end else
+				} //end else if
+
+				//Gyro Ball
+				else if (currentAttack == 227)
+				{
+					moveDamage = ExtensionMethods.CapAtInt(25 * (battlers[toProcess.target].GetSpeed() /
+					battlers[toProcess.battler].GetSpeed()), 150);
+				} //end else if
+
+				//Fling
+				else if (currentAttack == 184)
+				{
+					if (battlers[toProcess.battler].Item == 128)
+					{
+						moveDamage = 130;
+						battlers[toProcess.battler].Item = 0;
+						battlers[toProcess.battler].BattlerPokemon.InitialItem = 0;
+					} //end if
+					else if (battlers[toProcess.battler].Item == 113)
+					{
+						moveDamage = 100;
+						battlers[toProcess.battler].Item = 0;
+						battlers[toProcess.battler].BattlerPokemon.InitialItem = 0;
+					} //end else if
+					else
+					{
+						moveDamage = 70;
+						GameManager.instance.LogErrorMessage("The item " + battlers[toProcess.battler].Item + " was flung.");
+						battlers[toProcess.battler].Item = 0;
+						battlers[toProcess.battler].BattlerPokemon.InitialItem = 0;
+					} //end else
+				} //end else if
+
+				//Flying Press, Stomp
+				else if ((currentAttack == 187 || currentAttack == 535) && battlers[toProcess.target].CheckEffect((int)LastingEffects.
+					Minimize))
+				{
+					moveDamage *= 2;
+				} //end else if
+
+				//Retaliate
+				else if (currentAttack == 443 && battlers[toProcess.battler].PartyFainted)
+				{
+					moveDamage *= 2;
+				} //end else if
+
+				//Solarbeam
+				else if (currentAttack == 517)
+				{
+					if (fieldEffects[toProcess.battler][(int)FieldEffects.Hail] > 0 || fieldEffects[toProcess.battler][(int)FieldEffects.
+						Rain] > 0 || fieldEffects[toProcess.battler][(int)FieldEffects.Sand] > 0)
+					{
+						moveDamage /= 2;
+					} //end if
+				} //end else if
+
+				//Venoshock
+				if (currentAttack == 601 && battlers[toProcess.target].BattlerStatus == (int)Status.POISON)
+				{
+					moveDamage *= 2;
+				} //end if
+
+				//Water Sport
+				if (fieldEffects[0][(int)FieldEffects.WaterSport] > 0 && moveType == (int)Types.FIRE)
+				{
+					moveDamage = moveDamage / 3;
+				} //end if
+
+				//Check for any damage boosting ability
+				moveDamage = (int)((float)moveDamage * AbilityEffects.ResolveDamageBoostingAbilities(
+					currentAttacker.GetAbility(), currentAttack, moveDamage, currentAttacker, battlers[toProcess.target], ref moveType));
+
+				//Check for typing
+				if (currentAttack != 187)
+				{
+					typeMod = battlers[toProcess.target].CheckDefenderTyping(moveType, currentAttacker);
+				} //end if
+				//Handle Flying Press
+				else
+				{
+					typeMod = battlers[toProcess.target].CheckDefenderTyping((int)Types.FIGHTING, currentAttacker);
+					typeMod *= battlers[toProcess.target].CheckDefenderTyping((int)Types.FLYING, currentAttacker);
+				} //end else
+
+				if (typeMod == 0)
+				{
+					WriteBattleMessage("But it had no effect...");
+					//Set move as last used
+					battlers[toProcess.battler].LastMoveUsed = -1;
+					return 0;
+				} //end if
+
+				//Check for accuracy
+				bool ignoreEvasion = false;
+				if (currentAttack == 72)
+				{
+					ignoreEvasion = true;
+				} //end if
+				if (!battlers[toProcess.target].CheckAccuracy(DataContents.GetMoveAccuracy(currentAttacker.
+				GetMove(toProcess.selection)), currentAttacker.GetStage(6), DataContents.GetMoveIcon(
+						currentAttack), DataContents.GetMoveCategory(currentAttack), ignoreEvasion))
+				{
+					WriteBattleMessage(currentAttacker.Nickname + "'s attack missed!");
+					return 0;
+				} //end if
+
+				//Calculate damage mod
+				//Check for STAB
+				damageMod = currentAttacker.CheckSTAB(currentAttack) ?
+				1.5f : 1f;
+				
+				//Apply typing
+				damageMod *= typeMod;
+
+				//Check for held items
+				damageMod *= ItemEffects.ItemDamageBoost(currentAttacker.Item, DataContents.GetMoveIcon(currentAttack));
+
+				//Determine move hits
+				//Doubleslap, Bullet Seed, Fury Attack, Fury Swipes
+				if (currentAttack == 118 || currentAttack == 64 || currentAttack == 201 || currentAttack == 203)
+				{
+					moveHits = GameManager.instance.RandomInt(2, 6);
+				} //end if
+				else
+				{
+					moveHits = 1;
+				} //end else
+
+				//Set move as last used
+				battlers[toProcess.battler].LastMoveUsed = currentAttack;
+
+				//Move will succeed
+				return 1;
+			} //end if
+
+			//Status effect
 			else
 			{
-				damage *= ((float)currentAttacker.SpecialA / (float)battlers[toProcess.target].SpecialD);
+				//Check for accuracy
+				if (!battlers[toProcess.target].CheckAccuracy(DataContents.GetMoveAccuracy(currentAttacker.
+					GetMove(toProcess.selection)), currentAttacker.GetStage(6), DataContents.GetMoveIcon(
+						currentAttack), DataContents.GetMoveCategory(currentAttack), false))
+				{
+					WriteBattleMessage(currentAttacker.Nickname + "'s attack missed!");
+					//Set move as last used
+					battlers[toProcess.battler].LastMoveUsed = -1;
+					return 0;
+				} //end if
+
+				//Process effect
+				ProcessStatusAttack(toProcess);
+
+				//Set move as last used
+				battlers[toProcess.battler].LastMoveUsed = currentAttack;
+
+				//Return no damage
+				return 0;
 			} //end else
-
-			//Modify damage based on base, then add 2
-			damage = damage * moveDamage + 2;
-
-			//Lastly, modify damage based on damage mod
-			damage = (int)(damage * damageMod);
-
-			//Return
-			return (int)damage;
 		} //end if
-		return 0;
+		else
+		{
+			moveCategory = (int)Categories.Physical;
+			moveDamage = 40;
+			typeMod = 1f;
+			damageMod = 1f;
+			moveHits = 1;
+			return 1;
+		} //end else
 	} //end ProcessAttack(QueueEvent toProcess)
 
 	/***************************************
 	 * Name: ProcessCritical
 	 * Determine if a critical can happen
 	 ***************************************/
-	bool ProcessCritical(QueueEvent toProcess)
+	bool ProcessCritical(QueueEvent toProcess, bool confusion)
 	{
+		//Check for confusion
+		if (confusion)
+		{
+			return false;
+		} //end if
+
 		//Check for Shell Armor and Battle Armor
 		if ((battlers[toProcess.target].CheckAbility(12) || battlers[toProcess.target].CheckAbility(139)) &&
 		    !currentAttacker.CheckAbility(92) && !currentAttacker.CheckAbility(170) &&
@@ -4169,7 +5274,7 @@ public class BattleScene : MonoBehaviour
 			return false;
 		} //end if
 
-		//Check for Lucky Chant
+		//Check for Lucky Chant 
 		else if (GameManager.instance.CheckEffect((int)FieldEffects.LuckyChant, toProcess.target))
 		{
 			return false;
@@ -4196,7 +5301,92 @@ public class BattleScene : MonoBehaviour
 				return false;
 			} //end else
 		} //end else
-	} //end ProcessCritical(QueueEvent toProcess)
+	} //end ProcessCritical(QueueEvent toProcess, bool confusion)
+
+	/***************************************
+	 * Name: CalculatesDamage
+	 * Calculates and returns final damage
+	 ***************************************/
+	int CalculateDamage(QueueEvent toProcess, bool confusion = false)
+	{
+		//Check for critical
+		bool critical = ProcessCritical(toProcess, confusion);	
+
+		//Apply critical
+		float critMod = critical ? 1.5f : 1f;
+
+		//Get random modifier between 0.85 and 1
+		float randMod = (float)(GameManager.instance.RandomInt(85, 101)) / 100f;
+
+		//Get base attacker modifier
+		float damage = ((2f * (float)currentAttacker.CurrentLevel + 10f) / 250f); 
+
+		//Decide attack and defence based on move category
+		if (moveCategory == (int)Categories.Physical)
+		{
+			damage *= ((float)currentAttacker.GetAttack(critical) / (float)battlers[toProcess.target].GetDefense(critical, currentAttack));
+		} //end if
+		else
+		{
+			damage *= ((float)currentAttacker.GetSpecialAttack(critical) / (float)battlers[toProcess.target].
+				GetSpecialDefense(critical));
+		} //end else
+
+		//Modify damage based on base, then add 2
+		damage = damage * moveDamage + 2;
+
+		//Lastly, modify damage based on damage, critical, and random mod
+		damage = (int)(damage * damageMod * critMod * randMod);
+
+		//Check for Light Screen / Reflect
+		if (((fieldEffects[toProcess.target][(int)FieldEffects.LightScreen] > 0 && moveCategory == (int)Categories.Special) ||
+			(fieldEffects[toProcess.target][(int)FieldEffects.Reflect] > 0 && moveCategory == (int)Categories.Physical)) &&
+			!battlers[toProcess.battler].CheckAbility(69))
+		{
+			damage /= 2;
+		} //end if
+
+		//Return
+		return ExtensionMethods.BindToInt((int)damage, 1);
+	} //end CalculateDamage(QueueEvent toProcess, bool confusion = false)
+
+	/***************************************
+	 * Name: CheckForFaint
+	 * Check if battler fainted
+	 ***************************************/
+	public bool CheckForFaint(int battler)
+	{
+		if (battlers[battler].CurrentHP < 1)
+		{
+			int opponent = battler == 0 ? 1 : 0;
+			battlers[opponent].ResolveOpponentLeaveField(battlers[battler]);
+			//yield return new WaitForSeconds(0.5f);
+			battlers[battler].FaintPokemon();
+			if (combatants[battler].CheckRemaining() == 0)
+			{
+				battleState = Battle.ENDFIGHT;
+				StopAllCoroutines();
+				StartCoroutine(ProcessEndOfBattle(battler));
+			} //end if
+			else
+			{
+				WriteBattleMessage(battlers[battler].Nickname + " fainted!");
+				trainerStands[battler].GetComponent<Animator>().SetTrigger("FoeFaint");
+				//yield return new WaitForSeconds(0.5f);
+
+				//Fix both players lineups
+				FillPartyLineup();
+
+				//Show the opponent's party if needed
+				if (battler != 0)
+				{
+					GameManager.instance.ShowFoeParty();
+				} //end if
+			} //end else
+			return true;
+		} //end if
+		return false;
+	} //end CheckForFaint(int battler)
 
 	/***************************************
 	 * Name: ProcessQueue
@@ -4212,89 +5402,374 @@ public class BattleScene : MonoBehaviour
 				switch (queue[i].action)
 				{
 					case 0:
+						//Check for flinch
+						if (battlers[queue[i].battler].CheckEffect((int)LastingEffects.Flinch))
+						{
+							WriteBattleMessage(battlers[queue[i].battler].Nickname + " flinched!");
+							goto end;
+						} //end if
+
+						//Check for paralyze
+						if (battlers[queue[i].battler].BattlerStatus == (int)Status.PARALYZE)
+						{
+							//25% chance to not move
+							if (GameManager.instance.RandomInt(0, 4) == 1)
+							{
+								WriteBattleMessage(battlers[queue[i].battler].Nickname + " is paralyzed! It can't move.");
+								goto end;
+							} //end if
+						} //end if
+
+						//Check for freeze
+						if (battlers[queue[i].battler].BattlerStatus == (int)Status.FREEZE)
+						{
+							//20% chance to defrost
+							if (GameManager.instance.RandomInt(0, 5) == 1)
+							{
+								WriteBattleMessage(battlers[queue[i].battler].Nickname + " defrosted!");
+							} //end if
+							else
+							{
+								WriteBattleMessage(battlers[queue[i].battler].Nickname + " is frozen solid.");
+								goto end;
+							} //end else
+						} //end if
+
+						//Check for sleep
+						if (battlers[queue[i].battler].BattlerStatus == (int)Status.SLEEP)
+						{
+							battlers[queue[i].battler].StatusCount--;
+							if (battlers[queue[i].battler].StatusCount == 0)
+							{
+								WriteBattleMessage(battlers[queue[i].battler].Nickname + " woke up!");
+							} //end if
+							else
+							{
+								WriteBattleMessage(battlers[queue[i].battler].Nickname + " is fast asleep.");
+								goto end;
+							} //end else
+						} //end if
+
+						//Check for infatuation
+						if (battlers[queue[i].battler].CheckEffect((int)LastingEffects.Attract))
+						{
+							//Check if Oblivious if active
+							if (battlers[queue[i].battler].CheckAbility(102))
+							{
+								battlers[queue[i].battler].ApplyEffect((int)LastingEffects.Attract, 0);
+								WriteBattleMessage(battlers[queue[i].battler].Nickname + "'s Oblivious snapped it out " +
+								"of infatuation!");
+							} //end if
+							//50% chance to not attack
+							else
+							{
+								WriteBattleMessage(battlers[queue[i].battler].Nickname + " is in love with the foe.");
+								yield return new WaitForSeconds(0.5f);
+								if (GameManager.instance.RandomInt(0, 10) < 5)
+								{
+									WriteBattleMessage(battlers[queue[i].battler].Nickname + " is immobilized by love!");
+									goto end;
+								} //end if
+							} //end else
+						} //end if
+
+						//Check for confusion
+						bool confusion = battlers[queue[i].battler].CheckEffect((int)LastingEffects.Confusion);
+						if (confusion)
+						{
+							if (!battlers[queue[i].battler].CureConfusion())
+							{
+								WriteBattleMessage(battlers[queue[i].battler].Nickname + " is confused.");
+								yield return new WaitForSeconds(0.5f);
+								if (!battlers[queue[i].battler].ProcessConfusion())
+								{
+									WriteBattleMessage(battlers[queue[i].battler].Nickname + " hurt itself in confusion!");
+									QueueEvent newEvent = new QueueEvent();
+									newEvent = queue[i];
+									newEvent.target = queue[i].battler;
+									newEvent.selection = -1;
+									queue[i] = newEvent;
+									goto damageCalculation;
+								} //end if
+							} //end if
+							else
+							{
+								WriteBattleMessage(battlers[queue[i].battler].Nickname + " snapped out of confusion!");
+								yield return new WaitForSeconds(0.5f);
+							} //end else
+						} //end if
+
+						//Check for Sky Drop
+						if (battlers[queue[i].battler].CheckEffect((int)LastingEffects.SkyDrop))
+						{
+							WriteBattleMessage(battlers[queue[i].battler].Nickname + " can't aim in the air!");
+							goto end;
+						} //end if
+
 						WriteBattleMessage(string.Format("{0} used {1} on {2}!", battlers[queue[i].battler].Nickname, 
 							DataContents.GetMoveGameName(battlers[queue[i].battler].GetMove(queue[i].selection)), 
 							battlers[queue[i].target].Nickname));
-						yield return new WaitForSeconds(1f);
-						int damage = ProcessAttack(queue[i]);
-						yield return new WaitForSeconds(0.75f);
-
-						//Remove HP from target
-						battlers[queue[i].target].RemoveHP(damage);
-						FillInBattlerData();
-						yield return new WaitForSeconds(0.5f);
-				
-						//Check if either pokemon is fainted
-						if (battlers[queue[i].target].CurrentHP < 1)
-						{			
-							AbilityEffects.ResolveFaintedAbilities(battlers[queue[i].target].GetAbility(), currentAttack,
-								battlers[queue[i].battler]);
-							battlers[queue[i].target].FaintPokemon();
-							WriteBattleMessage(battlers[queue[i].target].Nickname + " fainted!");
-							if (combatants[queue[i].target].CheckRemaining() == 0)
-							{	
-								battleState = Battle.ENDFIGHT;
-								StopAllCoroutines();
-								StartCoroutine(ProcessEndOfBattle(queue[i].target));
-							} //end if
-							else
+					damageCalculation:
+						yield return new WaitForSeconds(1f);	
+						if (ProcessAttack(queue[i]) != 0)
+						{
+							//Loop through each hit
+							for (int j = 0; j < moveHits; j++)
 							{
-								trainerStands[queue[i].target].GetComponent<Animator>().SetTrigger("FoeFaint");
-								yield return new WaitForSeconds(0.5f);
+								//Calculate damage
+								int damage = CalculateDamage(queue[i], confusion);
 
-								//Fix both players lineups
-								FillPartyLineup();
-
-								//Show the opponent's party if necessary
-								if (queue[i].target != 0)
+								//Check for Sturdy
+								if (battlers[queue[i].target].CheckAbility(159) && battlers[queue[i].target].CurrentHP ==
+								   battlers[queue[i].target].TotalHP && damage >= battlers[queue[i].target].CurrentHP)
 								{
-									GameManager.instance.ShowFoeParty();
+									damage = battlers[queue[i].target].CurrentHP - 1;
+									WriteBattleMessage(battlers[queue[i].target].Nickname + " hung on with Sturdy!");
+									yield return new WaitForSeconds(0.5f);
 								} //end if
-							} //end else
-						} //end if
-						else
-						{
-							battlers[queue[i].target].ProcessDefenderAttackEffect(currentAttack);
-						} //end else
 
-						if (battlers[queue[i].battler].CurrentHP < 1)
-						{
-							AbilityEffects.ResolveFaintedAbilities(battlers[queue[i].battler].GetAbility(), currentAttack,
-								battlers[queue[i].target]);
-							battlers[queue[i].battler].FaintPokemon();
-							if (combatants[queue[i].battler].CheckRemaining() == 0)
-							{
-								battleState = Battle.ENDFIGHT;
-								StopAllCoroutines();
-								StartCoroutine(ProcessEndOfBattle(queue[i].battler));
-							} //end if
-							else
-							{
-								WriteBattleMessage(battlers[queue[i].battler].Nickname + " fainted!");
-								trainerStands[queue[i].battler].GetComponent<Animator>().SetTrigger("FoeFaint");
-								yield return new WaitForSeconds(0.5f);
-
-								//Fix both players lineups
-								FillPartyLineup();
-
-								//Show the opponent's party if needed
-								if (queue[i].target != 0)
+								//Check for Dry Skin
+								if (battlers[queue[i].target].CheckAbility(35) && DataContents.GetMoveIcon(currentAttack) ==
+								   (int)Types.FIRE)
 								{
-									GameManager.instance.ShowFoeParty();
+									damage *= 2;
+									WriteBattleMessage(battlers[queue[i].target].Nickname + "'s Dry Skin was aggrivated!");
+									yield return new WaitForSeconds(0.5f);
 								} //end if
-							} //end else
+
+								//Remove HP from target
+								battlers[queue[i].target].RemoveHP(damage);
+								battlers[queue[i].battler].LastDamageDealt = damage;
+								FillInBattlerData();
+								yield return new WaitForSeconds(0.75f);
+								
+								//Display effectiveness if possible
+								if (typeMod == 4f)
+								{
+									WriteBattleMessage("It was Ultra Effective!");
+									yield return new WaitForSeconds(0.5f);
+								} //end if
+								else if (typeMod == 2f)
+								{
+									WriteBattleMessage("It was Super Effective!");
+									yield return new WaitForSeconds(0.5f);
+								} //end else if
+								else if (typeMod == 0.5f)
+								{
+									WriteBattleMessage("It wasn't very effective...");
+									yield return new WaitForSeconds(0.5f);
+								} //end else if
+								else if (typeMod == 0.25f)
+								{
+									WriteBattleMessage("It was extremely ineffective...");
+									yield return new WaitForSeconds(0.5f);
+								} //end else
+								
+								//Check if target pokemon is fainted
+								if(CheckForFaint(queue[i].target))
+								{
+									//Check for Volt Switch
+									if (currentAttack == 605)
+									{										
+										if (queue[i].battler == 0 && combatants[0].CheckRemaining() > 1)
+										{
+											playerTeam.SetActive(true);
+											selectedChoice = playerTeam.transform.FindChild("Pokemon1").gameObject;
+											playerTeam.transform.FindChild("PartyInstructions").GetChild(0).GetComponent<Text>().text = 
+												"Choose a Pokemon to switch in.";
+											choiceNumber = 1;
+											replacePokemon = true;
+											battleState = Battle.USERPICKPOKEMON;
+											waitingState = Battle.PROCESSQUEUE;
+											yield return new WaitUntil(() => battleState == Battle.PROCESSQUEUE);
+										} //end if
+										else if (queue[i].battler != 0 && combatants[1].CheckRemaining() > 1)
+										{
+											//Clear participants
+											participants.Clear();
+									
+											//Choose replacement battler
+											battleState = Battle.AIPICKPOKEMON;
+											waitingState = Battle.PROCESSQUEUE;
+											yield return new WaitUntil(() => battleState == Battle.PROCESSQUEUE);					
+											FillInBattlerData();
+											trainerStands[1].GetComponent<Animator>().SetTrigger("SendOut");
+									
+											//Add opponent's pokemon to the player's seen list
+											GameManager.instance.GetTrainer().Seen = 
+												ExtensionMethods.AddUnique<int>(GameManager.instance.GetTrainer().Seen, 
+												battlers[1].BattlerPokemon.NatSpecies);
+										} //end else if
+									} //end if
+
+									//Check for Dragon Tail
+									else if (currentAttack == 129)
+									{
+										if (queue[i].target == 0 && combatants[0].CheckRemaining() > 1)
+										{
+											playerTeam.SetActive(true);
+											selectedChoice = playerTeam.transform.FindChild("Pokemon1").gameObject;
+											playerTeam.transform.FindChild("PartyInstructions").GetChild(0).GetComponent<Text>().text = 
+												"Choose a Pokemon to switch in.";
+											choiceNumber = 1;
+											replacePokemon = true;
+											battleState = Battle.USERPICKPOKEMON;
+											waitingState = Battle.PROCESSQUEUE;
+											yield return new WaitUntil(() => battleState == Battle.PROCESSQUEUE);
+										} //end if
+										else if (queue[i].target != 0 && combatants[1].CheckRemaining() > 1)
+										{
+											//Clear participants
+											participants.Clear();
+
+											//Choose replacement battler
+											battleState = Battle.AIPICKPOKEMON;
+											waitingState = Battle.PROCESSQUEUE;
+											yield return new WaitUntil(() => battleState == Battle.PROCESSQUEUE);					
+											FillInBattlerData();
+											trainerStands[1].GetComponent<Animator>().SetTrigger("SendOut");
+
+											//Add opponent's pokemon to the player's seen list
+											GameManager.instance.GetTrainer().Seen = 
+												ExtensionMethods.AddUnique<int>(GameManager.instance.GetTrainer().Seen, 
+													battlers[1].BattlerPokemon.NatSpecies);
+										} //end else if
+									} //end else if
+									break;
+								} //end if
+								else
+								{
+									//Check for Volt Switch
+									if (currentAttack == 605)
+									{										
+										if (queue[i].battler == 0 && combatants[0].CheckRemaining() > 1)
+										{
+											playerTeam.SetActive(true);
+											selectedChoice = playerTeam.transform.FindChild("Pokemon1").gameObject;
+											playerTeam.transform.FindChild("PartyInstructions").GetChild(0).GetComponent<Text>().text = 
+												"Choose a Pokemon to switch in.";
+											choiceNumber = 1;
+											replacePokemon = true;
+											battleState = Battle.USERPICKPOKEMON;
+											waitingState = Battle.PROCESSQUEUE;
+											yield return new WaitUntil(() => battleState == Battle.PROCESSQUEUE);
+											participants.Add(battlers[0].BattlerPokemon);
+										} //end if
+										else if (queue[i].battler != 0 && combatants[1].CheckRemaining() > 1)
+										{
+											//Clear participants
+											participants.Clear();
+
+											//Choose replacement battler
+											battleState = Battle.AIPICKPOKEMON;
+											waitingState = Battle.PROCESSQUEUE;
+											yield return new WaitUntil(() => battleState == Battle.PROCESSQUEUE);					
+											FillInBattlerData();
+											participants.Add(battlers[0].BattlerPokemon);
+											trainerStands[1].GetComponent<Animator>().SetTrigger("SendOut");
+
+											//Add opponent's pokemon to the player's seen list
+											GameManager.instance.GetTrainer().Seen = 
+												ExtensionMethods.AddUnique<int>(GameManager.instance.GetTrainer().Seen, 
+												battlers[1].BattlerPokemon.NatSpecies);
+										} //end else if
+									} //end if
+
+									//Check for Dragon Tail
+									else if (currentAttack == 129)
+									{
+										if (queue[i].target == 0 && combatants[0].CheckRemaining() > 1)
+										{
+											playerTeam.SetActive(true);
+											selectedChoice = playerTeam.transform.FindChild("Pokemon1").gameObject;
+											playerTeam.transform.FindChild("PartyInstructions").GetChild(0).GetComponent<Text>().text = 
+												"Choose a Pokemon to switch in.";
+											choiceNumber = 1;
+											replacePokemon = true;
+											battleState = Battle.USERPICKPOKEMON;
+											waitingState = Battle.PROCESSQUEUE;
+											yield return new WaitUntil(() => battleState == Battle.PROCESSQUEUE);
+										} //end if
+										else if (queue[i].target != 0 && combatants[1].CheckRemaining() > 1)
+										{
+											//Clear participants
+											participants.Clear();
+
+											//Choose replacement battler
+											battleState = Battle.AIPICKPOKEMON;
+											waitingState = Battle.PROCESSQUEUE;
+											yield return new WaitUntil(() => battleState == Battle.PROCESSQUEUE);					
+											FillInBattlerData();
+											trainerStands[1].GetComponent<Animator>().SetTrigger("SendOut");
+
+											//Add opponent's pokemon to the player's seen list
+											GameManager.instance.GetTrainer().Seen = 
+												ExtensionMethods.AddUnique<int>(GameManager.instance.GetTrainer().Seen, 
+													battlers[1].BattlerPokemon.NatSpecies);
+										} //end else if
+									} //end else if
+									else
+									{
+										//Process move effect
+										battlers[queue[i].target].ProcessDefenderAttackEffect(currentAttack);
+										yield return new WaitForSeconds(0.5f);
+
+										//Process contact ability
+										if (DataContents.GetMoveFlag(currentAttack, "a"))
+										{
+											AbilityEffects.ResolveContactAbilities(battlers[queue[i].target], battlers[queue[i].battler]);
+										} //end if
+
+										//Check if there is a pinch item to activate
+										if (battlers[queue[i].target].CurrentHP <= battlers[queue[i].target].TotalHP / 4)
+										{
+											ItemEffects.PinchUseItem(battlers[queue[i].target]);
+										} //end if
+										FillInBattlerData();
+									} //end if
+								} //end else
+
+								//Check if attacker pokemon fainted
+								if (CheckForFaint(queue[i].battler))
+								{
+									break;
+								} //end if
+								else
+								{
+									//Process move effect
+									battlers[queue[i].battler].ProcessAttackerAttackEffect(currentAttack);
+
+
+									//Check for Thief
+									if (currentAttack == 572)
+									{
+										//If user has no item and target has stealable item
+										int[] unstealableItems = new int[]{103};
+										if (battlers[queue[i].battler].Item == 0 && battlers[queue[i].target].Item != 0 &&
+										   !unstealableItems.Contains(battlers[queue[i].target].Item))
+										{
+											battlers[queue[i].battler].Item = battlers[queue[i].target].Item;
+											battlers[queue[i].target].Item = 0;
+											battlers[queue[i].battler].BattlerPokemon.ItemStolen = true;
+										} //end if
+									} //end if
+
+									//Check if there is a pinch item to activate
+									if (battlers[queue[i].battler].CurrentHP <= battlers[queue[i].battler].TotalHP / 4)
+									{
+										ItemEffects.PinchUseItem(battlers[queue[i].battler]);
+									} //end if
+									FillInBattlerData();
+								} //end else
+							} //end for
 						} //end if
-						else
-						{
-							battlers[queue[i].battler].ProcessAttackerAttackEffect(currentAttack);
-						} //end else
-										
+						end:
 						//Reset current attack to none and process next event
 						currentAttack = -1;
 						currentAttacker = null;
 						break;
 					case 1:
-						if (queue[i].target < 900)
+						if (queue[i].target < 80)
 						{
 							int item = combatants[queue[i].battler].GetItem(queue[i].selection)[0];
 							string effect = ItemEffects.BattleUseOnPokemon(combatants[queue[i].battler].Team[queue[i].target], 
@@ -4305,6 +5780,13 @@ public class BattleScene : MonoBehaviour
 							FillInBattlerData();
 							UpdateDisplayedTeam();
 						} //end if
+						else if (queue[i].target < 900)
+						{
+							string effect = ApplyBattleItem(queue[i]);
+							WriteBattleMessage(string.Format("{0} used {1} on {2}", combatants[queue[i].battler].PlayerName,
+								DataContents.GetItemGameName(combatants[queue[i].battler].GetItem(queue[i].selection)[0]), 
+								effect));
+						} //end else if
 						else
 						{
 							string effect = ApplySpecialItem(queue[i]);
@@ -4312,6 +5794,7 @@ public class BattleScene : MonoBehaviour
 								DataContents.GetItemGameName(combatants[queue[i].battler].GetItem(queue[i].selection)[0]), 
 								effect));
 						} //end else
+						yield return new WaitForSeconds(0.5f);
 						break;
 					case 2:
 						WriteBattleMessage(string.Format("That's enough, {0}! Go, {1}!", battlers[queue[i].battler].Nickname,
@@ -4324,17 +5807,31 @@ public class BattleScene : MonoBehaviour
 						{
 							trainerStands[0].GetComponent<Animator>().SetTrigger("SendOut");
 							GameManager.instance.ShowPlayerBox();
+							participants.Add(battlers[0].BattlerPokemon);
 						} //end if
 						else if (queue[i].battler == 1)
 						{
 							trainerStands[1].GetComponent<Animator>().SetTrigger("SendOut");
 							GameManager.instance.ShowFoeBox();
 							battleField.ResetDefaultBoosts();
+
+							//Add opponent's pokemon to the player's seen list
+							GameManager.instance.GetTrainer().Seen = 
+								ExtensionMethods.AddUnique<int>(GameManager.instance.GetTrainer().Seen, battlers[1].
+									BattlerPokemon.NatSpecies);
 						} //end else if
 						yield return new WaitForSeconds(1f);
+						battlers[queue[i].battler].ResolveOpponentLeaveField(battlers[queue[i].target]);
+						yield return new WaitForSeconds(0.5f);
 						waitingState = Battle.PROCESSQUEUE;
 						StartCoroutine(ResolveFieldEntrance());
 						yield return new WaitUntil(() => battleState == Battle.PROCESSQUEUE);
+						break;
+					case 3:
+						battlers[queue[i].battler].ApplyFormCalculateStats();
+						FillInBattlerData();
+						WriteBattleMessage(battlers[queue[i].battler].Nickname + " Mega Evolved!");
+						yield return new WaitForSeconds(0.5f);
 						break;
 				} //end switch
 			} //end if
@@ -4358,6 +5855,11 @@ public class BattleScene : MonoBehaviour
 	 ***************************************/
 	IEnumerator ProcessEndOfRound()
 	{
+		//Process field effects
+		battleState = Battle.RESOLVEEFFECTS;
+		StartCoroutine(ProcessFieldEndEffects());
+		yield return new WaitUntil(() => battleState == Battle.ENDROUND);
+
 		//Reset battler effects
 		for (int i = 0; i < battlers.Count; i++)
 		{
@@ -4375,19 +5877,58 @@ public class BattleScene : MonoBehaviour
 					battleState = Battle.USERPICKPOKEMON;
 					waitingState = Battle.ENDROUND;
 					yield return new WaitUntil(() => battleState == Battle.ENDROUND);
+					participants.Add(battlers[0].BattlerPokemon);
 				} //end if
 				else
 				{
+					//Give XP and EV
+					List<int> earners = participants.Select(pokemon => pokemon.Status != (int)Status.FAINT ? pokemon.PersonalID : -1).
+						Where(id=> id != -1).ToList();
+					int level = combatants[1].Team[0].CurrentLevel;
+					int expEarned = 3 * DataContents.ExecuteSQL<int>("SELECT baseExp FROM Pokemon WHERE rowid=" +
+						combatants[1].Team[0].NatSpecies) * level;
+					expEarned /= 10;
+					foreach (int location in earners)
+					{
+						choiceTarget = combatants[0].Team.FindIndex(pokemon => pokemon.PersonalID == location) + 1;	
+						combatants[0].Team[choiceTarget - 1].ChangeEVs(DataContents.GetEVList(combatants[1].Team[0].NatSpecies).ToArray());
+						WriteBattleMessage(combatants[0].Team[choiceTarget-1].Nickname + " gained " +
+							expEarned / earners.Count + " experience points!");
+						int overflow = combatants[0].Team[choiceTarget-1].GiveEXP(expEarned / 
+							earners.Count);		
+						while (overflow > 0)
+						{
+							combatants[0].Team[choiceTarget-1].PerformLevelUp();
+							yield return new WaitUntil(() => battleState == Battle.ENDROUND);
+							battlers[0].UpdateActiveBattler();
+							overflow = combatants[0].Team[choiceTarget-1].GiveEXP(overflow);	
+						} //end if
+						yield return new WaitForSeconds(1f);
+					} //end foreach
+
+					//Update team and clear participants
+					participants.Clear();
+					UpdateDisplayedTeam();
+
+					//Choose replacement battler
 					battleState = Battle.AIPICKPOKEMON;
 					waitingState = Battle.ENDROUND;
 					yield return new WaitUntil(() => battleState == Battle.ENDROUND);					
 					FillInBattlerData();
+					participants.Add(battlers[0].BattlerPokemon);
 					trainerStands[1].GetComponent<Animator>().SetTrigger("SendOut");
-				} //end if
+
+					//Add opponent's pokemon to the player's seen list
+					GameManager.instance.GetTrainer().Seen = 
+						ExtensionMethods.AddUnique<int>(GameManager.instance.GetTrainer().Seen, battlers[1].BattlerPokemon.NatSpecies);
+				} //end else
 			} //end if
 			else
 			{
-				battlers[i].EndOfRoundReset();
+				//Resolve end of turn effects
+				battlers[i].EndOfRoundResolve();
+				FillInBattlerData();
+				yield return new WaitForSeconds(0.5f);
 			} //end else
 		} //end for
 
@@ -4401,6 +5942,7 @@ public class BattleScene : MonoBehaviour
 		queue.Clear();
 		commandChoice.SetActive(true);
 		selectedChoice = commandChoice.transform.GetChild(commandInt).gameObject;
+		UpdateDisplayedTeam();
 		battleState = Battle.ROUNDSTART;
 		processing = false;
 	} //end ProcessEndOfRound
@@ -4418,8 +5960,55 @@ public class BattleScene : MonoBehaviour
 			WriteBattleMessage(combatants[condition].PlayerName + " is out of Pokemon!");
 			yield return new WaitForSeconds(0.75f);
 
-			//Heal team and return to main
-			combatants[0].HealTeam();
+			//Check for evolutions
+			for (int i = 0; i < combatants[0].Team.Count; i++)
+			{
+				int evolutionID = combatants[0].Team[i].CheckEvolution();
+				if (evolutionID != -1 && combatants[0].Team[i].Status != (int)Status.FAINT && combatants[0].Team[i].CanEvolve)
+				{
+					choiceNumber = i;
+					choiceTarget = evolutionID;
+					GameManager.instance.DisplayConfirm(string.Format("Do you want {0} to evolve into {1}?", 
+						combatants[0].Team[i].Nickname, DataContents.ExecuteSQL<string>("SELECT name FROM Pokemon " +
+							"WHERE rowid=" + evolutionID)), 0, true);
+					battleState = Battle.EVOLVEPOKEMON;
+					yield return new WaitUntil(() => battleState == Battle.ENDFIGHT);
+					yield return new WaitForSeconds(0.6f);
+				} //end if
+				combatants[0].Team[i].CanEvolve = false;
+			} //end for
+
+			//Return team to original order
+			for (int i = 0; i < originalOrder.Count; i++)
+			{
+				//Find the pokemon that matches
+				int position = combatants[0].Team.FindIndex(pokemon => pokemon.Equals(originalOrder[i]));
+				GameManager.instance.GetTrainer().Swap(i, position);
+
+				//Revert forms
+				if (GameManager.instance.GetTrainer().Team[i].NatSpecies == 681)
+				{
+					GameManager.instance.GetTrainer().Team[i].FormNumber = 0;
+				} //end if
+
+				//Remove stolen items
+				if (GameManager.instance.GetTrainer().Team[i].ItemStolen)
+				{
+					if (GameManager.instance.GetTrainer().Team[i].Item !=
+						GameManager.instance.GetTrainer().Team[i].InitialItem)
+					{
+						GameManager.instance.GetTrainer().Team[i].Item = 
+							GameManager.instance.GetTrainer().Team[i].InitialItem;
+					} //end if
+					else
+					{
+						GameManager.instance.GetTrainer().Team[i].Item = 0;
+					} //end else
+				} //end if
+			} //end for
+
+			//Return to main
+			GameManager.instance.GetTrainer().HealTeam();
 			GameManager.instance.LoadScene("MainGame", true);
 		} //end if
 		else if (condition == 1)
@@ -4428,6 +6017,33 @@ public class BattleScene : MonoBehaviour
 			trainerStands[1].GetComponent<Animator>().SetTrigger("FadeEnemyIn");
 			GameManager.instance.HideFoeBox();
 			yield return new WaitForSeconds(0.5f);
+
+			//Give XP and EV
+			List<int> earners = participants.Select(pokemon => pokemon.Status != (int)Status.FAINT ? pokemon.PersonalID : -1).
+				Where(id=> id != -1).ToList();
+			int level = combatants[1].Team[0].CurrentLevel;
+			int expEarned = 3 * DataContents.ExecuteSQL<int>("SELECT baseExp FROM Pokemon WHERE rowid=" +
+				combatants[1].Team[0].NatSpecies) * level;
+			expEarned /= 10;
+			foreach (int location in earners)
+			{
+				choiceTarget = combatants[0].Team.FindIndex(pokemon => pokemon.PersonalID == location) + 1;	
+				combatants[0].Team[choiceTarget - 1].ChangeEVs(DataContents.GetEVList(combatants[1].Team[0].NatSpecies).ToArray());
+				WriteBattleMessage(combatants[0].Team[choiceTarget-1].Nickname + " gained " +
+					expEarned / earners.Count + " experience points!");
+				int overflow = combatants[0].Team[choiceTarget-1].GiveEXP(expEarned / 
+					earners.Count);		
+				while (overflow > 0)
+				{
+					combatants[0].Team[choiceTarget-1].PerformLevelUp();
+					yield return new WaitUntil(() => battleState == Battle.ENDROUND);
+					overflow = combatants[0].Team[choiceTarget-1].GiveEXP(overflow);	
+				} //end if
+				yield return new WaitForSeconds(1f);
+			} //end foreach
+
+			//Clear participants
+			participants.Clear();
 
 			//Display who lost
 			WriteBattleMessage(combatants[condition].PlayerName + " is out of Pokemon!");
@@ -4445,8 +6061,54 @@ public class BattleScene : MonoBehaviour
 			PrizeList.ItemsPrize(GameManager.instance.GetTrainer(), combatants[1].PlayerID);
 			yield return new WaitForSeconds(3f);
 
-			//Heal team and return to main
-			combatants[condition].HealTeam();
+			//Check for evolutions
+			for (int i = 0; i < combatants[0].Team.Count; i++)
+			{
+				int evolutionID = combatants[0].Team[i].CheckEvolution();
+				if (evolutionID != -1 && combatants[0].Team[i].Status != (int)Status.FAINT && combatants[0].Team[i].CanEvolve)
+				{
+					choiceNumber = i;
+					choiceTarget = evolutionID;
+					GameManager.instance.DisplayConfirm(string.Format("Do you want {0} to evolve into {1}?", 
+						combatants[0].Team[i].Nickname, DataContents.ExecuteSQL<string>("SELECT name FROM Pokemon " +
+							"WHERE rowid=" + evolutionID)), 0, true);
+					battleState = Battle.EVOLVEPOKEMON;
+					yield return new WaitUntil(() => battleState == Battle.ENDFIGHT);
+					yield return new WaitForSeconds(0.6f);
+				} //end if
+				combatants[0].Team[i].CanEvolve = false;
+			} //end for
+
+			//Return team to original order
+			for (int i = 0; i < originalOrder.Count; i++)
+			{
+				//Find the pokemon that matches
+				int position = combatants[0].Team.FindIndex(pokemon => pokemon.PersonalID == originalOrder[i].PersonalID);
+				GameManager.instance.GetTrainer().Swap(i, position);
+
+				//Revert forms
+				if (GameManager.instance.GetTrainer().Team[i].NatSpecies == 681)
+				{
+					GameManager.instance.GetTrainer().Team[i].FormNumber = 0;
+				} //end if
+
+				//Remove stolen items
+				if (GameManager.instance.GetTrainer().Team[i].ItemStolen)
+				{
+					if (GameManager.instance.GetTrainer().Team[i].Item !=
+						GameManager.instance.GetTrainer().Team[i].InitialItem)
+					{
+						GameManager.instance.GetTrainer().Team[i].Item = 
+							GameManager.instance.GetTrainer().Team[i].InitialItem;
+					} //end if
+					else
+					{
+						GameManager.instance.GetTrainer().Team[i].Item = 0;
+					} //end else
+				} //end if
+			} //end for
+
+			//Return to main
 			GameManager.instance.LoadScene("MainGame", true);
 		} //end else if			
 	} //end ProcessEndOfBattle(int condition)
@@ -4637,6 +6299,41 @@ public class BattleScene : MonoBehaviour
 	} //end SetupPickMove
 
 	/***************************************
+	 * Name: SetupLearnMove
+	 * Sets up screen for player allow a
+	 * pokemon to learn a move
+	 ***************************************/
+	public IEnumerator SetupLearnMove(List<int> toLearn, Pokemon leveledPokemon)
+	{
+		battleState = Battle.REPLACEMOVE;
+		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonUp(0));
+		for (int i = 0; i < toLearn.Count; i++)
+		{
+			//If pokemon has max moves
+			if (leveledPokemon.GetMoveCount() == 4)
+			{
+				moveToLearn = toLearn[i];
+				GameManager.instance.DisplayConfirm(string.Format("Should {0} learn {1}?", leveledPokemon.Nickname, 
+					DataContents.GetMoveGameName(toLearn[i])), 0, true);
+				battleState = Battle.GETNEWMOVECHOICE;
+				yield return new WaitUntil(() => battleState == Battle.REPLACEMOVE);
+				yield return new WaitForSeconds(0.5f);
+			} //end if
+			else
+			{
+				leveledPokemon.ChangeMoves(new int[]{toLearn[i]}, leveledPokemon.GetMoveCount());
+				WriteBattleMessage(string.Format("{0} learned {1}!", leveledPokemon.Nickname, 
+					DataContents.GetMoveGameName(toLearn[i])));
+				yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonUp(0));
+			} //end else
+		} //end for
+		pickMove = false;
+		moveToLearn = -1;
+		yield return null;
+		battleState = Battle.ENDROUND;
+	} //end SetupLearnMove(List<int> toLearn, Pokemon leveledPokemon)
+
+	/***************************************
 	 * Name: ApplyConfirm
 	 * Applies the confirm choice
 	 ***************************************/
@@ -4648,19 +6345,70 @@ public class BattleScene : MonoBehaviour
 			//Run choice
 			if (battleState == Battle.ROUNDSTART)
 			{
+				//Return team to original order
+				for (int i = 0; i < originalOrder.Count; i++)
+				{
+					//Find the pokemon that matches
+					int position = combatants[0].Team.FindIndex(pokemon => pokemon.Equals(originalOrder[i]));
+					GameManager.instance.GetTrainer().Swap(i, position);
+
+					//Revert forms
+					if (GameManager.instance.GetTrainer().Team[i].NatSpecies == 681)
+					{
+						GameManager.instance.GetTrainer().Team[i].FormNumber = 0;
+					} //end if
+
+					//Remove stolen items
+					if (GameManager.instance.GetTrainer().Team[i].ItemStolen)
+					{
+						if (GameManager.instance.GetTrainer().Team[i].Item !=
+						    GameManager.instance.GetTrainer().Team[i].InitialItem)
+						{
+							GameManager.instance.GetTrainer().Team[i].Item = 
+								GameManager.instance.GetTrainer().Team[i].InitialItem;
+						} //end if
+						else
+						{
+							GameManager.instance.GetTrainer().Team[i].Item = 0;
+						} //end else
+					} //end if
+				} //end for
 				GameManager.instance.LoadScene("MainGame", true);
 			} //end if
 
 			//Switch AI
 			else if (battleState == Battle.AIPICKPOKEMON)
-			{
+			{				
 				playerTeam.SetActive(true);
 				selectedChoice = playerTeam.transform.FindChild("Pokemon1").gameObject;
 				playerTeam.transform.FindChild("PartyInstructions").GetChild(0).GetComponent<Text>().text = 
 					"Choose a Pokemon to switch in.";
 				choiceNumber = 1;
-				replacePokemon = true;
-				battleState = Battle.USERPICKPOKEMON;
+				optionalReplace = true;
+				battleState = Battle.SELECTPOKEMON;
+				waitingState = Battle.ENDROUND;
+			} //end else if
+
+			//Replace move
+			else if (battleState == Battle.GETNEWMOVECHOICE)
+			{
+				pickMove = true;
+				FillInChoices();
+				StartCoroutine(WaitForResize());
+				choices.SetActive(true);
+				subMenuChoice = 0;
+				WriteBattleMessage("Pick a move to replace.");
+				battleState = Battle.PICKMOVE;
+			} //end else if
+
+			//Evolve pokemon
+			else if (battleState == Battle.EVOLVEPOKEMON)
+			{
+				combatants[0].Team[choiceNumber].EvolvePokemon(choiceTarget);
+				WriteBattleMessage(string.Format("Congratulations! Your {0} evolved into {1}!", combatants[0].
+					Team[choiceNumber].Nickname, DataContents.ExecuteSQL<string>("SELECT name FROM Pokemon WHERE rowid=" +
+						choiceTarget)));
+				battleState = Battle.ENDFIGHT;
 			} //end else if
 		} //end if
 
@@ -4684,9 +6432,25 @@ public class BattleScene : MonoBehaviour
 			} //end if
 
 			//Switch AI
-			else if(battleState == Battle.AIPICKPOKEMON)
+			else if (battleState == Battle.AIPICKPOKEMON)
 			{
 				battleState = Battle.ENDROUND;
+			} //end else if
+
+			//Replace move
+			else if (battleState == Battle.GETNEWMOVECHOICE)
+			{
+				WriteBattleMessage("Did not learn " + DataContents.GetMoveGameName(moveToLearn) + ".");
+				battleState = Battle.REPLACEMOVE;
+			} //end else if
+
+			//Evolve pokemon
+			else if (battleState == Battle.EVOLVEPOKEMON)
+			{
+				WriteBattleMessage(string.Format("Decided not to evolve {0} into {1}.", combatants[0].
+					Team[choiceNumber].Nickname, DataContents.ExecuteSQL<string>("SELECT name FROM Pokemon WHERE rowid=" +
+						choiceTarget)));
+				battleState = Battle.ENDFIGHT;
 			} //end else if
 		} //end else			
 	} //end ApplyConfirm(ConfirmChoice e)

@@ -101,7 +101,7 @@ public class GameManager : MonoBehaviour
         
         //Create error log
         sysm.InitErrorLog ();
-        
+
         //Initialize DataContents class 
         if(!DataContents.InitDataContents())
         {
@@ -148,7 +148,7 @@ public class GameManager : MonoBehaviour
 
             //Don't continue updating game until text box is gone
             if(textDisplayed)
-            {
+            {				
                 textDisplayed = sysm.ManageTextbox(continueImmediate);
             } //end if textDisplayed
 
@@ -266,6 +266,20 @@ public class GameManager : MonoBehaviour
 		//If fade out is requested
 		if (fadeOut)
 		{
+			//Play the appropriate music
+			if (levelName == "Intro")
+			{
+				AudioManager.instance.PlayIntro();
+			} //end if
+			else if (levelName == "MainGame")
+			{
+				AudioManager.instance.PlayMainMenu();
+			} //end else if
+			else if(levelName == "Battle")
+			{
+				AudioManager.instance.PlayBattle();
+			} //end else if
+
 			loadingLevel = true;
 			tools.transform.FindChild("Selection").gameObject.SetActive(false);
 			StartCoroutine(anim.FadeOutAnimation(levelName));
@@ -516,6 +530,15 @@ public class GameManager : MonoBehaviour
 	} //end CheckMoveUsed
 
 	/***************************************
+	 * Name: CheckField
+	 * Retrieves integer of the active field
+	 ***************************************/
+	public int CheckField()
+	{
+		return battle.CheckField();
+	} //end CheckField
+
+	/***************************************
 	 * Name: WriteBattleMessage
 	 * Writes a message to the battle window
 	 ***************************************/
@@ -523,6 +546,44 @@ public class GameManager : MonoBehaviour
 	{
 		battle.WriteBattleMessage(message);
 	} //end WriteBattleMessage(string message)
+
+	/***************************************
+	 * Name: SetupLearnMove
+	 * Sets up screen for player allow a
+	 * pokemon to learn a move
+	 ***************************************/
+	public void SetupLearnMove(List<int> toLearn, Pokemon leveledPokemon)
+	{
+		StartCoroutine(battle.SetupLearnMove(toLearn, leveledPokemon));
+	} //end SetupLearnMove(List<int> toLearn, Pokemon leveledPokemon)
+
+	/***************************************
+	 * Name: QueueBattleItem
+	 * Queues the use of a battle item
+	 ***************************************/
+	public bool QueueBattleItem(int item)
+	{
+		return battle.QueueBattleItem(item);
+	} //end QueueBattleItem(int item)
+
+	/***************************************
+	 * Name: AdjustTargetHealth
+	 * Allows adjustment of a battler for 
+	 * effects outside combat (Leech Seed)
+	 ***************************************/
+	public void AdjustTargetHealth(int battlerTarget, int amount)
+	{
+		battle.AdjustTargetHealth(battlerTarget, amount);
+	} //end AdjustTargetHealth(int battlerTarget, int amount)
+
+	/***************************************
+	 * Name: CheckForFaint
+	 * Check if battler fainted
+	 ***************************************/
+	public bool CheckForFaint(int battler)
+	{
+		return battle.CheckForFaint(battler);
+	} //end CheckForFaint(int battler)
 
 	/***************************************
 	 * Name: InitializeBattle
@@ -733,7 +794,8 @@ public class GameManager : MonoBehaviour
         sysm.PlayerTrainer.EmptyTeam();
         sysm.PlayerTrainer.RandomTeam();
         sysm.PlayerTrainer.Team [0].ChangeRibbons (GameManager.instance.RandomInt (0, 20));
-        sysm.PlayerTrainer.Team [0].ChangeRibbons (GameManager.instance.RandomInt (0, 20));
+		sysm.PlayerTrainer.Team[0].ChangeRibbons(0);
+        //sysm.PlayerTrainer.Team [0].ChangeRibbons (GameManager.instance.RandomInt (0, 20));
         sysm.PlayerTrainer.Team [1].ChangeRibbons (GameManager.instance.RandomInt (0, 20));
     } //end RandomTeam
     

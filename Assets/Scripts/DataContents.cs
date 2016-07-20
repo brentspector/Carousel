@@ -85,7 +85,7 @@ public static class DataContents : System.Object
         if (returnValue == 0)
         {
             return false;
-        } //end if
+        } //end if	
 
         //Initialize markings
         markingCharacters = new char[] {'●','■','▲','♥','♦','☻'};
@@ -112,11 +112,11 @@ public static class DataContents : System.Object
         ribbonSprites       = Resources.LoadAll<Sprite> ("Sprites/Icons/ribbons");
         badgeSprites        = Resources.LoadAll<Sprite> ("Sprites/Icons/Badges");
         trainerCardSprites  = Resources.LoadAll<Sprite> ("Sprites/Menus/FullTrainers");
-		trainerBacks        = Resources.LoadAll<Sprite>("Sprites/Battle/TrainerBack");
-		versusImages 		= Resources.LoadAll<Sprite>("Sprites/Battle/Leaders");
-		leaderSprites 		= Resources.LoadAll<Sprite>("Sprites/Battle/FullLeaders");
-		attackNonSelSprites	= Resources.LoadAll<Sprite>("Sprites/Battle/battleFightButtons");
-		attackSelSprites 	= Resources.LoadAll<Sprite>("Sprites/Battle/battleFightButtonsSelect");
+		trainerBacks        = Resources.LoadAll<Sprite> ("Sprites/Battle/TrainerBack");
+		versusImages 		= Resources.LoadAll<Sprite> ("Sprites/Battle/Leaders");
+		leaderSprites 		= Resources.LoadAll<Sprite> ("Sprites/Battle/FullLeaders");
+		attackNonSelSprites	= Resources.LoadAll<Sprite> ("Sprites/Battle/battleFightButtons");
+		attackSelSprites 	= Resources.LoadAll<Sprite> ("Sprites/Battle/battleFightButtonsSelect");
 
         return true;
     } //end InitDataContents()
@@ -233,7 +233,7 @@ public static class DataContents : System.Object
         dbCommand.Parameters.Clear ();
 
         //Return location of attack, or -1 if not found
-        return moveID;
+        return moveID > 0 ? moveID : -1;
     } //end GetMoveID(string moveName)
 
     /***************************************
@@ -389,6 +389,34 @@ public static class DataContents : System.Object
 		//Return location of pokemon, or -1 if not found
 		return pokemonID;
 	} //end GetPokemonID(string pokemonName)
+
+	/***************************************
+     * Name: GetEVList
+     * Returns a list of ints containing the
+     * EVs a pokemon gives
+     ***************************************/
+	public static List<int> GetEVList(int pokemonID)
+	{
+		//Create list
+		List<int> evList = new List<int>();
+
+		//Return blank list if a number goes beyond list boundaries
+		if (pokemonID < 1 || pokemonID > speciesCount)
+		{
+			return evList;
+		} //end if
+		//Return EV list
+		else
+		{
+			evList.Add(ExecuteSQL<int>("SELECT hpEffort FROM Pokemon WHERE rowid=" + pokemonID));
+			evList.Add(ExecuteSQL<int>("SELECT attackEffort FROM Pokemon WHERE rowid=" + pokemonID));
+			evList.Add(ExecuteSQL<int>("SELECT defenceEffort FROM Pokemon WHERE rowid=" + pokemonID));
+			evList.Add(ExecuteSQL<int>("SELECT speedEffort FROM Pokemon WHERE rowid=" + pokemonID));
+			evList.Add(ExecuteSQL<int>("SELECT specialAttackEffort FROM Pokemon WHERE rowid=" + pokemonID));
+			evList.Add(ExecuteSQL<int>("SELECT specialDefenceEffort FROM Pokemon WHERE rowid=" + pokemonID));
+			return evList;
+		} //end else
+	} //end GetEVList(int pokemonID)
     #endregion
 } //end DataContents class
 
@@ -974,7 +1002,7 @@ public class RibbonData
      ***************************************/
     string[] RibbonNames =
     {
-        "Default", "That One Ribbon", "Default", "That One Ribbon", 
+        "Champion Beater", "That One Ribbon", "Default", "That One Ribbon", 
         "Default", "That One Ribbon", "Default", "That One Ribbon", 
         "Default", "That One Ribbon", "Default", "That One Ribbon", 
         "Default", "That One Ribbon", "Default", "That One Ribbon", 
@@ -995,7 +1023,7 @@ public class RibbonData
      ***************************************/
     string[] RibbonDescriptions =
     {
-        "A default ribbon", "A ribbon given for doing things pertaining to testing",
+        "Given for defeating Champion Diantha", "A ribbon given for doing things pertaining to testing",
         "A default ribbon", "A ribbon given for doing things pertaining to testing",  
         "A default ribbon", "A ribbon given for doing things pertaining to testing",  
         "A default ribbon", "A ribbon given for doing things pertaining to testing",  
@@ -1175,8 +1203,9 @@ public enum ObtainTypeEnum
     Gift    = 3,
     Code    = 4,
     Function= 5,
-    Unknown = 6,
-    COUNT   = 7
+	Starter = 6,
+    Unknown = 7,
+    COUNT   = 8
 } //end ObtainTypeEnum enum
 
 /***************************************************************************************** 
@@ -1194,8 +1223,9 @@ public enum ObtainFromEnum
     MysteryEvent = 1,
     RandomTeam   = 2,
     Debug        = 3,
-    UnknownSource= 4,
-    COUNT        = 5
+	Introduction = 4,
+    UnknownSource= 5,
+    COUNT        = 6
 } //end ObtainFromEnum enum
 
 /***************************************************************************************** 
@@ -1309,7 +1339,8 @@ public enum LastingEffects
 	Round             = 97,
 	Powder            = 98,
 	MeanLookTarget    = 99,
-	COUNT			  = 100
+	Unburden		  = 100,
+	COUNT			  = 101
 } //end LastingEffects enum
 
 /***************************************************************************************** 
