@@ -34,6 +34,7 @@ public class IntroScene : MonoBehaviour
 		//Get title screen objects
 		if (checkpoint == 0)
 		{			
+			//Add the checkpoint delegate
 			GameManager.instance.checkDel = ChangeCheckpoint;
 			title = GameObject.Find("Title");
 			image = GameObject.Find("Image");

@@ -675,6 +675,9 @@ public class BattleScene : MonoBehaviour
 					//Set current slot choice
 					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end if Left Arrow
 
@@ -832,6 +835,9 @@ public class BattleScene : MonoBehaviour
 					//Set current slot choice
 					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Right Arrow
 
@@ -1055,6 +1061,9 @@ public class BattleScene : MonoBehaviour
 					//Set current slot choice
 					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Up Arrow
 
@@ -1281,6 +1290,9 @@ public class BattleScene : MonoBehaviour
 					//Set current slot choice
 					selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Down Arrow
 
@@ -1392,6 +1404,9 @@ public class BattleScene : MonoBehaviour
 						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 					} //end if
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Mouse Moves Left
 
@@ -1504,6 +1519,9 @@ public class BattleScene : MonoBehaviour
 						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 					} //end if
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Mouse Moves Right
 
@@ -1692,6 +1710,9 @@ public class BattleScene : MonoBehaviour
 						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 					} //end else
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Mouse Moves Up
 
@@ -1883,6 +1904,9 @@ public class BattleScene : MonoBehaviour
 						selectedChoice = playerTeam.transform.FindChild("Pokemon" + choiceNumber).gameObject;
 					} //end else
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Mouse Moves Down
 
@@ -1943,6 +1967,9 @@ public class BattleScene : MonoBehaviour
 					//Reload ribbons
 					InitializeRibbons();
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Mouse Wheel Up
 
@@ -2003,6 +2030,9 @@ public class BattleScene : MonoBehaviour
 					//Reload ribbons
 					InitializeRibbons();
 				} //end else if
+
+				//Play change SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 		} //end else if Mouse Wheel Down
 
@@ -2311,6 +2341,9 @@ public class BattleScene : MonoBehaviour
 					subMenuChoice = 0;
 					battleState = Battle.POKEMONSUBMENU;
 				} //end else if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 		} //end else if Left Mouse Button
 
@@ -2409,6 +2442,9 @@ public class BattleScene : MonoBehaviour
 					//Return to select pokemon
 					battleState = replacePokemon ? Battle.USERPICKPOKEMON : Battle.SELECTPOKEMON;
 				} //end else if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 		} //end else if Right Mouse Button
 
@@ -2717,6 +2753,9 @@ public class BattleScene : MonoBehaviour
 					subMenuChoice = 0;
 					battleState = Battle.POKEMONSUBMENU;
 				} //end else if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 		} //end else if Enter/Return Key
 
@@ -2815,6 +2854,9 @@ public class BattleScene : MonoBehaviour
 					//Return to select pokemon or user pick
 					battleState = replacePokemon ? Battle.USERPICKPOKEMON : Battle.SELECTPOKEMON;
 				} //end else if
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 		} //end else if X Key
 	} //end GetInput
@@ -4794,6 +4836,10 @@ public class BattleScene : MonoBehaviour
 					WriteBattleMessage("The field is still wet...");
 				} //end else
 				break;
+			//Will-O-Wisp
+			case 620:
+				battlers[toProcess.target].ProcessDefenderAttackEffect(620);
+				break;
 			//Yawn
 			case 631:
 				battlers[toProcess.target].ProcessDefenderAttackEffect(631);
@@ -4863,6 +4909,27 @@ public class BattleScene : MonoBehaviour
 				{
 					battlers[toProcess.battler].ApplyEffect((int)LastingEffects.TwoTurnAttack, -1);
 					WriteBattleMessage(battlers[toProcess.battler].Nickname + " reappeared behind the opponent!");
+				} //end else
+			} //end if
+
+			//Check for Sky Drop
+			if (currentAttack == 498)
+			{
+				//If using it first turn
+				if (battlers[toProcess.battler].GetEffectValue((int)LastingEffects.TwoTurnAttack) == -1)
+				{
+					battlers[toProcess.battler].ApplyEffect((int)LastingEffects.TwoTurnAttack, choiceNumber);
+					battlers[toProcess.target].ApplyEffect((int)LastingEffects.SkyDrop, 1);
+					WriteBattleMessage(battlers[toProcess.battler].Nickname + " picked up " +
+					battlers[toProcess.target].Nickname + "!");
+					return 0;
+				} //end if
+				else
+				{
+					battlers[toProcess.battler].ApplyEffect((int)LastingEffects.TwoTurnAttack, -1);
+					battlers[toProcess.target].ApplyEffect((int)LastingEffects.SkyDrop, 0);
+					WriteBattleMessage(battlers[toProcess.battler].Nickname + " smashed " +
+					battlers[toProcess.target].Nickname + " into the ground!");
 				} //end else
 			} //end if
 
@@ -5033,17 +5100,20 @@ public class BattleScene : MonoBehaviour
 					{
 						moveDamage = 130;
 						battlers[toProcess.battler].Item = 0;
+						battlers[toProcess.battler].BattlerPokemon.InitialItem = 0;
 					} //end if
 					else if (battlers[toProcess.battler].Item == 113)
 					{
 						moveDamage = 100;
 						battlers[toProcess.battler].Item = 0;
+						battlers[toProcess.battler].BattlerPokemon.InitialItem = 0;
 					} //end else if
 					else
 					{
 						moveDamage = 70;
 						GameManager.instance.LogErrorMessage("The item " + battlers[toProcess.battler].Item + " was flung.");
 						battlers[toProcess.battler].Item = 0;
+						battlers[toProcess.battler].BattlerPokemon.InitialItem = 0;
 					} //end else
 				} //end else if
 
@@ -5388,7 +5458,7 @@ public class BattleScene : MonoBehaviour
 							{
 								battlers[queue[i].battler].ApplyEffect((int)LastingEffects.Attract, 0);
 								WriteBattleMessage(battlers[queue[i].battler].Nickname + "'s Oblivious snapped it out " +
-									"of infatuation!");
+								"of infatuation!");
 							} //end if
 							//50% chance to not attack
 							else
@@ -5405,13 +5475,13 @@ public class BattleScene : MonoBehaviour
 
 						//Check for confusion
 						bool confusion = battlers[queue[i].battler].CheckEffect((int)LastingEffects.Confusion);
-						if(confusion)
+						if (confusion)
 						{
 							if (!battlers[queue[i].battler].CureConfusion())
 							{
 								WriteBattleMessage(battlers[queue[i].battler].Nickname + " is confused.");
 								yield return new WaitForSeconds(0.5f);
-								if(!battlers[queue[i].battler].ProcessConfusion())
+								if (!battlers[queue[i].battler].ProcessConfusion())
 								{
 									WriteBattleMessage(battlers[queue[i].battler].Nickname + " hurt itself in confusion!");
 									QueueEvent newEvent = new QueueEvent();
@@ -5427,6 +5497,13 @@ public class BattleScene : MonoBehaviour
 								WriteBattleMessage(battlers[queue[i].battler].Nickname + " snapped out of confusion!");
 								yield return new WaitForSeconds(0.5f);
 							} //end else
+						} //end if
+
+						//Check for Sky Drop
+						if (battlers[queue[i].battler].CheckEffect((int)LastingEffects.SkyDrop))
+						{
+							WriteBattleMessage(battlers[queue[i].battler].Nickname + " can't aim in the air!");
+							goto end;
 						} //end if
 
 						WriteBattleMessage(string.Format("{0} used {1} on {2}!", battlers[queue[i].battler].Nickname, 

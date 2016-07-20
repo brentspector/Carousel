@@ -128,7 +128,7 @@ public class Trainer
             pEarnedBadges = new bool[48];
 
             //Player has not unlocked the debug menu
-            debugUnlocked = true;
+            debugUnlocked = false;
 
             //Time played is zero
             pHours = 0;

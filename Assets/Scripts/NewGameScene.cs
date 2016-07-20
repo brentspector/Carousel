@@ -359,6 +359,9 @@ public class NewGameScene : MonoBehaviour
 				{
 					playerChoice = DataContents.trainerCardSprites.Length - 1;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Cycle through starter choices
@@ -372,6 +375,9 @@ public class NewGameScene : MonoBehaviour
 				{
 					starterChoice = starterSelection.Count - 1;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end if Left Arrow
 
@@ -391,6 +397,9 @@ public class NewGameScene : MonoBehaviour
 				{
 					playerChoice = 0;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Cycle through starter choices
@@ -404,6 +413,9 @@ public class NewGameScene : MonoBehaviour
 				{
 					starterChoice = 0;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end else if Right Arrow
 
@@ -471,6 +483,9 @@ public class NewGameScene : MonoBehaviour
 				{
 					playerChoice = 0;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Cycle through starter choices
@@ -484,6 +499,9 @@ public class NewGameScene : MonoBehaviour
 				{
 					starterChoice = 0;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end else if Mouse Wheel Up
 
@@ -503,6 +521,9 @@ public class NewGameScene : MonoBehaviour
 				{
 					playerChoice = DataContents.trainerCardSprites.Length - 1;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end if
 
 			//Cycle through starter choices
@@ -516,6 +537,9 @@ public class NewGameScene : MonoBehaviour
 				{
 					starterChoice = starterSelection.Count - 1;
 				} //end if
+
+				//Play choice SFX
+				AudioManager.instance.PlayChange();
 			} //end else if
 		} //end else if Mouse Wheel Down
 
@@ -533,6 +557,9 @@ public class NewGameScene : MonoBehaviour
 
 				//Display text
 				GameManager.instance.DisplayConfirm("So your name is " + playerName + "?", 0, false);
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 
 			//Player selected a character
@@ -543,6 +570,9 @@ public class NewGameScene : MonoBehaviour
 				currTrainer.SetActive(false);
 				nextTrainer.SetActive(false);
 				checkpoint = 10;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Player selected a starter
@@ -553,6 +583,9 @@ public class NewGameScene : MonoBehaviour
 				currTrainer.SetActive(false);
 				nextTrainer.SetActive(false);
 				checkpoint = 13;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 		} //end else if Left Mouse Button
 
@@ -578,6 +611,9 @@ public class NewGameScene : MonoBehaviour
 
 				//Display text
 				GameManager.instance.DisplayConfirm("So your name is " + playerName + "?", 0, false);
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end if
 
 			//Player selected a character
@@ -588,6 +624,9 @@ public class NewGameScene : MonoBehaviour
 				currTrainer.SetActive(false);
 				nextTrainer.SetActive(false);
 				checkpoint = 10;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 
 			//Player selected a starter
@@ -598,6 +637,9 @@ public class NewGameScene : MonoBehaviour
 				currTrainer.SetActive(false);
 				nextTrainer.SetActive(false);
 				checkpoint = 13;
+
+				//Play selection SFX
+				AudioManager.instance.PlaySelect();
 			} //end else if
 		} //end else if Enter/Return Key
 

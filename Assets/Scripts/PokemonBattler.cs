@@ -1252,7 +1252,8 @@ public class PokemonBattler
 		else if (moveNumber == 169 && status == (int)Status.HEALTHY && !types.Contains((int)Types.FIRE) && !CheckAbility(140))
 		{
 			//10% chance to burn
-			if (GameManager.instance.RandomInt(0, 10) == 1)
+			if (GameManager.instance.RandomInt(0, 10) == 1 && status == (int)Status.HEALTHY && !types.Contains((int)Types.FIRE)
+				&& !CheckAbility(140))
 			{
 				status = (int)Status.BURN;
 				GameManager.instance.WriteBattleMessage(nickname + " sustained a burn!");
@@ -1263,7 +1264,8 @@ public class PokemonBattler
 		else if (moveNumber == 179 && status == (int)Status.HEALTHY && !types.Contains((int)Types.FIRE) && !CheckAbility(140))
 		{
 			//10% chance to burn
-			if (GameManager.instance.RandomInt(0, 10) == 1)
+			if (GameManager.instance.RandomInt(0, 10) == 1 && status == (int)Status.HEALTHY && !types.Contains((int)Types.FIRE)
+				&& !CheckAbility(140))
 			{
 				status = (int)Status.BURN;
 				GameManager.instance.WriteBattleMessage(nickname + " sustained a burn!");
@@ -1281,7 +1283,8 @@ public class PokemonBattler
 			} //end if
 
 			//10% chance to burn
-			if (GameManager.instance.RandomInt(0, 10) == 1)
+			if (GameManager.instance.RandomInt(0, 10) == 1 && status == (int)Status.HEALTHY && !types.Contains((int)Types.FIRE)
+				&& !CheckAbility(140))
 			{
 				status = (int)Status.BURN;
 				GameManager.instance.WriteBattleMessage(nickname + " sustained a burn!");
@@ -1299,7 +1302,8 @@ public class PokemonBattler
 			} //end if
 
 			//10% chance to burn
-			if (GameManager.instance.RandomInt(0, 10) == 1)
+			if (GameManager.instance.RandomInt(0, 10) == 1 && status == (int)Status.HEALTHY && !types.Contains((int)Types.FIRE)
+				&& !CheckAbility(140))
 			{
 				status = (int)Status.BURN;
 				GameManager.instance.WriteBattleMessage(nickname + " sustained a burn!");
@@ -1661,6 +1665,22 @@ public class PokemonBattler
 			{
 				effects[(int)LastingEffects.Flinch] = 1;
 			} //end if
+		} //end else if
+
+		//Will-O-Wisp
+		else if (moveNumber == 620)
+		{
+			//100% chance to burn
+			if (status == (int)Status.HEALTHY && !types.Contains((int)Types.FIRE)
+			    && !CheckAbility(140))
+			{
+				status = (int)Status.BURN;
+				GameManager.instance.WriteBattleMessage(nickname + " sustained a burn!");
+			} //end if
+			else
+			{
+				GameManager.instance.WriteBattleMessage("...but it failed!");
+			} //end else
 		} //end else if
 
 		//Yawn

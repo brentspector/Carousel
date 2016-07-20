@@ -101,7 +101,7 @@ public class GameManager : MonoBehaviour
         
         //Create error log
         sysm.InitErrorLog ();
-        
+
         //Initialize DataContents class 
         if(!DataContents.InitDataContents())
         {
@@ -266,6 +266,20 @@ public class GameManager : MonoBehaviour
 		//If fade out is requested
 		if (fadeOut)
 		{
+			//Play the appropriate music
+			if (levelName == "Intro")
+			{
+				AudioManager.instance.PlayIntro();
+			} //end if
+			else if (levelName == "MainGame")
+			{
+				AudioManager.instance.PlayMainMenu();
+			} //end else if
+			else if(levelName == "Battle")
+			{
+				AudioManager.instance.PlayBattle();
+			} //end else if
+
 			loadingLevel = true;
 			tools.transform.FindChild("Selection").gameObject.SetActive(false);
 			StartCoroutine(anim.FadeOutAnimation(levelName));
