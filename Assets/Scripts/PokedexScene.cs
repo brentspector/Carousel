@@ -291,12 +291,12 @@ public class PokedexScene : MonoBehaviour
             //Set height
             characteristics.transform.GetChild(1).FindChild("HeightText").GetComponent<Text>().text = 
                 Math.Round(DataContents.ExecuteSQL<float>("SELECT height FROM Pokemon WHERE rowid=" + pokedexIndex), 1).
-                ToString();
+                ToString() + " M";
             
             //Set weight
             characteristics.transform.GetChild(1).FindChild("WeightText").GetComponent<Text>().text =
                 Math.Round(DataContents.ExecuteSQL<float>("SELECT weight FROM Pokemon WHERE rowid=" +  pokedexIndex), 1).
-                ToString();
+                ToString() + " KG";
             
             //Set species
             characteristics.transform.GetChild(1).FindChild("SpeciesText").GetComponent<Text>().text =
@@ -608,7 +608,7 @@ public class PokedexScene : MonoBehaviour
             type2 = Convert.ToInt32(Enum.Parse (typeof(Types), DataContents.ExecuteSQL<string> 
                 ("SELECT type2 FROM Pokemon WHERE rowid=" + pokedexIndex)));
         } //end try
-		catch(SystemException e){}
+		catch{}
 
         //Get weaknesses
         List<int> weakList = DataContents.typeChart.DetermineWeaknesses (type1, type2);

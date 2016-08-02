@@ -47,39 +47,27 @@ public class Pokemon
 	int nature;				//What nature the pokemon has
 	int happiness;			//Happiness level of pokemon
 	int formNumber;			//What form this pokemon is in
+	int abilityOn;			//What ability this pokemon is currently on
+	int itemRecycle;		//Stores an item valid to recycle
+	int type1;				//The primary type of this pokemon
+	int type2;				//The secondary type (if any) of this pokemon
+	int expForLevel;		//The amount of EXP needed for the next level
+	int initialItem;		//The item stolen from this pokemon
 	int[] moves;			//Move roster of pokemon
 	int[] firstMoves;		//The moves this pokemon first knew when obtained
-    int[] ppReamaining;     //The amount of uses each move has left
+    int[] ppRemaining;     	//The amount of uses each move has left
+	int[] vitamins;			//How many of each vitamin were added
+	int[] ppMax;			//The amount of uses each move has total
+	int[] ppUps;			//How many PP Ups and Maxes have been used
     List<int> ribbons;      //What ribbons have been obtained
 	bool hasPokerus;		//Whether pokemon has pokerus
 	bool isShiny;			//Whether pokemon is shiny
+	bool canEvolve;			//Is this pokemon able to evolve at the end of battle
+	bool itemStolen;		//Is this pokemon's held item stolen
 	bool[] markings;		//What markings this pokemon has
 	string nickname;		//Nickname of pokemon
 	string OtName;			//Name of the original trainer
     DateTime obtainTime;    //When this pokemon was obtained at
-
-	[OptionalField(VersionAdded=2)]
-	int abilityOn;			//What ability this pokemon is currently on
-	[OptionalField(VersionAdded=2)]
-	int[] vitamins;			//How many of each vitamin were added
-	[OptionalField(VersionAdded=2)]
-	int[] ppMax;			//The amount of uses each move has total
-	[OptionalField(VersionAdded=2)]
-	int[] ppUps;			//How many PP Ups and Maxes have been used
-	[OptionalField(VersionAdded=2)]
-	int itemRecycle;		//Stores an item valid to recycle
-	[OptionalField(VersionAdded=2)]
-	int type1;				//The primary type of this pokemon
-	[OptionalField(VersionAdded=2)]
-	int type2;				//The secondary type (if any) of this pokemon
-	[OptionalField(VersionAdded=2)]
-	int expForLevel;		//The amount of EXP needed for the next level
-	[OptionalField(VersionAdded=2)]
-	bool canEvolve;			//Is this pokemon able to evolve at the end of battle
-	[OptionalField(VersionAdded=2)]
-	bool itemStolen = false;//Is this pokemon's held item stolen
-	[OptionalField(VersionAdded=2)]
-	int initialItem;		//The item stolen from this pokemon
     #endregion
 
     #region Methods
@@ -271,6 +259,7 @@ public class Pokemon
 		happiness = ExtensionMethods.WithinIntRange(happy, 0, 255);
 		hasPokerus = pokerus;
 		isShiny = shiny;
+		itemStolen = false;
         nickname = DataContents.ExecuteSQL<string> ("SELECT name FROM Pokemon WHERE rowid=" + natSpecies);
         OtName = GameManager.instance.GetTrainer().PlayerName;
         obtainTime = DateTime.Now;
@@ -280,7 +269,7 @@ public class Pokemon
 		EV = new int[6];
 		moves = new int[4];
 		firstMoves = new int[4];
-        ppReamaining = new int[4];
+        ppRemaining = new int[4];
 		markings = new bool[DataContents.markingCharacters.Length];
 		ribbons = new List<int>();
 		vitamins = new int[6];
@@ -720,9 +709,9 @@ public class Pokemon
         if (index > -1 && index < 4)
         {
             moves[index] = values[0];
-            ppReamaining[index] = DataContents.ExecuteSQL<int> 
+            ppRemaining[index] = DataContents.ExecuteSQL<int> 
                 ("SELECT totalPP FROM Moves WHERE rowid=" + moves[index]);
-			ppMax[index] = ppReamaining[index];
+			ppMax[index] = ppRemaining[index];
 			ppUps[index] = 0;
         } //end if
         //No valid index given
@@ -731,9 +720,9 @@ public class Pokemon
             for(int i = 0; i < values.Length; i++)
             {
                 moves[i] = values[i];
-                ppReamaining[i] = DataContents.ExecuteSQL<int> 
+                ppRemaining[i] = DataContents.ExecuteSQL<int> 
                     ("SELECT totalPP FROM Moves WHERE rowid=" + moves[i]);
-				ppMax[i] = ppReamaining[i];
+				ppMax[i] = ppRemaining[i];
 				ppUps[i] = 0;
             } //end for
         } //end else
@@ -783,9 +772,9 @@ public class Pokemon
                 //Set the move to the given value
                 moves[i] = values[i];
                 firstMoves[i] = values[i];
-                ppReamaining[i] = DataContents.ExecuteSQL<int> 
+                ppRemaining[i] = DataContents.ExecuteSQL<int> 
                     ("SELECT totalPP FROM Moves WHERE rowid=" + moves[i]);
-				ppMax[i] = ppReamaining[i];
+				ppMax[i] = ppRemaining[i];
             } //end if
             //If it equals -1, give level up move
             else
@@ -806,9 +795,9 @@ public class Pokemon
                     {
                         moves[j] = moveID;
                         firstMoves[j] = moveID;
-                        ppReamaining[j] = DataContents.ExecuteSQL<int> 
+                        ppRemaining[j] = DataContents.ExecuteSQL<int> 
                             ("SELECT totalPP FROM Moves WHERE rowid=" + moves[j]);
-						ppMax[j] = ppReamaining[j];
+						ppMax[j] = ppRemaining[j];
                     } //end if
                     else
                     {
@@ -948,6 +937,14 @@ public class Pokemon
      ***************************************/
     void CalculateHP()
     {
+		//Shedninja always has 1 HP
+		if (natSpecies == 292)
+		{
+			totalHP = 1;
+			currentHP = 1;
+			return;
+		} //end if
+
         int evCalc = EV [0] / 4;
         int baseHP = DataContents.ExecuteSQL<int> ("SELECT health FROM Pokemon WHERE rowid=" + natSpecies);
         int firstCalc = (IV [0] + 2 * baseHP + evCalc + 100);
@@ -1045,9 +1042,9 @@ public class Pokemon
         int temp = moves [move1];
         moves [move1] = moves [move2];
         moves [move2] = temp;
-        temp = ppReamaining [move1];
-        ppReamaining [move1] = ppReamaining [move2];
-        ppReamaining [move2] = temp;
+        temp = ppRemaining [move1];
+        ppRemaining [move1] = ppRemaining [move2];
+        ppRemaining [move2] = temp;
 		temp = ppMax[move1];
 		ppMax[move1] = ppMax[move2];
 		ppMax[move2] = temp;
@@ -1343,64 +1340,6 @@ public class Pokemon
 		//Update stats
 		CalculateStats();
 	} //end EvolvePokemon(int newPokemon)
-
-	/***************************************
-     * Name: UpdateAbilityOn
-     * Legacy file fix
-     ***************************************/
-	public void UpdateAbilityOn()
-	{
-		string abilityName = DataContents.ExecuteSQL<string>("SELECT internalName FROM Abilities WHERE rowid=" + ability);
-		//Check if first ability
-		if (abilityName == DataContents.ExecuteSQL<string>
-			("SELECT ability1 FROM Pokemon WHERE rowid=" + natSpecies))
-		{
-			abilityOn = 0;
-		} //end if
-
-		//Check if second ability
-		else if(abilityName == DataContents.ExecuteSQL<string>
-			("SELECT ability2 FROM Pokemon WHERE rowid=" + natSpecies))
-		{
-			abilityOn = 1;
-		}
-
-		//Hidden or custom ability
-		else
-		{
-			abilityOn = 2;
-		} //end else
-	} //end UpdateAbilityOn
-
-	/***************************************
-     * Name: UpdateVitamins
-     * Legacy file fix
-     ***************************************/
-	public void UpdateVitamins()
-	{
-		vitamins = new int[6];
-
-		for(int i = 0; i < 6; i++)
-		{
-			vitamins[i] = 0;
-		} //end for
-	} //end UpdateVitamins
-
-	/***************************************
-     * Name: UpdatePP
-     * Legacy file fix
-     ***************************************/
-	public void UpdatePP()
-	{
-		ppMax = new int[4];
-		ppUps = new int[4];
-
-		for(int i = 0; i < 4; i++)
-		{
-			ppMax[i] = ppReamaining[i];
-			ppUps[i] = 0;
-		} //end for
-	} //end UpdateVitamins
 	#region Accessors
 	//Stats
     /***************************************
@@ -1909,7 +1848,7 @@ public class Pokemon
      ***************************************/
     public int GetMovePP(int index)
     {
-		return index < GetMoveCount() ? ppReamaining [index] : 0;
+		return index < GetMoveCount() ? ppRemaining [index] : 0;
     } //end GetMovePP(int index)
     
     /***************************************
@@ -1917,7 +1856,7 @@ public class Pokemon
      ***************************************/
     public void SetMovePP(int index, int value)
     {
-        ppReamaining [index] = value;
+		ppRemaining[index] = ExtensionMethods.WithinIntRange(value, 0, ppMax[index]);
     } //end SetMovePP(int index, int value)
 
 	/***************************************

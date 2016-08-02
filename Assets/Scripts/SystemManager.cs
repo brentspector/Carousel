@@ -170,6 +170,7 @@ public class SystemManager : MonoBehaviour
 		//Report whether successful
 		if(output != null)
 		{
+			Application.logMessageReceivedThreaded += LogApplicationErrorMessage;
 			return true;
 		} //end if
 		else
@@ -187,10 +188,20 @@ public class SystemManager : MonoBehaviour
 		//Make sure error log exists
 		if(output != null)
 		{
-			output.WriteLine(message);
+			output.WriteLine(message.Replace("\n",Environment.NewLine));
 			output.Flush();			
 		} //end if
 	} //end LogErrorMessage(string message)
+
+	/***************************************
+     * Name: LogApplicationErrorMessage
+     * Sends a message to the error log from
+     * the application
+     ***************************************/
+	public void LogApplicationErrorMessage(string message, string stackTrace, LogType type)
+	{	
+		LogErrorMessage(string.Format("{0}: {1}\n{2}", type, message, stackTrace));
+	} //end LogApplicationErrorMessage(string message, string stackTrace, LogType type)
 
     /***************************************
      * Name: OnApplicationQuit
@@ -214,6 +225,7 @@ public class SystemManager : MonoBehaviour
      ***************************************/
 	public void GetText(GameObject textArea, GameObject endArrow)
 	{
+		LogErrorMessage("Started GetText");
 		//Initialize text reference and gate
         textRegion = textArea;
 		textComp = textArea.transform.GetChild(0).GetComponent<Text>();
@@ -222,6 +234,7 @@ public class SystemManager : MonoBehaviour
 		//Disable arrow until text is finished
 		arrow = endArrow;
 		arrow.SetActive (false);
+		LogErrorMessage("Finished GetText");
 	} //end GetText(GameObject textArea, GameObject endArrow)
 
     /***************************************
@@ -322,8 +335,10 @@ public class SystemManager : MonoBehaviour
      ***************************************/
 	public void GetConfirm()
 	{
+		LogErrorMessage("Started GetConfirm");
 		confirmBox = GameManager.tools.transform.FindChild("ConfirmUnit").gameObject;
 		selection = GameManager.tools.transform.FindChild("Selection").gameObject;
+		LogErrorMessage("Finished GetConfirm");
 	} //end GetConfirm
 
 	/***************************************

@@ -18,6 +18,7 @@ public class Trainer
     List<Pokemon> team;   //The player's current party
     List<int> seen;       //What pokemon has the player encountered
     List<int> owned;      //What pokemon does(has) the player own(ed)
+	List<int> leaderWins; //How many wins has the player scored against the leader mode
     PC pPC;               //The PC for the player
     string pName;         //The player's name
     uint pID;             //The Trainer ID
@@ -29,58 +30,10 @@ public class Trainer
     int pMinutes;         //Total number of minutes played
     int pSeconds;         //Total number of seconds played
     bool debugUnlocked;   //Whether the debug has been unlocked or not
-    bool[] pEarnedBadges; //Which badges the player has obtained
-
-	[OptionalField(VersionAdded=2)]
-	Inventory bag;		  //The player's item bag
-	[OptionalField(VersionAdded=2)]
-	Shop shop;			  //The status of the shop for the player
-	[OptionalField(VersionAdded=2)]
-	List<int> leaderWins; //How many wins has the player scored against the leader mode
-	[OptionalField(VersionAdded=2)]
 	bool hasMega;		  //Has this trainer used a mega this battle yet
-
-    //Gym Battle count
-    //Kalos
-    int violaNormal = 0;
-    int violaRegional = 0;
-    int violaNational = 0;
-    int grantNormal = 0;
-    int grantRegional = 0;
-    int grantNational = 0;
-    int korrinaNormal = 0;
-    int korrinaRegional = 0;
-    int korrinaNational = 0;
-    int ramosNormal = 0;
-    int ramosRegional = 0;
-    int ramosNational = 0;
-    int clemontNormal = 0;
-    int clemontRegional = 0;
-    int clemontNational = 0;
-    int valerieNormal = 0;
-    int valerieRegional = 0;
-    int valerieNational = 0;
-    int olympiaNormal = 0;
-    int olympiaRegional = 0;
-    int olympiaNational = 0;
-    int wulfricNormal = 0;
-    int wulfricRegional = 0;
-    int wulfricNational = 0;
-    int malvaNormal = 0;
-    int malvaRegional = 0;
-    int malvaNational = 0;
-    int wikstromNormal = 0;
-    int wikstromRegional = 0;
-    int wikstromNational = 0;
-    int drasnaNormal = 0;
-    int drasnaRegional = 0;
-    int drasnaNational = 0;
-    int sieboldNormal = 0;
-    int sieboldRegional = 0;
-    int sieboldNational = 0;
-    int dianthaNormal = 0;
-    int dianthaRegional = 0;
-    int dianthaNational = 0;
+    bool[] pEarnedBadges; //Which badges the player has obtained
+	Inventory bag;		  //The player's item bag
+	Shop shop;			  //The status of the shop for the player
     #endregion
 
     #region Methods
@@ -535,7 +488,7 @@ public class Trainer
                 pBadges--;
             } //end else
         } //end if
-    } //end GetPlayerBadges(int location)
+	} //end SetPlayerBadges(int location, bool toSet)
 
 	/***************************************
      * Name: PopulateStock

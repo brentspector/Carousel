@@ -40,7 +40,7 @@ public class MenuScene : MonoBehaviour
 			{
 				return;
 			} //end if
-
+			GameManager.instance.LogErrorMessage("Checkpoint 0 of Menu started.");
 			//Begin processing
 			processing = true;
 
@@ -85,6 +85,7 @@ public class MenuScene : MonoBehaviour
 
 			//Disable processing
 			processing = false;
+			GameManager.instance.LogErrorMessage("Checkpoint 0 of Menu finished.");
 		} //end if
 
 		//Initialize menu data (with continue option)
@@ -95,7 +96,7 @@ public class MenuScene : MonoBehaviour
 			{
 				return;
 			} //end if
-
+			GameManager.instance.LogErrorMessage("Checkpoint 1 of Menu started.");
 			//Resize selection to width of top choice, and 1/3 of height
 			selection.GetComponent<RectTransform>().sizeDelta = 
 				new Vector2(transforms[choiceNumber].sizeDelta.x, transforms[choiceNumber].sizeDelta.y / 3);
@@ -114,6 +115,7 @@ public class MenuScene : MonoBehaviour
 
 			//Run fade in animation
 			GameManager.instance.FadeInAnimation(2);
+			GameManager.instance.LogErrorMessage("Checkpoint 1 of Menu finished.");
 		} //end else if
 
 		//Run menu (with continue option)
@@ -122,6 +124,7 @@ public class MenuScene : MonoBehaviour
 			//Enable selection 
 			if (!selection.activeSelf)
 			{
+				GameManager.instance.LogErrorMessage("Checkpoint 2 of Menu activated selection rectangle.");
 				selection.SetActive(true);
 			} //end if
 

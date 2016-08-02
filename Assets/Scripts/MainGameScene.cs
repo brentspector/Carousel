@@ -857,6 +857,10 @@ public class MainGameScene : MonoBehaviour
 						trainerRightRegion.transform.FindChild("Badges").GetChild(i).GetComponent<Toggle>().isOn =
 							GameManager.instance.GetTrainer().GetPlayerBadges(39 + i);
 					} //end for
+
+					//Fill in player points
+					trainerRightRegion.transform.FindChild("PlayerPoints").GetComponent<InputField>().text = 
+						GameManager.instance.GetTrainer().PlayerPoints.ToString();
 				} //end if !initialize
 
 				//Get player input
@@ -3773,6 +3777,10 @@ public class MainGameScene : MonoBehaviour
                 GameManager.instance.GetTrainer ().SetPlayerBadges (39 + i, trainerRightRegion.transform.FindChild ("Badges").
                     GetChild (i).GetComponent<Toggle> ().isOn);
             } //end for
+			int result = 0;
+			int.TryParse(trainerRightRegion.transform.FindChild("PlayerPoints").GetComponent<InputField>().text, 
+				out result);
+			GameManager.instance.GetTrainer().PlayerPoints = result;
             GameManager.instance.DisplayText("Updated trainer.", true);
         } //end if
         else

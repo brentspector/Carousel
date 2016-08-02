@@ -17,7 +17,7 @@ public class GameManager : MonoBehaviour
     #region Variables
 	//GLOBAL SETTING VARIABLES
     [System.NonSerialized]
-	public float VersionNumber = 0.4f;      //Version number for save file management
+	public float VersionNumber = 1f;        //Version number for save file management
     [System.NonSerialized]
     public int NumberOfWallpaper = 25;      //How many wallpapers are available
 
@@ -103,11 +103,15 @@ public class GameManager : MonoBehaviour
         sysm.InitErrorLog ();
 
         //Initialize DataContents class 
-        if(!DataContents.InitDataContents())
-        {
-            sysm.LogErrorMessage("Could not load data contents");
-            Application.Quit();
-        } //end if
+		if (!DataContents.InitDataContents())
+		{
+			sysm.LogErrorMessage("Could not load data contents");
+			Application.Quit();
+		} //end if
+		else
+		{
+			sysm.LogErrorMessage("Loaded data contents successfully");
+		} //end else
 
 		//Initialize textbox
 		sysm.GetText(tools.transform.FindChild("TextUnit").gameObject, 
@@ -127,6 +131,8 @@ public class GameManager : MonoBehaviour
 		inventory = GetComponent<InventoryScene>();
 		shop = GetComponent<ShopScene>();
 		battle = GetComponent<BattleScene>();
+
+		sysm.LogErrorMessage("Finished GameManager Awake");
 	} //end Awake
 	
     /***************************************
@@ -181,7 +187,7 @@ public class GameManager : MonoBehaviour
 
                     #else
                     //Stand-alone mode (user version) diagnostic commands go here
-
+					LogErrorMessage("One off GameManager Update reached");
                     #endif
                 } //end if !running
 
@@ -191,7 +197,7 @@ public class GameManager : MonoBehaviour
 
 			//Start Menu scene
             else if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "StartMenu")
-			{
+			{				
 				menu.RunMenu();
 			} //end else if	
 

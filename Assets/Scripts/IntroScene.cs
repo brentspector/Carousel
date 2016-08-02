@@ -34,21 +34,25 @@ public class IntroScene : MonoBehaviour
 		//Get title screen objects
 		if (checkpoint == 0)
 		{			
+			GameManager.instance.LogErrorMessage("Checkpoint 0 of Intro started.");
 			//Add the checkpoint delegate
 			GameManager.instance.checkDel = ChangeCheckpoint;
 			title = GameObject.Find("Title");
 			image = GameObject.Find("Image");
 			enter = GameObject.Find("PressEnter");
 			checkpoint = 1;
+			GameManager.instance.LogErrorMessage("Checkpoint 0 of Intro finished.");
 		} //end if
 
 		//Black out starting image, shrink title, hide enter
 		else if (checkpoint == 1)
 		{
+			GameManager.instance.LogErrorMessage("Checkpoint 1 of Intro started.");
 			image.GetComponent<Image>().color = Color.black;
 			title.transform.localScale = new Vector3(0.2f, 0.2f);
 			enter.SetActive(false);
 			checkpoint = 2;
+			GameManager.instance.LogErrorMessage("Checkpoint 1 of Intro finished.");
 		} //end else if
 
 		//Play animation
@@ -60,12 +64,13 @@ public class IntroScene : MonoBehaviour
 				GetInput();
 				return;
 			} //end if
-
+			GameManager.instance.LogErrorMessage("Checkpoint 2 of Intro started.");
 			//PLaying animation
 			playing = true;
 
 			//Play animation, processing stays true until end
 			StartCoroutine(IntroAnimation());
+			GameManager.instance.LogErrorMessage("Checkpoint 2 of Intro finished.");
 		} //end else if
 
 		//End animation and fade out when player hits enter/return
@@ -78,9 +83,11 @@ public class IntroScene : MonoBehaviour
 		//Move to menu scene when finished fading out
 		else if(checkpoint == 4)
 		{
+			GameManager.instance.LogErrorMessage("Checkpoint 4 of Intro started.");
 			//Begin transition, and set checkpoint to bogus to avoid multiple calls
 			GameManager.instance.LoadScene("StartMenu", true);
 			checkpoint = 5;
+			GameManager.instance.LogErrorMessage("Checkpoint 4 of Intro finished.");
 		} //end else if
 	} //end RunIntro()
 
@@ -183,6 +190,7 @@ public class IntroScene : MonoBehaviour
 			} //end if
 			else if (checkpoint == 3)
 			{
+				GameManager.instance.LogErrorMessage("Checkpoint 3 of Intro finished by Left Mouse.");
 				checkpoint = 4;
 			} //end else if
 		} //end else if Left Mouse Button
@@ -207,6 +215,7 @@ public class IntroScene : MonoBehaviour
 			} //end if
 			else if (checkpoint == 3)
 			{
+				GameManager.instance.LogErrorMessage("Checkpoint 3 of Intro finished by Enter key");
 				checkpoint = 4;
 			} //end else if
 		} //end else if Enter/Return Key
@@ -226,6 +235,7 @@ public class IntroScene : MonoBehaviour
      ***************************************/
 	IEnumerator IntroAnimation()
 	{
+		GameManager.instance.LogErrorMessage("Started intro animation.");
 		//Keep internal count of bounces
 		int numBounce = 0;
 
@@ -247,6 +257,7 @@ public class IntroScene : MonoBehaviour
 			//If player ends the animation early, break the loop
 			if(!playing)
 			{
+				GameManager.instance.LogErrorMessage("Player broke animation loop.");
 				break;
 			} //end if
 
@@ -261,6 +272,7 @@ public class IntroScene : MonoBehaviour
 				//If final bounce is done, break
 				else if(numBounce == bounces)
 				{
+					GameManager.instance.LogErrorMessage("Animation finished normally.");
 					break;
 				} //end else if
 				//If even number of bounces
@@ -314,6 +326,7 @@ public class IntroScene : MonoBehaviour
 		enter.SetActive (true);
 		playing = false;
 		checkpoint = 3;
+		GameManager.instance.LogErrorMessage("Finished intro animation.");
 	} //end IntroAnimation
 
 	/***************************************

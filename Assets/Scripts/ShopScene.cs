@@ -935,9 +935,9 @@ public class ShopScene : MonoBehaviour
 							oWhere: (int)ObtainFromEnum.Shop, shiny: buyShiny);
 						GameManager.instance.GetTrainer().AddToPC(
 							GameManager.instance.GetTrainer().GetPCBox(), 0, newPokemon);
-						GameManager.instance.DisplayText("Bought " + quantity + " " + newPokemon.Nickname +
-						" for " + cost + ".", true);
 					} //end for
+					GameManager.instance.DisplayText("Bought " + quantity + " " + DataContents.ExecuteSQL<string> 
+						("SELECT name FROM Pokemon WHERE rowid=" + toDisplay[selectedItem]) + " for " + cost + ".", true);
 				} //end if
 				else
 				{

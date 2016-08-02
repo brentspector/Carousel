@@ -311,7 +311,6 @@ public static class AbilityEffects
 					return 1.5f;
 				} //end if 
 				return 1f;
-				break;
 			//Pixilate
 			case 109:
 				if (moveType == (int)Types.NORMAL && battler.CheckAbility(109))
@@ -363,7 +362,6 @@ public static class AbilityEffects
 					return 1.5f;
 				} //end if
 				return 1f;
-				break;
 			//Tough Claws
 			case 174:
 				if (DataContents.GetMoveFlag(move, "a") && battler.CheckAbility(174))
@@ -371,7 +369,6 @@ public static class AbilityEffects
 					return 1.33f;
 				} //end if
 				return 1f;
-				break;
 			//No boosting ability 
 			default:
 				return 1f;

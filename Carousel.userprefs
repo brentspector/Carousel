@@ -1,15 +1,13 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="..\..\..\..\Emulators\GB\bgb.html">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\PokedexScene.cs">
     <Files>
-      <File FileName="Assets\Scripts\Shop.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Trainer.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\AbilityEffects.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\DataContents.cs" Line="1" Column="1" />
       <File FileName="Assets\Scripts\GameManager.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\AudioManager.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\SystemManager.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\BattleScene.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\PokemonBattler.cs" Line="1" Column="1" />
-      <File FileName="..\..\..\..\Emulators\GB\bgb.html" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\MainGameScene.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Pokemon.cs" Line="945" Column="11" />
+      <File FileName="Assets\Scripts\PokedexScene.cs" Line="299" Column="35" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

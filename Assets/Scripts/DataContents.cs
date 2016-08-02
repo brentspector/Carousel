@@ -66,13 +66,16 @@ public static class DataContents : System.Object
         #else
         //Gets the current folder location and sets path to where the binary files are
         dataLocation = Environment.CurrentDirectory + "/PokemonCarousel_Data/";
+		GameManager.instance.LogErrorMessage("Data Contents dataLocation - " + dataLocation);
         #endif  
 
         //Setup SQL Database variables
-        dbPath = "URI=file:" + dataLocation + "/Supplimental.db";
-        dbConnection=new SqliteConnection(dbPath);
-        dbConnection.Open();
-        dbCommand=dbConnection.CreateCommand();
+        dbPath = "URI=file:" + dataLocation + "Supplimental.db";
+		dbConnection=new SqliteConnection(dbPath);
+		GameManager.instance.LogErrorMessage("Connection String - " + dbConnection.ConnectionString);
+		GameManager.instance.LogErrorMessage("Connection Status - " + dbConnection.State);
+		dbConnection.Open();
+		dbCommand=dbConnection.CreateCommand();
 
         //Verify SQL table loaded correctly
         dbCommand.CommandText = "SELECT Count(*) FROM sqlite_master WHERE type='table'";
@@ -82,28 +85,39 @@ public static class DataContents : System.Object
         {
             returnValue = dbReader.GetInt32(0);
         } //end while
-        if (returnValue == 0)
-        {
-            return false;
-        } //end if	
+		if (returnValue == 0)
+		{
+			return false;
+		} //end if	
+		else
+		{
+			GameManager.instance.LogErrorMessage("Table count is " + returnValue);
+		} //end else
 
         //Initialize markings
         markingCharacters = new char[] {'●','■','▲','♥','♦','☻'};
 
         //Initialize max count for each table
         speciesCount = ExecuteSQL<int>("SELECT Count(*) FROM Pokemon");
+		GameManager.instance.LogErrorMessage("SpeciesCount is " + speciesCount);
         moveCount = ExecuteSQL<int>("SELECT Count(*) FROM Moves");
+		GameManager.instance.LogErrorMessage("MoveCount is " + moveCount);
         itemCount = ExecuteSQL<int>("SELECT Count(*) FROM Items");
+		GameManager.instance.LogErrorMessage("ItemCount is " + itemCount);
         abilityCount = ExecuteSQL<int> ("SELECT Count(*) FROM Abilities");
+		GameManager.instance.LogErrorMessage("AbilityCount is " + abilityCount);
 
         //Create an experience table
         experienceTable = new ExperienceTable();
+		GameManager.instance.LogErrorMessage("Experience Table is " + experienceTable.ToString());
 
         //Create ribbon data
         ribbonData = new RibbonData ();
+		GameManager.instance.LogErrorMessage("Ribbon Data is " + ribbonData.ToString());
 
         //Create a type chart
         typeChart = new TypeChart ();
+		GameManager.instance.LogErrorMessage("Type Chart is " + typeChart.ToString());
 
         //Load sprites
         statusSprites       = Resources.LoadAll<Sprite> ("Sprites/Icons/statuses");
